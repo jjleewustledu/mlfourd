@@ -1,0 +1,261 @@
+classdef ImageBuilder
+	%% IMAGEBUILDER is the base class for building image-objects.   It's methods are empty but not abstract
+    %  to allow concrete subclasses to implement building tasks as needed.  The concrete subclasses determine
+    %  the details of representing the product objects, but the algorithms for construction are listed 
+    %  in ImageDirector subclasses.   Cf. GoF, builder pattern.
+    %
+    %  Version $Revision: 2330 $ was created $Date: 2013-01-23 12:38:37 -0600 (Wed, 23 Jan 2013) $ by $Author: jjlee $,  
+ 	%  last modified $LastChangedDate: 2013-01-23 12:38:37 -0600 (Wed, 23 Jan 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImageBuilder.m $ 
+ 	%  Developed on Matlab 7.13.0.564 (R2011b) 
+ 	%  $Id: ImageBuilder.m 2330 2013-01-23 18:38:37Z jjlee $ 
+
+    properties (Dependent)
+        fslPath
+        namingInterface
+        studyPath
+        studyFolder
+        sessionPath
+        sessionFolder
+        modalityPath
+        modalityFolder
+        averaging
+        converter
+        products
+        lastProduct
+        logged
+        lastLogged
+        logFilename
+        verbose
+    end % dependent properties
+    
+    methods (Static)
+        function this = createFromModalityPath(mpth)
+            %% CREATEFROMMODALITYPATH bootstraps MRIConverter or PETConverter
+            
+            import mlfourd.* mlfsl.*;
+            if     (lstrfind(mpth, MRIConverter.modalityFolders))
+                this = MRIBuilder.createFromModalityPath(mpth);
+            elseif (lstrfind(mpth, PETConverter.modalityFolders))
+                this = O15Builder.createFromModalityPath(mpth);
+            else                
+                error('mlfourd:UnsupportedInputParamValue', ...
+                      'ImageBuilder.createFromModalityPath could not parse modality-path:  %s', mpth);
+            end
+        end
+        function this = createFromConverter(cvrtr)
+            %% CREATEFROMCONVERTER
+            %  Usage:  builder = ImageBuilder.createFromConverter(converter)
+            
+            assert(isa(cvrtr, 'mlfourd.ConverterInterface'));
+            this = mlfourd.ImageBuilder(cvrtr);
+        end
+    end % static methods
+  
+    methods % set/get
+        function pth    = get.fslPath(this)
+            pth = fullfile(this.converter.sessionPath, mlfsl.FslRegistry.FSL_FOLDER, '');
+        end
+        function ni     = get.namingInterface(this)
+            assert(isa(this.namingInterface_, 'mlfourd.NamingInterface'));
+            ni = this.namingInterface_;
+        end
+        function fld    = get.studyFolder(this)
+            fld = this.path2folder(this.studyPath);
+        end
+        function fld    = get.sessionFolder(this)
+            fld = this.path2folder(this.sessionPath);
+        end
+        function fld    = get.modalityFolder(this)
+            fld = this.converter.modalityFolder;
+        end
+        function pth    = get.studyPath(this)
+            pth = this.parentPath(this.sessionPath);
+        end
+        function pth    = get.sessionPath(this)
+            pth = this.parentPath(this.modalityPath);          
+        end
+        function this   = set.modalityPath(this, pth)
+            assert(lexist(pth, 'dir'), '%s not found', pth);
+            this.converter.modalityPath = pth;
+        end
+        function pth    = get.modalityPath(this)
+            pth = this.converter.modalityPath;
+        end
+        function this   = set.averaging(this, avg)
+            assert(isa(avg, 'mlfourd.AveragingType'), '%s unsupported', class(avg));
+            this.averaging_ = mlfourd.AveragingStrategy(avg);
+        end
+        function avg    = get.averaging(this)
+            avg = this.averaging_;
+        end
+        function cvrtr  = get.converter(this)
+            assert( isa(this.converter_, 'mlfourd.ConverterInterface'));
+            cvrtr = this.converter_;
+        end
+        function this   = set.products(this, prd)
+            if (~isa(prd, 'mlpatterns.CellArrayList'))
+                prd = ensureCellArrayList(prd); end
+            this.products_ = prd;
+        end
+        function prd    = get.products(this)
+            assert(~isempty(this.products_));
+            prd = deepcopy(this.products_);
+        end
+        function prd    = get.lastProduct(this)
+            prd = this.products.get(this.products.length);
+        end
+        function lg     = get.logged(this)
+            assert(~isempty(this.logged_));
+            lg = deepcopy(this.logged_);
+        end  
+        function prd    = get.lastLogged(this)
+            prd = this.logged.get(this.logged.length);
+        end
+        function fn     = get.logFilename(this)
+            [~,clname] = strtok(class(this), '.');
+               clname  = clname(2:end);
+            fn = fullfile(this.converter_.fslPath, mlfourd.NamingRegistry.instance.logFilename(clname));
+        end
+        function tf     = get.verbose(this) %#ok<MANU>
+            tf = mlpipeline.PipelineRegistry.instance.verbose;
+        end
+    end % set/get methods
+    
+    methods %% Many utility methods delegate to mlfourd.NamingFacade
+        
+        function obj = t1(this, varargin)
+            obj = this.namingInterface.t1(varargin{:});
+        end
+        function obj = t2(this, varargin)
+            obj = this.namingInterface.t2(varargin{:});
+        end
+        function obj = flair(this, varargin)
+            obj = this.namingInterface.flair(varargin{:});
+        end
+        function obj = flair_abs(this, varargin)
+            obj = this.namingInterface.flair_abs(varargin{:});
+        end
+        function obj = gre(this, varargin)
+            obj = this.namingInterface.gre(varargin{:});
+        end
+        function obj = tof(this, varargin)
+            obj = this.namingInterface.tof(varargin{:});
+        end
+        function obj = ep2d(this, varargin)
+            obj = this.namingInterface.ep2d(varargin{:});
+        end
+        function obj = ep2dMeanvol(this, varargin)
+            obj = this.namingInterface.ep2dMeanvol(varargin{:});
+        end
+        function obj = h15o(this, varargin)
+            obj = this.namingInterface.h15o(varargin{:});
+        end
+        function obj = o15o(this, varargin)
+            obj = this.namingInterface.o15o(varargin{:});
+        end
+        function obj = h15oMeanvol(this, varargin)
+            obj = this.namingInterface.h15oMeanvol(varargin{:});
+        end
+        function obj = o15oMeanvol(this, varargin)
+            obj = this.namingInterface.o15oMeanvol(varargin{:});
+        end
+        function obj = c15o(this, varargin)
+            obj = this.namingInterface.c15o(varargin{:});
+        end
+        function obj = tr(this, varargin)
+            obj = this.namingInterface.tr(varargin{:});
+        end 
+        function tf  = isPet(this, obj)
+            tf = this.namingInterface.isPet(obj);
+        end
+        function tf  = isMr(this, obj)
+            tf = this.namingInterface.isMr(obj);
+        end
+        function tf  = isAtlas(this, obj)
+            tf = this.namingInterface.isAtlas(obj);
+        end
+        function tf  = onPet(this, obj)
+            tf = this.namingInterface.onPet(obj);
+        end
+        function tf  = onMr(this, obj)
+            tf = this.namingInterface.onMr(obj);
+        end
+        function tf  = onAtlas(this, obj)
+            tf = this.namingInterface.onAtlas(obj);
+        end       
+        function imobj = average(this, imobj)
+            assert(isa(this.averaging_, 'mlfourd.AveragingType'));
+            imobj = this.averaging_.average(imobj);
+        end 
+        function this  = addProduct(this, prd)
+            if (~isa(prd, 'mlfsl.Product'))
+                prd = mlfsl.Product(prd); end
+            this.products_.add(prd);
+        end
+        function this  = resetProducts(this)
+            this.products_ = mlpatterns.CellArrayList;
+        end
+        function this  = addLogged(this, lg)
+            this.logged_.add(lg);
+        end
+        function this  = resetLogged(this)
+            this.logged_ = mlpatterns.CellArrayList;
+        end
+        function fn    = xfmName(this, varargin)
+            fn = this.namingInterface.xfmName(varargin{:});
+        end        
+        function fn    = nlxfmName(this, varargin)
+            fn = this.namingInterface.nlxfmName(varargin{:});
+        end        
+        function obj   = imageObject(this, varargin)
+            obj = this.namingInterface.imageObject(varargin{:});
+        end 
+ 	end % methods
+    
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+        function this = ImageBuilder(cvtr)
+            import mlfourd.* mlpatterns.*;
+            assert(isa(cvtr, 'mlfourd.ConverterInterface'));
+            this.converter_ = cvtr;
+            this.namingInterface_  = mlfourd.NamingFacade(this.fslPath);
+            this.averaging_ = AveragingStrategy('none');
+            this.products_  = CellArrayList;
+            this.logged_    = CellArrayList;
+        end
+        function fqfn = fqfilename(this, imobj)
+            fqfn = imcast(imobj, 'char');
+            ensureFolderExists(this.fslPath);
+            if (~lstrfind(fqfn, this.fslPath))
+                fqfn = fullfile(fslPath, fqfn); end
+        end
+        function fqfp = fqfileprefix(this, imobj)
+            fqfp = fileprefix(this.fqfilename(imobj));
+        end
+    end
+   
+    %% PRIVATE
+
+    properties (Access = 'private')
+        namingInterface_
+        converter_
+        averaging_
+        products_
+        logged_
+    end
+    
+    methods (Access = 'private') 
+        function fld  = path2folder(pth)
+            assert(~isempty(pth));
+            [~,fld] = filepartsx(pth, '.nii.gz');
+        end
+        function pth  = parentPath(pth)
+            assert(~isempty(pth));
+            pth = fileparts(pth);
+        end
+    end
+    
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
+end
+

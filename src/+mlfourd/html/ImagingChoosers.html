@@ -1,0 +1,1453 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ImagingChoosers</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-06-30"><meta name="DC.source" content="ImagingChoosers.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#4">FORMFILENAME returns a canonical form for the passed filename and attributes</a></li><li><a href="#6">SPLITFILENAME retuns an array of the parts of a filename separated by sep</a></li><li><a href="#8">calls to FilenameFilters, ImageFilters</a></li><li><a href="#9">IMAGEOBJECT returns an object with the typeclass of the last varargin;</a></li><li><a href="#12">SET.ORDEREDRULES removes all prior rules before setting or rules</a></li><li><a href="#16">PRIVATE</a></li><li><a href="#17">APPLYIMAGEFILTERS</a></li><li><a href="#19">APPLYFILENAMEFILTERS</a></li></ul></div><pre class="codeinput"><span class="keyword">classdef</span> ImagingChoosers
+</pre><pre class="codeinput"><span class="comment">	%% IMAGINGCHOOSERS uses directed graphs of rules to select choice imaging series</span>
+	<span class="comment">%  $Revision$</span>
+ 	<span class="comment">%  was created $Date$</span>
+ 	<span class="comment">%  by $Author$,</span>
+ 	<span class="comment">%  last modified $LastChangedDate$</span>
+ 	<span class="comment">%  and checked into repository $URL$,</span>
+ 	<span class="comment">%  developed on Matlab 8.1.0.604 (R2013a)</span>
+ 	<span class="comment">%  $Id$</span>
+ 	<span class="comment">%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad)</span>
+
+	properties (Dependent)
+        fslPath
+        imageObjType
+        orderedRules
+        parser
+        returnTypeclass
+
+    <span class="keyword">end</span>
+
+    properties (Constant)
+        SUPPORTED_IMAGE_TYPES = <span class="keyword">...</span>
+            [numeric_types abstract_image_types <span class="keyword">...</span>
+            { <span class="string">'mlfourd.ImagingComonent'</span> <span class="string">'mlfourd.ImagingComposite'</span> <span class="string">'mlfourd.ImagingSeries'</span> }
+            { <span class="string">'char'</span> <span class="string">'filename'</span> <span class="string">'fileprefix'</span> <span class="string">'mlfourd.NIfTI'</span> <span class="string">'fqfilename'</span> <span class="string">'fqfileprefix'</span>} ];
+    <span class="keyword">end</span>
+
+    methods (Static)
+</pre><pre class="codeinput">        <span class="keyword">function</span> fps   = createFileprefix(p)
+            fps = fileprefixes( <span class="keyword">...</span>
+                  mlfourd.ImagingParser.createFilename(p));
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fns   = createFilename(p)
+            import <span class="string">mlfourd.*</span>;
+            fns = ensureCell(ImagingParser.createFqFilename(p));
+            <span class="keyword">if</span> (~p.Results.fullyQualified)
+                <span class="keyword">for</span> f = 1:length(fns)
+                    [~,fp,e] = filepartsx(fns{f}, mlfourd.AbstractImage.FILETYPE_EXT);
+                    fns{f} = [fp e];
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fqfps = createFqFileprefix(p)
+            import <span class="string">mlfourd.*</span>;
+            fqfps = fileprefixes( <span class="keyword">...</span>
+                    ImagingParser.createFqFilename(p), AbstractImage.FILETYPE_EXT, true);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fqfns = createFqFilename(p)
+            import <span class="string">mlfourd.*</span>;
+            [pth,fp,e] = ImagingParser.decoratedFileparts(p);
+            fqfns      = ImagingParser.selectModality(fullfilenames(pth, [fp e]), p);
+            fqfns      = ImagingParser.applyFiltersByType(fqfns, p);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> imcmp = createImagingComponent(p)
+            import <span class="string">mlfourd.*</span>;
+            imcmp = ImagingComponent.createFromObjects( <span class="keyword">...</span>
+                    ImagingParser.createFqFilename(p));
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> nii   = createNIfTI(p)
+            import <span class="string">mlfourd.*</span>;
+            imser = ImagingParser.createImagingComponent(p);
+            assert(1 == imser.length);
+            nii = imser.cachedNext;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = createReturnType(p)
+            import <span class="string">mlfourd.*</span>;
+            <span class="keyword">switch</span> (lower(p.Results.returnType))
+                <span class="keyword">case</span> {<span class="string">'fileprefix'</span> <span class="string">'fp'</span>}
+                    obj = ImagingParser.createFileprefix(p);
+                <span class="keyword">case</span> {<span class="string">'filename'</span> <span class="string">'fn'</span>}
+                    obj = ImagingParser.createFilename(p);
+                <span class="keyword">case</span> {<span class="string">'fqfileprefix'</span> <span class="string">'fqfp'</span>}
+                    obj = ImagingParser.createFqFilename(p);
+                <span class="keyword">case</span> {<span class="string">'fqfilename'</span> <span class="string">'fqfn'</span>}
+                    obj = ImagingParser.createFqFilename(p);
+                <span class="keyword">case</span>  <span class="string">'nifti'</span>
+                    obj = ImagingParser.createNIfTI(p);
+                <span class="keyword">case</span> {<span class="string">'imagingseries'</span> <span class="string">'imagingcomposite'</span> <span class="string">'imagingcomponent'</span>}
+                    obj = ImagingParser.createImagingComponent(p);
+                <span class="keyword">otherwise</span>
+                    error(<span class="string">'mlfourd:UnsupportedType'</span>, <span class="string">'ImagingParser.createReturnType; p.Results.returnType-&gt;%s'</span>, <span class="keyword">...</span>
+                           p.Results.returnType);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (iscell(obj) &amp;&amp; 1 == length(obj))
+                obj = obj{1};
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> [pth,fp,e] = decoratedFileparts(p)
+            import <span class="string">mlfsl.*</span>;
+            [pth,fp,e] = filepartsx(p.Results.fileprefixPattern, mlfourd.AbstractImage.FILETYPE_EXT);
+            <span class="keyword">if</span> (isempty(pth))
+                pth = p.Results.path;
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.ensureExists)
+                ensureFilenameExists(fullfilename(pth, fp));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.meanvol)
+                fp = FlirtBuilder.ensureMeanvolFilename(fp);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (~isempty(p.Results.averaged))
+                fp = [fp <span class="string">'_'</span> p.Results.averaged];
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (prod(p.Results.blocked) &gt; 1)
+                fp = FlirtBuilder.blockedFilename(fp, p.Results.blocked);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (sum(p.Results.blurred) &gt; 0)
+                fp = FlirtBuilder.blurredFilename(fp, p.Results.blurred);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.isMcf)
+                fp = FlirtBuilder.ensureMcfFilename(fp);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (~isempty(p.Results.isFlirted))
+                fp = FlirtBuilder.flirtedFilename(fp, p.Results.isFlirted);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.isBetted)
+                fp = BetBuilder.bettedFilename(fp);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (isempty(e))
+                e = mlfourd.AbstractImage.FILETYPE_EXT;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fname = formFilename(fname, varargin)
+</pre><h2>FORMFILENAME returns a canonical form for the passed filename and attributes<a name="4"></a></h2><pre>Usage:    canonical_filename = ...
+              ImagingParser.formFilename(filename_pattern[, 'fq', complete_path, 'fp', 'betted', 'meanvol', ...])
+          ^ e.g., /pathtofile/ep2d_020_mcf_meanvol.nii.gz
+                                         ^ e.g., ep2d_020
+                                                          ^  'fq' 'fp' 'fn' 'fqfp' 'fqfn'
+                                                             'betted' 'motioncorrected' 'meanvol'
+                                                             'fqfilename' requires complete path to be specified
+                                                             'average'    requires averaging type
+                                                             'blur'       requires blur-label
+                                                             'block'      requires block-label
+                                                     '                            ^ 'fp', 'betted', ...</pre><pre class="codeinput">            import <span class="string">mlfourd.*</span>;
+            fname = imcast(fname, <span class="string">'char'</span>);
+            sname = struct(<span class="string">'path'</span>, <span class="string">''</span>, <span class="string">'stem'</span>, <span class="string">''</span>, <span class="string">'ext'</span>, <span class="string">''</span>);
+            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.AbstractImage.FILETYPE_EXT);
+            varargin = cellfun(@ensureChar, varargin, <span class="string">'UniformOutput'</span>, false);
+            <span class="keyword">for</span> k = 1:length(varargin)
+                sname = buildFilename(sname, varargin{k});
+            <span class="keyword">end</span>
+            fname = fullfile(sname.path, [sname.stem sname.ext]);
+
+            <span class="keyword">function</span> sn = buildFilename(sn, arg)
+                import <span class="string">mlfourd.*</span> <span class="string">mlfsl.*</span>;
+                <span class="keyword">try</span>
+                    <span class="keyword">switch</span> (lower(arg))
+                        <span class="keyword">case</span> {<span class="string">'fq'</span> <span class="string">'fullqual'</span> <span class="string">'fullyqualified'</span>}
+                            sn      = makeFullyQualified(sn,k);
+                        <span class="keyword">case</span> {<span class="string">'fqfileprefix'</span> <span class="string">'fqfp'</span>}
+                            sn      = makeFullyQualified(sn,k);
+                            sn.ext  = <span class="string">''</span>;
+                        <span class="keyword">case</span> {<span class="string">'fqfilename'</span> <span class="string">'fqfn'</span>}
+                            sn      = makeFullyQualified(sn,k);
+                            sn.ext  = AbstractImage.FILETYPE_EXT;
+                        <span class="keyword">case</span> {<span class="string">'fp'</span> <span class="string">'fileprefix'</span> <span class="string">'fileprefixPattern'</span>}
+                            sn.path = <span class="string">''</span>;
+                            sn.ext  = <span class="string">''</span>;
+                        <span class="keyword">case</span> {<span class="string">'fn'</span> <span class="string">'filename'</span>}
+                            sn.path = <span class="string">''</span>;
+                        <span class="keyword">case</span> {<span class="string">'bet'</span> <span class="string">'betted'</span> <span class="string">'brain'</span> <span class="string">'_brain'</span>}
+                            sn.stem = fileprefix(BetBuilder.bettedFilename(sn.stem));
+                        <span class="keyword">case</span> {<span class="string">'motioncorrect'</span> <span class="string">'motioncorrected'</span> <span class="string">'mcf'</span> <span class="string">'_mcf'</span>}
+                            sn.stem = [sn.stem FlirtBuilder.MCF_SUFFIX];
+                        <span class="keyword">case</span> {<span class="string">'meanvol'</span> <span class="string">'_meanvol'</span>}
+                            sn.stem = [sn.stem FlirtBuilder.MEANVOL_SUFFIX];
+                        <span class="keyword">case</span> {<span class="string">'block'</span>   <span class="string">'blocked'</span>}
+                            sn.stem = [sn.stem <span class="string">'_'</span> varargin{k+1}];
+                        <span class="keyword">case</span> {<span class="string">'blur'</span>    <span class="string">'blurred'</span>}
+                            sn.stem = [sn.stem <span class="string">'_'</span> varargin{k+1}];
+                        <span class="keyword">case</span> {<span class="string">'average'</span> <span class="string">'averaged'</span> <span class="string">'aver'</span>}
+                            sn.stem = [sn.stem <span class="string">'_'</span> varargin{k+1}];
+                        <span class="keyword">case</span> {<span class="string">'*'</span>}
+                            sn.stem = [sn.stem <span class="string">'*'</span>];
+                        <span class="keyword">otherwise</span>
+                    <span class="keyword">end</span>
+                <span class="keyword">catch</span> ME
+                    handexcept(ME);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            <span class="keyword">function</span> sname = makeFullyQualified(sname, kidx)
+                <span class="keyword">if</span> (exist(<span class="string">'kidx'</span>,<span class="string">'var'</span>) &amp;&amp; <span class="keyword">...</span>
+                        length(varargin) &gt; kidx &amp;&amp; <span class="keyword">...</span>
+                            ischar(varargin{kidx+1}))
+                    sname.path = varargin{kidx+1};
+                <span class="keyword">end</span>
+            <span class="keyword">end</span> <span class="comment">% inner function</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span> <span class="comment">% static formFilename</span>
+        <span class="keyword">function</span> prts  = splitFilename(name, varargin)
+</pre><h2>SPLITFILENAME retuns an array of the parts of a filename separated by sep<a name="6"></a></h2><pre>Usage:   prts = obj.splitFilename(name[, sep]);
+                                         ^ default '_on_'; try '_to_'
+         ^ cell-array of strings</pre><pre class="codeinput">            p = inputParser;
+            addRequired(p, <span class="string">'name'</span>, @ischar);
+            addOptional(p, <span class="string">'sep'</span>, mlfsl.FlirtBuilder.FLIRT_TOKEN, @ischar);
+            parse(p, name, varargin{:});
+
+            [~,fp] = filepartsx(p.Results.name, mlfourd.AbstractImage.FILETYPE_EXT);
+            <span class="keyword">if</span> (isempty(fp))
+                prts = {};  <span class="keyword">return</span>; <span class="keyword">end</span>
+            sepsFound = strfind(fp, p.Results.sep);
+            <span class="keyword">if</span> (isempty(sepsFound))
+                prts = {fp}; <span class="keyword">return</span>; <span class="keyword">end</span>
+            prts = cell(1, length(sepsFound) + 1);
+            prts = splitBySep(prts, p.Results.sep);
+            prts = splitBySpace(prts);
+
+            <span class="keyword">function</span> prts = splitBySep(prts, sep)
+                lastIndex = 1;
+                <span class="keyword">for</span> d = 1:length(sepsFound)
+                    prts{d} = fp(lastIndex:sepsFound(d)-1);
+                    lastIndex = sepsFound(d) + length(sep);
+                <span class="keyword">end</span>
+                prts{end} = fp(lastIndex:end);
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span> <span class="comment">% static splitFilename</span>
+</pre><h2>calls to FilenameFilters, ImageFilters<a name="8"></a></h2><pre class="codeinput">        <span class="keyword">function</span> obj   = brightest(obj)
+            obj = mlfourd.FilenameFilters.brightest(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fn    = ensureFilenameSuffix(fn0)
+            <span class="keyword">if</span> (lstrfind(fn0, mlfourd.AbstractImage.FILETYPE_EXT))
+                fn = fn0;
+            <span class="keyword">else</span>
+                fn = <span class="string">''</span>;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fns   = ensureFilenameSuffixes(fns0)
+            fns  = {}; g = 1;
+            fns0 = ensureCell(fns0);
+            <span class="keyword">for</span> f = 1:length(fns0)
+                <span class="keyword">if</span> (lstrfind(fns0{f}, mlfourd.AbstractImage.FILETYPE_EXT))
+                    fns{g} = fns0{f}; <span class="comment">%#ok&lt;AGROW&gt;</span>
+                    g = g + 1;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = imageObject(varargin)
+</pre><h2>IMAGEOBJECT returns an object with the typeclass of the last varargin;<a name="9"></a></h2><pre>char filenames will be returned as fileprefixes</pre><pre class="codeinput">            <span class="keyword">if</span> (1 == length(varargin))
+                obj = fileprefix(imcast(varargin{1}, <span class="string">'char'</span>));
+                <span class="keyword">return</span>
+            <span class="keyword">end</span>
+            namstr  = mlfourd.ImagingParser.coregNameStruct(varargin{:});
+            obj     = fullfilename(namstr.path, [namstr.pre mlfsl.FlirtBuilder.FLIRT_TOKEN namstr.post]);
+            lastArg = varargin{length(varargin)};
+            obj     = imcast(obj, class(lastArg));
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = isMcf(obj)
+            obj = mlfourd.FilenameFilters.isMcf(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = isMr(obj)
+            obj = mlfourd.FilenameFilters.isMr(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = isPet(obj)
+            obj = mlfourd.FilenameFilters.isPet(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = leastEntropy(obj)
+            obj = mlfourd.FilenameFilters.leastEntropy(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = longestDuration(obj)
+            obj = mlfourd.FilenameFilters.longestDuration(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = lowestSeriesNumber(obj)
+            obj = mlfourd.FilenameFilters.lowestSeriesNumber(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = maximum(obj)
+            obj = mlfourd.FilenameFilters.maximum(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = meanvol(obj)
+            obj = mlfourd.FilenameFilters.meanvol(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = minimum(obj)
+            obj = mlfourd.FilenameFilters.minimum(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = mostEntropy(obj)
+            obj = mlfourd.FilenameFilters.mostEntropy(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = mostPixels(obj)
+            obj = mlfourd.ImageFilters.mostPixels(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fqfn  = nlxfmName(varargin)
+            <span class="keyword">if</span> (1 == length(varargin))
+                fqfn = filename( <span class="keyword">...</span>
+                       fileprefix(varargin{1}), <span class="string">'.mat'</span>);
+                <span class="keyword">return</span>
+            <span class="keyword">end</span>
+            namstr = mlfourd.ImagingParser.coregNameStruct(varargin{:});
+            fqfn = fullfile(namstr.path, [namstr.pre mlfsl.FlirtBuilder.FLIRT_TOKEN namstr.post]);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = notIsMcf(obj)
+            obj = mlfourd.FilenameFilters.notIsMcf(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = notIsMr(obj)
+            obj = mlfourd.FilenameFilters.notIsMr(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = notIsPet(obj)
+            obj = mlfourd.FilenameFilters.notIsPet(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = smallestVoxels(obj)
+            obj = mlfourd.FilenameFilters.smallestVoxels(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj   = timeDependent(obj)
+            obj = mlfourd.ImageFilters.timeDependent(obj);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fqfn  = xfmName(varargin)
+            fqfn = filename( <span class="keyword">...</span>
+                   mlfourd.ImagingParser.nlxfmName(varargin{:}), <span class="string">'.mat'</span>);
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+
+    methods <span class="comment">%% SET/GET</span>
+        <span class="keyword">function</span> this = set.orderedRules(this, or)
+</pre><h2>SET.ORDEREDRULES removes all prior rules before setting or rules<a name="12"></a></h2><pre class="language-matlab">Usage:   this.orderedRules = {param1 value1 param2 value2 <span class="keyword">...</span><span class="comment">};</span>
+</pre><pre class="codeinput">            this.orderedRules_ = or;
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+        <span class="keyword">function</span> or = get.orderedRules(this)
+            or = this.orderedRules_;
+            assert(~isemptyStruct(or));
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> this = set.parser(this, p)
+            assert(isa(p, <span class="string">'inputParser'</span>));
+            this.parser_ = p;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> p = get.parser(this)
+            p = this.parser_;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> this = set.returnTypeclass(this, tc)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, this.returnTypeclass_));
+            this.returnTypeclass_ = tc;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> rtc = get.returnTypeclass(this)
+            <span class="keyword">if</span> (isempty(this.returnTypeclass_))
+                this.returnTypeclass_ = <span class="string">'fqfilename'</span>; <span class="keyword">end</span>
+            rtc = this.returnTypeclass_;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> this = set.fslPath(this, pth)
+            assert(lexist(pth, <span class="string">'dir'</span>));
+            this.fslPath = pth;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> pth  = get.fslPath(this)
+            <span class="keyword">if</span> (lexist(this.fslPath, <span class="string">'dir'</span>))
+                pth = this.fslPath; <span class="keyword">return</span>; <span class="keyword">end</span>
+            pth = mlfourd.ImagingParser.guessFslpath;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> this = set.imageObjType(this, typ)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, typ));
+            this.imageObjType_ = typ;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> typ  = get.imageObjType(this)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, this.imageObjType_)); <span class="comment">% paranoia</span>
+            typ = this.imageObjType_;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+	methods
+        <span class="keyword">function</span> adc = choose_adc(this, varargin)
+            <span class="keyword">try</span>
+                adc = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'adc_*'</span>, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> asl = choose_asl(this, varargin)
+            <span class="keyword">try</span>
+                asl = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'asl_*'</span>, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> dwi = choose_dwi(this, varargin)
+            <span class="keyword">try</span>
+                dwi = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'dwi_*'</span>, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> t1 = choose_t1(this, varargin)
+            <span class="keyword">try</span>
+                t1 = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'t1_*'</span>, <span class="string">'smallestVoxels'</span>, true, <span class="string">'mostEntropy'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> t2 = choose_t2(this, varargin)
+            <span class="keyword">try</span>
+                t2 = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'t2_*'</span>, <span class="string">'mostPixels'</span>, true, <span class="string">'brightest'</span>, false, <span class="string">'lowestSeriesNumber'</span>, false, <span class="keyword">...</span>
+                    <span class="string">'mostEntropy'</span>, false, <span class="string">'leastEntropy'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> flair = choose_flair(this, varargin)
+            <span class="keyword">try</span>
+                flair = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'ir_*'</span>, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> flair_abs = choose_flair_abs(this, varargin)
+            <span class="keyword">try</span>
+                flair_abs = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'ir_*_abs*'</span>, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> gre = choose_gre(this, varargin)
+            <span class="keyword">try</span>
+                gre = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'gre_*'</span>, <span class="string">'leastEntropy'</span>, true, <span class="string">'timeDependent'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> tof = choose_tof(this, varargin)
+            <span class="keyword">try</span>
+                tof = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'tof_*'</span>, <span class="string">'brightest'</span>, false, <span class="string">'mostPixels'</span>, true, <span class="string">'mostEntropy'</span>, false, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ep2d = choose_ep2d(this, varargin)
+            <span class="keyword">try</span>
+                ep2d = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'ep2d_*_mcf*'</span>, <span class="string">'mostPixels'</span>, true, <span class="string">'timeDependent'</span>, true, <span class="string">'isMcf'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ep2d = choose_ep2dMeanvol(this, varargin)
+            <span class="keyword">try</span>
+                ep2d = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'ep2d_*_meanvol*'</span>, <span class="string">'mostPixels'</span>, true, <span class="string">'timeDependent'</span>, false, <span class="string">'meanvol'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> h15o = choose_h15o(this, varargin)
+            <span class="keyword">try</span>
+                p = 0;
+                h15o = <span class="string">''</span>;
+                patts = {<span class="string">'cho*'</span> <span class="string">'pho*'</span> <span class="string">'ho*'</span>};
+                <span class="keyword">while</span> (isempty(h15o))
+                    p = p + 1;
+                    h15o = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, patts{p}, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'timeDependent'</span>, true, varargin{:}));
+                <span class="keyword">end</span>
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> o15o = choose_o15o(this, varargin)
+            <span class="keyword">try</span>
+                p = 0;
+                o15o = <span class="string">''</span>;
+                patts = {<span class="string">'coo*'</span> <span class="string">'poo*'</span> <span class="string">'oo*'</span>};
+                <span class="keyword">while</span> (isempty(o15o))
+                    p = p + 1;
+                    o15o = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, patts{p}, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'timeDependent'</span>, true, varargin{:}));
+                <span class="keyword">end</span>
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> h15o = choose_h15oMeanvol(this, varargin)
+            <span class="keyword">try</span>
+                p = 0;
+                h15o = <span class="string">''</span>;
+                patts = {<span class="string">'cho_*'</span> <span class="string">'pho_*'</span> <span class="string">'ho_*'</span>};
+                <span class="keyword">while</span> (isempty(h15o))
+                    p = p + 1;
+                    h15o = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, patts{p}, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'timeDependent'</span>, false, varargin{:}));
+                <span class="keyword">end</span>
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> o15o = choose_o15oMeanvol(this, varargin)
+            <span class="keyword">try</span>
+                p = 0;
+                o15o = <span class="string">''</span>;
+                patts = {<span class="string">'coo_*'</span> <span class="string">'poo_*'</span> <span class="string">'oo_*'</span>};
+                <span class="keyword">while</span> (isempty(o15o))
+                    p = p + 1;
+                    o15o = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, patts{p}, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'timeDependent'</span>, false, varargin{:}));
+                <span class="keyword">end</span>
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> c15o = choose_c15o(this, varargin)
+            <span class="keyword">try</span>
+                c15o = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'poc*'</span>, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'brightest'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> tr = choose_tr(this, varargin)
+            <span class="keyword">try</span>
+                tr = this.createReturnType( <span class="keyword">...</span>
+                    this.inputParser(<span class="string">'path'</span>, this.fslPath, <span class="string">'fileprefixPattern'</span>, <span class="string">'ptr*'</span>, <span class="string">'leastEntropy'</span>, true, <span class="string">'modality'</span>, <span class="string">'pet'</span>, <span class="string">'brightest'</span>, true, varargin{:}));
+            <span class="keyword">catch</span> ME
+                handwarning(ME);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span>  p   = inputParser(this, varargin)
+            import <span class="string">mlfourd.*</span>;
+            p = inputParser;
+            addParamValue(p, <span class="string">'returnType'</span>, <span class="string">'fileprefix'</span>, @ImagingParser.validReturnType);
+            addParamValue(p, <span class="string">'fileprefixPattern'</span>, <span class="string">''</span>, @ischar);
+            addParamValue(p, <span class="string">'path'</span>, this.fslPath, @ImagingParser.validPath); <span class="comment">% defers to any path in fileprefixPattern</span>
+            addParamValue(p, <span class="string">'ensureExists'</span>, false);
+            addParamValue(p, <span class="string">'fullyQualified'</span>, false);
+            addParamValue(p, <span class="string">'meanvol'</span>, false);
+            addParamValue(p, <span class="string">'averaged'</span>, <span class="string">''</span>, @ImagingParser.validAveraging);
+            addParamValue(p, <span class="string">'blocked'</span>, 1, @isnumeric);
+            addParamValue(p, <span class="string">'blurred'</span>, 0, @isnumeric);
+            addParamValue(p, <span class="string">'modality'</span>, <span class="string">'mr'</span>, @ImagingParser.validModality);
+            addParamValue(p, <span class="string">'brightest'</span>, false);
+            addParamValue(p, <span class="string">'lowestSeriesNumber'</span>, true);
+            addParamValue(p, <span class="string">'mostEntropy'</span>, true);
+            addParamValue(p, <span class="string">'leastEntropy'</span>, false);
+            addParamValue(p, <span class="string">'mostPixels'</span>, true);
+            addParamValue(p, <span class="string">'smallestVoxels'</span>, true);
+            addParamValue(p, <span class="string">'longestDuration'</span>, false);
+            addParamValue(p, <span class="string">'timeDependent'</span>, false);
+            addParamValue(p, <span class="string">'isMcf'</span>, false);
+            addParamValue(p, <span class="string">'isFlirted'</span>, <span class="string">''</span>, @ischar);
+            addParamValue(p, <span class="string">'isBetted'</span>, false);
+            parse(p, varargin{:});
+        <span class="keyword">end</span>
+
+
+
+
+
+ 		<span class="keyword">function</span> this = ImagingChoosers(fslpth)
+</pre><pre class="codeinput"><span class="comment"> 			%% ImagingChoosers</span>
+ 			<span class="comment">%  Usage:  obj = ImagingChoosers(fsl_path)</span>
+            this.fslPath = fslpth;
+</pre><pre class="codeinput"> 		<span class="keyword">end</span> <span class="comment">%  ctor</span>
+    <span class="keyword">end</span>
+</pre><h2>PRIVATE<a name="16"></a></h2><pre class="codeinput">    properties (Access = <span class="string">'private'</span>)
+        fslPath_
+        imageObjType_ = <span class="string">'fileprefix'</span>;
+        orderedRules_
+        parser_
+        returnTypeclass_
+    <span class="keyword">end</span>
+
+    methods (Static, Access = <span class="string">'private'</span>)
+        <span class="keyword">function</span> filtList = globParsed(p)
+            filtList = {};
+            <span class="keyword">if</span> (p.Results.isBetted)
+                filtList = [filtList <span class="string">'isBetted'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (~isempty(p.Results.isFlirted))
+                filtList = [filtList <span class="string">'isFlirted'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.isMcf)
+                filtList = [filtList <span class="string">'isMcf'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.timeDependent)
+                filtList = [filtList <span class="string">'timeDependent'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.longestDuration)
+                filtList = [filtList <span class="string">'longestDuration'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.brightest)
+                filtList = [filtList <span class="string">'brightest'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.smallestVoxels)
+                filtList = [filtList <span class="string">'smallestVoxels'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.meanvol)
+                filtList = [filtList <span class="string">'meanvol'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.mostPixels)
+                filtList = [filtList <span class="string">'mostPixels'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.mostEntropy)
+                filtList = [filtList <span class="string">'mostEntropy'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.leastEntropy)
+                filtList = [filtList <span class="string">'leastEntropy'</span>]; <span class="keyword">end</span>
+            <span class="keyword">if</span> (p.Results.lowestSeriesNumber)
+                filtList = [filtList <span class="string">'lowestSeriesNumber'</span>]; <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    methods (Access = <span class="string">'private'</span>)
+        <span class="keyword">function</span> this = collectCriteria(this, varargin)
+            import <span class="string">mlfourd.*</span>;
+            this.orderedRules = varargin{:};
+            p = inputParser;
+            addParamValue(p, <span class="string">'returnType'</span>, <span class="string">'fileprefix'</span>, @ImagingParser.validReturnType);
+            addParamValue(p, <span class="string">'fileprefixPattern'</span>, <span class="string">''</span>, @ischar);
+            addParamValue(p, <span class="string">'path'</span>, this.fslPath, @ImagingParser.validPath); <span class="comment">% defers to any path in fileprefixPattern</span>
+            addParamValue(p, <span class="string">'ensureExists'</span>, false);
+            addParamValue(p, <span class="string">'fullyQualified'</span>, false);
+            addParamValue(p, <span class="string">'meanvol'</span>, false);
+            addParamValue(p, <span class="string">'averaged'</span>, <span class="string">''</span>, @ImagingParser.validAveraging);
+            addParamValue(p, <span class="string">'blocked'</span>, 1, @isnumeric);
+            addParamValue(p, <span class="string">'blurred'</span>, 0, @isnumeric);
+            addParamValue(p, <span class="string">'modality'</span>, <span class="string">'mr'</span>, @ImagingParser.validModality);
+            addParamValue(p, <span class="string">'brightest'</span>, false);
+            addParamValue(p, <span class="string">'lowestSeriesNumber'</span>, true);
+            addParamValue(p, <span class="string">'mostEntropy'</span>, true);
+            addParamValue(p, <span class="string">'leastEntropy'</span>, false);
+            addParamValue(p, <span class="string">'mostPixels'</span>, true);
+            addParamValue(p, <span class="string">'smallestVoxels'</span>, true);
+            addParamValue(p, <span class="string">'longestDuration'</span>, false);
+            addParamValue(p, <span class="string">'timeDependent'</span>, false);
+            addParamValue(p, <span class="string">'isMcf'</span>, false);
+            addParamValue(p, <span class="string">'isFlirted'</span>, <span class="string">''</span>, @ischar);
+            addParamValue(p, <span class="string">'isBetted'</span>, false);
+            parse(p, varargin{:});
+            this.parser = p;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj      = applyImageFilters(obj, varargin)
+</pre><h2>APPLYIMAGEFILTERS<a name="17"></a></h2><pre>Usage:  obj = ImagingParser.applyImageFilters(obj, constraint[, constraint2, ...])
+        ^                                     ^ ImagingComponent object
+                                                   ^ string, name of method from ImageFilters</pre><pre class="codeinput">            import <span class="string">mlfourd.*</span>;
+            <span class="keyword">if</span> (isempty(obj) || 1 == length(obj)); <span class="keyword">return</span>; <span class="keyword">end</span>
+            <span class="keyword">if</span> (isa(obj, <span class="string">'mlfourd.NIfTI'</span>)) <span class="comment">% KLUDGE</span>
+                obj = ImagingParser.applyNiftiFilters(obj, varargin{:});
+                <span class="keyword">return</span>
+            <span class="keyword">end</span>
+            <span class="keyword">for</span> v = 1:length(varargin)
+                <span class="keyword">try</span>
+                    obj = ImageFilters.(varargin{v})(obj);
+                <span class="keyword">catch</span> ME
+                    handexcept(ME);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj      = applyNiftiFilters(obj, varargin)
+            import <span class="string">mlfourd.*</span>;
+            <span class="keyword">if</span> (isempty(obj) || 1 == length(obj)); <span class="keyword">return</span>; <span class="keyword">end</span>
+            imser = ImagingSeries.createFromObjects(obj);
+            imser = ImagingParser.applyImageFilters(imser, varargin{:});
+            obj   = imser.cachedNext;
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> fns      = applyFilenameFilters(fns, varargin)
+</pre><h2>APPLYFILENAMEFILTERS<a name="19"></a></h2><pre>Usage:  obj = ImagingParser.applyFilenameFilters(obj, constraint[, constraint2, ...])
+        ^                                        ^ ImagingComponent object
+                                                      ^ string, name of method from ImageFilters</pre><pre class="codeinput">            import <span class="string">mlfourd.*</span>;
+            <span class="keyword">if</span> (isempty(fns) || 1 == length(fns)); <span class="keyword">return</span>; <span class="keyword">end</span>
+            assert(iscell(fns) || ischar(fns));
+            <span class="keyword">for</span> v = 1:length(varargin)
+                <span class="keyword">try</span>
+                    fns = FilenameFilters.(varargin{v})(fns);
+                <span class="keyword">catch</span> ME
+                    handwarning(ME);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+        <span class="keyword">function</span> obj      = applyCriteria(obj)
+            import <span class="string">mlfourd.*</span>;
+            <span class="keyword">if</span> (~isa(obj, <span class="string">'mlfourd.ImagingChoosers'</span>)); <span class="keyword">return</span>; <span class="keyword">end</span>
+            filtList = ImagingParser.globParsed(obj.parser);
+            <span class="keyword">if</span> (~isempty(filtList))
+                <span class="keyword">if</span>     (ischar(obj))
+                    obj = ImagingParser.applyFilenameFilters(obj, filtList{:});
+                <span class="keyword">elseif</span> (iscell(obj) &amp;&amp; ischar(obj{1}))
+                    obj = ImagingParser.applyFilenameFilters(obj, filtList{:});
+                <span class="keyword">elseif</span> (isa(obj, <span class="string">'mlfourd.ImagingComponent'</span>))
+                    obj = ImagingParser.applyImageFilters(obj, filtList{:});
+                <span class="keyword">else</span>
+                    error(<span class="string">'mlfourd:unsupportedClass'</span>, <span class="string">'ImagingParser.applyCriteria.obj has unsupported type-&gt;%s'</span>, <span class="keyword">...</span>
+                           class(obj));
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+	<span class="comment">%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">Error using vertcat
+Dimensions of matrices being concatenated are not consistent.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+classdef ImagingChoosers
+	%% IMAGINGCHOOSERS uses directed graphs of rules to select choice imaging series
+	%  $Revision$
+ 	%  was created $Date$
+ 	%  by $Author$, 
+ 	%  last modified $LastChangedDate$
+ 	%  and checked into repository $URL$, 
+ 	%  developed on Matlab 8.1.0.604 (R2013a)
+ 	%  $Id$
+ 	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad)
+
+	properties (Dependent)
+        fslPath
+        imageObjType
+        orderedRules
+        parser
+        returnTypeclass
+        
+    end
+      
+    properties (Constant)
+        SUPPORTED_IMAGE_TYPES = ...
+            [numeric_types abstract_image_types ...
+            { 'mlfourd.ImagingComonent' 'mlfourd.ImagingComposite' 'mlfourd.ImagingSeries' }
+            { 'char' 'filename' 'fileprefix' 'mlfourd.NIfTI' 'fqfilename' 'fqfileprefix'} ];
+    end
+    
+    methods (Static)
+        function fps   = createFileprefix(p)
+            fps = fileprefixes( ...
+                  mlfourd.ImagingParser.createFilename(p));
+        end        
+        function fns   = createFilename(p)
+            import mlfourd.*;            
+            fns = ensureCell(ImagingParser.createFqFilename(p));
+            if (~p.Results.fullyQualified)
+                for f = 1:length(fns)
+                    [~,fp,e] = filepartsx(fns{f}, mlfourd.AbstractImage.FILETYPE_EXT);
+                    fns{f} = [fp e];
+                end
+            end
+        end
+        function fqfps = createFqFileprefix(p)
+            import mlfourd.*;
+            fqfps = fileprefixes( ...
+                    ImagingParser.createFqFilename(p), AbstractImage.FILETYPE_EXT, true);
+        end
+        function fqfns = createFqFilename(p)
+            import mlfourd.*;
+            [pth,fp,e] = ImagingParser.decoratedFileparts(p);
+            fqfns      = ImagingParser.selectModality(fullfilenames(pth, [fp e]), p);
+            fqfns      = ImagingParser.applyFiltersByType(fqfns, p);
+        end
+        function imcmp = createImagingComponent(p)
+            import mlfourd.*;
+            imcmp = ImagingComponent.createFromObjects( ...
+                    ImagingParser.createFqFilename(p));
+        end   
+        function nii   = createNIfTI(p)
+            import mlfourd.*;
+            imser = ImagingParser.createImagingComponent(p);
+            assert(1 == imser.length);
+            nii = imser.cachedNext;
+        end
+        function obj   = createReturnType(p)
+            import mlfourd.*;
+            switch (lower(p.Results.returnType))
+                case {'fileprefix' 'fp'}
+                    obj = ImagingParser.createFileprefix(p);
+                case {'filename' 'fn'}
+                    obj = ImagingParser.createFilename(p);
+                case {'fqfileprefix' 'fqfp'}   
+                    obj = ImagingParser.createFqFilename(p);
+                case {'fqfilename' 'fqfn'} 
+                    obj = ImagingParser.createFqFilename(p);
+                case  'nifti'  
+                    obj = ImagingParser.createNIfTI(p);
+                case {'imagingseries' 'imagingcomposite' 'imagingcomponent'} 
+                    obj = ImagingParser.createImagingComponent(p);
+                otherwise
+                    error('mlfourd:UnsupportedType', 'ImagingParser.createReturnType; p.Results.returnType->%s', ...
+                           p.Results.returnType);    
+            end 
+            if (iscell(obj) && 1 == length(obj))
+                obj = obj{1}; 
+            end  
+        end
+        function [pth,fp,e] = decoratedFileparts(p)
+            import mlfsl.*;
+            [pth,fp,e] = filepartsx(p.Results.fileprefixPattern, mlfourd.AbstractImage.FILETYPE_EXT);
+            if (isempty(pth))
+                pth = p.Results.path;
+            end
+            if (p.Results.ensureExists)
+                ensureFilenameExists(fullfilename(pth, fp));
+            end
+            if (p.Results.meanvol)
+                fp = FlirtBuilder.ensureMeanvolFilename(fp);
+            end
+            if (~isempty(p.Results.averaged))
+                fp = [fp '_' p.Results.averaged];
+            end
+            if (prod(p.Results.blocked) > 1)
+                fp = FlirtBuilder.blockedFilename(fp, p.Results.blocked);
+            end
+            if (sum(p.Results.blurred) > 0)
+                fp = FlirtBuilder.blurredFilename(fp, p.Results.blurred);
+            end
+            if (p.Results.isMcf)
+                fp = FlirtBuilder.ensureMcfFilename(fp);
+            end
+            if (~isempty(p.Results.isFlirted))
+                fp = FlirtBuilder.flirtedFilename(fp, p.Results.isFlirted);
+            end
+            if (p.Results.isBetted)
+                fp = BetBuilder.bettedFilename(fp);
+            end    
+            if (isempty(e))
+                e = mlfourd.AbstractImage.FILETYPE_EXT;
+            end
+        end     
+        function fname = formFilename(fname, varargin) 
+            %% FORMFILENAME returns a canonical form for the passed filename and attributes 
+            %  Usage:    canonical_filename = ...
+            %                ImagingParser.formFilename(filename_pattern[, 'fq', complete_path, 'fp', 'betted', 'meanvol', ...])
+            %            ^ e.g., /pathtofile/ep2d_020_mcf_meanvol.nii.gz
+            %                                           ^ e.g., ep2d_020
+            %                                                            ^  'fq' 'fp' 'fn' 'fqfp' 'fqfn'
+            %                                                               'betted' 'motioncorrected' 'meanvol'
+            %                                                               'fqfilename' requires complete path to be specified 
+            %                                                               'average'    requires averaging type
+            %                                                               'blur'       requires blur-label
+            %                                                               'block'      requires block-label
+            %                                                       '                            ^ 'fp', 'betted', ...
+            
+            import mlfourd.*;
+            fname = imcast(fname, 'char');
+            sname = struct('path', '', 'stem', '', 'ext', '');
+            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.AbstractImage.FILETYPE_EXT);
+            varargin = cellfun(@ensureChar, varargin, 'UniformOutput', false);
+            for k = 1:length(varargin) 
+                sname = buildFilename(sname, varargin{k});
+            end
+            fname = fullfile(sname.path, [sname.stem sname.ext]);
+            
+            function sn = buildFilename(sn, arg)
+                import mlfourd.* mlfsl.*;
+                try
+                    switch (lower(arg))
+                        case {'fq' 'fullqual' 'fullyqualified'}
+                            sn      = makeFullyQualified(sn,k);
+                        case {'fqfileprefix' 'fqfp'}
+                            sn      = makeFullyQualified(sn,k);
+                            sn.ext  = '';
+                        case {'fqfilename' 'fqfn'}
+                            sn      = makeFullyQualified(sn,k);
+                            sn.ext  = AbstractImage.FILETYPE_EXT;
+                        case {'fp' 'fileprefix' 'fileprefixPattern'} 
+                            sn.path = '';
+                            sn.ext  = '';
+                        case {'fn' 'filename'}                        
+                            sn.path = '';
+                        case {'bet' 'betted' 'brain' '_brain'}
+                            sn.stem = fileprefix(BetBuilder.bettedFilename(sn.stem));
+                        case {'motioncorrect' 'motioncorrected' 'mcf' '_mcf'} 
+                            sn.stem = [sn.stem FlirtBuilder.MCF_SUFFIX];
+                        case {'meanvol' '_meanvol'} 
+                            sn.stem = [sn.stem FlirtBuilder.MEANVOL_SUFFIX];
+                        case {'block'   'blocked'}
+                            sn.stem = [sn.stem '_' varargin{k+1}];
+                        case {'blur'    'blurred'}
+                            sn.stem = [sn.stem '_' varargin{k+1}];
+                        case {'average' 'averaged' 'aver'}
+                            sn.stem = [sn.stem '_' varargin{k+1}];
+                        case {'*'}
+                            sn.stem = [sn.stem '*'];
+                        otherwise
+                    end
+                catch ME
+                    handexcept(ME);
+                end
+            end
+            function sname = makeFullyQualified(sname, kidx)
+                if (exist('kidx','var') && ...
+                        length(varargin) > kidx && ...
+                            ischar(varargin{kidx+1}))
+                    sname.path = varargin{kidx+1};
+                end
+            end % inner function
+        end % static formFilename 
+        function prts  = splitFilename(name, varargin)
+            %% SPLITFILENAME retuns an array of the parts of a filename separated by sep
+            %  Usage:   prts = obj.splitFilename(name[, sep]);
+            %                                           ^ default '_on_'; try '_to_'
+            %           ^ cell-array of strings
+            
+            p = inputParser;
+            addRequired(p, 'name', @ischar);
+            addOptional(p, 'sep', mlfsl.FlirtBuilder.FLIRT_TOKEN, @ischar);
+            parse(p, name, varargin{:});
+            
+            [~,fp] = filepartsx(p.Results.name, mlfourd.AbstractImage.FILETYPE_EXT);
+            if (isempty(fp))
+                prts = {};  return; end
+            sepsFound = strfind(fp, p.Results.sep);
+            if (isempty(sepsFound))
+                prts = {fp}; return; end
+            prts = cell(1, length(sepsFound) + 1);
+            prts = splitBySep(prts, p.Results.sep);
+            prts = splitBySpace(prts);
+            
+            function prts = splitBySep(prts, sep)
+                lastIndex = 1;
+                for d = 1:length(sepsFound)
+                    prts{d} = fp(lastIndex:sepsFound(d)-1); 
+                    lastIndex = sepsFound(d) + length(sep);
+                end
+                prts{end} = fp(lastIndex:end);
+            end
+            
+        end % static splitFilename   
+        
+        %% calls to FilenameFilters, ImageFilters
+        
+        function obj   = brightest(obj)
+            obj = mlfourd.FilenameFilters.brightest(obj);
+        end
+        function fn    = ensureFilenameSuffix(fn0)
+            if (lstrfind(fn0, mlfourd.AbstractImage.FILETYPE_EXT))
+                fn = fn0;
+            else
+                fn = '';
+            end
+        end
+        function fns   = ensureFilenameSuffixes(fns0)
+            fns  = {}; g = 1;
+            fns0 = ensureCell(fns0);
+            for f = 1:length(fns0)
+                if (lstrfind(fns0{f}, mlfourd.AbstractImage.FILETYPE_EXT))
+                    fns{g} = fns0{f}; %#ok<AGROW>
+                    g = g + 1;
+                end
+            end
+        end
+        function obj   = imageObject(varargin)
+            %% IMAGEOBJECT returns an object with the typeclass of the last varargin;
+            %  char filenames will be returned as fileprefixes
+
+            if (1 == length(varargin))
+                obj = fileprefix(imcast(varargin{1}, 'char'));
+                return
+            end
+            namstr  = mlfourd.ImagingParser.coregNameStruct(varargin{:});
+            obj     = fullfilename(namstr.path, [namstr.pre mlfsl.FlirtBuilder.FLIRT_TOKEN namstr.post]);
+            lastArg = varargin{length(varargin)};
+            obj     = imcast(obj, class(lastArg));
+        end
+        function obj   = isMcf(obj)
+            obj = mlfourd.FilenameFilters.isMcf(obj);
+        end
+        function obj   = isMr(obj)
+            obj = mlfourd.FilenameFilters.isMr(obj);
+        end
+        function obj   = isPet(obj)
+            obj = mlfourd.FilenameFilters.isPet(obj);
+        end
+        function obj   = leastEntropy(obj)
+            obj = mlfourd.FilenameFilters.leastEntropy(obj);
+        end
+        function obj   = longestDuration(obj)
+            obj = mlfourd.FilenameFilters.longestDuration(obj);
+        end
+        function obj   = lowestSeriesNumber(obj)
+            obj = mlfourd.FilenameFilters.lowestSeriesNumber(obj);
+        end
+        function obj   = maximum(obj)
+            obj = mlfourd.FilenameFilters.maximum(obj);
+        end
+        function obj   = meanvol(obj)
+            obj = mlfourd.FilenameFilters.meanvol(obj);
+        end
+        function obj   = minimum(obj)
+            obj = mlfourd.FilenameFilters.minimum(obj);
+        end
+        function obj   = mostEntropy(obj)
+            obj = mlfourd.FilenameFilters.mostEntropy(obj);
+        end
+        function obj   = mostPixels(obj)
+            obj = mlfourd.ImageFilters.mostPixels(obj);
+        end
+        function fqfn  = nlxfmName(varargin)
+            if (1 == length(varargin))
+                fqfn = filename( ...
+                       fileprefix(varargin{1}), '.mat');
+                return
+            end
+            namstr = mlfourd.ImagingParser.coregNameStruct(varargin{:});
+            fqfn = fullfile(namstr.path, [namstr.pre mlfsl.FlirtBuilder.FLIRT_TOKEN namstr.post]);
+        end
+        function obj   = notIsMcf(obj)
+            obj = mlfourd.FilenameFilters.notIsMcf(obj);
+        end
+        function obj   = notIsMr(obj)
+            obj = mlfourd.FilenameFilters.notIsMr(obj);
+        end
+        function obj   = notIsPet(obj)
+            obj = mlfourd.FilenameFilters.notIsPet(obj);
+        end
+        function obj   = smallestVoxels(obj)
+            obj = mlfourd.FilenameFilters.smallestVoxels(obj);
+        end
+        function obj   = timeDependent(obj)
+            obj = mlfourd.ImageFilters.timeDependent(obj);
+        end
+        function fqfn  = xfmName(varargin)
+            fqfn = filename( ...
+                   mlfourd.ImagingParser.nlxfmName(varargin{:}), '.mat'); 
+        end
+    end
+    
+    methods %% SET/GET
+        function this = set.orderedRules(this, or)
+            %%  SET.ORDEREDRULES removes all prior rules before setting or rules
+            %   Usage:   this.orderedRules = {param1 value1 param2 value2 ...};
+            
+            this.orderedRules_ = or;
+        end
+        function or = get.orderedRules(this)
+            or = this.orderedRules_;
+            assert(~isemptyStruct(or));
+        end
+        function this = set.parser(this, p)
+            assert(isa(p, 'inputParser'));
+            this.parser_ = p;
+        end
+        function p = get.parser(this)
+            p = this.parser_;
+        end
+        function this = set.returnTypeclass(this, tc)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, this.returnTypeclass_));
+            this.returnTypeclass_ = tc;
+        end
+        function rtc = get.returnTypeclass(this)
+            if (isempty(this.returnTypeclass_))
+                this.returnTypeclass_ = 'fqfilename'; end
+            rtc = this.returnTypeclass_;
+        end
+        function this = set.fslPath(this, pth)
+            assert(lexist(pth, 'dir'));
+            this.fslPath = pth;
+        end
+        function pth  = get.fslPath(this)
+            if (lexist(this.fslPath, 'dir'))
+                pth = this.fslPath; return; end
+            pth = mlfourd.ImagingParser.guessFslpath;
+        end        
+        function this = set.imageObjType(this, typ)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, typ)); 
+            this.imageObjType_ = typ;
+        end
+        function typ  = get.imageObjType(this)
+            assert(lstrfind(mlfourd.AbstractImage.SUPPORTED_IMAGE_TYPES, this.imageObjType_)); % paranoia
+            typ = this.imageObjType_;
+        end
+    end
+    
+	methods 
+        function adc = choose_adc(this, varargin)
+            try 
+                adc = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'adc_*', varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function asl = choose_asl(this, varargin)
+            try 
+                asl = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'asl_*', varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function dwi = choose_dwi(this, varargin)
+            try 
+                dwi = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'dwi_*', varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function t1 = choose_t1(this, varargin)
+            try
+                t1 = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 't1_*', 'smallestVoxels', true, 'mostEntropy', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function t2 = choose_t2(this, varargin)
+            try
+                t2 = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 't2_*', 'mostPixels', true, 'brightest', false, 'lowestSeriesNumber', false, ...
+                    'mostEntropy', false, 'leastEntropy', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function flair = choose_flair(this, varargin)
+            try
+                flair = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'ir_*', varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function flair_abs = choose_flair_abs(this, varargin)
+            try
+                flair_abs = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'ir_*_abs*', varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function gre = choose_gre(this, varargin)
+            try
+                gre = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'gre_*', 'leastEntropy', true, 'timeDependent', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function tof = choose_tof(this, varargin)
+            try
+                tof = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'tof_*', 'brightest', false, 'mostPixels', true, 'mostEntropy', false, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end 
+        function ep2d = choose_ep2d(this, varargin)
+            try
+                ep2d = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'ep2d_*_mcf*', 'mostPixels', true, 'timeDependent', true, 'isMcf', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function ep2d = choose_ep2dMeanvol(this, varargin)
+            try
+                ep2d = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'ep2d_*_meanvol*', 'mostPixels', true, 'timeDependent', false, 'meanvol', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function h15o = choose_h15o(this, varargin)
+            try 
+                p = 0;
+                h15o = '';
+                patts = {'cho*' 'pho*' 'ho*'};
+                while (isempty(h15o))
+                    p = p + 1;
+                    h15o = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', patts{p}, 'modality', 'pet', 'timeDependent', true, varargin{:}));
+                end
+            catch ME
+                handwarning(ME);
+            end
+        end        
+        function o15o = choose_o15o(this, varargin)
+            try
+                p = 0;
+                o15o = '';
+                patts = {'coo*' 'poo*' 'oo*'};
+                while (isempty(o15o))
+                    p = p + 1;
+                    o15o = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', patts{p}, 'modality', 'pet', 'timeDependent', true, varargin{:}));
+                end
+            catch ME
+                handwarning(ME);
+            end
+        end  
+        function h15o = choose_h15oMeanvol(this, varargin)
+            try
+                p = 0;
+                h15o = '';
+                patts = {'cho_*' 'pho_*' 'ho_*'};
+                while (isempty(h15o))
+                    p = p + 1;
+                    h15o = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', patts{p}, 'modality', 'pet', 'timeDependent', false, varargin{:}));
+                end
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function o15o = choose_o15oMeanvol(this, varargin)
+            try
+                p = 0;
+                o15o = '';
+                patts = {'coo_*' 'poo_*' 'oo_*'};
+                while (isempty(o15o))
+                    p = p + 1;
+                    o15o = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', patts{p}, 'modality', 'pet', 'timeDependent', false, varargin{:}));
+                end
+            catch ME
+                handwarning(ME);
+            end
+        end
+        function c15o = choose_c15o(this, varargin)
+            try
+                c15o = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'poc*', 'modality', 'pet', 'brightest', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end 
+        function tr = choose_tr(this, varargin)
+            try
+                tr = this.createReturnType( ...
+                    this.inputParser('path', this.fslPath, 'fileprefixPattern', 'ptr*', 'leastEntropy', true, 'modality', 'pet', 'brightest', true, varargin{:}));
+            catch ME
+                handwarning(ME);
+            end
+        end 
+        
+        
+        function  p   = inputParser(this, varargin)
+            import mlfourd.*;
+            p = inputParser;
+            addParamValue(p, 'returnType', 'fileprefix', @ImagingParser.validReturnType);
+            addParamValue(p, 'fileprefixPattern', '', @ischar);
+            addParamValue(p, 'path', this.fslPath, @ImagingParser.validPath); % defers to any path in fileprefixPattern
+            addParamValue(p, 'ensureExists', false);
+            addParamValue(p, 'fullyQualified', false);
+            addParamValue(p, 'meanvol', false);
+            addParamValue(p, 'averaged', '', @ImagingParser.validAveraging);            
+            addParamValue(p, 'blocked', 1, @isnumeric);
+            addParamValue(p, 'blurred', 0, @isnumeric);            
+            addParamValue(p, 'modality', 'mr', @ImagingParser.validModality);
+            addParamValue(p, 'brightest', false);
+            addParamValue(p, 'lowestSeriesNumber', true);
+            addParamValue(p, 'mostEntropy', true);
+            addParamValue(p, 'leastEntropy', false);
+            addParamValue(p, 'mostPixels', true);
+            addParamValue(p, 'smallestVoxels', true);
+            addParamValue(p, 'longestDuration', false); 
+            addParamValue(p, 'timeDependent', false); 
+            addParamValue(p, 'isMcf', false);
+            addParamValue(p, 'isFlirted', '', @ischar);
+            addParamValue(p, 'isBetted', false);
+            parse(p, varargin{:});
+        end
+        
+        
+        
+        
+        
+ 		function this = ImagingChoosers(fslpth) 
+ 			%% ImagingChoosers 
+ 			%  Usage:  obj = ImagingChoosers(fsl_path) 
+            this.fslPath = fslpth;
+ 		end %  ctor 
+    end 
+
+    %% PRIVATE
+    
+    properties (Access = 'private')
+        fslPath_
+        imageObjType_ = 'fileprefix';
+        orderedRules_
+        parser_
+        returnTypeclass_ 
+    end
+    
+    methods (Static, Access = 'private') 
+        function filtList = globParsed(p)
+            filtList = {};
+            if (p.Results.isBetted)
+                filtList = [filtList 'isBetted']; end
+            if (~isempty(p.Results.isFlirted))
+                filtList = [filtList 'isFlirted']; end
+            if (p.Results.isMcf)
+                filtList = [filtList 'isMcf']; end
+            if (p.Results.timeDependent)
+                filtList = [filtList 'timeDependent']; end
+            if (p.Results.longestDuration)
+                filtList = [filtList 'longestDuration']; end
+            if (p.Results.brightest)
+                filtList = [filtList 'brightest']; end
+            if (p.Results.smallestVoxels)
+                filtList = [filtList 'smallestVoxels']; end
+            if (p.Results.meanvol)
+                filtList = [filtList 'meanvol']; end
+            if (p.Results.mostPixels)
+                filtList = [filtList 'mostPixels']; end
+            if (p.Results.mostEntropy)
+                filtList = [filtList 'mostEntropy']; end
+            if (p.Results.leastEntropy)
+                filtList = [filtList 'leastEntropy']; end
+            if (p.Results.lowestSeriesNumber)
+                filtList = [filtList 'lowestSeriesNumber']; end
+        end
+    end
+    
+    methods (Access = 'private')
+        function this = collectCriteria(this, varargin)
+            import mlfourd.*;
+            this.orderedRules = varargin{:};
+            p = inputParser;
+            addParamValue(p, 'returnType', 'fileprefix', @ImagingParser.validReturnType);
+            addParamValue(p, 'fileprefixPattern', '', @ischar);
+            addParamValue(p, 'path', this.fslPath, @ImagingParser.validPath); % defers to any path in fileprefixPattern
+            addParamValue(p, 'ensureExists', false);
+            addParamValue(p, 'fullyQualified', false);
+            addParamValue(p, 'meanvol', false);
+            addParamValue(p, 'averaged', '', @ImagingParser.validAveraging);            
+            addParamValue(p, 'blocked', 1, @isnumeric);
+            addParamValue(p, 'blurred', 0, @isnumeric);            
+            addParamValue(p, 'modality', 'mr', @ImagingParser.validModality);
+            addParamValue(p, 'brightest', false);
+            addParamValue(p, 'lowestSeriesNumber', true);
+            addParamValue(p, 'mostEntropy', true);
+            addParamValue(p, 'leastEntropy', false);
+            addParamValue(p, 'mostPixels', true);
+            addParamValue(p, 'smallestVoxels', true);
+            addParamValue(p, 'longestDuration', false); 
+            addParamValue(p, 'timeDependent', false); 
+            addParamValue(p, 'isMcf', false);
+            addParamValue(p, 'isFlirted', '', @ischar);
+            addParamValue(p, 'isBetted', false);
+            parse(p, varargin{:});
+            this.parser = p;
+        end  
+        function obj      = applyImageFilters(obj, varargin)
+            %% APPLYIMAGEFILTERS
+            %  Usage:  obj = ImagingParser.applyImageFilters(obj, constraint[, constraint2, ...])
+            %          ^                                     ^ ImagingComponent object
+            %                                                     ^ string, name of method from ImageFilters
+            
+            import mlfourd.*;            
+            if (isempty(obj) || 1 == length(obj)); return; end
+            if (isa(obj, 'mlfourd.NIfTI')) % KLUDGE
+                obj = ImagingParser.applyNiftiFilters(obj, varargin{:});
+                return
+            end
+            for v = 1:length(varargin)
+                try
+                    obj = ImageFilters.(varargin{v})(obj);
+                catch ME
+                    handexcept(ME);
+                end
+            end
+        end
+        function obj      = applyNiftiFilters(obj, varargin)
+            import mlfourd.*;            
+            if (isempty(obj) || 1 == length(obj)); return; end
+            imser = ImagingSeries.createFromObjects(obj);
+            imser = ImagingParser.applyImageFilters(imser, varargin{:});
+            obj   = imser.cachedNext;
+        end
+        function fns      = applyFilenameFilters(fns, varargin)
+            %% APPLYFILENAMEFILTERS
+            %  Usage:  obj = ImagingParser.applyFilenameFilters(obj, constraint[, constraint2, ...])
+            %          ^                                        ^ ImagingComponent object
+            %                                                        ^ string, name of method from ImageFilters
+            
+            import mlfourd.*;
+            if (isempty(fns) || 1 == length(fns)); return; end
+            assert(iscell(fns) || ischar(fns));
+            for v = 1:length(varargin)
+                try
+                    fns = FilenameFilters.(varargin{v})(fns);
+                catch ME
+                    handwarning(ME);
+                end
+            end
+        end
+        function obj      = applyCriteria(obj)
+            import mlfourd.*;          
+            if (~isa(obj, 'mlfourd.ImagingChoosers')); return; end
+            filtList = ImagingParser.globParsed(obj.parser);
+            if (~isempty(filtList))
+                if     (ischar(obj))
+                    obj = ImagingParser.applyFilenameFilters(obj, filtList{:});
+                elseif (iscell(obj) && ischar(obj{1}))
+                    obj = ImagingParser.applyFilenameFilters(obj, filtList{:});
+                elseif (isa(obj, 'mlfourd.ImagingComponent'))
+                    obj = ImagingParser.applyImageFilters(obj, filtList{:});
+                else
+                    error('mlfourd:unsupportedClass', 'ImagingParser.applyCriteria.obj has unsupported type->%s', ...
+                           class(obj));
+                end
+            end
+        end
+    end
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
+end
+
+
+##### SOURCE END #####
+--></body></html>
