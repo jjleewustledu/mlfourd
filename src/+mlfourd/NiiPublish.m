@@ -452,7 +452,7 @@ classdef NiiPublish
         end
         
         function fn = fqfn(pnum, tag)
-            pnumpath = [db('basepath', pnum) studyId(pnum) '/' pnum '/'];
+            pnumpath = [db('basepath', pnum) pid2np(pnum) '/' pnum '/'];
             switch (tag(1:2))
                 case 'fg'
                     fn = [pnumpath 'ROIs/Xr3d/fg.4dfp'];
@@ -544,7 +544,7 @@ classdef NiiPublish
         end % function getNiis
         
         function pth = getPidPath(pnum)
-            sid = studyId(pnum);
+            sid = pid2np(pnum);
             pth = [db('basepath', sid) sid '/' pnum '/'];
         end
         

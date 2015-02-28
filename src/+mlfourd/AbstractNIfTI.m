@@ -312,6 +312,20 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
             
             h    = montage(flip4d(this.mlimage, 'xt'), varargin{:});
         end
+        function h    = montage_coronal(this, varargin)
+            this.img = affine3d(this.img, [1 0 0 0; ...
+                                           0 0 this.mmppix(3)/this.mmppix(2) 0; ...
+                                           0 this.mmppix(2)/this.mmppix(3) 0 0; ...
+                                           0 0 0 1]);
+            h = this.montage(varargin{:});
+        end
+        function h    = montage_sagittal(this, varargin)
+            this.img = affine3d(this.img, [0 -this.mmppix(2)/this.mmppix(1) 0 0; ...
+                                           0  0 this.mmppix(3)/this.mmppix(2) 0; ...
+                                          -this.mmppix(1)/this.mmppix(3)  0 0 0; ...
+                                           0 0 0 1]);
+            h = this.montage(varargin{:});
+        end
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
         end
@@ -392,13 +406,12 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
                 sz = size(this.img);
             end
         end
-        function M    = sum(this)
+        function this    = sum(this, varargin)
             %% SUM overloads sum for NIfTI
             
-            Mimg  = sum(this.img);
-            M     = this.makeSimilar(Mimg, ...
-                     '', ['(sum)' this.fileprefix]);
-            M.descrip =  [ 'sum(' M.descrip ')'];
+            this.img  = sum(this.img, varargin{:});
+            this.fileprefix = ['(sum)' this.fileprefix];
+            this.descrip    = [ 'sum(' this.descrip ')'];
         end   
         function z    = zeros(this, varargin)
             p = inputParser;

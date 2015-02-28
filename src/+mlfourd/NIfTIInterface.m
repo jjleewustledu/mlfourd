@@ -35,6 +35,8 @@ classdef NIfTIInterface < mlfourd.VoxelInterface & mlio.IOInterface & mlanalysis
         imtool(this, slice, varargin)
         mlimage(this)
         montage(this, varargin)
+        montage_coronal(this, varargin)
+        montage_coroanl(this, varargin)
         matrixsize(this)
         fov(this)
         

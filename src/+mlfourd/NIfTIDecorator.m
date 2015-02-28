@@ -244,6 +244,12 @@ classdef NIfTIDecorator < mlfourd.NIfTIInterface
         function h    = montage(this, varargin)
             h = this.component_.montage(varargin{:});
         end
+        function h    = montage_coronal(this, varargin)
+            h = this.component_.montage_coronal(varargin{:});
+        end
+        function h    = montage_sagittal(this, varargin)
+            h = this.component_.montage_sagittal(varargin{:});
+        end
         function x    = matrixsize(this)
             x = this.component_.matrixsize;
         end
