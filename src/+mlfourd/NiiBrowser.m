@@ -396,20 +396,26 @@ classdef NiiBrowser < mlfourd.NIfTI
         
         function this = blurredBrowser(this, blr, msk)
             
-            %% BLURBROWSER blurs voxels with 3D kernels and returns the NiiBrowser with  
+            %% BLURREDBROWSER blurs voxels with 3D kernels and returns the NiiBrowser with  
             %              changed state. 
             %  Usage:  nb = mlfourd.NiiBrowser(...);
             %          nb = nb.blurredBrowser([blur, msk])
             %          blr:  3-vector, FWHH in mm
             %          msk:  NIfTI, numeric or logical mask applied after blurring
             %          nb:   NiiBrowser updated with blurred voxels
-            %
+            
+            if (4 == length(this.size))
+                this = blurredBrowser4d(this, blr, msk);
+                return
+            end
+            
             import mlfourd.*;
             switch (nargin)
                 case 1
                     blr = mlpet.PETBuilder.petPointSpread;
                     msk = 1;
                 case 2
+                    assert(all(size(blr) == size(this.mmppix))); 
                     msk = 1;   
                 case 3
                     assert(all(size(blr) == size(this.mmppix))); 
@@ -425,8 +431,42 @@ classdef NiiBrowser < mlfourd.NIfTI
             this.blurCount = this.blurCount + 1;
             this.fileprefix = this.blurredFileprefix;
             this.append_descrip(['blurred to ' num2str(blr)]);
-        end
-        
+        end        
+        function this = blurredBrowser4d(this, blr, msk)
+            
+            %% BLURREDBROWSER blurs voxels with 3D kernels and returns the NiiBrowser with  
+            %              changed state. 
+            %  Usage:  nb = mlfourd.NiiBrowser(...);
+            %          nb = nb.blurredBrowser([blur, msk])
+            %          blr:  3-vector, FWHH in mm
+            %          msk:  NIfTI, numeric or logical mask applied after blurring
+            %          nb:   NiiBrowser updated with blurred voxels
+            
+            import mlfourd.*;
+            switch (nargin)
+                case 1
+                    blr = mlpet.PETBuilder.petPointSpread;
+                    msk = 1;
+                case 2
+                    assert(all(size(blr) == size(this.mmppix(1:3)))); 
+                    msk = 1;   
+                case 3
+                    assert(all(size(blr) == size(this.mmppix(1:3)))); 
+                    msk = NIfTI.ensureDble(NIfTI_mask(msk));        
+                otherwise
+                    error('mlfourd:NotImplemented', ...
+                         ['NiiBrowser.blurredBrowser received ' num2str(nargin) ' args']);
+            end
+            this.blur      = blr;
+            if (sum(blr) < eps); return; end            
+            this           = this.forceDouble;
+            for t = 1:this.size(4)
+                this.img(:,:,:,t) = double(msk) .* this.gaussFullwidth(this.img(:,:,:,t), blr, 'mm', this.mmppix(1:3));
+            end
+            this.blurCount = this.blurCount + 1;
+            this.fileprefix = this.blurredFileprefix;
+            this.append_descrip(['blurred to ' num2str(blr)]);
+        end        
         function fp = blurredFileprefix(this)
             twoDigits = cell(1,3);
             for d = 1:length(twoDigits)
@@ -830,11 +870,12 @@ classdef NiiBrowser < mlfourd.NIfTI
         end % static makeSampleVoxels   
     end % methods (Static)
     
+    %% PRIVATE
+    
     methods (Static, Access = 'private')
         function y = gaussian(X, mu, sigma)
-            %GAUSSIAN
-            %
-            % Usage:    y = gaussian(X, mu, sigma)
+            %% GAUSSIAN
+            %  Usage:   y = gaussian(X, mu, sigma)
             %
             %           X     -> multiplet coord as row,
             %                    e.g., [3.1 4 6.2], (0:0.01:1)'
@@ -845,38 +886,18 @@ classdef NiiBrowser < mlfourd.NIfTI
             %                    e.g., [std_x std_y std_z]
             %           y     -> col of same height as X
             
-            USE_NORMPDF = 1; % optimized
-            
-            if [1 2]   ~= size(size(X)), error(help('gaussian')); end
+            if [1 2]   ~= size(size(X)), error(help('gaussian')); end %#ok<*BDSCA>
             npts = size(X,1);
             dim  = size(X,2);
             if [1 dim] ~= size(mu),      error(help('gaussian')); end
             if [1 dim] ~= size(sigma),   error(help('gaussian')); end
             
-            if (USE_NORMPDF)
-                Ones = ones(npts, 1);
-                y    = Ones;
-                for d = 1:dim
-                    if (sigma(d) > eps)
-                        y = y .* normpdf(X(:,d), mu(d), sigma(d)); end
-                end
-            else
-                % pedagogical & cross-checking code
-                % row * row' -> inner product
-                % col * row  -> outer product
-                Arg2 = ones(npts,1);
-                for i = 1:npts
-                    Arg2(i) = ((X(i,:) - mu)./(sqrt(2)*sigma)) * ((X(i,:) - mu)./(sqrt(2)*sigma))';
-                end
-                prodSigmas = 1;
-                for p = 1:dim
-                    if (sigma(p) > eps)
-                        prodSigmas = prodSigmas * sigma(p); end
-                end
-                y = exp(-Arg2)/(sqrt(2*pi)^dim*prodSigmas);
-            end
-            
-            if [npts 1] ~= size(y), error(['oops...  size(y) was ' num2str(size(y))]); end
+            y    = ones(npts, 1);
+            for d = 1:dim
+                if (sigma(d) > eps)
+                    y = y .* normpdf(X(:,d), mu(d), sigma(d)); end
+            end            
+            if [npts 1] ~= size(y), error('mlfourd:arraySizeError', ['oops...  size(y) was ' num2str(size(y))]); end
             
         end
     end

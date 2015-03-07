@@ -36,7 +36,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     fheight = 0.5;
                 case 2 
                 otherwise
-                    error('mlfourd:InputParamsErr', ['BlurredNIfTI.sigma2width.nargin->' num2str(nargin)]);
+                    error('mlfourd:InputParamsErr', help('BlurredNIfTI.sigma2width'));
             end
             width = 2*sqrt(2*log(1/fheight)*sigma.^2);
         end 
@@ -60,7 +60,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     fheight = 0.5;
                 case 2
                 otherwise
-                    error('mlfourd:InputParamsErr', ['BlurredNIfTI.width2sigma.nargin->' num2str(nargin)]);
+                    error('mlfourd:InputParamsErr', help('BlurredNIfTI.width2sigma'));
             end
             sigma = abs(sqrt((width/2).^2/(2*log(1/fheight))));
         end 

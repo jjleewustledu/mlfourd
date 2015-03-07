@@ -34,10 +34,10 @@ classdef NIfTI_mask < mlfourd.NIfTI
                             switch (varargin{v})
                                 
                                 case 'pthreshold'
-                                    this.pthreshold = varargin{v+1}; %#ok<PFTUS,PFTIN>
+                                    this.pthreshold = varargin{v+1}; 
                                     this            = this.threshp(this.pthreshold);
                                 case 'threshold'
-                                    this.threshold  = varargin{v+1}; %#ok<PFTUS,PFTIN>
+                                    this.threshold  = varargin{v+1}; 
                                     this            = this.thresh(this.threshold);
                                 case 'binary'
                                     this         = this.binarize;
@@ -46,7 +46,7 @@ classdef NIfTI_mask < mlfourd.NIfTI
                                 case 'block'
                                     this         = NiiBrowser.makeBlocked(this, varargin{v+1});
                                 case 'protect'
-                                    this.protect = varargin{v+1}; %#ok<PFBNS>
+                                    this.protect = varargin{v+1}; 
                                 case 'rescaletounity'
                                     this         = this.rescaleToUnity;
                                 case 'oneminus'

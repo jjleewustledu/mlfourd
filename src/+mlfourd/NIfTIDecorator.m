@@ -1,4 +1,4 @@
-classdef NIfTIDecorator < mlfourd.NIfTIInterface
+classdef (Abstract) NIfTIDecorator < mlfourd.NIfTIInterface
 	%% NIFTIDECORATOR maintains a reference to a component object (NIfTIInterface & IOInterface),
     %  forwarding requests to the component object.   
     %  Maintains an interface consistent with the component's interface.

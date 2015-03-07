@@ -406,7 +406,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
                 sz = size(this.img);
             end
         end
-        function this    = sum(this, varargin)
+        function this = sum(this, varargin)
             %% SUM overloads sum for NIfTI
             
             this.img  = sum(this.img, varargin{:});
