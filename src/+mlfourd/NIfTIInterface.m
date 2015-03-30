@@ -27,7 +27,7 @@ classdef NIfTIInterface < mlfourd.VoxelInterface & mlio.IOInterface & mlanalysis
     end 
 
 	methods (Abstract) 
-        imclose(this, varargin)
+        imclose(this, varargin) % Consider moving to a decorator pattern
         imdilate(this, varargin)
         imerode(this, varargin)
         imopen(this, varargin)
