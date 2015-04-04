@@ -1,5 +1,5 @@
-classdef BlurredNIfTI < mlfourd.NIfTIDecorator
-	%% BLURREDNIFTI   
+classdef BlurredNIfTId < mlfourd.NIfTIdecorator
+	%% BlurredNIfTId   
 
 	%  $Revision$ 
  	%  was created $Date$ 
@@ -15,13 +15,14 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
     end
     
     methods (Static)
-        function bn    = factory(varargin)
-            %% FACTORY directs all arguments to NIfTI
-            %  blurred_nifti = BlurredNIfTI.factory(args_for_NIfTI);
+        function this = load(varargin)
+            %% LOAD 
+            %  Usage:  blurred_nifti = BlurredNIfTId.load(filename);
             
-            bn = mlfourd.BlurredNIfTI( ...
-                  mlfourd.NIfTI(varargin{:}));
+            import mlfourd.*;
+            this = BlurredNIfTId(NIfTId.load(varargin{:}));
         end
+        
         function width = sigma2width(sigma, fheight)
             %% SIGMA2WIDTH returns the width at fheight corresponding to sigma, metppix & metric units.
             %  Usage: width = sigma2width(sigma[, fheight])
@@ -36,7 +37,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     fheight = 0.5;
                 case 2 
                 otherwise
-                    error('mlfourd:InputParamsErr', help('BlurredNIfTI.sigma2width'));
+                    error('mlfourd:InputParamsErr', help('BlurredNIfTId.sigma2width'));
             end
             width = 2*sqrt(2*log(1/fheight)*sigma.^2);
         end 
@@ -60,29 +61,27 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     fheight = 0.5;
                 case 2
                 otherwise
-                    error('mlfourd:InputParamsErr', help('BlurredNIfTI.width2sigma'));
+                    error('mlfourd:InputParamsErr', help('BlurredNIfTId.width2sigma'));
             end
             sigma = abs(sqrt((width/2).^2/(2*log(1/fheight))));
-        end 
+        end  
     end
     
-	methods         
- 		function this = BlurredNIfTI(varargin) 
- 			%% BLURREDNIFTI 
- 			%  Usage:  this = BlurredNIfTI([aNIfTI_to_blur]) 
+	methods 
+ 		function this = BlurredNIfTId(varargin)
+ 			%% BlurredNIfTId 
+ 			%  Usage:  this = BlurredNIfTId(NIfTId_object_to_blur) 
 
-            this = this@mlfourd.NIfTIDecorator(varargin{:});
-        end  
-        function obj  = clone(this)
-            obj = mlfourd.BlurredNIfTI(this);
-        end               
+            this = this@mlfourd.NIfTIdecorator(varargin{:});
+            this = this.append_descrip('decorated with BlurredNIfTId');
+        end             
         function this = blurred(this, blr, msk)
-            %% BLURRED blurs voxels with 3D kernels and returns the BlurredNIfTI with changed state. 
-            %  Usage:  bn = BlurredNIfTI([aNIfTI]);
+            %% BLURRED blurs voxels with 3D kernels and returns the BlurredNIfTId with changed state. 
+            %  Usage:  bn = BlurredNIfTId([NIfTId_object]);
             %          bn = bn.blurred([blur, mask])
             %          blur:  3-vector
-            %          mask:  NIfTI, numeric or logical mask applied after blurring
-            %          bn:    BlurredNIfTI updated with blurred voxels
+            %          mask:  NIfTId, numeric or logical mask applied after blurring
+            %          bn:    BlurredNIfTId updated with blurred voxels
             
             import mlfourd.*;
             switch (nargin)
@@ -93,10 +92,10 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     msk = 1;   
                 case 3
                     assert(all(size(blr) == size(this.mmppix))); 
-                    msk = NIfTI.ensureDble(NIfTI_mask(msk));        
+                    msk = NIfTId.ensureDble(MaskedNIfTId(msk));        
                 otherwise
                     error('mlfourd:NotImplemented', ...
-                         ['BlurredNIfTI.blurred received ' num2str(nargin) ' args']);
+                         ['BlurredNIfTId.blurred received ' num2str(nargin) ' args']);
             end
             this.blur       = blr;
             if (sum(blr) < eps); return; end    
@@ -104,10 +103,6 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
             this.blurCount  = this.blurCount + 1;
             this.fileprefix = this.blurredFileprefix;
             this.append_descrip(['blurred to ' num2str(blr)]);
-        end
-        function nii  = blurredNIfTI(this, varargin)
-            this = this.blurred(varargin{:});
-            nii  = this.component;
         end
         function fp   = blurredFileprefix(this)
             twoDigits = cell(1,3);
@@ -118,6 +113,12 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
             end
             fp = [this.fileprefix '_' twoDigits{1} twoDigits{2} twoDigits{3} 'fwhh'];
         end
+        
+        function obj  = clone(this)
+            obj           = mlfourd.BlurredNIfTId(this.component_.clone);
+            obj.blur      = this.blur;
+            obj.blurCount = this.blurCounts;
+        end
     end 
     
     %% PRIVATE    
@@ -126,7 +127,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
         function img   = gaussFullwidth(img, width, metric, metppix, height)
             %% GAUSSFULLWIDTH applies multi-dimensional, anisotropic, Gaussian filtering to 
             %                 numeric objects.
-            %  Usage: gimg = BlurredNIfTI.gaussFullwidth(img, width, metric, metppix, height)
+            %  Usage: gimg = BlurredNIfTId.gaussFullwidth(img, width, metric, metppix, height)
             %         img:       numeric object
             %         width:     row vector of full widths
             %         metric:    units of full width blur
@@ -136,7 +137,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
             %  Examples:
             %         gimg = this.gaussFullwidth(img, [fwhh_x fwhh_y])
             %         gimg = this.gaussFullwidth(img, fwhh_vec3, 'mm', mlpet.PETBuilder.petPointSpread, 0.1)                                                                   %
-            %  See also:  BlurredNIfTI.gaussSigma
+            %  See also:  BlurredNIfTId.gaussSigma
             
             import mlfourd.*;
             switch (nargin)
@@ -149,14 +150,14 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                 case 5
                 otherwise
                     error('mlfourd:NotImplementedErr', ...
-                         ['BlurredNIfTI.gaussFullwidth.nargin->' num2str(nargin)]);
+                         ['BlurredNIfTId.gaussFullwidth.nargin->' num2str(nargin)]);
             end
-            img = BlurredNIfTI.gaussSigma(img, BlurredNIfTI.width2sigma(width, height), metric, metppix);
+            img = BlurredNIfTId.gaussSigma(img, BlurredNIfTId.width2sigma(width, height), metric, metppix);
         end 
         function img   = gaussSigma(img, sigma, metric, metppix)
             %% GAUSSSIGMA applies multi-dimensional, anisotropic, Gaussian filtering to 
             %             numeric objects.
-            %  Usage: gimg = BlurredNIfTI.gaussSigma(img, width, metric, metppix)
+            %  Usage: gimg = BlurredNIfTId.gaussSigma(img, width, metric, metppix)
             %         img:       numeric object
             %         sigma:     row vector of std. deviations
             %         metric:    units of sigma
@@ -176,7 +177,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                 case 4
                 otherwise
                     error('mlfourd:NotImplementedErr', ...
-                         ['BlurredNIfTI.gaussSigma.nargin->' num2str(nargin)]);
+                         ['BlurredNIfTId.gaussSigma.nargin->' num2str(nargin)]);
             end
             switch (lower(metric)) 
                 case {'pixel', 'pixels', 'voxel', 'voxels'}
@@ -185,16 +186,16 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                 case  'cm'
                 otherwise
                     error('mlfourd:NotImplementedErr', ...
-                         ['BlurredNIfTI.gaussFullwidth.metric->' metric ' was unrecognizable;\n' ...
+                         ['BlurredNIfTId.gaussFullwidth.metric->' metric ' was unrecognizable;\n' ...
                           'try pixel(s), voxel(s), mm, cm']);
             end
             img     = double(img);
             imgRank = length(size(img));
             if (length(sigma) < imgRank)
-                sigma = BlurredNIfTI.embedVecInSitu(sigma, zeros(size(size(img))));
+                sigma = BlurredNIfTId.embedVecInSitu(sigma, zeros(size(size(img))));
             end
             if (length(metppix) < length(sigma))
-                metppix = BlurredNIfTI.stretchVec(metppix, length(sigma));
+                metppix = BlurredNIfTId.stretchVec(metppix, length(sigma));
             else
                 assert(length(metppix) == length(sigma));
             end
@@ -220,7 +221,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     error('mlfourd:ParameterOutOfBounds', ...
                          ['imgRank->' num2str(imgRank) ', but only imgRank <= 4 is supported']);
             end
-            h1  = reshape(BlurredNIfTI.gaussian(h0, zeros(1,imgRank), sigma), krnlLens);
+            h1  = reshape(BlurredNIfTId.gaussian(h0, zeros(1,imgRank), sigma), krnlLens);
             img = imfilter(img, h1);
             
             %% Private utility subfunctions
@@ -266,10 +267,10 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
         end 
         function sz    = embedVecInSitu(sz, fixedsz)
             %% EMBEDVECINSITU resizes sz to match rank of fixedsz
-            %  e.g.  >> sz = BlurredNIfTI.embedVecInSitu([2 2 30], [18 18 31 100])
+            %  e.g.  >> sz = BlurredNIfTId.embedVecInSitu([2 2 30], [18 18 31 100])
             %        sz = 
             %            2 2 30 100
-            %        >> sz = NIfTI.embedVecInSitu([18 18 31 100], [2 2 30])
+            %        >> sz = NIfTId.embedVecInSitu([18 18 31 100], [2 2 30])
             %        sz = 
             %            18 18 31
             
@@ -297,7 +298,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
                     repeat = 1;
                 otherwise
                     error('mlfourd:InputParamsErr:InputParamsErr', ...
-                         ['BlurredNIfTI.stretchVec.nargin->' num2str(nargin)]);
+                         ['BlurredNIfTId.stretchVec.nargin->' num2str(nargin)]);
             end
             assert(isnumeric(vin));
             assert(isnumeric(newlen));

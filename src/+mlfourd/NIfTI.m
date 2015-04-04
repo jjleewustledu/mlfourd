@@ -1,4 +1,4 @@
-classdef NIfTI < mlfourd.AbstractNIfTI & mlfourd.JimmyShenInterface
+classdef NIfTI < mlfourd.AbstractNIfTI
     %% NIFTI accepts Jimmy Shen's NIfTI-structs or image arrays.   Ctor w/o args is also allowed.
     %  A minimal NIfTI has hdr.dime.pixdim, hdr.hist.descrip, fileprefix & img.
     

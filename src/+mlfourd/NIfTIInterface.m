@@ -14,6 +14,13 @@ classdef NIfTIInterface < mlfourd.VoxelInterface & mlio.IOInterface & mlanalysis
         FILETYPE_EXT = '.nii.gz';
     end
     
+	properties (Abstract, SetAccess = 'protected')        
+        ext
+        filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr
+        untouch
+    end 
+    
 	properties (Abstract)   
         creationDate
         descrip
