@@ -1,4 +1,4 @@
-classdef Test_mlfourdd < matlab.unittest.TestCase
+classdef (Abstract) Test_mlfourdd < matlab.unittest.TestCase
     
     properties (Dependent)
         adc_fqfn
@@ -256,29 +256,20 @@ classdef Test_mlfourdd < matlab.unittest.TestCase
                                        fullfile(this.studyPath, 'mm01-020_p7377_2009feb5',  '') };
             end
         end
-        function fqff = fqfilenameInFsl(this, name)
-            if (iscell(name)) %% use only the first cell
-                fqff = this.fqfilenamesInFsl(name{1}); return; end
-            assert(ischar(name));
-            fqff = fullfilename(this.fslPath, name);
-        end
-        function fns  = fqfilenamesInFsl(this, files)
-            files = ensureCell(files);
-            fns   = cellfun(@this.fqfilenameInFsl, files, 'UniformOutput', false);
-        end
-        function setupMlfourd(this)
+    end
+    
+    methods (TestClassSetup)
+        function setupMlfourdd(this)
             this.pwd0_ = pwd;
             cd(this.sessionPaths_{this.preferredSession}); 
             this.cleanUpTestfile;
         end
-        function teardownMlfourd(this)
+    end
+    
+    methods (TestClassTeardown)
+        function teardownMlfourdd(this)
             this.cleanUpTestfile;
             cd(this.pwd0_);
-        end
-        function cleanUpTestfile(this)
-            if (lexist(this.test_fqfn, 'file'))
-                delete(this.test_fqfn);
-            end
         end
     end 
     
@@ -399,6 +390,24 @@ classdef Test_mlfourdd < matlab.unittest.TestCase
         sessionPath_ %% assign to override this.sessionPaths_{this.preferredSession}
         sessionPaths_
         testPath_
+    end
+    
+    methods (Access = 'private')   
+        function fqff = fqfilenameInFsl(this, name)
+            if (iscell(name)) %% use only the first cell
+                fqff = this.fqfilenamesInFsl(name{1}); return; end
+            assert(ischar(name));
+            fqff = fullfilename(this.fslPath, name);
+        end
+        function fns  = fqfilenamesInFsl(this, files)
+            files = ensureCell(files);
+            fns   = cellfun(@this.fqfilenameInFsl, files, 'UniformOutput', false);
+        end     
+        function cleanUpTestfile(this)
+            if (lexist(this.test_fqfn, 'file'))
+                delete(this.test_fqfn);
+            end
+        end
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

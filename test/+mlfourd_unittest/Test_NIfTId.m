@@ -48,7 +48,7 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
         end
     end
     
-	methods (Test)  
+	methods (Test)
         function test_load(this)
             import mlfourd.*;
             niigz = this.reducedImg(NIfTId.load('t1_default.nii.gz', 'descrip:  .nii.gz'));
@@ -158,8 +158,8 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
         function test_saveAs(this)
             import mlfourd.*;
             this.t1.saveas(this.test_saveas_fqfn);
-            t1savedas = NIfTId.load(this.test_saveas_fqfn);
-            this.assertTrue(isequal(this.t1.img, t1savedas.img));
+            savedas = NIfTId.load(this.test_saveas_fqfn);
+            this.assertTrue(isequal(this.t1.img, savedas.img));
         end
         
         function test_filepath(this)
@@ -185,8 +185,6 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
 
  	methods (TestClassSetup) 
  		function setupNIfTId(this)
-            this.setupMlfourd;  
-            this.pwd0_ = pwd;
             cd(this.fslPath);
  			this.testObj = mlfourd.NIfTId; 
  		end 
@@ -194,14 +192,12 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
 
  	methods (TestClassTeardown)
         function teardownNIfTId(this)
-            this.teardownMlfourd;
             if (lexist(this.test_saveas_fqfn, 'file'))
                 delete(this.test_saveas_fqfn); end
-            cd(this.pwd0_);
         end
     end 
     
-    methods        
+    methods
         function this = Test_NIfTId(varargin)
             this = this@mlfourd_unittest.Test_mlfourdd(varargin{:});
             this.preferredSession = 2;

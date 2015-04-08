@@ -11,7 +11,8 @@ classdef JimmyShenInterface
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$ 
  	 
-	properties (Abstract, SetAccess = 'protected')        
+	properties (Abstract)  
+        img      
         ext
         filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
         hdr

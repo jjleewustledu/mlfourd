@@ -25,9 +25,9 @@ classdef (Abstract) NIfTIdInterface
         orient
         seriesNumber
         
+        img
         bitpix
         datatype
-        img
         mmppix
         pixdim
     end 
@@ -45,6 +45,8 @@ classdef (Abstract) NIfTIdInterface
         
         forceDouble(this)
         forceSingle(this)
+        [tf,msg] = isequal(this, n)
+        [tf,msg] = isequaln(this, n)
         prepend_fileprefix(this, s)
         append_fileprefix(this, s)
         prepend_descrip(this, s)
@@ -54,6 +56,9 @@ classdef (Abstract) NIfTIdInterface
         makeSimilar(this)
         freeview(this)
         fslview(this)
+        imshow(this)
+        imtool(this)
+        mlimage(this)
     end 
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

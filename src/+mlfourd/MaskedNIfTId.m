@@ -1,195 +1,217 @@
-classdef NIfTI_mask < mlfourd.NIfTI
+classdef MaskedNIfTId < mlfourd.NIfTIdecorator
+	%% MASKEDNIFTID is a NIfTIdecorator that composes an internal NIfTIdInterface object
+    %  according to the decorator design pattern
     
-    properties 
-        pthreshold = 0.98;
-        threshold  = 0;
-        protect    = true;
-    end
-    
-    methods
-        
-        function this = NIfTI_mask(in, varargin)
+    methods (Static)        
+        function this = load(varargin)
+            %% LOAD 
+            %  Usage:  this = MaskedNIfTId.load(filename[, description])
             
-            %% NIFTI_MASK is a subclass of NIfTI with a variable cell-array of processing options
-            %  Usage:  nii = NIfTI_mask([in , option-name, option-value, ...])
-            %                           ^ ctor w/o args required by Matlab
-            %                            ^ numeric arrays, NIfTI struct, NIfTI object
-            %                                 ^ optional cell array containing 
-            %
-            %          processing options requiring argument:  'threshold', 'binary', 'blur', 'block', 'protect'
-            %          processing options with no arguments:   'rescaletounity', 'oneminus'
-            %          protect = true preserves the floating point precision & values of the object
-            %          ctor does not call NIfTI_mask.ensureMask to avoid endless recursion
-            import mlfourd.*; 
-            this = this@mlfourd.NIfTI(in);
-            if (~isa(in, 'mlfourd.NIfTI_mask'))
-                this.threshold = sqrt(eps('single'));
-            end
-            switch (nargin)
-                case 0
+            import mlfourd.*;            
+            this = MaskedNIfTId(NIfTId.load(varargin{:}));
+        end
+        function S    = sumall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
                 case 1
+                    S = sum(img);
+                case 2
+                    S = sum(sum(img));
+                case 3
+                    S = sum(sum(sum(img)));
+                case 4
+                    S = sum(sum(sum(sum(img))));
                 otherwise
-                    for v = 1:length(varargin) %#ok<FORFLG>
-                        if (ischar(varargin{v}))
-                            switch (varargin{v})
-                                
-                                case 'pthreshold'
-                                    this.pthreshold = varargin{v+1}; 
-                                    this            = this.threshp(this.pthreshold);
-                                case 'threshold'
-                                    this.threshold  = varargin{v+1}; 
-                                    this            = this.thresh(this.threshold);
-                                case 'binary'
-                                    this         = this.binarize;
-                                case 'blur'
-                                    this         = NiiBrowser.makeBlurred(this, varargin{v+1});
-                                case 'block'
-                                    this         = NiiBrowser.makeBlocked(this, varargin{v+1});
-                                case 'protect'
-                                    this.protect = varargin{v+1}; 
-                                case 'rescaletounity'
-                                    this         = this.rescaleToUnity;
-                                case 'oneminus'
-                                    this         = this.oneMinusMask;
-                            end
-                        end
-                    end
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.sumall does not support images of size %s', mat2str(size(img)));
             end
-        end % ctor
-        
-        function this = thresh(this, thresh)
-            
-            %% THRESH returns a binary mask after thresholding
-            %  Usage:  mn   = NIfTI_mask(...)
-            %          bmsk = nm.thresh(167) % returns img > threshold, as binary image
-            if (~exist('thresh', 'var'))
-                thresh = this.threshold; 
+        end
+        function M    = maxall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
+                case 1
+                    M = max(img);
+                case 2
+                    M = max(max(img));
+                case 3
+                    M = max(max(max(img)));
+                case 4
+                    M = max(max(max(max(img))));
+                otherwise
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.maxall does not support images of size %s', mat2str(size(img)));
             end
-            mx       = this.dipmax;
-            mn       = this.dipmin;
-            if (thresh < mn || thresh > mx); thresh = mn; end
-            this.img = this.img > thresh;
         end
-        
-        function this = pthresh(this, pthr)
-            
-            %% PTHR returns binary mask after applying a robust percent threshold
-            %  Usage:  mn   = NIfTI_mask(...)
-            %          bmsk = nm.pthr(67) % returns img > threshold, as binary image
-            if (pthr >= 1); pthr = pthr/100; end
-            this.img = this.img > norminv(pthr, this.dipmean, this.dipstd);
-        end
-        
-        function this = binarize(this)
-            
-            %% BINARIZE
-            this.img = this.img > sqrt(eps);
-        end
-        
-        function this = asSliceMask(this)
-            
-            %% ASSLICEMASK returns a binary mask with all nonzero slice set to 1
-            sz       = this.size;
-            unitslab = ones(sz(1), sz(2));
-            slmsk    = zeros(sz);
-            for z = 1:sz(3) %#ok<FORFLG>
-                if (dipsum(this.img(:,:,z)) > eps)
-                    slmsk(:,:,z) = unitslab;
-                end
+        function M    = minall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
+                case 1
+                    M = min(img);
+                case 2
+                    M = min(min(img));
+                case 3
+                    M = min(min(min(img)));
+                case 4
+                    M = min(min(min(min(img))));
+                otherwise
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.minall does not support images of size %s', mat2str(size(img)));
             end
-            this = this.makeSimilar(slmsk, 'as slice-mask', '_slicemsk');
-         end
-        
-        function this = oneMinusMask(this)
-            
-            %% ASINVERSEMASK returns the NIfTI_mask with 1 - img/norm{img}
-            rescaled = this.rescaleToUnity;
-            this     = this.makeSimilar(1 - rescaled, '1 - mask', ['one_minus_' this.fileprefix]);
         end
-        
-        function mnii = applyMaskTo(this, nii)
-            
-            %% APPLYMASK returns the passed NIfTI multiplied by the mask in the NIfTI_mask
-            %  Usage:   nm = NIfTI_mask(...)
-            %           masked_nii = nm.applyMaskTo(arbitary_nii)
-            mnii = this.makeSimilar(this .* nii, ['masked by ' nii.label], [nii.fileprefix '_maskedby_' this.fileprefix]);
+        function M    = meanall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
+                case 1
+                    M = mean(img);
+                case 2
+                    M = mean(mean(img));
+                case 3
+                    M = mean(mean(mean(img)));
+                case 4
+                    M = mean(mean(mean(mean(img))));
+                otherwise
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.meanall does not support images of size %s', mat2str(size(img)));
+            end
         end
-
-        function this = rescaleToUnity(this)
-            this.img = this.img ./ this.dipmax;
-            %this = this.makeSimilar(this.img ./ this.dipmax, '_rescaled to 1', [this.fileprefix '_rescaledTo1']);
+        function S    = stdall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
+                case 1
+                    S = std(img);
+                case 2
+                    S = std(std(img));
+                case 3
+                    S = std(std(std(img)));
+                case 4
+                    S = std(std(std(std(img))));
+                otherwise
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.stdall does not support images of size %s', mat2str(size(img)));
+            end
+        end
+        function M    = modeall(obj)
+            img = double(obj); % N.B. overload in NIfTIdecorator
+            switch length(size(img))
+                case 1
+                    M = mode(img);
+                case 2
+                    M = mode(mode(img));
+                case 3
+                    M = mode(mode(mode(img)));
+                case 4
+                    M = mode(mode(mode(mode(img))));
+                otherwise
+                    error('mlfourd:notImplemented', ...
+                          'MaskedNIfTI.modeall does not support images of size %s', mat2str(size(img)));
+            end
         end
     end
     
-    methods (Static)
-        
-        function nii         = load(fn, desc)
+    methods        
+        function this = MaskedNIfTId(cmp, varargin)            
+            %% MASKEDNIFTID 
+            %  Usage:  this = MaskedNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
+            %
+            %          options:  'binarize'        logical
+            %                    'thresh'          numerical
+            %                    'pthresh'         numerical
+            %                    'nifti_mask'      NIfTIdInterface
+            %                    'freesurfer_mask' NIfTIdInterface, to be binarized internally
             
-            %% LOAD is a factory that loads file fn as a NIfTI_mask
-            %  See also:   load_nii
-            import mlfourd.*;
-            if (nargin < 2)
-                desc = ['NIfTI_mask.load read ' fn ' at ' datestr(now)];
+            import mlfourd.*; 
+            this = this@mlfourd.NIfTIdecorator(cmp);
+            this = this.append_descrip('decorated by MaskedNIfTId');
+            
+            p = inputParser;
+            addParameter(p, 'binarize',        false, @islogical);
+            addParameter(p, 'thresh',          [],    @isnumeric);
+            addParameter(p, 'pthresh',         [],    @isnumeric);
+            addParameter(p, 'nifti_mask',      [],    @(x) isa(x, 'mlfourd.NIfTIdInterface'));
+            addParameter(p, 'freesurfer_mask', [],    @(x) isa(x, 'mlfourd.NIfTIdInterface'));
+            parse(p, varargin{:});
+            
+            if (p.Results.binarize)
+                this = this.binarize;
             end
-            nii = NIfTI_mask(load@mlfourd.NIfTI(fn, desc));
-        end % static load
-        
-        function N           = count(roi)
-            
-            %% COUNT does rapid count of nonzero elements in an ROI
-            roi = roi.img > 0;
-            N   = dipsum(roi);
-        end % static count
-        
-        function [msk0,msk1] = matchMasks(msk0, msk1)
-            
-            %% MATCHMASKS adjusts the larger mask to have the same number
-            %  of nonzero elements as the other mask
-            import mlfourd.*;
-            if (NIfTI_mask.count(msk1) == NIfTI_mask.count(msk0)); return; end
-            if (NIfTI_mask.count(msk1) > NIfTI_mask.count(msk0))
-                msk1 = NIfTI_mask.choose(NIfTI_mask.count(msk0), msk1);
-            else
-                msk0 = NIfTI_mask.choose(NIfTI_mask.count(msk1), msk0);
+            if (~isempty(p.Results.thresh))
+                this = this.thresh(p.Results.thresh);
             end
-        end % static matchMasks
-        
-        function msk         = choose(N, msk)
-            
-            %% CHOOSE choses N of the nonzero elements in the msk
-            import mlfourd.*;
-            nonzeros = msk.img > 0;
-            if (dipsum(nonzeros) == N); return; end
-            
-            tic
-            sampling = nonzeros .* rand(size(nonzeros));            % random field within msk
-            sampling = sampling > (1 - N/dipsum(nonzeros)); % approx. N chosen elements within msk
-            desc     = ['chose N->' num2str(N) 'nonzero elements'];
-            filep    = ['_' num2str(N) 'nonzeros'];
-            msk      = msk.makeSimilar(sampling .* msk.img, desc, filep);
-            disp('NIfTI_mask.choose:  run-time:'); toc
-        end % static choose
-        
-        function msk         = ensureMask(msk)
-            
-            %% ENSUREMASK ensures correct datatypes, normalization of mask
-            import mlfourd.*;
-            switch (class(msk))
-                case 'char'
-                    msk = NIfTI_mask(ensureNii(msk));
-                case numeric_types
-                    msk = NIfTI_mask(msk);
-                case NIfTI.NIFTI_SUBCLASS
-                otherwise
-                    error('mlfourd:ParamTypeUnsupported', ...
-                         ['NIfTI_mask.ensureMask could not recognize passed class ' class(msk)]);
+            if (~isempty(p.Results.pthresh))
+                this = this.pthresh(p.Results.pthresh);
             end
-            assert(~isempty(msk));
-            assert(msk.dipsum > 0);
-            if (~isa(msk, 'mlfourd.NIfTI_mask'))
-                msk = NIfTI_mask(msk);
+            if (~isempty(p.Results.nifti_mask))
+                this = this.masked(p.Results.nifti_mask);
             end
-            msk = msk.rescaleToUnity;
-        end % static ensureMask
-    end % methods (Static)
+            if (~isempty(p.Results.freesurfer_mask))
+                import mlfourd.*; 
+                this = this.masked( ...
+                       MaskedNIfTId(p.Results.freesurfer_mask, 'binarize', true));
+            end
+        end           
+        function this = masked(this, niidMask)            
+            %% MASKED returns this with the internal image multiplied by the passed NIfTIdInterface mask;
+            %  Usage:   mn = MaskedNIfTId(...)
+            %           mn = mn.masked(NIfTIdInterface_mask)
+            
+            assert(isa(niidMask, 'mlfourd.NIfTIdInterface'));
+            assert(all(this.size == niidMask.size));
+            mx = this.maxall(niidMask);
+            mn = this.minall(niidMask);
+            if (mx > 1 || mn < 0)
+                warning('mlfourd:possibleNumericalInconsistency', ...
+                        'MaskedNIfTI.masked received a mask object with min->%g, max->%g', mn, mx); 
+            end            
+            
+            this = this.makeSimilar( ...
+                   'img', this.img .* niidMask.img, ...
+                   'descrip', sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
+                   'fileprefix', sprintf('_maskedby_%s', niidMask.fileprefix));
+        end
+        function N    = count(this)            
+            %% COUNT counts nonzero elements in the internal NIfTIdInterface component
+            
+            msk = this.img ~= 0;
+            N   = this.sumall(msk);
+        end
+        function this = thresh(this, thresh)            
+            %% THRESH returns a binary mask after thresholding
+            %  Usage:  mn = MaskedNIfTId(...)
+            %          mn = mn.thresh(167); % returns MaskedNIfTId with MaskedNIfTId.img > 167 set as binary image
+            %          max(max(max(mn.img)))
+            %          ans = 1
+            
+            assert(isscalar(thresh));
+            img  = double(this.img > thresh);
+            this = this.makeSimilar( ...
+                   'img', img, ...
+                   'fileprefix', sprintf('_thresh_%g', thresh), ...
+                   'descrip', sprintf('MaskedNIfTI.thresh(%g)', thresh));
+        end
+        function this = pthresh(this, pthr)            
+            %% PTHR returns binary mask after applying a robust percent threshold
+            %  Usage:  mn = MaskedNIfTId(...)
+            %          mn = mn.pthr(0.67) % returns MaskedNIfTId with MaskedNIfTId.img > 67% robust threshold set as binary image
+            
+            if (pthr >= 1)
+                pthr = pthr/100; 
+                assert(pthr <= 100);
+            end
+            img  = double(this.img > norminv(pthr, this.meanall(this.img), this.stdall(this.img)));
+            this = this.makeSimilar( ...
+                   'img', img, ...
+                   'fileprefix', sprintf('_pthresh_%g', pthr), ...
+                   'descrip', sprintf('MaskedNIfTI.pthresh(%g)', pthr));
+        end        
+        function this = binarize(this)            
+            %% BINARIZE
+            
+            img  = double(this.img ~= 0);
+            this = this.makeSimilar( ...
+                   'img', img, ...
+                   'fileprefix', sprintf('_binarize'), ...
+                   'descrip', sprintf('MaskedNIfTI.binarize'));
+        end
+    end
+    
 end

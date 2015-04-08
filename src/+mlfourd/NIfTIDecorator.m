@@ -196,12 +196,12 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
         
         %% IOInterface
         
-        function this = load(fileprefix, varargin)
-            %% LOAD passes its arguments to NIfTId.load, then keeps the loaded object object as an internal component by composition.
-            %  Usage:  obj = NIfTIdecorator.load(fileprefix);
+        function this = load(varargin)
+            %% LOAD passes its arguments to NIfTId.load, then keeps the loaded object as an internal component by composition.
+            %  Usage:  obj = NIfTIdecorator.load(filename[, description]);
             
             import mlfourd.*;
-            this = NIfTIdecorator(NIfTId.load(fileprefix, varargin{:}));
+            this = NIfTIdecorator(NIfTId.load(varargin{:}));
         end
     end
 
@@ -212,7 +212,7 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
             %  Usage:  obj = NIfTIdecorator(NIfTIdInterface_object);
             
             p = inputParser;
-            addRequired(p, 'cmp', @(x) isa(x, 'mlfourd.NIfTIdInterface'));
+            addOptional(p, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.NIfTIdInterface'));
             parse(p, varargin{:});
             this.component_ = p.Results.cmp;
         end 
@@ -238,16 +238,14 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
         function x    = duration(this)
             x = this.component_.duration;
         end
-        function obj  = ones(this, varargin)
-            obj = this.clone;
-            obj.component_ = this.component_.ones(varargin{:});
+        function this = ones(this, varargin)
+            this.component_ = this.component_.ones(varargin{:});
         end
         function x    = rank(this, varargin)
             x = this.component_.rank(varargin{:});
         end
-        function obj  = scrubNanInf(this)
-            obj = this.clone;
-            obj.component_ = this.component_.scrubNanInf;
+        function this = scrubNanInf(this)
+            this.component_ = this.component_.scrubNanInf;
         end
         function x    = single(this)
             x = this.component_.single;
@@ -255,46 +253,65 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
         function x    = size(this, varargin)
             x = this.component_.size(varargin{:});
         end
-        function obj  = zeros(this, varargin)
-            obj = this.clone;
-            obj.component_ = this.component_.zeros(varargin{:});
+        function this = zeros(this, varargin)
+            this.component_ = this.component_.zeros(varargin{:});
         end
         
-        function obj  = forceDouble(this)
-            obj = this.clone;
-            obj.component_ = this.component_.forceDouble;
+        function this = forceDouble(this)
+            this.component_ = this.component_.forceDouble;
         end
-        function obj  = forceSingle(this)
-            obj = this.clone;
-            obj.component_ = this.component_.forceSingle;
+        function this = forceSingle(this)
+            this.component_ = this.component_.forceSingle;
         end
-        function obj  = prepend_fileprefix(this, s)
-            obj = this.clone;
-            obj.component_ = this.component_.prepend_fileprefix(s);
+        function [tf,msg] = isequal(this, niid)
+            [tf,msg] = this.isequaln(niid);
         end
-        function obj  = append_fileprefix(this, s)
-            obj = this.clone;
-            obj.component_ = this.component_.append_fileprefix(s);
+        function [tf,msg] = isequaln(this, niid)
+            msg = '';
+            tf = isa(niid, class(this));
+            if (tf)
+                [tf,msg] = this.component_.isequaln(niid.component_);
+            end
         end
-        function obj  = prepend_descrip(this, s)
-            obj = this.clone;
-            obj.component_ = this.component_.prepend_descrip(s);
+        function this = prepend_fileprefix(this, s)
+            this.component_ = this.component_.prepend_fileprefix(s);
         end
-        function obj  = append_descrip(this, s)
-            obj = this.clone;
-            obj.component_ = this.component_.append_descrip(s);
+        function this = append_fileprefix(this, s)
+            this.component_ = this.component_.append_fileprefix(s);
+        end
+        function this = prepend_descrip(this, s)
+            this.component_ = this.component_.prepend_descrip(s);
+        end
+        function this = append_descrip(this, s)
+            this.component_ = this.component_.append_descrip(s);
         end
         
-        function obj = makeSimilar(this, varargin)
-            obj = this.clone;
-            obj.component_ = this.component_.makeSimilar(varargin{:});
-        end
-        function obj = clone(this)
+        function obj  = clone(this)
             obj = this;
             obj.component_ = this.component_.clone;
+        end   
+        function this = makeSimilar(this, varargin)
+            this.component_ = this.component_.makeSimilar(varargin{:});
+        end             
+        function himg = imshow(this, slice, varargin)
+            himg = this.component_.imshow(slice, varargin{:});
+        end
+        function himg = imtool(this, slice, varargin)
+            himg = this.component_.imtool(slice, varargin{:});
+        end
+        function im   = mlimage(this)
+            im = this.component_.mlimage;
+        end
+        function        freeview(this)
+            this.component_.freeview;
+        end        
+        function        fslview(this)
+            this.component_.fslview;
         end        
     end 
 
+    %% PROTECTED
+    
     properties (Access = 'protected')
         component_
     end

@@ -2,7 +2,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
 	%% ABSTRACTNIFTID 
     %  Yet abstract:
     %      properties:  descrip, img, mmppix, pixdim
-    %      methods:     forceDouble, forceSingle, makeSimilar, clone
+    %      methods:     forceDouble, forceSingle, isequal, isequaln, makeSimilar, clone
     
 	%  Version $Revision: 2627 $ was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ by $Author: jjlee $  
  	%  and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/AbstractNIfTId.m $ 
@@ -11,10 +11,37 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
  	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
     
     properties (Constant)
-        DESC_LEN_LIM = 128; % limit to #char of desc, as desc may be used for the default fileprefix
+        DESC_LEN_LIM = 256; % limit to #char of desc, as desc may be used for the default fileprefix
+        LOAD_UNTOUCHED = true
+        OPTIMIZED_PRECISION = false
     end
     
     properties (Dependent)
+        
+        % After mlfourd.JimmyShenInterface:  to support struct arguments to NIfTId ctor  
+        img      
+        ext
+        filetype   % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr        %     N.B.:  to change the data type, set nii.hdr.dime.datatype,
+                   %            and nii.hdr.dime.bitpix to:
+                   %   0 None                     (Unknown bit per voxel) 
+                   %   1 Binary                         (ubit1, bitpix=1) 
+                   %   2 Unsigned char         (uchar or uint8, bitpix=8) 
+                   %   4 Signed short                  (int16, bitpix=16) 
+                   %   8 Signed integer                (int32, bitpix=32) 
+                   %  16 Floating point    (single or float32, bitpix=32) 
+                   %  32 Complex, 2 float32      (Use float32, bitpix=64) 
+                   %  64 Double precision  (double or float64, bitpix=64) 
+                   % 512 Unsigned short               (uint16, bitpix=16) 
+                   % 768 Unsigned integer             (uint32, bitpix=32) 
+                   %1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
+                   %1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64
+        originalType
+        untouch
+        descrip
+        mmppix
+        pixdim
+        
         creationDate
         datatype
         entropy
@@ -28,7 +55,68 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         bitpix
     end 
 
- 	methods %% setters/getters 
+ 	methods %% SET/GET 
+        function im   = get.img(this)
+            im = this.img_;
+        end        
+        function this = set.img(this, im)
+            %% SET.IMG sets new image state. 
+            %  updates datatype, bitpix, dim
+            
+            import mlfourd.*;
+            assert(isnumeric(im));
+            this.img_                         = im;
+            this                              = this.optimizePrecision;
+            this.hdr_.dime.dim                = zeros(1,8);
+            this.hdr_.dime.dim(1)             = this.rank;
+            this.hdr_.dime.dim(2:this.rank+1) = this.size;
+            this.untouch_ = false;
+        end 
+        function e    = get.ext(this)
+            e = this.ext_;
+        end
+        function f    = get.filetype(this)
+            f = this.filetype_;
+        end
+        function h    = get.hdr(this)
+            h = this.hdr_;
+        end
+        function o    = get.originalType(this)
+            o = this.originalType_;
+        end
+        function u    = get.untouch(this)
+            u = this.untouch_;
+        end 
+        function d    = get.descrip(this)
+            d = this.hdr.hist.descrip;
+        end        
+        function this = set.descrip(this, s)
+            %% SET.DESCRIP
+            %  do not add separators such as ";" or ","
+            
+            assert(ischar(s));
+            this.hdr_.hist.descrip = strtrim(s);
+            this.untouch_ = false;
+        end         
+        function mpp  = get.mmppix(this)
+            mpp = this.hdr.dime.pixdim(2:this.rank+1);
+        end        
+        function this = set.mmppix(this, mpp)
+            %% SET.MMPPIX sets voxel-time dimensions in mm, s.
+            
+            assert(all(this.rank == length(mpp)));
+            this.hdr_.dime.pixdim(2:this.rank+1) = mpp;
+            this.untouch_ = false;
+        end
+        function pd   = get.pixdim(this)
+            pd = this.mmppix;
+        end        
+        function this = set.pixdim(this, pd)
+            %% SET.PIXDIM sets voxel-time dimensions in mm, s.
+            
+            this.mmppix = pd;
+        end  
+        
         function cdat = get.creationDate(this)
             cdat = this.creationDate_;
         end     
@@ -53,7 +141,8 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 end
             else
                 paramError('UnsupportedType for NIfTId.set.datatype.dt', class(dt));
-            end
+            end            
+            this.untouch_ = false;
         end  
         function dt   = get.datatype(this)
             %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
@@ -94,8 +183,8 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end
         function this = set.label(this, s)
             assert(ischar(s));
-            this.label_ = strtrim(s);
-            this.untouch = 0;
+            this.label_ = strtrim(s);            
+            this.untouch_ = false;
         end   
         function d    = get.label(this)
             if (isempty(this.label_))
@@ -119,7 +208,9 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end
         function this = set.separator(this, s)
             if (ischar(s))
-                this.separator_ = s; end
+                this.separator_ = s;
+                this.untouch_ = false;
+            end
         end
         function s    = get.separator(this)
             s = this.separator_;
@@ -134,6 +225,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             else
                 this = this.forceSingle; 
             end
+            this.untouch_ = false;
         end   
         function bp   = get.bitpix(this) 
             %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
@@ -161,7 +253,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             ch = this.fqfilename;
         end 
         function d    = double(this)
-            if (~isdouble(this.img))
+            if (~isa(this.img, 'double'))
                 d = double(this.img);
             else 
                 d = this.img;
@@ -212,7 +304,11 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             this.img = img;
         end
         function s    = single(this)
-            s = single(this.img);
+            if (~isa(this.img, 'single'))
+                s = single(this.img);
+            else 
+                s = this.img;
+            end
         end   
         function sz   = size(this, varargin)
             %% SIZE overloads Matlab's size
@@ -234,24 +330,28 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         function this = prepend_fileprefix(this, s)
             assert(ischar(s));
             this.fileprefix = [strtrim(s) this.fileprefix];
+            this.untouch_ = false;
         end        
         function this = append_fileprefix(this, s)
             assert(ischar(s));
             this.fileprefix = [this.fileprefix strtrim(s)];
+            this.untouch_ = false;
         end   
         function this = prepend_descrip(this, s) 
             %% PREPEND_DESCRIP
             %  do not add separators such as ";" or ","
             
             assert(ischar(s));
-            this.descrip = [s this.separator this.descrip];
+            this.descrip = [s this.separator ' ' this.descrip];
+            this.untouch_ = false;
         end
         function this = append_descrip(this, s) 
             %% APPEND_DESCRIP
             %  do not add separators such as ";" or ","
             
             assert(ischar(s));
-            this.descrip = [this.descrip this.separator s];
+            this.descrip = [this.descrip this.separator ' ' s];
+            this.untouch_ = false;
         end  
         
         function        freeview(this)
@@ -259,96 +359,260 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end
         function        fslview(this)
             this.launchExternalViewer('fslview');
+        end           
+        function himg = imshow(this, slice, varargin)
+            %% IMSHOW overloads imshow from Image Processing Toolbox,
+            %         displays iamge in handle graphics figure
+            %
+            %  Usage:  
+            %
+            %     slice, integer or integer vector, is required.   Specifies dimensions of 
+            %     this.img > 2.
+            %
+            %     imshow(slice) displays the grayscale this.img.
+            %
+            %     imshow(slice,[LOW HIGH]) displays the grayscale this.img, specifying the display
+            %     range for I in [LOW HIGH]. The value LOW (and any value less than LOW)
+            %     displays as black, the value HIGH (and any value greater than HIGH) displays
+            %     as white. Values in between are displayed as intermediate shades of gray,
+            %     using the default number of gray levels. If you use an empty matrix ([]) for
+            %     [LOW HIGH], imshow uses [min(I(:)) max(I(:))]; that is, the minimum value in
+            %     I is displayed as black, and the maximum value is displayed as white.
+            %  
+            %     imshow(slice,RGB) displays the truecolor image RGB.
+            %  
+            %     imshow(slice,BW) displays the binary image BW. imshow displays pixels with the
+            %     value 0 (zero) as black and pixels with the value 1 as white.
+            %  
+            %     imshow(slice,X,MAP) displays the indexed image X with the colormap MAP.
+            %  
+            %     imshow(slice,FILENAME) displays the image stored in the graphics file FILENAME.
+            %     The file must contain an image that can be read by IMREAD or
+            %     DICOMREAD. imshow calls IMREAD or DICOMREAD to read the image from the file,
+            %     but does not store the image data in the MATLAB workspace. If the file
+            %     contains multiple images, the first one will be displayed. The file must be
+            %     in the current directory or on the MATLAB path.
+            %  
+            %     HIMAGE = imshow(...) returns the handle to the image object created by
+            %     imshow.
+            %  
+            %     imshow(...,PARAM1,VAL1,PARAM2,VAL2,...) displays the image, specifying
+            %     parameters and corresponding values that control various aspects of the
+            %     image display. Parameter names can be abbreviated, and case does not matter.
+            %
+            %  cf. imshow
+            
+            assert(logical(exist('slice', 'var')), 'imshow(slice) displays the grayscale of this.img');
+            switch (length(slice))
+                case 1
+                    himg = imshow(flip4d(this.img(:,:,slice), 'xt'), varargin{:});
+                case 2
+                    himg = imshow(flip4d(this.img(:,:,slice(1),slice(2)), 'xt'), varargin{:});
+                otherwise
+                    paramError(this, 'slice #', num2str(slice));
+            end
+        end 
+        function himg = imtool(this, slice, varargin)
+            %% IMTOOL overloads imtool from the Image Processing Toolbox.
+            %     displays iamge in handle graphics figure
+            %
+            %  Usage:  
+            %
+            %     slice, integer or integer vector, is required.   Specifies dimensions of 
+            %     this.img > 2.
+            %
+            %     imtool opens a new Image Tool in an empty state. Use the File menu options
+            %     "Open..." or "Import From Workspace..." to choose an image for display.
+            %  
+            %     imtool(slice) displays the grayscale this.img.
+            %  
+            %     imtool(slice,[LOW HIGH]) displays the grayscale this.img, specifying the display
+            %     range for I in [LOW HIGH]. The value LOW (and any value less than LOW)
+            %     displays as black, the value HIGH (and any value greater than HIGH) displays
+            %     as white. Values in between are displayed as intermediate shades of gray,
+            %     using the default number of gray levels. If you use an empty matrix ([]) for
+            %     [LOW HIGH], imtool uses [min(I(:)) max(I(:))]; the minimum value in I
+            %     displays as black, and the maximum value displays as white.
+            %  
+            %     imtool(slice,RGB) displays the truecolor image RGB.
+            %  
+            %     imtool(slice,BW) displays the binary image BW. Values of 0 display as black, and
+            %     values of 1 display as white.
+            %  
+            %     imtool(slice,X,MAP) displays the indexed image X with colormap MAP.
+            %  
+            %     imtool(slice,FILENAME) displays the image contained in the graphics file FILENAME.
+            %     The file must contain an image that can be read by IMREAD or DICOMREAD or a
+            %     reduced resolution dataset (R-Set) created by RSETWRITE. If the file
+            %     contains multiple images, the first one will be displayed. The file must
+            %     be in the current directory or on the MATLAB path.
+            %  
+            %     HFIGURE = imtool(slice,...) returns a handle HFIGURE to the figure created by
+            %     imtool. CLOSE(HFIGURE) closes the Image Tool.
+            %  
+            %     imtool CLOSE ALL closes all instances of the Image Tool.
+            %  
+            %     imtool(slice,...,PARAM1,VAL1,PARAM2,VAL2,...) displays the image, specifying
+            %     parameters and corresponding values that control various aspects of the
+            %     image display. Parameter names can be abbreviated, and case does not matter.
+            %
+            %  cf. imtool
+            
+            assert(logical(exist('slice', 'var')));
+            switch (length(slice))
+                case 1
+                    himg = imtool(flip4d(this.img(:,:,slice), 'xt'), varargin{:});
+                case 2
+                    himg = imtool(flip4d(this.img(:,:,slice(1),slice(2)), 'xt'), varargin{:});
+                otherwise
+                    paramError(this, 'slice #', num2str(slice));
+            end
+        end % imtool   
+        function im   = mlimage(this)
+            %% MLIMAGE returns this.img in a form suitable for matlab's image processing toolbox
+            %          whivh expects rgb data as the 3rd dimension.  Does not change state.
+            
+            sz = this.size;
+            im = reshape(this.img, [sz(1) sz(2) 1 sz(3)]);
+        end % mlimage        
+        function h    = montage(this, varargin)
+            %% MONTAGE overloads matlab's montage;
+            %  cf.  web([docroot '/toolbox/images/ref/montage.html#bq5sla5'])
+            %  e.g.  montage('Size', [nrows ncols] ,'Indices',1:4, 'DisplayRange', [low high]);
+            %                          [2, NaN]
+            
+            h    = montage(flip4d(this.mlimage, 'xt'), varargin{:});
         end
- 	end 
+ 	end     
     
-    %% PROTECTED 
-
-    properties (Access = 'protected')
-        label_
-        separator_ = ';';
-        creationDate_
-    end
-    
-    methods (Static, Access = 'protected')
-        function obj = ensureDble(obj, varargin)
+    methods (Static)
+        function im = ensureDble(im, varargin)
             %% ENSUREDBLE tries to return a double-precision array for the passed object
             %  Usage: obj1 = mlfourd.AbstractNIfTId.ensureDble(obj, nosqz)
             %         ^ is guaranteed to be double
             %           obj1, obj may be char, NIfTId, struct or numeric
             %                                              ^ boolean:  don't squeeze out singleton dims
             
-            obj = double( ...
-                mlfourd.AbstractNIfTId.switchableSqueeze(obj, varargin{:}));
+            im = double( ...
+                mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
         end 
-        function obj = ensureSing(obj, varargin)
+        function im = ensureSing(im, varargin)
             %% ENSURESING tries to return a single-precision array for the passed object
             %  Usage: obj1 = mlfourd.AbstractNIfTId.ensureSing(obj, nosqz)
             %         ^ is guaranteed to be single (all overloaded single(...) calls applied, else error)
             %           obj1, obj may be char, NIfTId, struct or numeric
             %                                              ^ don't squeeze out singleton dims
 
-            obj = single( ...
-                mlfourd.AbstractNIfTId.switchableSqueeze(obj, varargin{:}));
+            im = single( ...
+                mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
         end 
-        function obj = ensureInt16(obj, varargin)
-            obj = int16( ...
-                mlfourd.AbstractNIfTId.switchableSqueeze(obj, varargin{:}));
+        function im = ensureInt16(im, varargin)
+            im = int16( ...
+                mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
         end
-        function obj = ensureInt32(obj, varargin)
-            obj = int32( ...
-                mlfourd.AbstractNIfTId.switchableSqueeze(obj, varargin{:}));
+        function im = ensureInt32(im, varargin)
+            im = int32( ...
+                mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
         end
-        function obj = ensureUint8(obj, varargin)
-            obj = uint8( ...
-                mlfourd.AbstractNIfTId.switchableSqueeze(obj, varargin{:}));
+        function im = ensureUint8(im, varargin)
+            im = uint8( ...
+                mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
         end
-        function obj = switchableSqueeze(obj, tf)
-            assert(isnumeric(obj));
+        function im = switchableSqueeze(im, tf)
+            assert(isnumeric(im));
             if (~exist('tf', 'var')); tf  = true; end
-            if (tf);                  obj = squeeze(obj); end
+            if (tf); im = squeeze(im); end
         end
+    end
+    
+    %% PROTECTED 
+
+    properties (Access = 'protected')
+        img_
+        ext_
+        filetype_ = 2
+        hdr_
+        originalType_
+        untouch_ = true
+        
+        label_
+        separator_ = ';';
+        creationDate_
     end
     
     methods (Access = 'protected')
         function this = AbstractNIfTId
             this.creationDate_ = datestr(now);
         end % ctor
-        function obj  = scrub1D(this, obj)
-            assert(isnumeric(obj));
-            for x = 1:this.size(1)
-                if (~isfinite(obj(x)))
-                    obj(x) = 0; end
+        function this = optimizePrecision(this)
+            this.untouch_ = false;
+            if (~this.OPTIMIZED_PRECISION)
+                this.img_ = double(this.img_);
+                this.hdr_.dime.datatype = 16;
+                this.hdr_.dime.bitpix   = 32;
+                return
+            end
+            try
+                import mlfourd.*;
+                bandwidth = dipmax(this.img_) - dipmin(this.img_);
+                if (islogical(this.img_))
+                    this.img_ = NIfTId.ensureUint8(this.img_);                    
+                    this.hdr_.dime.datatype = 2;
+                    this.hdr_.dime.bitpix   = 8;
+                    return
+                end
+                if (bandwidth < realmax('single')/10)
+                    if (bandwidth > 10*realmin('single'))
+                        this.img_ = NIfTId.ensureSing(this.img_);
+                        this.hdr_.dime.datatype = 16;
+                        this.hdr_.dime.bitpix   = 32;
+                        return
+                    end
+                end
+                
+                % default double                                
+                this.img_ = NIfTId.ensureDble(this.img_);
+                this.hdr_.dime.datatype = 64;
+                this.hdr_.dime.bitpix   = 64;
+            catch ME
+                warning(ME.message);
             end
         end
-        function obj  = scrub2D(this, obj)
-            assert(isnumeric(obj));
+        function im   = scrub1D(this, im)
+            assert(isnumeric(im));
+            for x = 1:this.size(1)
+                if (~isfinite(im(x)))
+                    im(x) = 0; end
+            end
+        end
+        function im   = scrub2D(this, im)
+            assert(isnumeric(im));
             for y = 1:this.size(2)
                 for x = 1:this.size(1)
-                    if (~isfinite(obj(x,y)))
-                        obj(x,y) = 0; end
+                    if (~isfinite(im(x,y)))
+                        im(x,y) = 0; end
                 end
             end
         end
-        function obj  = scrub3D(this, obj)
-            assert(isnumeric(obj));
+        function im   = scrub3D(this, im)
+            assert(isnumeric(im));
             for z = 1:this.size(3)
                 for y = 1:this.size(2)
                     for x = 1:this.size(1)
-                        if (~isfinite(obj(x,y,z)))
-                            obj(x,y,z) = 0; end
+                        if (~isfinite(im(x,y,z)))
+                            im(x,y,z) = 0; end
                     end
                 end
             end
         end
-        function obj  = scrub4D(this, obj)
-            assert(isnumeric(obj));
+        function im   = scrub4D(this, im)
+            assert(isnumeric(im));
             for t = 1:this.size(4)
                 for z = 1:this.size(3)
                     for y = 1:this.size(2)
                         for x = 1:this.size(1)
-                            if (~isfinite(obj(x,y,z,t)))
-                                obj(x,y,z,t) = 0; end
+                            if (~isfinite(im(x,y,z,t)))
+                                im(x,y,z,t) = 0; end
                         end
                     end
                 end
