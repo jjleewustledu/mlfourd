@@ -10,7 +10,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$  	 
 
-    properties         
+    properties    
         metric = 'fwhh';
     end
     

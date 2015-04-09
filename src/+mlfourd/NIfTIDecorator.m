@@ -137,11 +137,11 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
             sw = this.component_.creationDate;
         end
         function this = set.entropy(this, x)
-            this.component_.entropy = x;
+           this.component_.entropy = x;
         end
-        function sw = get.entropy(this)
-            sw = this.component_.entropy;
-        end
+       function sw = get.entropy(this)
+           sw = this.component_.entropy;
+       end
         function this = set.label(this, x)
             this.component_.label = x;
         end
@@ -309,8 +309,6 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
             this.component_.fslview;
         end        
     end 
-
-    %% PROTECTED
     
     properties (Access = 'protected')
         component_

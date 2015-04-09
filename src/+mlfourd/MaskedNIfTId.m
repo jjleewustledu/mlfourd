@@ -1,7 +1,7 @@
 classdef MaskedNIfTId < mlfourd.NIfTIdecorator
 	%% MASKEDNIFTID is a NIfTIdecorator that composes an internal NIfTIdInterface object
     %  according to the decorator design pattern
-    
+        
     methods (Static)        
         function this = load(varargin)
             %% LOAD 
@@ -185,7 +185,7 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
             img  = double(this.img > thresh);
             this = this.makeSimilar( ...
                    'img', img, ...
-                   'fileprefix', sprintf('_thresh_%g', thresh), ...
+                   'fileprefix', sprintf('_thresh%g', thresh), ...
                    'descrip', sprintf('MaskedNIfTI.thresh(%g)', thresh));
         end
         function this = pthresh(this, pthr)            
@@ -200,7 +200,7 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
             img  = double(this.img > norminv(pthr, this.meanall(this.img), this.stdall(this.img)));
             this = this.makeSimilar( ...
                    'img', img, ...
-                   'fileprefix', sprintf('_pthresh_%g', pthr), ...
+                   'fileprefix', sprintf('_pthresh%g', pthr), ...
                    'descrip', sprintf('MaskedNIfTI.pthresh(%g)', pthr));
         end        
         function this = binarize(this)            
