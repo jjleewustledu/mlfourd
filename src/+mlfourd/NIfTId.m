@@ -93,11 +93,10 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this.untouch_ = false;
             this.save;
         end % overloads AbstractIOInterface.saveas        
-        
-        function obj  = clone(this)
+        function obj      = clone(this)
             obj = mlfourd.NIfTId(this, this.fqfileprefix, ['clone of ' this.descrip], this.pixdim);
         end        
-        function nii  = makeSimilar(this, varargin)
+        function nii      = makeSimilar(this, varargin)
             %% MAKESIMILAR returns a similar NIfTId object
             %  n  = NIfTId(...)
             %  n1 = n.makeSimilar([paramName, paramValue][, ...])
@@ -147,6 +146,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         
         function this = NIfTId(datobj, fprefix, desc, pixdim)
             %% NIfTId is a copy ctor & also accepts Jimmy Sheng's NIfTI-structs or image arrays.
+            %  It will also convert mlfourd.NIfTI objects to mlfourd.NIfTId.
             %  A minimal NIfTId has img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim.
             %  Usage:  nii = NIfTId([object, fileprefix, descrip, pixdim])
             %                ^ ctor w/o args required by Matlab
@@ -169,150 +169,92 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                 import mlfourd.*;
                 switch (this.originalType)
                     case 'char'
+                        this = NIfTId.load(datobj);
                         switch (nargin)
-                            case 1
-                                this              = NIfTId.load(datobj);
                             case 2
-                                this              = NIfTId.load(datobj);
                                 this.fqfileprefix = fprefix;
                             case 3
-                                this              = NIfTId.load(datobj);
                                 this.fqfileprefix = fprefix;
                                 this.descrip      = desc;
                             case 4
-                                this              = NIfTId.load(datobj);
                                 this.fqfileprefix = fprefix;
                                 this.descrip      = desc;
                                 this.pixdim       = pixdim;
                         end 
                     case 'struct'
+                        this.img_         = datobj.img;
+                        this.hdr_         = datobj.hdr;
+                        this.filetype_    = datobj.filetype;
+                        this.fqfileprefix = datobj.fileprefix;
+                        this.ext_         = datobj.ext;
+                        this.untouch_     = datobj.untouch;
                         switch (nargin)
-                            case 1
-                                this.img_         = datobj.img;
-                                this.hdr_         = datobj.hdr;
-                                this.filetype_    = datobj.filetype;
-                                this.fqfileprefix = datobj.fileprefix;
-                                this.ext_         = datobj.ext;
-                                this.untouch_     = datobj.untouch;
                             case 2
-                                this.img_         = datobj.img;
-                                this.hdr_         = datobj.hdr;
-                                this.descrip      = datobj.hdr.descrip;
-                                this.filetype_    = datobj.filetype;
-                                this.fqfileprefix = datobj.fileprefix;
-                                this.ext_         = datobj.ext;
-                                this.untouch_     = datobj.untouch;
                                 this.fileprefix   = fprefix;
                             case 3
-                                this.img_         = datobj.img;
-                                this.hdr_         = datobj.hdr;
-                                this.filetype_    = datobj.filetype;
-                                this.fqfileprefix = datobj.fileprefix;
-                                this.ext_         = datobj.ext;
-                                this.untouch_     = datobj.untouch;
                                 this.fileprefix   = fprefix;
                                 this.descrip      = desc;
                             case 4
-                                this.img_         = datobj.img;
-                                this.hdr_         = datobj.hdr;
-                                this.filetype_    = datobj.filetype;
-                                this.fqfileprefix = datobj.fileprefix;
-                                this.ext_         = datobj.ext;
-                                this.untouch_     = datobj.untouch;
                                 this.fileprefix   = fprefix;
                                 this.descrip      = desc;
                                 this.pixdim       = pixdim;
                         end
                     otherwise
                         if (isnumeric(datobj))
+                            rank                                 = length(size(datobj));
+                            this.img_                            = double(datobj);
+                            this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
+                            this.hdr_.dime.dim                   = zeros(1,8);
+                            this.hdr_.dime.dim(1)                = rank;
+                            this.hdr_.dime.dim(2:rank+1)         = size(datobj);
+                            this.hdr_.dime.datatype              = 64;
+                            this.hdr_.dime.bitpix                = 64;
                             switch (nargin)
-                                case 1
-                                    rank                                 = length(size(datobj));
-                                    this.img_                            = double(datobj);
-                                    this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                                    this.hdr_.dime.dim                   = zeros(1,8);
-                                    this.hdr_.dime.dim(1)                = rank;
-                                    this.hdr_.dime.dim(2:rank+1)         = size(datobj);
-                                    this.hdr_.dime.datatype              = 64;
-                                    this.hdr_.dime.bitpix                = 64;
                                 case 2
-                                    rank                                 = length(size(datobj));
-                                    this.img_                            = double(datobj);
-                                    this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                                    this.hdr_.dime.dim                   = zeros(1,8);
-                                    this.hdr_.dime.dim(1)                = rank;
-                                    this.hdr_.dime.dim(2:rank+1)         = size(datobj);
-                                    this.hdr_.dime.datatype              = 64;
-                                    this.hdr_.dime.bitpix                = 64;
-                                    this.fqfileprefix                    = fprefix;
+                                    this.fqfileprefix = fprefix;
                                 case 3
-                                    rank                                 = length(size(datobj));
-                                    this.img_                            = double(datobj);
-                                    this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                                    this.hdr_.dime.dim                   = zeros(1,8);
-                                    this.hdr_.dime.dim(1)                = rank;
-                                    this.hdr_.dime.dim(2:rank+1)         = size(datobj);
-                                    this.hdr_.dime.datatype              = 64;
-                                    this.hdr_.dime.bitpix                = 64;
-                                    this.fqfileprefix                    = fprefix;
-                                    this.descrip                         = desc;
-                                case 4                                        
-                                    rank                                 = length(size(datobj));
-                                    this.img_                            = double(datobj);
-                                    this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                                    this.hdr_.dime.dim                   = zeros(1,8);
-                                    this.hdr_.dime.dim(1)                = rank;
-                                    this.hdr_.dime.dim(2:rank+1)         = size(datobj);
-                                    this.hdr_.dime.datatype              = 64;
-                                    this.hdr_.dime.bitpix                = 64;
-                                    this.fqfileprefix                    = fprefix;
-                                    this.descrip                         = desc;
-                                    this.pixdim                          = pixdim;
-                            end
-                        elseif (isa(datobj, 'mlfourd.NIfTIdInterface')) % copy ctor
-                            switch (nargin)
-                                case 1                                        
-                                    this.img_         = datobj.img;
-                                    this.hdr_         = datobj.hdr;
-                                    this.filetype_    = datobj.filetype;
-                                    this.fqfileprefix = datobj.fqfileprefix;
-                                    this.ext_         = datobj.ext;
-                                    this.untouch_     = datobj.untouch;
-                                    this.label        = datobj.label;
-                                    this.separator    = datobj.separator;
-                                case 2
-                                    this.img_         = datobj.img;
-                                    this.hdr_         = datobj.hdr;
-                                    this.filetype_    = datobj.filetype;
-                                    this.fqfileprefix = datobj.fqfileprefix;
-                                    this.ext_         = datobj.ext;
-                                    this.untouch_     = datobj.untouch;
-                                    this.label        = datobj.label;
-                                    this.separator    = datobj.separator;
-                                    this.fileprefix   = fprefix;
-                                case 3
-                                    this.img_         = datobj.img;
-                                    this.hdr_         = datobj.hdr;
-                                    this.filetype_    = datobj.filetype;
-                                    this.fqfileprefix = datobj.fqfileprefix;
-                                    this.ext_         = datobj.ext;
-                                    this.untouch_     = datobj.untouch;
-                                    this.label        = datobj.label;
-                                    this.separator    = datobj.separator;
-                                    this.fileprefix   = fprefix;
+                                    this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
-                                case 4
-                                    this.img_         = datobj.img;
-                                    this.hdr_         = datobj.hdr;
-                                    this.filetype_    = datobj.filetype;
-                                    this.fqfileprefix = datobj.fqfileprefix;
-                                    this.ext_         = datobj.ext;
-                                    this.untouch_     = datobj.untouch;
-                                    this.label        = datobj.label;
-                                    this.separator    = datobj.separator;
-                                    this.fileprefix   = fprefix;
+                                case 4                              
+                                    this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
                                     this.pixdim       = pixdim;
+                            end
+                        elseif (isa(datobj, 'mlfourd.NIfTIInterface')) % convert to NIfTId                            
+                            warning('off'); %#ok<WNOFF>
+                            this = NIfTId(struct(datobj));
+                            warning('on'); %#ok<WNON>
+                            this.img = double(this.img);
+                            switch (nargin)
+                                case 2
+                                    this.fileprefix = fprefix;
+                                case 3
+                                    this.fileprefix = fprefix;
+                                    this.descrip    = desc;
+                                case 4
+                                    this.fileprefix = fprefix;
+                                    this.descrip    = desc;
+                                    this.pixdim     = pixdim;
+                            end
+                        elseif (isa(datobj, 'mlfourd.INIfTId')) % copy ctor
+                            this.img_         = datobj.img;
+                            this.hdr_         = datobj.hdr;
+                            this.filetype_    = datobj.filetype;
+                            this.fqfileprefix = datobj.fqfileprefix;
+                            this.ext_         = datobj.ext;
+                            this.untouch_     = datobj.untouch;
+                            this.label        = datobj.label;
+                            this.separator    = datobj.separator;
+                            switch (nargin)
+                                case 2
+                                    this.fileprefix = fprefix;
+                                case 3
+                                    this.fileprefix = fprefix;
+                                    this.descrip    = desc;
+                                case 4
+                                    this.fileprefix = fprefix;
+                                    this.descrip    = desc;
+                                    this.pixdim     = pixdim;
                             end
                         else
                             error('mlfourd:NotImplemented', ...
@@ -394,7 +336,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         function this     = assignDefaults(this)
             this.img_                     = zeros(3,3,3);
             this.fileprefix               = ['NIfTId_D' datestr(now,30)];
-            this.filesuffix_              = mlfourd.NIfTIdInterface.FILETYPE_EXT;
+            this.filesuffix_              = mlfourd.INIfTId.FILETYPE_EXT;
             
             this.hdr_.hist                = struct;
             this.hdr_.hist.descrip        = ['NIfTId(' num2str(nargin) ' argin)'];

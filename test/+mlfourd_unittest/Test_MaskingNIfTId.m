@@ -1,8 +1,8 @@
-classdef Test_MaskedNIfTId < mlfourd_unittest.Test_NIfTId
-	%% TEST_MASKEDNIFTID  
+classdef Test_MaskingNIfTId < mlfourd_unittest.Test_NIfTId
+	%% TEST_MASKINGNIFTID  
 
-	%  Usage:  >> results = run(mlfourd_unittest.Test_MaskedNIfTId)
- 	%          >> result  = run(mlfourd_unittest.Test_MaskedNIfTId, 'test_dt')
+	%  Usage:  >> results = run(mlfourd_unittest.Test_MaskingNIfTId)
+ 	%          >> result  = run(mlfourd_unittest.Test_MaskingNIfTId, 'test_dt')
  	%  See also:  file:///Applications/Developer/MATLAB_R2014b.app/help/matlab/matlab-unit-test-framework.html
 
 	%  $Revision$ 
@@ -16,13 +16,13 @@ classdef Test_MaskedNIfTId < mlfourd_unittest.Test_NIfTId
 	methods (Test) 
         function test_load(this)
             import mlfourd.*;
-            mnii = MaskedNIfTId.load(this.t1_fqfn);
+            mnii = MaskingNIfTId.load(this.t1_fqfn);
             component = NIfTId.load(this.t1_fqfn);
             this.assertTrue(isequal(mnii.component, component));
             this.assertEqual(mnii.img,        component.img);
             this.assertEqual(mnii.entropy,    0.120310143405054, 'RelTol', 1e-10);
             this.assertEqual(mnii.fileprefix, 't1_default');
-            this.assertEqual(mnii.descrip(end-26:end), '; decorated by MaskedNIfTId');
+            this.assertEqual(mnii.descrip(end-27:end), '; decorated by MaskingNIfTId');
             this.assertEqual(mnii.pixdim,     component.pixdim);
         end
         function test_sumall(this)
@@ -42,12 +42,12 @@ classdef Test_MaskedNIfTId < mlfourd_unittest.Test_NIfTId
         end
         
         function test_ctor(this)
-            ctor         = mlfourd.MaskedNIfTId(this.t1);
-            binarized    = mlfourd.MaskedNIfTId(this.t1, 'binarize', true);
-            threshed     = mlfourd.MaskedNIfTId(this.t1, 'thresh', 300);
-            pthreshed    = mlfourd.MaskedNIfTId(this.t1, 'pthresh', 0.05);
-            niftied      = mlfourd.MaskedNIfTId(this.t1, 'nifti_mask', binarized);
-            freesurfered = mlfourd.MaskedNIfTId(this.t1, 'freesurfer_mask', this.t1);
+            ctor         = mlfourd.MaskingNIfTId(this.t1);
+            binarized    = mlfourd.MaskingNIfTId(this.t1, 'binarize', true);
+            threshed     = mlfourd.MaskingNIfTId(this.t1, 'thresh', 300);
+            pthreshed    = mlfourd.MaskingNIfTId(this.t1, 'pthresh', 0.05);
+            niftied      = mlfourd.MaskingNIfTId(this.t1, 'niftid_mask', binarized);
+            freesurfered = mlfourd.MaskingNIfTId(this.t1, 'freesurfer_mask', this.t1);
             
             this.assertEqual(ctor.component, this.t1);              
             this.assertEqual(binarized.entropy, 0.110414616093301, 'RelTol', 1e-10);
@@ -87,24 +87,24 @@ classdef Test_MaskedNIfTId < mlfourd_unittest.Test_NIfTId
 
  	methods (TestClassSetup) 
  		function setupMaskedNIfTI(this) 
- 			this.testObj = this.maskedNIfTIdObj_; 
+ 			this.testObj = this.MaskingNIfTIdObj_; 
  		end 
  	end 
     
     methods        
- 		function this = Test_MaskedNIfTId(varargin) 
+ 		function this = Test_MaskingNIfTId(varargin) 
             this = this@mlfourd_unittest.Test_NIfTId(varargin{:});
-            this.maskedNIfTIdObj_ = mlfourd.MaskedNIfTId(this.t1); 
-            this.binaryMask_      = this.maskedNIfTIdObj_.makeSimilar( ...
-                                    'img', double(this.maskedNIfTIdObj_.img > 400), ...
-                                    'fileprefix', 'Test_MaskedNIfTId_binaryMask');
+            this.MaskingNIfTIdObj_ = mlfourd.MaskingNIfTId(this.t1); 
+            this.binaryMask_      = this.MaskingNIfTIdObj_.makeSimilar( ...
+                                    'img', double(this.MaskingNIfTIdObj_.img > 400), ...
+                                    'fileprefix', 'Test_MaskingNIfTId_binaryMask');
  		end 
     end
     
     %% PRIVATE
     
     properties (Access = 'private')
-        maskedNIfTIdObj_
+        MaskingNIfTIdObj_
         binaryMask_
     end
 

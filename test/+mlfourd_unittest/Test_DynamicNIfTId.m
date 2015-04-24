@@ -27,52 +27,52 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_NIfTId
         end
  		function test_ctor(this)
             import mlfourd.*;
-            ctor = DynamicNIfTId(this.hoNIfTId_);
-            tsum = DynamicNIfTId(this.hoNIfTId_, 'timeSum', true);
-            vsum = DynamicNIfTId(this.hoNIfTId_, 'volumeSum', true);
-            blrd = DynamicNIfTId(this.hoNIfTId_, 'blur', true);
-            
+            ctor = DynamicNIfTId(this.hoNIfTId_);            
+            this.assertEqual(ctor.size, [128 128 63 60]);
+            this.assertEqual(ctor.entropy, 0.999451341616353, 'RelTol', 1e-10);
             this.assertEqual(ctor.component, this.hoNIfTId_);
-            this.assertEqual(ctor.entropy, nan, 'RelTol', 1e-10);
-            this.assertEqual(tsum.entropy, nan, 'RelTol', 1e-10);
-            this.assertEqual(vsum.entropy, nan, 'RelTol', 1e-10);
-            this.assertEqual(blrd.entropy, nan, 'RelTol', 1e-10);
         end 
         function test_timeSummed(this)
             tobj = this.testObj.timeSummed;
             this.assertEqual(tobj.size, [128 128 63]);
-            this.assertEqual(tobj.entropy, nan, 'RelTol', 1e-10);
+            this.assertEqual(tobj.entropy, 0.962499036230927, 'RelTol', 1e-10);
         end
         function test_volumeSummed(this)
             tobj = this.testObj.volumeSummed;
-            this.assertEqual(tobj.size, 60);
-            this.assertEqual(tobj.entropy, nan, 'RelTol', 1e-10);
+            this.assertEqual(tobj.size, [1 1 1 60]);
+            this.assertEqual(tobj.entropy, 0, 'RelTol', 1e-10);
         end
         function test_blurred(this)
             import mlfourd.*;
-            this.testObj.blur = [16 16 16];
-            tobj = this.testObj.blurred;
-            this.assertEqual(tobj.size, 60);
-            this.assertEqual(MaskedNIfTId.maxall( tobj), Inf);
-            this.assertEqual(MaskedNIfTId.meanall(tobj), Inf);
-            this.assertEqual(MaskedNIfTId.stdall( tobj), Inf);
-            this.assertEqual(tobj.entropy, nan, 'RelTol', 1e-10);
+            tobj = this.testObj.blurred([4 4 4]);
+            this.assertEqual(tobj.descrip, ...
+                [this.hoNIfTId_.descrip '; decorated by DynamicNIfTId; decorated by BlurringNIfTId; blurred to [4 4 4]']);
+            this.assertEqual(tobj.size, [128 128 63 60]);
+            this.assertEqual(tobj.entropy, 1.185942655963026, 'RelTol', 1e-10);
+            this.assertEqual(MaskingNIfTId.maxall( tobj), 939.327768060429, 'RelTol', 1e-10);
+            this.assertEqual(MaskingNIfTId.meanall(tobj), 10.164494152636440, 'RelTol', 1e-10);
+            this.assertEqual(MaskingNIfTId.stdall( tobj), 0.387587137442489, 'RelTol', 1e-10);
         end
         function test_mcflirted(this)
         end
-        function test_adjustedFrame(this)
+        function test_mcflirtedAfterBlur(this)
         end
-        function test_flirtedBrain(this)
+        function test_revertFrames(this)
         end
         function test_masked(this)
             import mlfourd.*;
-            this.testObj.mask = NIfTId.load(this.mask_fqfn);
-            tobj = this.testObj.masked;
-            this.assertEqual(tobj.size, 60);
-            this.assertEqual(MaskedNIfTId.maxall( tobj), Inf);
-            this.assertEqual(MaskedNIfTId.meanall(tobj), Inf);
-            this.assertEqual(MaskedNIfTId.stdall( tobj), Inf);
-            this.assertEqual(tobj.entropy, nan, 'RelTol', 1e-10);
+            binMask = NIfTId.load(this.mask_fqfn);
+            tobj = this.testObj;
+            tobj = tobj.masked(binMask);
+            this.assertEqual(tobj.descrip, ...
+                ['clone of ' this.testObj.descrip '; DynamicNIfTI.masked(cs01-999-ho1_161616fwhh_thresh250)']);
+            this.assertEqual(tobj.fileprefix, ...
+                'cs01-999-ho1_masked');
+            this.assertEqual(tobj.size, [128 128 63 60]);
+            this.assertEqual(tobj.entropy, 0.698268544789383, 'RelTol', 1e-10);
+            this.assertEqual(MaskingNIfTId.meanall(tobj), 13.6110725200996, 'RelTol', 1e-10);
+            this.assertEqual(MaskingNIfTId.stdall( tobj), 1.68102967422769, 'RelTol', 1e-10);
+            %obj.freeview
         end
  	end 
 

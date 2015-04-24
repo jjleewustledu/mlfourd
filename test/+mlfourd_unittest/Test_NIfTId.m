@@ -83,7 +83,12 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
             nctor = mlfourd.NIfTId(this.t1.img);
             this.assertEqual(this.t1.img, nctor.img);
         end
-        function test_NIfTIdInterfaceCtor(this)
+        function test_NIfTIInterfaceCtor(this)
+            import mlfourd.*;
+            ndctor = NIfTId(NIfTI(this.t1struct));
+            this.assertTrue(isequal(this.t1, ndctor));
+        end
+        function test_INIfTIdCtor(this)
             nctor = mlfourd.NIfTId(this.t1);
             this.assertTrue(isequal(this.t1, nctor));
         end
@@ -229,7 +234,7 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourdd
     
     methods (Access = 'protected')
         function imobj = reducedImg(this, imobj)
-            if (isa(imobj, 'mlfourd.NIfTIdInterface') || isstruct(imobj))
+            if (isa(imobj, 'mlfourd.INIfTId') || isstruct(imobj))
                 imobj.img = imobj.img(:,:,this.ZRANGE);
             elseif (isnumeric(imobj))
                 imobj = imobj(:,:,this.ZRANGE);

@@ -20,66 +20,18 @@ classdef Test_BlurringNIfTId < mlfourd_unittest.Test_NIfTId
             bnEp2d = BlurringNIfTId(ep2d);
             blurred = bnEp2d.blurred([2 4 3]);
             blurred.saveas('test_blurredDynamic');
-            this.assertEqual(blurred.entropy,    0.000202014149212187, 'RelTol', 1e-10);
+            this.assertEqual(blurred.entropy,    2.076199075639435e-04, 'RelTol', 1e-10);
             this.assertEqual(blurred.fileprefix, 'ep2d_default_243fwhh');
             this.assertEqual(blurred.descrip,    [ep2d.descrip '; decorated by BlurringNIfTId; blurred to [2 4 3]']);
             this.assertEqual(blurred.pixdim,     ep2d.pixdim);
             %blurred.freeview
         end
-        function test_blurredDynamicDebug(this)
-            import mlfourd.*;
-            ep2d = NIfTId.load(this.ep2d_fqfn);
-            ep2d.img = squeeze(ep2d.img(:,:,:,1));
-            bnEp2d = BlurringNIfTId(ep2d);        
-            blurred = bnEp2d.blurred([2 2 6]);  
-            blurred.saveas('test_blurredDynamic');          
-            blurred.freeview
-        end
-        function test_blurredDynamicDebug2(this)
-            import mlfourd.*;
-            ep2d = NIfTId.load(fullfile(this.sessionPath, 'fsl', 'ep2d_default_mcf.nii.gz'));
-            ep2d.img = squeeze(ep2d.img(:,:,:,1));
-            bnEp2d = BlurringNIfTId(ep2d);        
-            blurred = bnEp2d.blurred([10 10 2]);  
-            blurred.saveas('test_blurredDynamic2');          
-            %blurred.freeview
-        end
-        function test_blurredDynamicDebug3(this)
-            import mlfourd.*;
-            ep2d = NIfTId.load(fullfile(this.sessionPath, 'fsl', 'ep2d_default_mcf.nii.gz'));
-            bnEp2d = BlurringNIfTId(ep2d);        
-            blurred = bnEp2d.blurred([10 10 2]);  
-            blurred.saveas('test_blurredDynamic3');          
-            %blurred.fslview
-        end
-        function test_blurredWater2(this)
-            import mlfourd.*;
-            ho = NIfTId.load(fullfile(this.sessionPath, 'ECAT_EXACT', 'coss', 'cs01-999-ho1.nii.gz'));
-            bnHo = BlurringNIfTId(ho);        
-            blurred = bnHo.blurred([10 10 2]);  
-            blurred.saveas('test_blurredWater2');          
-            %blurred.freeview
-        end
         function test_blurredWater(this)
             import mlfourd.*;
             ho = NIfTId.load(fullfile(this.sessionPath, 'ECAT_EXACT', 'coss', 'cs01-999-ho1.nii.gz'));
-            ho.img = squeeze(ho.img(:,:,:,20));
             bnHo = BlurringNIfTId(ho);        
             blurred = bnHo.blurred([10 10 2]);  
             blurred.saveas('test_blurredWater');          
-            %blurred.freeview
-        end
-        function test_blurredStaticDebug(this)
-            import mlfourd.*;
-            t1 = NIfTId.load(this.t1_fqfn);
-            t11 = t1.clone;
-            t1.img = zeros([size(t1) 3]);
-            for t = 1:3
-                t1.img(:,:,:,t) = t11.img;
-            end
-            bnt1 = BlurringNIfTId(t1);
-            blurred = bnt1.blurred([10 10 2]);
-            blurred.saveas('test_blurredStatic');
             %blurred.freeview
         end
         function test_blurredStatic(this)

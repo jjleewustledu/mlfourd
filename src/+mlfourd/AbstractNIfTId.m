@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.NIfTIdInterface
+classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.INIfTId
 	%% ABSTRACTNIFTID 
     %  Yet abstract:
     %      properties:  descrip, img, mmppix, pixdim
@@ -12,7 +12,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
     
     properties (Constant)
         DESC_LEN_LIM = 256; % limit to #char of desc, as desc may be used for the default fileprefix
-        LOAD_UNTOUCHED = true
+        LOAD_UNTOUCHED = false
         OPTIMIZED_PRECISION = false
     end
     
@@ -104,8 +104,8 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         function this = set.mmppix(this, mpp)
             %% SET.MMPPIX sets voxel-time dimensions in mm, s.
             
-            assert(all(this.rank == length(mpp)));
-            this.hdr_.dime.pixdim(2:this.rank+1) = mpp;
+            %assert(all(this.rank == length(mpp)));
+            this.hdr_.dime.pixdim(2:length(mpp)+1) = mpp;
             this.untouch_ = false;
         end
         function pd   = get.pixdim(this)
@@ -278,7 +278,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             
             if (nargin < 2)
                 img = this.img; end
-            rnk = size(size(squeeze(img)),2);
+            rnk = size(size(img),2);
         end
         function this = scrubNanInf(this, varargin)
             p = inputParser;

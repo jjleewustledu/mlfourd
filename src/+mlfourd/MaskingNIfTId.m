@@ -1,14 +1,14 @@
-classdef MaskedNIfTId < mlfourd.NIfTIdecorator
-	%% MASKEDNIFTID is a NIfTIdecorator that composes an internal NIfTIdInterface object
+classdef MaskingNIfTId < mlfourd.NIfTIdecorator
+	%% MASKINGNIFTID is a NIfTIdecorator that composes an internal INIfTId object
     %  according to the decorator design pattern
         
     methods (Static)        
         function this = load(varargin)
             %% LOAD 
-            %  Usage:  this = MaskedNIfTId.load(filename[, description])
+            %  Usage:  this = MaskingNIfTId.load(filename[, description])
             
             import mlfourd.*;            
-            this = MaskedNIfTId(NIfTId.load(varargin{:}));
+            this = MaskingNIfTId(NIfTId.load(varargin{:}));
         end
         function S    = sumall(obj)
             img = double(obj); % N.B. overload in NIfTIdecorator
@@ -109,26 +109,26 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
     end
     
     methods        
-        function this = MaskedNIfTId(cmp, varargin)            
-            %% MASKEDNIFTID 
-            %  Usage:  this = MaskedNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
+        function this = MaskingNIfTId(cmp, varargin)            
+            %% MASKINGNIFTID 
+            %  Usage:  this = MaskingNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
             %
             %          options:  'binarize'        logical
             %                    'thresh'          numerical
             %                    'pthresh'         numerical
-            %                    'nifti_mask'      NIfTIdInterface
-            %                    'freesurfer_mask' NIfTIdInterface, to be binarized internally
+            %                    'niftid_mask'     INIfTId
+            %                    'freesurfer_mask' INIfTId, to be binarized internally
             
             import mlfourd.*; 
             this = this@mlfourd.NIfTIdecorator(cmp);
-            this = this.append_descrip('decorated by MaskedNIfTId');
+            this = this.append_descrip('decorated by MaskingNIfTId');
             
             p = inputParser;
             addParameter(p, 'binarize',        false, @islogical);
             addParameter(p, 'thresh',          [],    @isnumeric);
             addParameter(p, 'pthresh',         [],    @isnumeric);
-            addParameter(p, 'nifti_mask',      [],    @(x) isa(x, 'mlfourd.NIfTIdInterface'));
-            addParameter(p, 'freesurfer_mask', [],    @(x) isa(x, 'mlfourd.NIfTIdInterface'));
+            addParameter(p, 'niftid_mask',     [],    @(x) isa(x, 'mlfourd.INIfTId'));
+            addParameter(p, 'freesurfer_mask', [],    @(x) isa(x, 'mlfourd.INIfTId'));
             parse(p, varargin{:});
             
             if (p.Results.binarize)
@@ -140,21 +140,21 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
             if (~isempty(p.Results.pthresh))
                 this = this.pthresh(p.Results.pthresh);
             end
-            if (~isempty(p.Results.nifti_mask))
-                this = this.masked(p.Results.nifti_mask);
+            if (~isempty(p.Results.niftid_mask))
+                this = this.masked(p.Results.niftid_mask);
             end
             if (~isempty(p.Results.freesurfer_mask))
                 import mlfourd.*; 
                 this = this.masked( ...
-                       MaskedNIfTId(p.Results.freesurfer_mask, 'binarize', true));
+                       MaskingNIfTId(p.Results.freesurfer_mask, 'binarize', true));
             end
         end           
         function this = masked(this, niidMask)            
-            %% MASKED returns this with the internal image multiplied by the passed NIfTIdInterface mask;
-            %  Usage:   mn = MaskedNIfTId(...)
-            %           mn = mn.masked(NIfTIdInterface_mask)
+            %% MASKED returns this with the internal image multiplied by the passed INIfTId mask;
+            %  Usage:   mn = MaskingNIfTId(...)
+            %           mn = mn.masked(INIfTId_mask)
             
-            assert(isa(niidMask, 'mlfourd.NIfTIdInterface'));
+            assert(isa(niidMask, 'mlfourd.INIfTId'));
             assert(all(this.size == niidMask.size));
             mx = this.maxall(niidMask);
             mn = this.minall(niidMask);
@@ -166,18 +166,18 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
             this = this.makeSimilar( ...
                    'img', this.img .* niidMask.img, ...
                    'descrip', sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
-                   'fileprefix', sprintf('_maskedby_%s', niidMask.fileprefix));
+                   'fileprefix', '_masked');
         end
         function N    = count(this)            
-            %% COUNT counts nonzero elements in the internal NIfTIdInterface component
+            %% COUNT counts nonzero elements in the internal INIfTId component
             
             msk = this.img ~= 0;
             N   = this.sumall(msk);
         end
         function this = thresh(this, thresh)            
             %% THRESH returns a binary mask after thresholding
-            %  Usage:  mn = MaskedNIfTId(...)
-            %          mn = mn.thresh(167); % returns MaskedNIfTId with MaskedNIfTId.img > 167 set as binary image
+            %  Usage:  mn = MaskingNIfTId(...)
+            %          mn = mn.thresh(167); % returns MaskingNIfTId with MaskingNIfTId.img > 167 set as binary image
             %          max(max(max(mn.img)))
             %          ans = 1
             
@@ -190,8 +190,8 @@ classdef MaskedNIfTId < mlfourd.NIfTIdecorator
         end
         function this = pthresh(this, pthr)            
             %% PTHR returns binary mask after applying a robust percent threshold
-            %  Usage:  mn = MaskedNIfTId(...)
-            %          mn = mn.pthr(0.67) % returns MaskedNIfTId with MaskedNIfTId.img > 67% robust threshold set as binary image
+            %  Usage:  mn = MaskingNIfTId(...)
+            %          mn = mn.pthr(0.67) % returns MaskingNIfTId with MaskingNIfTId.img > 67% robust threshold set as binary image
             
             if (pthr >= 1)
                 pthr = pthr/100; 

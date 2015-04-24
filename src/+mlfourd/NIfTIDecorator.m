@@ -1,4 +1,4 @@
-classdef NIfTIdecorator < mlfourd.NIfTIdInterface
+classdef NIfTIdecorator < mlfourd.INIfTId
 	%% NIFTIDECORATOR maintains an internal component object by composition, 
     %  forwarding most requests to the component.  It retains an interface consistent with the component's interface.
     %  Subclasses may optionally perform additional operations before/after forwarding requests.
@@ -28,7 +28,7 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
         fqfp 
         noclobber
         
-        %% NIfTIdInterface
+        %% INIfTId
         
         creationDate
         descrip
@@ -110,7 +110,7 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
             tf = this.component_.noclobber;
         end
         
-        %% NIfTIdInterface
+        %% INIfTId
         
         function this = set.descrip(this, x)
             this.component_.descrip = x;
@@ -207,12 +207,12 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
 
     methods
  		function this = NIfTIdecorator(varargin) 
-            %% NIFTIDECORATOR decorates other NIfTIdInterface objects, keeping the passed object as an internal component by composition;
+            %% NIFTIDECORATOR decorates other INIfTId objects, keeping the passed object as an internal component by composition;
             %  it will not act as a copy-ctor, as all passed objects are kept in a hierarchy of components.
-            %  Usage:  obj = NIfTIdecorator(NIfTIdInterface_object);
+            %  Usage:  obj = NIfTIdecorator(INIfTId_object);
             
             p = inputParser;
-            addOptional(p, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.NIfTIdInterface'));
+            addOptional(p, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.INIfTId'));
             parse(p, varargin{:});
             this.component_ = p.Results.cmp;
         end 
@@ -227,7 +227,7 @@ classdef NIfTIdecorator < mlfourd.NIfTIdInterface
             obj.component_ = this.component_.saveas(fqfn);
         end
         
-        %% NIfTIdInterface
+        %% INIfTId
         
         function x    = char(this)
             x = this.component_.char;

@@ -1,5 +1,5 @@
 classdef BlurringNIfTId < mlfourd.NIfTIdecorator
-	%% BLURRINGNIFTID is a NIfTIdecorator that composes an internal NIfTIdInterface object
+	%% BLURRINGNIFTID is a NIfTIdecorator that composes an internal INIfTId object
     %  according to the decorator design pattern
 
 	%  $Revision$ 
@@ -22,7 +22,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
     
     methods %% SET/GET
         function this = set.mask(this, m)
-            if (islogical(m) || isa(m, 'mlfourd.NIfTIdInterface'))
+            if (islogical(m) || isa(m, 'mlfourd.INIfTId'))
                 m = double(m); end
             assert(isnumeric(m));
             this.mask_ = m;
@@ -102,16 +102,16 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
 	methods 
  		function this = BlurringNIfTId(cmp, varargin)
  			%% BlurringNIfTId 
- 			%  Usage:  this = BlurringNIfTId(NIfTIdInterface_object[,parameterName, parameterValue]) 
+ 			%  Usage:  this = BlurringNIfTId(INIfTId_object[,parameterName, parameterValue]) 
             %  Parameters:  'blur', numeric value, default []
-            %               'mask', numeric or NIfTIdInterface value, default this.ones
+            %               'mask', numeric or INIfTId value, default this.ones
 
             this = this@mlfourd.NIfTIdecorator(cmp);
             this = this.append_descrip('decorated by BlurringNIfTId');
             
             p = inputParser;
             addParameter(p, 'blur', [], @isnumeric);
-            addParameter(p, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.NIfTIdInterface'));
+            addParameter(p, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTId'));
             parse(p, varargin{:});
             
             this.mask = p.Results.mask;
@@ -138,7 +138,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
             import mlfourd.* mlpet.*;
             p = inputParser;
             addRequired(p, 'blur',    @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
-            addOptional(p, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.NIfTIdInterface'));
+            addOptional(p, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTId'));
             parse(p, blur, varargin{:});
             
             this.blur = p.Results.blur;
