@@ -195,7 +195,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
             
             if (pthr >= 1)
                 pthr = pthr/100; 
-                assert(pthr <= 100);
+                assert(pthr <= 1);
             end
             img  = double(this.img > norminv(pthr, this.meanall(this.img), this.stdall(this.img)));
             this = this.makeSimilar( ...

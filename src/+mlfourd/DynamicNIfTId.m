@@ -70,14 +70,16 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator
             end
             if (~isempty(p.Results.mask))
                 this.mask_ = p.Results.mask;
-                this = this.masked;
+                this = this.masked(this.mask);
             end
         end 
         function this = timeSummed(this)
             this.img = sum(this.img, 4);
+            this = this.append_fileprefix('_sumt');
         end        
         function this = volumeSummed(this)
             this.img = sum(sum(sum(this.img, 1), 2), 3);
+            this = this.append_fileprefix('_sumxyz');
         end
         function this = blurred(this, varargin)
             bnii = mlfourd.BlurringNIfTId(this.component_);
