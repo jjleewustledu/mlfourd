@@ -112,8 +112,9 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             nii = this.clone;
             if (length(nii.descrip) > this.DESC_LEN_LIM)
                 len = this.DESC_LEN_LIM - 5;
+                len2 = floor(len/2);
                 nii.descrip = ...
-                    [nii.descrip(len/2) ' ... ' nii.descrip(end+1-len/2:end)]; 
+                    [nii.descrip(1:len2) ' ... ' nii.descrip(end+1-len2:end)]; 
             end
             
             p = inputParser;
