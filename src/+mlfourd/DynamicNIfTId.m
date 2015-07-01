@@ -147,7 +147,12 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator
                    'descrip', sprintf('DynamicNIfTI.masked(%s)', niidMask.fileprefix), ...
                    'fileprefix', '_masked');
         end
-    end 
+        function tidx = referenceVolume(this)
+            tcurve = this.clone;
+            tcurve = tcurve.volumeSummed;
+            [~,tidx] = max(squeeze(tcurve.img));
+        end
+    end
 
     %% PRIVATE
     
@@ -155,15 +160,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator
         blur_
         mask_
     end
-    
-    methods (Access = 'private')
-        function tidx = referenceVolume(this)
-            tcurve = this.clone;
-            tcurve = tcurve.volumeSummed;
-            [~,tidx] = max(squeeze(tcurve.img));
-        end
-    end
-    
+      
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end
 
