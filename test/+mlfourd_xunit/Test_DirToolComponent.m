@@ -17,10 +17,10 @@ classdef Test_DirToolComponent < MyTestCase
 
 	methods 
  		function test_DirTool(this) 
-            dt = mlfourd.DirTool(this.t1_fqfn);
+            dt = mlsystem.DirTool(this.t1_fqfn);
         end 
         function test_DirTools(this)
-            dts = mlfourd.DirTools(fullfile(this.fslPath, '*t1_*'));
+            dts = mlsystem.DirTools(fullfile(this.fslPath, '*t1_*'));
         end
  		function this = Test_DirToolComponent(varargin) 
  			this = this@MyTestCase(varargin{:}); 
