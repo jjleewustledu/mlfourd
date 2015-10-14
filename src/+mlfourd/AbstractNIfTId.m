@@ -16,6 +16,10 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         OPTIMIZED_PRECISION = false
     end
     
+    properties 
+        stack % EXPERIMENTAL
+    end
+    
     properties (Dependent)
         
         % After mlfourd.JimmyShenInterface:  to support struct arguments to NIfTId ctor  
@@ -71,6 +75,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             this.hdr_.dime.dim(1)             = this.rank;
             this.hdr_.dime.dim(2:this.rank+1) = this.size;
             this.untouch_ = false;
+            this.stack = [{dbstack} this.stack];
         end 
         function e    = get.ext(this)
             e = this.ext_;

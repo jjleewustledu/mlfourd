@@ -13,6 +13,13 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
         mmppix
         pixdim
     end
+    
+	properties (SetAccess = 'protected')        
+        ext
+        filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr
+        untouch
+    end 
  
     methods (Static)
         function this = load(objs, varargin)

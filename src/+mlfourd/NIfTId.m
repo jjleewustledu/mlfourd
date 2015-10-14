@@ -10,7 +10,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         ISEQUAL_IGNORES      = {'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch'}
         SUPPORTED_EXTENSIONS = {'.nii.gz' '.nii' '.mgh' '.mgz' '.hdr' '.dcm' '.IMA'} % fist extension is default
         CLEAN_UP_WORK_FILES  = true
-    end
+    end    
     
     methods (Static) 
         function nii = load(fn, varargin)
@@ -183,7 +183,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                 this.pixdim       = pixdim;
                         end 
                     case 'struct'
-                        this.img_         = datobj.img;
+                        this.img          = datobj.img;
                         this.hdr_         = datobj.hdr;
                         this.filetype_    = datobj.filetype;
                         this.fqfileprefix = datobj.fileprefix;
@@ -203,7 +203,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                     otherwise
                         if (isnumeric(datobj))
                             rank                                 = length(size(datobj));
-                            this.img_                            = double(datobj);
+                            this.img                             = double(datobj);
                             this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
                             this.hdr_.dime.dim                   = zeros(1,8);
                             this.hdr_.dime.dim(1)                = rank;
@@ -238,7 +238,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                     this.pixdim     = pixdim;
                             end
                         elseif (isa(datobj, 'mlfourd.INIfTId')) % copy ctor
-                            this.img_         = datobj.img;
+                            this.img          = datobj.img;
                             this.hdr_         = datobj.hdr;
                             this.filetype_    = datobj.filetype;
                             this.fqfileprefix = datobj.fqfileprefix;
@@ -265,6 +265,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             end
             if (~this.LOAD_UNTOUCHED)
                 this = this.optimizePrecision; end
+            this.stack = {this.descrip};
         end 
     end
    

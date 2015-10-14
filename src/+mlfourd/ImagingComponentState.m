@@ -120,10 +120,13 @@ classdef ImagingComponentState < mlfourd.ImagingState
     end 
     
 	methods (Static)
-        function this = load(imcmp, h)
+        function this = load(imcmp0, h)
             import mlfourd.*;
-            if (~isa(imcmp, 'mlfourd.ImagingComponent'))
-                imcmp = ImagingComponent.load(imcmp); end
+            if (~isa(imcmp0, 'mlfourd.ImagingComponent'))
+                imcmp = ImagingComponent.load(imcmp0); 
+            else
+                imcmp = imcmp0;
+            end
             this = ImagingComponentState;
             this.imcomponent_ = imcmp.clone;
             this.contextHandle_ = h;
