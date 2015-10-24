@@ -1,5 +1,6 @@
 classdef ImagingSeries < mlfourd.ImagingComponent
-	%% IMAGINGSERIES is the interface for leaves in composite design patterns
+	%% IMAGINGSERIES is the interface for leaves in composite design patterns.
+    
 	%  Version $Revision: 2608 $ was created $Date: 2013-09-07 19:14:08 -0500 (Sat, 07 Sep 2013) $ by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-07 19:14:08 -0500 (Sat, 07 Sep 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingSeries.m $ 
  	%  Developed on Matlab 7.14.0.739 (R2012a) 
@@ -13,10 +14,10 @@ classdef ImagingSeries < mlfourd.ImagingComponent
             %  Usage:   imaging_series_obj = ImgagingSeries.createFromFilename(nifti_filename);
             
             import mlfourd.*;
-            this = ImagingSeries.createFromNIfTIInterface(NIfTI.load(fn), varargin{:});
+            this = ImagingSeries.createFromINIfTI(NIfTId.load(fn), varargin{:});
         end
-        function this = createFromNIfTIInterface(nii, varargin)
-            assert(isa(nii, 'mlfourd.NIfTIInterface'));
+        function this = createFromINIfTI(nii, varargin)
+            assert(isa(nii, 'mlfourd.INIfTI'));
             import mlfourd.*;
             ial = ImagingArrayList;
             ial.add(nii);

@@ -1,5 +1,8 @@
 classdef ImagingComponentState < mlfourd.ImagingState
 	%% IMAGINGCOMPONENTSTATE   
+    %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
+    %             mlfourd.ImagingLocation, mlpatterns.State
+    %  TO DO;  setting filenames should not change state to ImagingLocation.
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -20,6 +23,7 @@ classdef ImagingComponentState < mlfourd.ImagingState
         fqfp
         
         mgh
+        niftid
         nifti	
         imcomponent	 
  	end 
@@ -53,6 +57,11 @@ classdef ImagingComponentState < mlfourd.ImagingState
             this.contextHandle_.changeState( ...
                 mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
             f = this.contextHandle_.mgh;
+        end
+        function f = get.niftid(this)  
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
+            f = this.contextHandle_.niftid;
         end
         function f = get.nifti(this)  
             this.contextHandle_.changeState( ...
@@ -107,6 +116,11 @@ classdef ImagingComponentState < mlfourd.ImagingState
             this.contextHandle_.changeState( ...
                 mlfourd.MGHState.load(f, this.contextHandle_));
         end
+        function this = set.niftid(this, f)
+            assert(isa(f, 'mlfourd.INIfTI'));
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(f, this.contextHandle_));
+        end
         function this = set.nifti(this, f)
             assert(isa(f, 'mlfourd.NIfTIInterface'));
             this.contextHandle_.changeState( ...
@@ -120,15 +134,18 @@ classdef ImagingComponentState < mlfourd.ImagingState
     end 
     
 	methods (Static)
-        function this = load(imcmp0, h)
+        function this = load(obj, h)            
             import mlfourd.*;
-            if (~isa(imcmp0, 'mlfourd.ImagingComponent'))
-                imcmp = ImagingComponent.load(imcmp0); 
-            else
-                imcmp = imcmp0;
+            if (~isa(obj, 'mlfourd.ImagingComponent'))
+                try
+                    obj = ImagingComponent.load(obj);
+                catch ME
+                    error(ME.identifier, ...
+                          'mlfourd.ImagingComponentState.load does not support objects of type %s', class(obj));
+                end
             end
             this = ImagingComponentState;
-            this.imcomponent_ = imcmp.clone;
+            this.imcomponent_ = obj;
             this.contextHandle_ = h;
         end
     end 
@@ -136,7 +153,7 @@ classdef ImagingComponentState < mlfourd.ImagingState
 	methods
         function this = save(this)
             imcmp = this.imcomponent_;
-            null  = imcmp.save; %% KLUDGE
+            null  = imcmp.save; %#ok<NASGU> %% KLUDGE
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(this.imcomponent_.fqfilename, this.contextHandle_));
         end
@@ -145,8 +162,17 @@ classdef ImagingComponentState < mlfourd.ImagingState
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(this.imcomponent_.fqfilename, this.contextHandle_));
         end
- 	end 
+    end 
 
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+        function this = ImagingComponentState
+        end
+    end
+    
+    %% PRIVATE
+    
 	properties (Access = 'private')
         imcomponent_
     end 

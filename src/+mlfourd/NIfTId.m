@@ -7,7 +7,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     %  Report bugs to bug.jjlee.wustl.edu@gmail.com.
 
     properties (Constant)
-        ISEQUAL_IGNORES      = {'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch'}
+        ISEQUAL_IGNORES      = {'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
         SUPPORTED_EXTENSIONS = {'.nii.gz' '.nii' '.mgh' '.mgz' '.hdr' '.dcm' '.IMA'} % fist extension is default
         CLEAN_UP_WORK_FILES  = true
     end    
@@ -92,7 +92,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this.fqfilename = fqfn;
             this.untouch_ = false;
             this.save;
-        end % overloads AbstractIOInterface.saveas        
+        end % overloads AbstractSimpleIO.saveas        
         function obj      = clone(this)
             obj = mlfourd.NIfTId(this, this.fqfileprefix, ['clone of ' this.descrip], this.pixdim);
         end        
@@ -143,7 +143,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                 if ('_' == fp(end))
                     fp = [fp this.fileprefix]; return; end
             end
-        end  
+        end
         
         function this = NIfTId(datobj, fprefix, desc, pixdim)
             %% NIfTId is a copy ctor & also accepts Jimmy Sheng's NIfTI-structs or image arrays.
@@ -237,7 +237,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                     this.descrip    = desc;
                                     this.pixdim     = pixdim;
                             end
-                        elseif (isa(datobj, 'mlfourd.INIfTId')) % copy ctor
+                        elseif (isa(datobj, 'mlfourd.INIfTI')) % copy ctor
                             this.img          = datobj.img;
                             this.hdr_         = datobj.hdr;
                             this.filetype_    = datobj.filetype;
@@ -338,7 +338,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         function this     = assignDefaults(this)
             this.img_                     = zeros(3,3,3);
             this.fileprefix               = ['NIfTId_D' datestr(now,30)];
-            this.filesuffix_              = mlfourd.INIfTId.FILETYPE_EXT;
+            this.filesuffix_              = mlfourd.INIfTI.FILETYPE_EXT;
             
             this.hdr_.hist                = struct;
             this.hdr_.hist.descrip        = ['NIfTId(' num2str(nargin) ' argin)'];

@@ -1,0 +1,315 @@
+classdef PETConverter < mlfourd.AbstractConverter
+    %% PETconverter converts ECAT_EXACT or Analyze files to fsl formats
+    %  TO DO:   refactor into a composite pattern
+    %
+    % Created by John Lee on 2008-12-26.
+    % Copyright (c) 2008 Washington University School of Medicine. All rights reserved.
+    % Report bugs to bug.jjlee.wustl.edu@gmail.com.
+    %
+    %       Herscovitch P, Markham J, Raichle ME. Brain blood flow measured
+    % with intravenous H2(15)O: I. theory and error analysis.
+    % J Nucl Med 1983;24:782?789
+    %
+    %       Videen TO, Perlmutter JS, Herscovitch P, Raichle ME. Brain
+    % blood volume, blood flow, and oxygen utilization measured with
+    % O-15 radiotracers and positron emission tomography: revised metabolic
+    % computations. J Cereb Blood Flow Metab 1987;7:513?516
+    %
+    %       Herscovitch P, Raichle ME, Kilbourn MR, Welch MJ. Positron
+    % emission tomographic measurement of cerebral blood flow and
+    % permeability: surface area product of water using [15O] water and
+    % [11C] butanol. J Cereb Blood Flow Metab 1987;7:527?542
+    %
+
+    properties (Constant)
+        modalityFolders = {'ECAT_EXACT'};
+        orients2fix     = struct('img_type', { 'ptr' 'poc' 'poo' 'pho' 'ctr' 'coc' 'coo' 'cho' }, ...
+                              'orientation', { 'y'   'y'   'y'   'y'   'y'   'y'   'y'   'y'   });    
+        unpackFolders   = {'962_4dfp'};
+    end
+    
+    properties (SetAccess = 'protected')
+        hdrFolder = 'hdr_backup';
+    end
+    
+    properties (Dependent)
+          allFileprefixes
+          
+        hohdrFqFilename
+        ochdrFqFilename
+        oohdrFqFilename
+        hosumFqFilenames
+        oosumFqFilenames
+           hoFqFilenames 
+           ooFqFilenames
+           ocFqFilenames
+           trFqFilenames
+        hosumFqFilename
+        oosumFqFilename
+           hoFqFilename
+           ooFqFilename
+           ocFqFilename
+           trFqFilename
+           
+        hosumComposite
+        oosumComposite
+           hoComposite
+           ooComposite
+           ocComposite
+           trComposite
+        hosumSeries
+        oosumSeries
+           hoSeries
+           ooSeries
+           ocSeries
+           trSeries
+           
+        petFolder
+        folder962
+        petPath
+        path962
+        hdrPath
+        tracerTokens
+    end
+    
+    methods (Static)
+        function this = convert(mpth)
+            assert(lexist(mpth, 'dir'));
+            import mlfourd.*;
+            this = PETConverter(mpth);            
+            if (lexist(fullfile(mpth, '..', 'fsl', '.petconverter')))
+                return
+            end
+            this.unpack(this.unpackPath);            
+            r = '';
+            try
+                [~,r] = mlbash(sprintf('mkdir %s', fullfile(this.fslPath, '.petconverter'))); %#ok<NASGU>
+            catch ME
+                handwarning(ME, r);
+            end
+        end        
+        function        convertStudy(studyPth, patt)
+            if (~exist('patt', 'var'))
+                patt = '*'; end
+            dt  = DirTool(fullfile(studyPth, patt));
+            dns = dt.fqdns;
+            for d = 1:length(dns)
+                try
+                    mlfourd.PETConverter.convertSession(dns{d});
+                catch ME
+                    handwarning(ME);
+                end
+            end
+        end % static convertStudy        
+        function this = convertSession(sessionPth)
+            this = mlfourd.PETConverter.createFromSessionPath(sessionPth); 
+            this.unpack(this.unpackPath);
+        end % static convertSession 
+        function this = createFromSessionPath(spth)
+            import mlfourd.*;
+            mpth = firstExistingFile(spth, PETConverter.modalityFolders);
+            this = PETConverter.createFromModalityPath(mpth);
+        end
+        function this = createFromModalityPath(mpth)
+            this = mlfourd.PETConverter(mpth);
+        end     
+        function fn   = hdrChoice(fns)
+            assert(~isempty(fns));
+            fn = fns{1};
+        end
+    end % static methods
+    
+    methods %% Set/Get all acesssible paths, folders, fileprefixes, filenames        
+        function pth  = get.petPath(this)
+            for p = 1:length(this.modalityFolders) %#ok<FORFLG>
+                pth = fullfile(this.sessionPath, this.modalityFolders{p}, ''); 
+                if (lexist(pth)); return; end
+            end
+            error('mlfourd:PathNotFound', 'could not find any of:  %s', cell2str(this.modalityFolders));
+        end % get.pethPath
+        function fld  = get.petFolder(this)
+            [~,fld] = fileparts(this.petPath);
+        end % get.petFolder
+        function pth  = get.path962(this)
+            pth = this.unpackPath;
+        end % get.path962
+        function fld  = get.folder962(this)
+            fld = this.unpackFolder;
+        end % get.folder962
+        function pth  = get.hdrPath(this)
+            pth = fullfile(this.modalityPath, this.hdrFolder, '');
+        end
+        function fn   = get.hohdrFqFilename(this)
+            fn = this.hdrFqFilename('ho');
+        end
+        function fn   = get.ochdrFqFilename(this)
+            fn = this.hdrFqFilename('oc');
+        end
+        function fn   = get.oohdrFqFilename(this)
+            fn = this.hdrFqFilename('oo');
+        end        
+        function pref = get.allFileprefixes(this)
+            pref = {};
+            tracers = mlfourd.NamingRegistry.tracers;
+            pref = [pref cellfun(@(x) [this.cprefix x], tracers, 'UniformOutput', false)];
+            pref = [pref cellfun(@(x) [this.pprefix x], tracers, 'UniformOutput', false)];
+        end % get.allFileprefixes
+        function fns  = get.hoFqFilenames(this)
+            fns = this.modalFqFilenames('ho');
+        end % get.hoFqFilenames
+        function fns  = get.hosumFqFilenames(this)
+            picks = cell2logical(strfind(this.hoFqFilenames, 'sum'));
+            pickf = cell2logical(strfind(this.hoFqFilenames, '_f')) & cell2logical(strfind(this.hoFqFilenames, 'to'));
+            fns   = this.hoFqFilenames(picks | pickf); 
+        end % get.hosumFqFilenames
+        function fns  = get.ooFqFilenames(this)
+            fns = this.modalFqFilenames('oo');
+        end % get.ooFqFilenames
+        function fns  = get.oosumFqFilenames(this)
+            picks = cell2logical(strfind(this.ooFqFilenames, 'sum'));
+            pickf = cell2logical(strfind(this.ooFqFilenames, '_f')) & cell2logical(strfind(this.ooFqFilenames, 'to'));
+            fns   =  this.ooFqFilenames(picks | pickf); 
+        end % get.oosumFqFilenames
+        function fns  = get.ocFqFilenames(this)
+            if (isempty(this.ocFqFilenames_))
+                [~,f,~] = cellfun(@(x) filepartsx(x, '.nii.gz'), this.allFqFilenames, 'UniformOutput', false);
+                this.ocFqFilenames_ = this.allFqFilenames(cell2logical(strfind(f, 'oc')));
+            end
+            fns = this.ocFqFilenames_;
+        end % get.ocFqFilenames
+        function fns  = get.trFqFilenames(this)
+            fns = this.modalFqFilenames('tr'); 
+        end % get.trFqFilenames   
+        function fn   = get.hosumFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.hosumFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.hosumFqFilename is empty');
+        end
+        function fn   = get.oosumFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.oosumFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.oosumFqFilename is empty');
+        end
+        function fn   = get.hoFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.hoFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.hoFqFilename is empty');
+        end
+        function fn   = get.ooFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.ooFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.ooFqFilename is empty');
+        end
+        function fn   = get.ocFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.ocFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.ocFqFilename is empty');
+        end
+        function fn   = get.trFqFilename(this)
+            fn = mlfourd.PETConverter.brightest(this.trFqFilenames);
+            assert(~isempty(fn), 'mlfourd:MissingValues', 'get.trFqFilename is empty');
+        end     
+        function tt   = get.tracerTokens(this)
+            c  = cellfun(@(x) [this.cprefix x '*'], this.tracers, 'UniformOutput', false);
+            p  = cellfun(@(x) [this.pprefix x '*'], this.tracers, 'UniformOutput', false);
+            tt = [c p];
+        end
+    end
+    
+    methods
+        function fns  = modalFqFilenames(this, lbl)
+            %% MODALFQFILENAMES uses lazy initialization of a cache of fully-qualified filenames
+            
+            lbl_ = [lbl 'FqFilenames_'];
+            if (isempty(this.(lbl_)))
+                this.(lbl_) = this.allFqFilenames(cell2logical(strfind(this.allFqFilenames, lbl)));
+            end
+            fns = this.(lbl_);
+        end % modalFqFilenames
+        function        unpack(this, varargin)
+            %% UNPACK unpacks 962_4dfp contents to an fsl-folder
+            %  Usage:  unpack 
+            %          unpack(962_path) 
+            %          unpack(962_path, fsl_path)
+            
+            switch (nargin-1)
+                case 0
+                    this.unpack(this.path962, this.fslPath);
+                case 1
+                    this.unpack(varargin{1},  this.fslPath);
+                case 2
+                    % funnel
+                    import mlfourd.*;
+                    dirnii = DirTool(varargin{1});
+                    if (~lcontains(dirnii.fns, NIfTI.FILETYPE_EXT))
+                        this.analyze2nifti(  varargin{1});
+                    end
+                    this.cleanAnalyze(       varargin{1});
+                    this.rename(varargin{1}, varargin{2});
+                    this.reorient2std(       varargin{2});
+                otherwise
+                    error('mlfourd:TooManyNargin', 'PETConverter.unpack.varargin->%i', cell2str(vargin));
+            end
+            this.fixOrient(this.fslPath, this.orients2fix);
+        end % unpack
+        function        rename(this, srcpth, targpth)
+            %% RENAME also assigns this.allFqFilenames
+            %  Usage:   obj.rename(source_path, target_path)
+            %           obj.rename('ECAT_EXACT/962_4dfp', 'fsl')
+            
+            import mlfourd.*;
+            assert(lexist(srcpth, 'dir'));
+            targpth = ensureFolderExists(targpth);
+            this.allFqFilenames = {'dummyfile'};
+            
+            dircoss = DirTool(fullfile(srcpth, 'cs01-999-*'));
+            for c = 1:length(dircoss.fqfns) %#ok<FORFLG>
+                cnames = regexp(dircoss.fns{c}, this.cossexp, 'names'); 
+                if (~isempty(cnames))
+                    targFqfn  = fullfilename(targpth, [this.cprefix cnames.tracer cnames.sum]);
+                    this.allFqFilenames = [targFqfn  this.allFqFilenames];
+                    copyfile(dircoss.fqfns{c}, targFqfn, 'f');
+                end
+            end
+            
+            dirpet  = DirTool(fullfile(srcpth, 'p*'));
+            for p = 1:length(dirpet.fqfns) %#ok<FORFLG>
+                pnames = regexp(dirpet.fns{p},  this.petexp,  'names'); 
+                if (~isempty(pnames))
+                    targFqfn  = fullfilename(targpth, [this.pprefix pnames.tracer pnames.sum]);
+                    this.allFqFilenames = [targFqfn  this.allFqFilenames];
+                    copyfile(dirpet.fqfns{p}, targFqfn, 'f');
+                end
+            end
+        end % rename 
+    end % methods
+    
+    %% PROTECTED
+    
+    properties (Access = 'protected')
+        cossexp         = 'cs01-999-(?<tracer>\w{2})\d{1}(?<sum>_\w+|)(.4dfp|).nii.gz';
+        petexp          =    'p\d{4}(?<tracer>\w{2})\d{1}(?<sum>_\w+|)(.4dfp|).nii.gz';
+        cprefix         = 'c';
+        pprefix         = 'p';
+    end 
+    
+    methods (Access = 'protected')
+        function this = PETConverter(petpth)
+            %% PETCONVERTER
+            %  Usage:  obj = PETConverter(pet_path) % from creation method
+            
+            this = this@mlfourd.AbstractConverter(petpth);
+        end % ctor
+        function fn   = hdrFqFilename(this, tracer)
+            import mlfourd.*;
+            assert(2 == length(tracer));
+            dt = DirTool(fullfile(this.hdrPath, ['*' tracer '*.hdr.info']));
+            fn = PETConverter.hdrChoice(dt.fqfns);
+            assert(~isempty(fn), 'mlfourd:MissingValues', ['get.' tracer 'hdrFqFilename is empty']);
+        end   
+    end % protected methods
+    
+    %% PRIVATE
+    
+    properties (Access = 'private')
+        hoFqFilenames_
+        ooFqFilenames_
+        ocFqFilenames_
+        trFqFilenames_
+    end % private properties
+end % classdef

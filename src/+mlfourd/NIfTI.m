@@ -9,7 +9,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
     properties (Constant)
         ISEQUAL_IGNORES      = {'untouch' 'noclobber' 'debugging' 'filesuffix'   'label' ...
                                 'descrip' 'machine'   'hdxml'     'creationDate' 'originalType' 'seriesNumber' 'hdr' 'ext'}; 
-        NIFTI_SUBCLASS       = {'mlfourd.NIfTI' 'BlurredNIfTI' 'mlfourd.NiiBrowser' 'mlfourd.NIfTI_mask'} % DEPRECATED
+        NIFTI_SUBCLASS       = {'mlfourd.NIfTI' 'mlfourd.BlurringNIfTId' 'mlfourd.NiiBrowser' 'mlfourd.NIfTI_mask' 'mlfourd.NIfTId'} % DEPRECATED
     end
     
     properties (Dependent)
@@ -19,7 +19,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
         pixdim
     end  
  
-    properties (SetAccess = 'protected') % JimmyShenInterface:  to support struct arguments to NIfTI ctor
+    properties % JimmyShenInterface:  to support struct arguments to NIfTI ctor
         originalType
         ext
         filetype = 2;  % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
@@ -147,9 +147,12 @@ classdef NIfTI < mlfourd.AbstractNIfTI
             this.hdr.dime.bitpix   = 32;
         end % forceSingle 
         function tf   = isequal(this, nii)
+            tf = this.isequaln(nii);
+        end
+        function tf   = isequaln(this, nii)
             tf = isa(nii, class(this));
             if (tf)
-                tf = this.fieldsequal(nii);
+                tf = this.fieldsequaln(nii);
             end
         end
         function        save(this)
@@ -569,13 +572,13 @@ classdef NIfTI < mlfourd.AbstractNIfTI
                 warning(ME.message);
             end
         end
-        function tf   = fieldsequal(this, imobj)
+        function tf   = fieldsequaln(this, imobj)
             try
                 tf   = true;
                 flds = fieldnames(this);
                 for f = 1:length(flds)
                     if (~any(strcmp(flds{f}, this.ISEQUAL_IGNORES)))
-                        tf = tf && isequal(this.(flds{f}), imobj.(flds{f}));
+                        tf = tf && isequaln(this.(flds{f}), imobj.(flds{f}));
                         if (~tf); break; end
                     end
                 end

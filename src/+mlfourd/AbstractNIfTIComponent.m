@@ -1,5 +1,6 @@
-classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInterface 
-	%% ABSTRACTNIFTICOMPONENT is a cousin of AbstractNIfTI, intended for composite design patterns. 
+classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlio.AbstractComponentIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI 
+	%% ABSTRACTNIFTICOMPONENT is a parallel hierarchy of AbstractNIfTId, intended for composite design patterns. 
+    %  See also:  mlfourd.AbstractNIfTId
     %  Yet abstract:
     %      properties:  descrip, img, mmppix, pixdim
     %      methods:     makeSimilar, clone
@@ -12,8 +13,32 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id: AbstractNIfTIComponent.m 2618 2013-09-09 04:15:55Z jjlee $ 
     
-	properties (Dependent) 
-        bitpix          
+	properties (Dependent)  
+        
+        % After mlfourd.JimmyShenInterface:  to support struct arguments to NIfTId ctor  
+        img
+        ext
+        filetype   % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr        %     N.B.:  to change the data type, set nii.hdr.dime.datatype,
+                   %            and nii.hdr.dime.bitpix to:
+                   %   0 None                     (Unknown bit per voxel) 
+                   %   1 Binary                         (ubit1, bitpix=1) 
+                   %   2 Unsigned char         (uchar or uint8, bitpix=8) 
+                   %   4 Signed short                  (int16, bitpix=16) 
+                   %   8 Signed integer                (int32, bitpix=32) 
+                   %  16 Floating point    (single or float32, bitpix=32) 
+                   %  32 Complex, 2 float32      (Use float32, bitpix=64) 
+                   %  64 Double precision  (double or float64, bitpix=64) 
+                   % 512 Unsigned short               (uint16, bitpix=16) 
+                   % 768 Unsigned integer             (uint32, bitpix=32) 
+                   %1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
+                   %1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64
+        originalType
+        untouch
+        descrip
+        mmppix
+        pixdim
+        
         creationDate 
         datatype
         entropy
@@ -22,13 +47,40 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
         machine
         negentropy        
         orient
+        separator
         seriesNumber
+        bitpix     
     end 
 
-    methods %% GET/SET
-        function b  = get.bitpix(this)
-            b = this.cachedNext.bitpix;
+    methods %% GET; SET each cachedNext directly
+        function im = get.img(this)
+            im = this.cachedNext.img;
+        end
+        function im = get.ext(this)
+            im = this.cachedNext.ext;
+        end
+        function im = get.filetype(this)
+            im = this.cachedNext.filetype;
+        end
+        function im = get.hdr(this)
+            im = this.cachedNext.hdr;
+        end
+        function im = get.originalType(this)
+            im = this.cachedNext.originalType;
+        end
+        function im = get.untouch(this)
+            im = this.cachedNext.untouch;
+        end
+        function d  = get.descrip(this)
+            d = this.cachedNext.descrip;
+        end
+        function m  = get.mmppix(this)
+            m = this.cachedNext.mmppix;
+        end
+        function p  = get.pixdim(this)
+            p = this.cachedNext.pixdim;
         end 
+        
         function c  = get.creationDate(this)
             c = this.cachedNext.creationDate;
         end
@@ -53,46 +105,18 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
         function o  = get.orient(this)
             o = this.cachedNext.orient;
         end
+        function o  = get.separator(this)
+            o = this.cachedNext.separator;
+        end
         function num = get.seriesNumber(this)
             num = this.cachedNext.seriesNumber;
         end
+        function b  = get.bitpix(this)
+            b = this.cachedNext.bitpix;
+        end 
     end
     
 	methods
-        
-        %% Implemented mlfourd.NIfTIInterface methods; mostly delegated to this.cachedNext
-        
-        function this = imclose(this, varargin)
-            this = this.cachedNext.imclose(varargin{:});
-        end
-        function this = imdilate(this, varargin)
-            this = this.cachedNext.imdilate(varargin{:});
-        end
-        function this = imerode(this, varargin)
-            this = this.cachedNext.imerode(varargin{:});
-        end
-        function this = imopen(this, varargin)
-            this = this.cachedNext.imopen(varargin{:});
-        end
-        function himg = imshow(this, slice, varargin)
-            himg = this.cachedNext.imshow(slice, varargin{:});
-        end
-        function himg = imtool(this, slice, varargin)
-            himg = this.cachedNext.imtool(slice, varargin{:});
-        end
-        function im   = mlimage(this)
-            im = this.cachedNext.mlimage;
-        end
-        function h    = montage(this, varargin)
-            h = this.cachedNext.montage(varargin{:});
-        end
-        function m3d  = matrixsize(this)
-            m3d = this.cachedNext.matrixsize;
-        end
-        function f3d  = fov(this)
-            f3d = this.cachedNext.fov;
-        end
-        
         function ch  = char(this)
             ch = this.cachedNext.char;
         end
@@ -105,16 +129,10 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
         function o   = ones(this, varargin)
             o = this.cachedNext.ones(varargin{:});
         end
-        function M   = prod(this)
-            M = this.cachedNext.prod;
-        end
-        function ps  = prodSize(this)
-            ps = this.cachedNext.prodSize;
-        end
         function rnk = rank(this, varargin)
              rnk = this.cachedNext.rank(varargin{:});
         end
-        function nii  = scrubNanInf(this)
+        function nii = scrubNanInf(this)
             nii = this.cachedNext.scrubNanInf;
         end
         function s   = single(this)
@@ -123,19 +141,19 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
         function sz  = size(this, varargin)
             sz = this.cachedNext.size(varargin{:});
         end
+        function ps  = prodSize(this)
+            ps = this.cachedNext.prodSize;
+        end
+        function ps  = zeros(this)
+            ps = this.cachedNext.zeros;
+        end
+        function M   = prod(this)
+            M = this.cachedNext.prod;
+        end
         function M   = sum(this)
             M = this.cachedNext.sum;
         end
-        function z   = zeros(this, varargin)
-            z = this.cachedNext.zeros(varargin{:});
-        end
         
-        function this = forceDouble(this)
-            this.cachedNext = this.cachedNext.forceDouble;
-        end
-        function this = forceSingle(this)
-            this.cachedNext = this.cachedNext.forceSingle;
-        end
         function this = prepend_fileprefix(this, s)
             this = this.cachedNext.prepend_fileprefix(s);
         end
@@ -149,134 +167,56 @@ classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlfourd.NIfTIInter
             this = this.cachedNext.append_descrip(s);
         end
         
-        %% Implemented mlanalysis.NumericalInterface
-        
-        function c    = bsxfun(this, pfun, b)
-            c = this.cachedNext.bsxfun(pfun, b);
+        function        freeview(~)
+            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.freeview');
+        end        
+        function        fslview(~)
+            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.fslview');
         end
-        function c    = plus(this, b)
-             c = this.cachedNext.plus(b);
+        function im   = mlimage(this)
+            im = this.cachedNext.mlimage;
         end
-        function c    = minus(this, b)
-             c = this.cachedNext.minus(b);
+        function himg = imshow(this, slice, varargin)
+            himg = this.cachedNext.imshow(slice, varargin{:});
         end
-        function c    = times(this, b)
-             c = this.cachedNext.times(b);
+        function himg = imtool(this, slice, varargin)
+            himg = this.cachedNext.imtool(slice, varargin{:});
         end
-        function c    = rdivide(this, b)
-             c = this.cachedNext.rdivide(b);
+        function this = imclose(this, varargin)
+            this = this.cachedNext.imclose(varargin{:});
         end
-        function c    = ldivide(this, b)
-             c = this.cachedNext.ldivide(b);
+        function this = imdilate(this, varargin)
+            this = this.cachedNext.imdilate(varargin{:});
         end
-        function c    = power(this, b)
-             c = this.cachedNext.power(b);
+        function this = imerode(this, varargin)
+            this = this.cachedNext.imerode(varargin{:});
         end
-        function c    = max(this, b)
-             c = this.cachedNext.max(b);
+        function this = imopen(this, varargin)
+            this = this.cachedNext.imopen(varargin{:});
         end
-        function c    = min(this, b)
-             c = this.cachedNext.min(b);
+        function h    = montage(this, varargin)
+            h = this.cachedNext.montage(varargin{:});
         end
-        function c    = rem(this, b) % remainder after division
-             c = this.cachedNext.rem(b);
+        function m3d  = matrixsize(this)
+            m3d = this.cachedNext.matrixsize;
         end
-        function c    = mod(this, b)
-             c = this.cachedNext.mod(b);
-        end
-        
-        function c    = eq(this, b)
-             c = this.cachedNext.eq(b);
-        end
-        function c    = ne(this, b)
-             c = this.cachedNext.ne(b);
-        end
-        function c    = lt(this, b)
-             c = this.cachedNext.lt(b);
-        end
-        function c    = le(this, b)
-             c = this.cachedNext.le(b);
-        end
-        function c    = gt(this, b)
-             c = this.cachedNext.gt(b);
-        end
-        function c    = ge(this, b)
-             c = this.cachedNext.ge(b);
-        end
-        function this = and(this, b)
-            this = this.cachedNext.(b);
-        end
-        function this = or(this, b)
-            this = this.cachedNext.(b);
-        end
-        function this = xor(this, b)
-            this = this.cachedNext.(b);
-        end
-        function this = not(this, b)
-            this = this.cachedNext.(b);
-        end
-        
-        function this = norm(this)
-            this = this.cachedNext.norm;
-        end
-        function this = abs(this)
-            this = this.cachedNext.abs;
-        end
-        function c    = atan2(this, b)
-            c = this.cachedNext.atan2(b);
-        end
-        function c    = hypot(this, b)
-            c = this.cachedNext.hypot(b);
-        end
-        function M    = diff(this)
-            M = this.cachedNext.diff(b);
-        end
-        
-        %% Implemented mlanalysis.DipInterface
-        
-        function di   = dip_image(this)
-            di = this.cachedNext.dip_image;
-        end
-        function h    = dipshow(this)
-            h = this.cachedNext.dipshow;
-        end
-        function mxi  = dipmax(this)
-            mxi = this.cachedNext.dipmax;
-        end
-        function m    = dipmean(this)
-            m = this.cachedNext.dipmean;
-        end
-        function m    = dipmedian(this)
-            m = this.cachedNext.dipmedian;
-        end
-        function mni  = dipmin(this)
-            mni = this.cachedNext.dipmin;
-        end
-        function prd  = dipprod(this)
-            prd = this.cachedNext.dipprod;
-        end
-        function s    = dipstd(this)
-            s = this.cachedNext.dipstd;
-        end
-        function sm   = dipsum(this)
-            sm = this.cachedNext.dipsum;
+        function f3d  = fov(this)
+            f3d = this.cachedNext.fov;
         end
     end 
 
     %% PROTECTED
     
+    properties (Access = 'protected')
+        componentCreationDate_
+    end
+    
     methods (Access = 'protected')
         function this = AbstractNIfTIComponent(varargin)
             this = this@mlfourd.AbstractComponent(varargin{:});
-            this.creationDate_ = datestr(now);
+            this.componentCreationDate_ = datestr(now);
         end % ctor
     end 
-    
-    %% PRIVATE 
-    
-    properties (Access = 'private')
-        creationDate_
-    end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end

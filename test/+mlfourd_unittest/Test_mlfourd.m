@@ -1,4 +1,4 @@
-classdef Test_mlfourd < matlab.unittest.TestCase
+classdef (Abstract) Test_mlfourd < matlab.unittest.TestCase
     
     properties (Dependent)
         adc_fqfn
@@ -15,8 +15,10 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         ep2d_fqfn
         ep2d_fp
         ep2dCntxt
+        ep2dMcf_fp
         ep2dMcf_fqfn
         ep2dMcfCntxt
+        ep2dMean_fp
         ep2dMean_fqfn
         ep2dMeanCntxt
         fslPath
@@ -31,8 +33,6 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         oo_fp
         oo_fqfn
         petPath
-        preferredSession
-        preferredTarg
         rawavg_fqfn
         rawavgfp
         rawavgCntxt
@@ -90,21 +90,17 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         function ic  = get.dwiCntxt(this)
             ic = mlfourd.ImagingContext.load(this.dwi_fqfn);
         end
-        function fp  = get.ep2d_fp(this)
-            switch (this.preferredSession)
-                case 1
-                    fp = 'ep2d_009';
-                otherwise
-                    fp = 'ep2d_default';
-            end
+        function fp  = get.ep2d_fp(this) %#ok<MANU>
+            fp = 'ep2d_default';
         end   
         function fn  = get.ep2d_fqfn(this)
             fn = this.fqfilenameInFsl(this.ep2d_fp);
         end 
+        function fn  = get.ep2dMcf_fp(this) %#ok<MANU>
+            fn = 'ep2d_default_mcf';
+        end
         function fn  = get.ep2dMcf_fqfn(this)
-            fn = fullfile(this.fslPath, 'ep2d_017_mcf.nii.gz');
-            if (~lexist(fn, 'file'))
-                this.createEp2dMean; end
+            fn = this.fqfilenameInFsl(this.ep2dMcf_fp);
         end
         function ic  = get.ep2dCntxt(this)
             ic = mlfourd.ImagingContext.load(this.ep2d_fqfn);
@@ -112,10 +108,11 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         function ic  = get.ep2dMcfCntxt(this)
             ic = mlfourd.ImagingContext.load(this.ep2dMcf_fqfn);
         end
+        function fn  = get.ep2dMean_fp(this) %#ok<MANU>
+            fn = 'ep2d_default_mcf_meanvol';
+        end
         function fn  = get.ep2dMean_fqfn(this)
-            fn = fullfile(this.fslPath, 'ep2d_017_mcf_meanvol.nii.gz');
-            if (~lexist(fn, 'file'))
-                this.createEp2dMean; end
+            fn = this.fqfilenameInFsl(this.ep2dMean_fp);
         end
         function ic  = get.ep2dMeanCntxt(this)
             ic = mlfourd.ImagingContext.load(this.ep2dMean_fqfn);
@@ -132,13 +129,8 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         function fn  = get.ir_fqfn(this)
             fn = this.fqfilenameInFsl(this.ir_fp);
         end
-        function fp  = get.ir_fp(this)
-            switch (this.preferredSession)
-                case 1
-                    fp = 'ir_default';
-                otherwise
-                    fp = 't2_default';
-            end
+        function fp  = get.ir_fp(this) %#ok<MANU>
+            fp = 't2_default';
         end 
         function ic  = get.irCntxt(this)
             ic = mlfourd.ImagingContext.load(this.ir_fqfn);
@@ -151,7 +143,7 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             fn = this.fqfilenameInFsl(this.oc_fp);
         end
         function fp  = get.oc_fp(this) %#ok<MANU>
-            fp = 'poc';
+            fp = 'oc_default';
         end  
         function fn  = get.oo_fqfn(this)
             fn = this.fqfilenameInFsl(this.oo_fp);
@@ -163,20 +155,6 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             pth = fullfile(fullfile(this.sessionPath, 'ECAT_EXACT'));
             assert(lexist(pth, 'dir'));
         end
-        function this    = set.preferredSession(this, s)
-            this.preferredSession_ = s;
-        end
-        function s       = get.preferredSession(this)
-            s = this.preferredSession_;
-        end
-        function trg = get.preferredTarg(this)
-            switch (this.preferredSession)
-                case 1
-                    trg = this.targPaths_{1};
-                otherwise
-                    trg = this.targPaths_{4};
-            end
-        end  
         function fp  = get.rawavgfp(this) %#ok<MANU>
             fp = 'rawavg';
         end
@@ -194,10 +172,7 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             assert(lexist(pth, 'dir'));
         end
         function pth = get.sessionPath(this)
-            if (~isempty(this.sessionPath_))
-                pth = this.sessionPath_; return; end
-            pth = this.sessionPaths_{this.preferredSession};
-            assert(lexist(pth, 'dir'));
+            pth = this.registry_.sessionPath;
         end
         function s   = get.showViewers(this) %#ok<MANU>
             s = true;
@@ -205,11 +180,8 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         function pth = get.targPath(this)
             pth = fullfile(this.sessionPath, 'Trio', 'unpack', '');
         end
-        function pth = get.testPath(this)
-            if (isempty(this.testPath_))
-                this.testPath_ = fullfile(getenv('MLUNIT_TEST_PATH'), ''); 
-            end
-            pth = this.testPath_;
+        function pth = get.testPath(~)
+            pth = fullfile(getenv('MLUNIT_TEST_PATH'), ''); 
         end     
         function fn  = get.test_fqfn(this)
             fn = this.fqfilenameInFsl('test');
@@ -242,20 +214,26 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             ic = mlfourd.ImagingContext.load(this.t2_fqfn);
         end
         function fp  = get.tr_fp(this) %#ok<MANU>
-            fp = 'ptr';
+            fp = 'tr_default';
         end 
         function fn  = get.tr_fqfn(this)
             fn = this.fqfilenameInFsl(this.tr_fp);
         end
     end
     
-    methods
- 		function this = Test_mlfourd
-            if (isempty(this.sessionPaths_))
-                this.sessionPaths_ = { fullfile(this.studyPath, 'mm05-001_p7936_2011nov18', '') ...
-                                       fullfile(this.studyPath, 'mm01-020_p7377_2009feb5',  '') };
-            end
+    methods (TestClassSetup)
+        function setupMlfourd(this)
+            this.registry_ = mlfourd.UnittestRegistry.instance;
+            this.pwd0_ = pwd;
+            this.addTeardown(@cd, this.pwd0_);
+            cd(this.sessionPath); 
+            this.addTeardown(@this.cleanUpTestfile);
         end
+    end
+    
+    %% PROTECTED
+    
+    methods (Access = 'protected')
         function fqff = fqfilenameInFsl(this, name)
             if (iscell(name)) %% use only the first cell
                 fqff = this.fqfilenamesInFsl(name{1}); return; end
@@ -266,70 +244,62 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             files = ensureCell(files);
             fns   = cellfun(@this.fqfilenameInFsl, files, 'UniformOutput', false);
         end
-        function setupMlfourd(this)
-            this.pwd0_ = pwd;
-            cd(this.sessionPaths_{this.preferredSession}); 
-            this.cleanUpTestfile;
-        end
-        function teardownMlfourd(this)
-            this.cleanUpTestfile;
-            cd(this.pwd0_);
-        end
-        function cleanUpTestfile(this)
+        function        cleanUpTestfile(this)
             if (lexist(this.test_fqfn, 'file'))
                 delete(this.test_fqfn);
             end
         end
-    end 
-    
-    methods (Static)
-        function       assertEntropies(es, objs)
+        
+        function        assertEntropies(this, es, objs)
             es   = ensureCell(es);
             objs = ensureCell(objs);
             for o = 1:min(length(es), length(objs))
                 try
                     nii = imcast(objs{o}, 'mlfourd.NIfTI');
-                    assertElementsAlmostEqual(single(es{o}), nii.entropy);
+                    this.verifyEqual(es{o}, nii.entropy, 'RelTol', 1e-3);
                 catch ME
                     handexcept(ME);
                 end
             end
-        end   
-        function       assertKLdiv(expected, fn0, fn)
-            import mlfsl_xunit.*;
-            assertVectorsAlmostEqual( ...
+        end  
+        function        assertKLdiv(this, expected, fn0, fn)
+            this.verifyEqual( ...
                 expected, ...
-                single(Test_mlfsl.filenames2KL(fn0, fn)));
-        end   
-        function       assertObjectsEqual(o, o2)
+                this.filenames2KL(fn0, fn), 'RelTol', 1e-3);
+        end  
+        function        assertObjectsEqual(this, o, o2)
             if (isa(o, 'mlfourd.ImagingArrayList'))
-                assertImagingArrayListsEqual(o, ...
+                this.verifyEqual(o, ...
                     imcast(o2, class(o))); 
                 return
             end
-            assertTrue(all(isequal(o, o2)));
+            this.verifyTrue(all(isequal(o, o2)));
         end
-        function       assertImagingArrayListsEqual(ial, ial2)
-            assertEqual(ial.length, ial2.length);
+        function        assertImagingArrayListsEqual(this, ial, ial2)
+            assert(ial.length == ial2.length);
             for a = 1:ial.length
-                MyTestCase.assertObjectsEqual(ial.get(a), ial2.get(a));
+                this.assertObjectsEqual(ial.get(a), ial2.get(a));
             end
         end
-        function       assertStringsEqual(s, s2)
+        function        assertStringsEqual(this, s, s2)
             s  = ensureString(s);
             s2 = ensureString(s2);
-            assertEqual(s, s2);
+            this.verifyEqual(s, s2);
         end
-        function       printAndAssertEqual(v, v2)
+        function        printAndAssertEqual(this, v, v2)
             v  = ensureString(v);
             v2 = ensureString(v2);
-            if (length(v) > MyTestCase.SCREEN_WIDTH/2 || length(v2) > MyTestCase.SCREEN_WIDTH/2)
+            import mlfourd_unittest.*;
+            if (length(v) > Test_mlfourd.SCREEN_WIDTH/2 || length(v2) > Test_mlfourd.SCREEN_WIDTH/2)
                 fprintf('\n1st input: \n\t%s \n2nd input: \n\t%s \n\n', v, v2);
             else
                 fprintf('\n1st input:  %s; 2nd input:  %s\n\n', v, v2);
             end
-            assertEqual(v, v2);
+            this.verifyEqual(v, v2);
         end
+    end 
+    
+    methods (Static, Access = 'protected')  
         function       printExpectedFound(label, expect, found)
             switch (class(found))
                 case {'class' 'struct'}
@@ -356,7 +326,7 @@ classdef Test_mlfourd < matlab.unittest.TestCase
         function es  = dispEntropies(fns)
             fns = ensureCell(fns);
             es  = ensureCell( ...
-                  MyTestCase.filenames2entropies(fns));
+                  mlfourd_unittest.Test_mlfourd.filenames2entropies(fns));
             for e = 1:length(es)
                 fprintf('entropy(%s) -> %18.16g\n', fns{e}, es{e});
             end
@@ -370,9 +340,9 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             end
         end             
         function kld = filenames2KL(fn0, fn)
-            import mlfourd.* mlentropy.*;
-            assertExistFile(@MyTestCase.filenames2KL, filename(fn0));
-            assertExistFile(@MyTestCase.filenames2KL, filename(fn));
+            import mlfourd.* mlentropy.* mlfourd_unittest.*;
+            assertExistFile(@Test_mlfourd.filenames2KL, filename(fn0));
+            assertExistFile(@Test_mlfourd.filenames2KL, filename(fn));
             kl  = KL(NIfTI.load(fn0), NIfTI.load(fn));
             kld = kl.kldivergence;
             if (isnan(kld))
@@ -380,8 +350,8 @@ classdef Test_mlfourd < matlab.unittest.TestCase
             end
         end
         function klh = filenames2KLH(fn)
-            import mlfourd.* mlentropy.*;
-            assertExistFile(@MyTestCase.filenames2KLH, filename(fn));
+            import mlfourd.* mlentropy.* mlfourd_unittest.*;
+            assertExistFile(@Test_mlfourd.filenames2KLH, filename(fn));
             kl  = KL(NIfTI.load(fn));
             klh = kl.H_p;
         end 
@@ -394,11 +364,8 @@ classdef Test_mlfourd < matlab.unittest.TestCase
     end
     
     properties (Access = 'private')
+        registry_
         pwd0_
-        preferredSession_ = 2;
-        sessionPath_ %% assign to override this.sessionPaths_{this.preferredSession}
-        sessionPaths_
-        testPath_
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

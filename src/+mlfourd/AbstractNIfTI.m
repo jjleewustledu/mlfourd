@@ -1,4 +1,4 @@
-classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
+classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.NIfTIInterface
 	%% ABSTRACTNIFTI 
     %  Yet abstract:
     %      properties:  descrip, img, mmppix, pixdim
@@ -353,12 +353,12 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
             parse(p, varargin{:});
             o = this.makeSimilar(ones(this.size), p.Results.desc, p.Results.fp);
         end
-        function M    = prod(this)
-            
+        function M    = prod(this)            
             %% PROD overloads prod for NIfTI
-            Mimg  = prod(this.img);
-            M     = this.makeSimilar(Mimg, ...
-                     '', ['(prod)' this.fileprefix]);
+            
+            Mimg      = prod(this.img);
+            M         = this.makeSimilar(Mimg, ...
+                        '', [this.fileprefix '_prod']);
             M.descrip = [  'prod(' M.descrip ')'];
         end
         function ps   = prodSize(this)
@@ -409,9 +409,9 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
         function this = sum(this, varargin)
             %% SUM overloads sum for NIfTI
             
-            this.img  = sum(this.img, varargin{:});
-            this.fileprefix = ['(sum)' this.fileprefix];
-            this.descrip    = [ 'sum(' this.descrip ')'];
+            this.img        = sum(this.img, varargin{:});
+            this.fileprefix = [this.fileprefix '_sum'];
+            this.descrip    = ['sum(' this.descrip ')'];
         end   
         function z    = zeros(this, varargin)
             p = inputParser;
@@ -695,7 +695,22 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.NIfTIInterface
         end                
         function sm   = dipsum(this)
             sm = dipsum(this.img);
-        end              
+        end           
+        
+        %% Implementing mlfourd.INIfTI
+        
+        function [tf,msg] = isequal(this, nii)
+            [tf,msg] = this.isequaln(nii);
+        end
+        function tf   = isequaln(this, nii) %#ok<INUSD>
+            tf = false;
+        end
+        function freeview(~)
+            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.freeview');
+        end        
+        function fslview(~)
+            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.fslview');
+        end
  	end 
     
     %% PROTECTED 

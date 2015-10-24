@@ -1,0 +1,384 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>DirTool</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-05-27"><meta name="DC.source" content="DirTool.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">classdef</span> DirTool
+</pre><pre class="codeinput"><span class="comment">	%% DIRTOOL decorates the struct arrays available for built-in dir</span>
+    <span class="comment">%  Version $Revision$ was created $Date$ by $Author$,</span>
+ 	<span class="comment">%  last modified $LastChangedDate$ and checked into svn repository $URL$</span>
+ 	<span class="comment">%  Developed on Matlab 7.13.0.564 (R2011b)</span>
+ 	<span class="comment">%  $Id$</span>
+ 	<span class="comment">%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad)</span>
+
+	properties
+        itsPath
+        itsDirlist
+    <span class="keyword">end</span>
+
+	methods
+        <span class="keyword">function</span> pth  = get.itsPath(this)
+            tokpth = strtok(this.itsPath, <span class="string">'*'</span>);
+            <span class="keyword">if</span> (lexist(tokpth))
+                pth = tokpth;
+            <span class="keyword">else</span>
+                pth = fileparts(tokpth);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% return struct-arrays</span>
+        <span class="keyword">function</span> sarr = files2sa(this, idx)
+            sarr = this.pathDecoration( <span class="keyword">...</span>
+                   this.itsDirlist(~this.isdir &amp; ~this.invisible));
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>)); sarr = sarr(idx); <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> sarr = directories2sa(this, idx)
+            sarr = this.pathDecoration( <span class="keyword">...</span>
+                   this.itsDirlist( this.isdir &amp; ~this.invisible));
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>)); sarr = sarr(idx); <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> sarr = invisibleFiles2sa(this, idx)
+            sarr = this.pathDecoration( <span class="keyword">...</span>
+                   this.itsDirlist(~this.isdir &amp;  this.invisible));
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>)); sarr = sarr(idx); <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> sarr = invisibleDirectories2sa(this, idx)
+            sarr = this.pathDecoration( <span class="keyword">...</span>
+                   this.itsDirlist( this.isdir &amp;  this.invisible));
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>)); sarr = sarr(idx); <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% return cell-arrays</span>
+        <span class="keyword">function</span> pp   = paths(this, idx)
+            sarr = this.files2sa;
+            pp   = cell(1,length(sarr));
+            <span class="keyword">for</span> s = 1:length(sarr)
+                pp{s} = sarr(s).itsPath;
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>))
+                pp = pp{idx};
+            <span class="keyword">else</span>
+                pp = ensureCell(pp);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ff   = fqfns(this, idx)
+            sarr = this.files2sa;
+            ff   = cell(1,length(sarr));
+            <span class="keyword">for</span> s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.fqname(sarr(s));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>))
+                ff = ff{idx};
+            <span class="keyword">else</span>
+                ff = ensureCell(ff);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ff   = fns(  this, idx)
+            sarr = this.files2sa;
+            ff   = cell(1,length(sarr));
+            <span class="keyword">for</span> s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.name(sarr(s));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>))
+                ff = ff{idx};
+            <span class="keyword">else</span>
+                ff = ensureCell(ff);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ff   = fqdns(this, idx)
+            sarr = this.directories2sa;
+            ff   = cell(1,length(sarr));
+            <span class="keyword">for</span> s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.fqname(sarr(s));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>))
+                ff = ff{idx};
+            <span class="keyword">else</span>
+                ff = ensureCell(ff);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ff   = dns(  this, idx)
+            sarr = this.directories2sa;
+            ff   = cell(1,length(sarr));
+            <span class="keyword">for</span> s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.name(sarr(s));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (exist(<span class="string">'idx'</span>,<span class="string">'var'</span>))
+                ff = ff{idx};
+            <span class="keyword">else</span>
+                ff = ensureCell(ff);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> len  = length(this)
+            len = length(this.itsDirlist);
+        <span class="keyword">end</span>
+
+ 		<span class="keyword">function</span> this = DirTool(str)
+</pre><pre class="codeinput"><span class="comment"> 			%% DirTool</span>
+ 			<span class="comment">%  Usage:  expects arguments identical to dir</span>
+
+            [p1,p2,~]    = fileparts(str);
+            this.itsPath = fullfile(p1, p2, <span class="string">''</span>);
+            <span class="keyword">if</span> (isempty(this.itsPath))
+                this.itsPath = pwd;
+            <span class="keyword">end</span>
+            this.itsDirlist = dir(str);
+</pre><pre class="codeoutput">Error using mlfourd.DirTool (line 115)
+Not enough input arguments.
+</pre><pre class="codeinput"> 		<span class="keyword">end</span> <span class="comment">% DirTool (ctor)</span>
+    <span class="keyword">end</span>
+
+    methods (Access = <span class="string">'private'</span>, Static)
+
+        <span class="keyword">function</span> ff   = fqname(strct)
+            ff = fullfile(strct.itsPath, strct.name, <span class="string">''</span>);
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> ff   = name(strct)
+            ff = strct.name;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    methods (Access = <span class="string">'private'</span>)
+
+        <span class="keyword">function</span> z    = zerosVec(this)
+            z = zeros(1,length(this.itsDirlist));
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> tf   = isdir(this)
+            tf = this.zerosVec;
+            <span class="keyword">for</span> z = 1:length(tf) <span class="comment">%#ok&lt;FORFLG&gt;</span>
+                tf(z) = this.itsDirlist(z).isdir; <span class="comment">%#ok&lt;PFBNS&gt;</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> tf   = invisible(this)
+            tf = this.zerosVec;
+            <span class="keyword">for</span> z = 1:length(tf) <span class="comment">%#ok&lt;FORFLG&gt;</span>
+                tf(z) = strncmp(<span class="string">'.'</span>, this.itsDirlist(z).name, 1); <span class="comment">%#ok&lt;PFBNS&gt;</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">function</span> sarr = pathDecoration(this, sarr)
+            <span class="keyword">for</span> s = 1:length(sarr) <span class="comment">%#ok&lt;FORFLG&gt;</span>
+                sarr(s).itsPath = this.itsPath; <span class="comment">%#ok&lt;PFBNS&gt;</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+	<span class="comment">%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+classdef DirTool 
+	%% DIRTOOL decorates the struct arrays available for built-in dir
+    %  Version $Revision$ was created $Date$ by $Author$,
+ 	%  last modified $LastChangedDate$ and checked into svn repository $URL$ 
+ 	%  Developed on Matlab 7.13.0.564 (R2011b) 
+ 	%  $Id$ 
+ 	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
+
+	properties 
+        itsPath
+        itsDirlist
+    end
+
+	methods 
+        function pth  = get.itsPath(this)
+            tokpth = strtok(this.itsPath, '*');
+            if (lexist(tokpth))
+                pth = tokpth;
+            else
+                pth = fileparts(tokpth);
+            end
+        end
+        
+        % return struct-arrays
+        function sarr = files2sa(this, idx)
+            sarr = this.pathDecoration( ...
+                   this.itsDirlist(~this.isdir & ~this.invisible));
+            if (exist('idx','var')); sarr = sarr(idx); end
+        end
+        function sarr = directories2sa(this, idx)
+            sarr = this.pathDecoration( ...
+                   this.itsDirlist( this.isdir & ~this.invisible));
+            if (exist('idx','var')); sarr = sarr(idx); end
+        end
+        function sarr = invisibleFiles2sa(this, idx)
+            sarr = this.pathDecoration( ...
+                   this.itsDirlist(~this.isdir &  this.invisible));
+            if (exist('idx','var')); sarr = sarr(idx); end
+        end
+        function sarr = invisibleDirectories2sa(this, idx)
+            sarr = this.pathDecoration( ...
+                   this.itsDirlist( this.isdir &  this.invisible));
+            if (exist('idx','var')); sarr = sarr(idx); end
+        end
+        
+        % return cell-arrays
+        function pp   = paths(this, idx)
+            sarr = this.files2sa;
+            pp   = cell(1,length(sarr));
+            for s = 1:length(sarr)
+                pp{s} = sarr(s).itsPath;
+            end
+            if (exist('idx','var'))
+                pp = pp{idx}; 
+            else
+                pp = ensureCell(pp);
+            end
+        end
+        function ff   = fqfns(this, idx)
+            sarr = this.files2sa;
+            ff   = cell(1,length(sarr));
+            for s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.fqname(sarr(s));
+            end
+            if (exist('idx','var'))
+                ff = ff{idx}; 
+            else
+                ff = ensureCell(ff);
+            end
+        end
+        function ff   = fns(  this, idx)
+            sarr = this.files2sa;
+            ff   = cell(1,length(sarr));
+            for s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.name(sarr(s));
+            end
+            if (exist('idx','var'))
+                ff = ff{idx}; 
+            else
+                ff = ensureCell(ff);
+            end
+        end
+        function ff   = fqdns(this, idx)
+            sarr = this.directories2sa;
+            ff   = cell(1,length(sarr));
+            for s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.fqname(sarr(s));
+            end
+            if (exist('idx','var'))
+                ff = ff{idx}; 
+            else
+                ff = ensureCell(ff);
+            end
+        end
+        function ff   = dns(  this, idx)
+            sarr = this.directories2sa;
+            ff   = cell(1,length(sarr));
+            for s = 1:length(ff)
+                ff{s} = mlfourd.DirTool.name(sarr(s));
+            end
+            if (exist('idx','var'))
+                ff = ff{idx}; 
+            else
+                ff = ensureCell(ff);
+            end
+        end
+        function len  = length(this)
+            len = length(this.itsDirlist);
+        end
+        
+ 		function this = DirTool(str) 
+ 			%% DirTool 
+ 			%  Usage:  expects arguments identical to dir 
+            
+            [p1,p2,~]    = fileparts(str);
+            this.itsPath = fullfile(p1, p2, '');
+            if (isempty(this.itsPath))
+                this.itsPath = pwd;
+            end
+            this.itsDirlist = dir(str);
+ 		end % DirTool (ctor) 
+    end 
+    
+    methods (Access = 'private', Static)
+        
+        function ff   = fqname(strct)
+            ff = fullfile(strct.itsPath, strct.name, '');
+        end
+        function ff   = name(strct)
+            ff = strct.name;
+        end
+    end
+    
+    methods (Access = 'private')
+        
+        function z    = zerosVec(this)
+            z = zeros(1,length(this.itsDirlist));
+        end
+        function tf   = isdir(this)
+            tf = this.zerosVec;
+            for z = 1:length(tf) %#ok<FORFLG>
+                tf(z) = this.itsDirlist(z).isdir; %#ok<PFBNS>
+            end
+        end
+        function tf   = invisible(this)
+            tf = this.zerosVec;
+            for z = 1:length(tf) %#ok<FORFLG>
+                tf(z) = strncmp('.', this.itsDirlist(z).name, 1); %#ok<PFBNS>
+            end
+        end
+        function sarr = pathDecoration(this, sarr)
+            for s = 1:length(sarr) %#ok<FORFLG>
+                sarr(s).itsPath = this.itsPath; %#ok<PFBNS>
+            end
+        end
+    end
+
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
+end
+
+
+##### SOURCE END #####
+--></body></html>

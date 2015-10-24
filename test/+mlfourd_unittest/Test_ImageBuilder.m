@@ -1,4 +1,4 @@
-classdef Test_ImageBuilder < mlfourd_unittest.Test_mlfourdd 
+classdef Test_ImageBuilder < mlfourd_unittest.Test_mlfourd 
 	%% TEST_IMAGEBUILDER  
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_ImageBuilder)
@@ -44,7 +44,7 @@ classdef Test_ImageBuilder < mlfourd_unittest.Test_mlfourdd
 
 	methods        
  		function this = Test_ImageBuilder(varargin) 
- 			this = this@mlfourd_unittest.Test_mlfourdd(varargin{:}); 
+ 			this = this@mlfourd_unittest.Test_mlfourd(varargin{:}); 
             this.modalityPath = this.petPath;
             this.converter = mlfourd.PETConverter.createFromModalityPath(this.modalityPath);
             this.imbuilder = mlfourd.ImageBuilder.createFromConverter(this.converter);

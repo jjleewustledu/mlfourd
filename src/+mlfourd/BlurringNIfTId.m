@@ -1,5 +1,5 @@
-classdef BlurringNIfTId < mlfourd.NIfTIdecorator
-	%% BLURRINGNIFTID is a NIfTIdecorator that composes an internal INIfTId object
+classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
+	%% BLURRINGNIFTID is a NIfTIdecorator that composes an internal INIfTI object
     %  according to the decorator design pattern.  Blur must be provided as fwhh in mm.
 
 	%  $Revision$ 
@@ -22,7 +22,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
     
     methods %% SET/GET
         function this = set.mask(this, m)
-            if (islogical(m) || isa(m, 'mlfourd.INIfTId'))
+            if (islogical(m) || isa(m, 'mlfourd.INIfTI'))
                 m = double(m); end
             assert(isnumeric(m));
             this.mask_ = m;
@@ -102,16 +102,16 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
 	methods 
  		function this = BlurringNIfTId(cmp, varargin)
  			%% BlurringNIfTId 
- 			%  Usage:  this = BlurringNIfTId(INIfTId_object[,parameterName, parameterValue]) 
+ 			%  Usage:  this = BlurringNIfTId(INIfTI_object[,parameterName, parameterValue]) 
             %  Parameters:  'blur', numeric value, default [], fwhh in mm
-            %               'mask', numeric or INIfTId value, default this.ones
+            %               'mask', numeric or INIfTI value, default this.ones
 
-            this = this@mlfourd.NIfTIdecorator(cmp);
+            this = this@mlfourd.NIfTIdecorator2(cmp);
             this = this.append_descrip('decorated by BlurringNIfTId');
             
             p = inputParser;
             addParameter(p, 'blur', [], @isnumeric);
-            addParameter(p, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTId'));
+            addParameter(p, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
             parse(p, varargin{:});
             
             this.mask = p.Results.mask;
@@ -138,22 +138,23 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
             import mlfourd.* mlpet.*;
             p = inputParser;
             addRequired(p, 'blur',    @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
-            addOptional(p, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTId'));
+            addOptional(p, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
             parse(p, blur, varargin{:});
             
             this.blur = p.Results.blur;
             this.mask = p.Results.mask;
             if (isempty(this.blur)); return; end                
-            if (sum(this.blur) < eps); return; end    
-            if (sum(this.blur  < this.mmppix(1:length(this.blur))) > 1)
+            if (sum(this.blur) < eps); return; end   
+            mmppix_ = this.mmppix;
+            if (sum(this.blur  < mmppix_(1:length(this.blur))) > 1)
                 warning('mlfourd:discretizationErrors', ...
-                        'BlurringNIfTI.blurred:  blur->%s, mmppix->%s', mat2str(this.blur), mat2str(this.mmppix));
+                        'BlurringNIfTI.blurred:  blur->%s, mmppix->%s', mat2str(this.blur), mat2str(mmppix_));
             end
             if (this.rank < 4)  
-                this.img = this.blurredVolume(this.img, this.mmppix);
+                this.img = this.blurredVolume(this.img, mmppix_);
             elseif (4 == this.rank)
                 for t = 1:size(this,4)
-                    this.img(:,:,:,t) = this.blurredVolume(this.img(:,:,:,t), this.mmppix(1:3));
+                    this.img(:,:,:,t) = this.blurredVolume(this.img(:,:,:,t), mmppix_);
                 end
             else
                 error('mlfourd:paramOutOfBounds', 'BlurringNIfTI.blurred.rank->%i', this.rank);
@@ -183,7 +184,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
                         if (tf)
                             tf = isequaln(this.mask_, bnii.mask);
                             if (tf)
-                                [tf,msg] = isequaln@mlfourd.NIfTIdecorator(this, bnii);
+                                [tf,msg] = isequaln@mlfourd.NIfTIdecorator2(this, bnii);
                             end
                         end
                     end
@@ -289,8 +290,8 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator
             end
             if (length(metppix) < length(sigma))
                 metppix = BlurringNIfTId.stretchVec(metppix, length(sigma));
-            else
-                assert(length(metppix) == length(sigma));
+            elseif (length(metppix) > length(sigma))
+                metppix = metppix(1:length(sigma));
             end
             sigma = sigma ./ metppix; % Convert metric units to pixels
             if (norm(sigma) < eps); return; end % Trivial case

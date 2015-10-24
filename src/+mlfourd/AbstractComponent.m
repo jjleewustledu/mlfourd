@@ -1,7 +1,7 @@
-classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
-	%% ABSTRACTCOMPONENT is a child class of mlio.AbstractIOInterface, inheriting the AbstractComponentIO fork from AbstractIO.   
+classdef AbstractComponent <  mlpatterns.ValueList 
+	%% ABSTRACTCOMPONENT 
     %  Component characteristics arise from mlpatterns.ValueList, which resembles mlpatterns.List but is a value class.
-    %  Uses:   mlfourd.ImagingArrayList, which is more robust with adding Lists
+    %  See also:   mlfourd.ImagingArrayList, which is more robust with adding Lists
     %  Yet abstract:  mlio.IOInterface method save
     %                 mlpatterns.ValueList method clone
     
@@ -25,7 +25,7 @@ classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
         function this = set.cachedNext(this, cc)
             %% SET.CACHEDNEXT replaces the current element of the internal list in situ with loss of data
             
-            assert(isa(cc, 'mlfourd.NIfTIInterface'));
+            assert(isa(cc, 'mlfourd.INIfTI'));
             if (isempty(this.componentCurrent_))
                 this.componentList_.add(cc);
             end
@@ -74,16 +74,7 @@ classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
                 this.componentList_.add(varargin{v});
             end
             cmp = this.clone;
-        end
-        function tf   = isequal(this, imcmp)
-            tf = isa(imcmp, class(this));
-            if (tf)
-                for c = 1:length(this)
-                    tf = tf && isequal(this.get(c), imcmp.get(c));
-                end
-                tf = this.fieldsequal(imcmp);
-            end
-        end   
+        end  
         function this = iterateNext(this)
             assert(~isempty(this.componentIterator_));
             this.componentCurrent_ = this.next;
@@ -158,11 +149,6 @@ classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
                 str = ''; return; end
             str = this.componentList_.char;
         end
-        function this        = display(this)
-            %% DISPLAY:  lhs this required by subsref of concrete ImagingComponent classes
-            if (~isempty(this.componentList_))
-                this.componentList_.display; end
-        end
         function iter        = createIterator(this)
             assert(~isempty(this.componentList_));
             iter = this.componentList_.createIterator;
@@ -193,7 +179,7 @@ classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
                 elts = ImagingComponent.imcomponent2cell(elts.imcomponent); return; end
             if (isa(elts, 'mlfourd.ImagingComponent'))
                 elts = ImagingComponent.imcomponent2cell(elts); return; end
-            if (isa(elts, 'mlfourd.NIfTIInterface'))
+            if (isa(elts, 'mlfourd.INIfTI'))
                 return; end
             error('mlfourd:unsupportedTypeclass', 'class(ImagingComponent.imagingContextCast.elts)->%s', class(elts));
         end
@@ -220,22 +206,6 @@ classdef AbstractComponent <  mlio.AbstractComponentIO & mlpatterns.ValueList
 
             for v = 1:length(varargin)
                 this = this.updateValueList(varargin{v});
-            end
-        end
-        function tf   = fieldsequal(this, imobj)
-            try
-                tf   = true;
-                flds = fieldnames(this);
-                for f = 1:length(flds)
-                    if (isempty(lstrfind(flds{f}, mlfourd.NIfTI.ISEQUAL_IGNORES)))
-                        tf = tf && isequal(this.(flds{f}), imobj.(flds{f}));
-                        if (~tf); break; end
-                    end
-                end
-            catch ME
-                if (mlpipeline.PipelineRegistry.instance.verbosity > 0.98)
-                    handwarning(ME); end
-                tf = false;
             end
         end
         function this = updateValueList(this, elts)

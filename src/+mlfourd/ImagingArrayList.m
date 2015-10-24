@@ -55,6 +55,24 @@ classdef ImagingArrayList < mlpatterns.CellArrayList
             %% ISEMPTY always returns a scalar logical
             tf = all(isempty@mlpatterns.CellArrayList(this));
         end
+        function locs = locationsOf(this,elt)
+            locs = cell(size(this));
+            % Use linear index to populate locs cell array.
+            for i = 1:numel(this)
+                aList = this(i).list;
+                tally = zeros(size(aList));
+                for j = 1:length(tally)
+                    if (~isempty(aList{j}))
+                        tally(j) = isequal(aList{j}, elt);
+                    end
+                end
+                locs{i} = find(tally);
+            end
+            % Return numerical array if single list operation.
+            if numel(locs) == 1
+                locs = locs{:};
+            end
+        end
         function this = ImagingArrayList(varargin)
             %% IMAGINGARRAYLIST is a copy-ctor when varargin{:} is an ImagingArrayList
             

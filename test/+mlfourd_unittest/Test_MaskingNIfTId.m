@@ -87,19 +87,13 @@ classdef Test_MaskingNIfTId < mlfourd_unittest.Test_NIfTId
 
  	methods (TestClassSetup) 
  		function setupMaskedNIfTI(this) 
- 			this.testObj = this.MaskingNIfTIdObj_; 
+            this.MaskingNIfTIdObj_ = mlfourd.MaskingNIfTId(this.t1); 
+            this.binaryMask_       = this.MaskingNIfTIdObj_.makeSimilar( ...
+                                     'img', double(this.MaskingNIfTIdObj_.img > 400), ...
+                                     'fileprefix', 'Test_MaskingNIfTId_binaryMask');
+ 			this.testObj           = this.MaskingNIfTIdObj_; 
  		end 
  	end 
-    
-    methods        
- 		function this = Test_MaskingNIfTId(varargin) 
-            this = this@mlfourd_unittest.Test_NIfTId(varargin{:});
-            this.MaskingNIfTIdObj_ = mlfourd.MaskingNIfTId(this.t1); 
-            this.binaryMask_      = this.MaskingNIfTIdObj_.makeSimilar( ...
-                                    'img', double(this.MaskingNIfTIdObj_.img > 400), ...
-                                    'fileprefix', 'Test_MaskingNIfTId_binaryMask');
- 		end 
-    end
     
     %% PRIVATE
     

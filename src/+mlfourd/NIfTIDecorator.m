@@ -1,8 +1,26 @@
-classdef NIfTIdecorator < mlfourd.INIfTId
+classdef NIfTIdecorator < mlfourd.INIfTI
 	%% NIFTIDECORATOR maintains an internal component object by composition, 
     %  forwarding most requests to the component.  It retains an interface consistent with the component's interface.
     %  Subclasses may optionally perform additional operations before/after forwarding requests.
     %  Subclasses must overload methods load, clone to ensure that method-returned objects are from the subclass.
+    %  KLUDGE:  Matlab checks that dependent properties do not access stored values.  Multiple composed NIfTIdecorator 
+    %  objects use recursion on getters, violating this requirement on dependent properties.  Viz.:
+    %     
+    %      >> nii = NIfTId.load('p7991oc1.nii.gz'); ndec = MaskingNIfTId(nii); ndec.filename
+    %     
+    %      ans = p7991oc1.nii.gz
+    %     
+    %      >> nii = NIfTId.load('p7991oc1.nii.gz'); ndec = MaskingNIfTId(MaskingNIfTId(nii)); ndec.filename
+    %      In class 'mlfourd.NIfTIdecorator', the get method for Dependent property 'filename' attempts to 
+    %      access the stored property value.  Dependent properties don't store a value and can't be accessed
+    %      from their get method.
+    %     
+    %      Error in mlfourd.NIfTIdecorator/get.filename (line 66)
+    %                  fn = this.component_.filename;
+    %     
+    %  Using NIfTIdecorator2/3/4/5 for each decorator subclass is a work-around.
+    %  See also:  <a href="matlab:
+    %              web('http://www.mathworks.com/help/releases/R2015a/matlab/matlab_oop/how-to-use-properties.html#brh76wy-1_2')">How To Use Properties</a>
 
 	%  $Revision$ 
  	%  was created $Date$ 
@@ -28,7 +46,7 @@ classdef NIfTIdecorator < mlfourd.INIfTId
         fqfp 
         noclobber
         
-        %% INIfTId
+        %% INIfTI
         
         creationDate
         descrip
@@ -110,7 +128,7 @@ classdef NIfTIdecorator < mlfourd.INIfTId
             tf = this.component_.noclobber;
         end
         
-        %% INIfTId
+        %% INIfTI
         
         function this = set.descrip(this, x)
             this.component_.descrip = x;
@@ -207,12 +225,12 @@ classdef NIfTIdecorator < mlfourd.INIfTId
 
     methods
  		function this = NIfTIdecorator(varargin) 
-            %% NIFTIDECORATOR decorates other INIfTId objects, keeping the passed object as an internal component by composition;
+            %% NIFTIDECORATOR decorates other INIfTI objects, keeping the passed object as an internal component by composition;
             %  it will not act as a copy-ctor, as all passed objects are kept in a hierarchy of components.
-            %  Usage:  obj = NIfTIdecorator(INIfTId_object);
+            %  Usage:  obj = NIfTIdecorator(INIfTI_object);
             
             p = inputParser;
-            addOptional(p, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.INIfTId'));
+            addOptional(p, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.INIfTI'));
             parse(p, varargin{:});
             this.component_ = p.Results.cmp;
         end 
@@ -227,7 +245,7 @@ classdef NIfTIdecorator < mlfourd.INIfTId
             obj.component_ = this.component_.saveas(fqfn);
         end
         
-        %% INIfTId
+        %% INIfTI
         
         function x    = char(this)
             x = this.component_.char;
@@ -257,6 +275,12 @@ classdef NIfTIdecorator < mlfourd.INIfTId
             this.component_ = this.component_.zeros(varargin{:});
         end
         
+        function x    = prod(this)
+            x = this.component_.prod;
+        end
+        function x    = sum(this)
+            x = this.component_.sum;
+        end
         function this = forceDouble(this)
             this.component_ = this.component_.forceDouble;
         end
@@ -293,6 +317,12 @@ classdef NIfTIdecorator < mlfourd.INIfTId
         function this = makeSimilar(this, varargin)
             this.component_ = this.component_.makeSimilar(varargin{:});
         end             
+        function        freeview(this, varargin)
+            this.component_.freeview(varargin{:});
+        end        
+        function        fslview(this, varargin)
+            this.component_.fslview(varargin{:});
+        end
         function himg = imshow(this, slice, varargin)
             himg = this.component_.imshow(slice, varargin{:});
         end
@@ -302,12 +332,27 @@ classdef NIfTIdecorator < mlfourd.INIfTId
         function im   = mlimage(this)
             im = this.component_.mlimage;
         end
-        function        freeview(this)
-            this.component_.freeview;
-        end        
-        function        fslview(this)
-            this.component_.fslview;
-        end        
+        function this = imclose(this, varargin) 
+            this.component_ = this.component_.imclose(varargin{:});
+        end
+        function this = imdilate(this, varargin)
+            this.component_ = this.component_.imdilate(varargin{:});
+        end
+        function this = imerode(this, varargin)
+            this.component_ = this.component_.imerode(varargin{:});
+        end
+        function this = imopen(this, varargin)  
+            this.component_ = this.component_.imopen(varargin{:});
+        end      
+        function h = montage(this, varargin)        
+            h = this.component_.montage(varargin{:});
+        end
+        function m = matrixsize(this)
+            m = this.component_.matrixsize;
+        end
+        function f = fov(this) 
+            f = this.component_.fov;     
+        end
     end 
     
     properties (Access = 'protected')

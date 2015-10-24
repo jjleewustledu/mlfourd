@@ -1,5 +1,7 @@
 classdef NIfTIState < mlfourd.ImagingState
     %% NIFTISTATE has-an mlfourd.ImagingComponentState
+    %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIdState, mlfourd.MGHState, 
+    %             mlfourd.ImagingComponentState, mlfourd.ImagingLocation, mlpatterns.State
     
     %  $Revision: 2627 $
     %  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $
@@ -20,6 +22,7 @@ classdef NIfTIState < mlfourd.ImagingState
         fqfp
         
         mgh
+        niftid
         nifti	
         imcomponent	 
  	end 
@@ -54,8 +57,14 @@ classdef NIfTIState < mlfourd.ImagingState
                 mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
             f = this.contextHandle_.mgh;
         end
+        function f = get.niftid(this)            
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
+            f = this.contextHandle_.niftid;
+        end
         function f = get.nifti(this)
             f = this.imcomponentState_.imcomponent.cachedNext;
+            f = mlfourd.NIfTI(f);
         end
         function f = get.imcomponent(this)            
             this.contextHandle_.changeState( ...
@@ -92,6 +101,11 @@ classdef NIfTIState < mlfourd.ImagingState
             this.contextHandle_.changeState( ...
                 mlfourd.MGHState.load(f, this.contextHandle_));
         end
+        function this = set.niftid(this, f)
+            assert(isa(f, 'mlfourd.INIfTI'));
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(f, this.contextHandle_));
+        end
         function this = set.nifti(this, f)
             assert(isa(f, 'mlfourd.NIfTIInterface'));
             this.contextHandle_.changeState( ...
@@ -105,13 +119,18 @@ classdef NIfTIState < mlfourd.ImagingState
     end 
     
 	methods (Static)
-        function this = load(nifti, h)
-            
+        function this = load(obj, h)            
             import mlfourd.*;
-            if (~isa(nifti, 'mlfourd.NIfTIInterface'))
-                nifti = NIfTI.load(nifti); end
+            if (~isa(obj, 'mlfourd.NIfTIInterface'))
+                try
+                    obj = NIfTI(obj);
+                catch ME
+                    error(ME.identifier, ...
+                          'mlfourd.NIfTIState.load does not support objects of type %s', class(obj));
+                end
+            end
             this = NIfTIState;
-            this.imcomponentState_ = ImagingComponentState.load(nifti, h);
+            this.imcomponentState_ = ImagingComponentState.load(obj, h);
             this.contextHandle_ = h;
         end
     end 
@@ -129,6 +148,15 @@ classdef NIfTIState < mlfourd.ImagingState
         end
  	end 
 
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+        function this = NIfTIState
+        end
+    end
+    
+    %% PRIVATE
+    
 	properties (Access = 'private')
         imcomponentState_
     end 

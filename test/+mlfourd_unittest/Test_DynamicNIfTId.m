@@ -78,22 +78,15 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_NIfTId
 
  	methods (TestClassSetup) 
  		function setupDynamicNIfTId(this) 
- 			this.testObj = this.dynamicNIfTId_; 
+            import mlfourd.*;
+            this.hoNIfTId_      = NIfTId.load(this.hodyn_fqfn);
+            this.dynamicNIfTId_ = DynamicNIfTId(this.hoNIfTId_); 
+ 			this.testObj        = this.dynamicNIfTId_; 
  		end 
  	end 
 
  	methods (TestClassTeardown) 
  	end 
-
-    methods        
- 		function this = Test_DynamicNIfTId(varargin) 
-            this = this@mlfourd_unittest.Test_NIfTId(varargin{:});
-            
-            import mlfourd.*;
-            this.hoNIfTId_      = NIfTId.load(this.hodyn_fqfn);
-            this.dynamicNIfTId_ = DynamicNIfTId(this.hoNIfTId_); 
- 		end 
-    end
     
     %% PRIVATE
     

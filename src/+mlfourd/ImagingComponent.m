@@ -1,34 +1,20 @@
 classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
 	%% IMAGINGCOMPONENT is the root interface for a composite design pattern.
-    %
+    %  See also:  mlfourd.NIfTId
+    
 	%  Version $Revision: 2642 $ was created $Date: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingComponent.m $ 
  	%  Developed on Matlab 7.13.0.564 (R2011b) 
  	%  $Id: ImagingComponent.m 2642 2013-09-21 22:58:30Z jjlee $ 
  	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
 
-    properties (Dependent)
-        descrip
-        img
-        mmppix
-        pixdim
-    end
-    
-	properties (SetAccess = 'protected')        
-        ext
-        filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
-        hdr
-        untouch
-    end 
- 
     methods (Static)
         function this = load(objs, varargin)
             %% LOAD dispatches to ImagingComposites and ImagingSeries
             %  Usage:   obj = ImagingComposite.load(objects);
             %           obj =    ImagingSeries.load(objects);
-            %                                       ^ filenames, NIfTI, NIfTIInterface, ImagingContext,
+            %                                       ^ filenames, NIfTI, INIfTI, ImagingContext,
             %                                         or cell-array of, or ImagingArrayList of
-            %  TODO:   use imcast once it is mature
             
             import mlfourd.*;
             this = [];
@@ -37,7 +23,7 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                     this = objs.imcomponent;
                     return
                 end
-                if (isa(objs, 'mlfourd.NIfTIInterface'))
+                if (isa(objs, 'mlfourd.INIfTI'))
                     this = ImagingComponent(objs, varargin{:});
                     if (1 == this.length)
                         this = ImagingSeries(this);
@@ -65,25 +51,45 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
         end   
     end 
     
-    methods %% SET/GET delegate to ImagingComponent.cachedNext, AbstractComponent.componentCurrent_  
-        function d  = get.descrip(this)
-            d = this.cachedNext.descrip;
-        end
-        function im = get.img(this)
-            im = this.cachedNext.img;
-        end
-        function m  = get.mmppix(this)
-            m = this.cachedNext.mmppix;
-        end
-        function p  = get.pixdim(this)
-            p = this.cachedNext.pixdim;
-        end    
-    end
-    
     methods
+        function this = forceDouble(this)
+            this.cachedNext = this.cachedNext.forceDouble;
+        end
+        function this = forceSingle(this)
+            this.cachedNext = this.cachedNext.forceSingle;
+        end
+        function tf   = isequal(this, nii)
+            tf = this.isequaln(nii);
+        end
+        function tf   = isequaln(this, imcmp)
+            tf = isa(imcmp, class(this));
+            if (tf)
+                for c = 1:length(this)
+                    tf = tf && isequaln(this.get(c), imcmp.get(c));
+                end
+                tf = this.fieldsequaln(imcmp);
+            end
+        end 
+        function        save(this)
+            assert(~isempty(this.cachedNext));
+            cn = this.cachedNext;
+            cn.save;
+        end
+        function cmp  = saveas(this, fn)
+            cmp  = this.cachedNext;
+            cmp  = cmp.saveas(fn);
+        end
         function obj  = clone(this)
             obj = mlfourd.ImagingComponent(this);
         end
+        function cmp  = makeSimilar(this, varargin)
+            %% MAKESIMILAR makes similar imaging component from this.next, the current component
+            
+            assert(~isempty(this.cachedNext));
+            cmp = this.cachedNext;
+            cmp = cmp.makeSimilar(varargin{:}); 
+        end
+        
         function cmp  = horzcat(this, varargin)
             %% HORZCAT overloads [], manages ImagingComposites, ImagingSeries
             %  Usage:   imaging_composite = [imaging_component imaging_component2 ...]
@@ -94,12 +100,8 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                 cmp = ImagingSeries(cal); return; end
             cmp = ImagingComposite(cal);
         end
-        function cmp  = makeSimilar(this, varargin)
-            %% MAKESIMILAR makes similar imaging component from this.next, the current component
-            
-            assert(~isempty(this.cachedNext));
-            cmp = this.cachedNext;
-            cmp = cmp.makeSimilar(varargin{:}); 
+        function cmp  = vertcat(this, varargin)
+            cmp = this.horzcat(varargin{:});
         end
         function this = subsasgn(this, substr, rhs)
             %% SUBSASN overload subscript assignment for '.' and '{}' and '()' to mimic cell-arrays
@@ -162,19 +164,6 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
             [this,elts] = remove@mlfourd.AbstractComponent(this, locs);
              this       = this.componentCast(this);
         end
-        
-        %% Implemented methods of mlio.IOInterface
-        
-        function       save(this)
-            assert(~isempty(this.cachedNext));
-            cn = this.cachedNext;
-            cn.save;
-        end % save
-        function cmp = saveas(this, fn)
-            cmp  = this.cachedNext;
-            cmp  = cmp.saveas(fn);
-        end % saveas         
-        
     end 
 
     %% PROTECTED
@@ -192,16 +181,33 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                     
             this = this@mlfourd.AbstractNIfTIComponent(varargin{:});
         end
+        function tf   = fieldsequaln(this, imobj)
+            try
+                tf   = true;
+                flds = fieldnames(this);
+                for f = 1:length(flds)
+                    if (isempty(lstrfind(flds{f}, mlfourd.NIfTI.ISEQUAL_IGNORES)))
+                        tf = tf && isequaln(this.(flds{f}), imobj.(flds{f}));
+                        if (~tf); break; end
+                    end
+                end
+            catch ME
+                if (mlpipeline.PipelineRegistry.instance.verbosity > 0.98)
+                    handwarning(ME); end
+                tf = false;
+            end
+        end
         function q    = safe_quotient(this, denom, fg, blur, scale)
             import mlfourd.*;
             assert(isa(denom, 'mlfourd.ImagingComponent'));            
             assert(isa(fg,    'mlfourd.ImagingComponent'));
             assert(isnumeric(blur));
             assert(isnumeric(scale));
-            niib = NiiBrowser(this.cachedNext);
+            niib = NiiBrowser(NIfTI(this.cachedNext));
             q    = ImagingSeries.load( ...
-                       niib.safe_quotient(... 
-                           denom.cachedNext, fg.cachedNext, blur, scale));
+                       NIfTId( ...
+                           niib.safe_quotient(... 
+                               denom.cachedNext, fg.cachedNext, blur, scale)));
         end
     end
 

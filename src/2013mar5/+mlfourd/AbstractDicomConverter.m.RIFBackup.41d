@@ -1,0 +1,197 @@
+classdef AbstractDicomConverter < mlfourd.AbstractConverter
+	%% ABSTRACTDICOMCONVERTER is the interface for concrete strategies such as SurferDicomConverter, MRIConverter
+    %  Uses:   singleton mlfourd.NamingRegistry
+    %
+    %  Version $Revision: 2308 $ was created $Date: 2013-01-12 17:51:00 -0600 (Sat, 12 Jan 2013) $ by $Author: jjlee $,
+ 	%  last modified $LastChangedDate: 2013-01-12 17:51:00 -0600 (Sat, 12 Jan 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/AbstractDicomConverter.m $ 
+ 	%  Developed on Matlab 7.13.0.564 (R2011b) 
+ 	%  $Id: AbstractDicomConverter.m 2308 2013-01-12 23:51:00Z jjlee $ 
+ 	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
+
+    %% ABSTRACTIONS
+    
+    methods (Abstract, Static)
+        unpackDicom(dcmdir, targdir, unpackInfo)
+        scanDicom(dcmdir, targdir)
+    end % abstract static methdos
+
+    methods (Abstract, Static, Access = 'protected')
+        parseInfoFile(fname)
+        parseInfoCell(ca)
+    end % abstract static protected methods
+    
+    methods (Abstract)
+        dicomQuery(this)
+        dicoms2structInfo(this)
+        structInfo2unpackInfo(this, structInfo)
+    end % abstract methods    
+
+    %% IMPLEMENTATIONS 
+    
+    properties (Constant)
+          imaNames    = {'*.IMA' '*.ima' '*.DCM' '*.dcm'};
+       reportNames    = {'*.SR'  '*.pdf' '*.I'};
+       reportsFolder  =  'DicomReports';
+           paxFolder  =  'PaxHeader';    
+         dicomFolders = {'CDR_OFFLINE' 'Osirix/DICOM' 'Osirix/Dicom' 'DICOM' 'Dicom' 'CDROM/DICOM/ST000000' 'cdrom/DICOM/ST000000'};
+      modalityFolders = {'Trio' 'Avanto' 'Allegra' 'Symphony' 'ClinDesk' 'iSite' 'OutsideMR'};       
+        orients2fix   = struct('img_type', { 'ase' 'local' }, 'orientation', { 'y' 'y' });
+    end % constant properties
+    
+    properties (Dependent)
+        allFileprefixes
+        mrPath
+        mrFolder
+        mrReference
+        dicomPath
+        dicomFolder
+    end % dependent properties
+    
+    methods (Static)
+        function cleanImas(dcmPth, targPth)
+            import mlfourd.*;
+            DicomComponent.cleanReports(dcmPth, targPth);
+            NamingRegistry.extractNestedFolders(dcmPth, 'CDR_OFFLINE');
+        end % static cleanImas
+        function cleanPaxHeaders(dcmPth, ~)
+            import mlfourd.*;
+            if (lstrfind(dcmPth, 'CDR_OFFLINE'))
+                try
+                    paxPth = ensureFolderExists( ...
+                                 fullfile(dcmPth, '..', AbstractDicomConverter.paxFolder, ''));
+                        r = ''; [~,r] = movefiles(fullfile(dcmPth, '*'), paxPth, 'f');
+                    for n = 1:length(AbstractDicomConverter.imaNames) %#ok<FORFLG>
+                        [~,r] = movefiles( ...
+                            fullfilename(paxPth, AbstractDicomConverter.imaNames{n}), dcmPth); 
+                    end
+                catch ME
+                   handexcept(ME, r);
+                end
+            end
+        end % static cleanPaxHeaders
+        function cleanReports(   dcmPth, ~)
+            import mlfourd.*;
+            if (lstrfind(dcmPth, 'CDR_OFFLINE'))
+                try
+                    r = '';
+                    reportsPth = fullfile(dcmPth, '..', AbstractDicomConverter.reportsFolder, '');
+                    reportsPth = ensureFolderExists(reportsPth);
+                    for n = 1:length(AbstractDicomConverter.reportNames) %#ok<FORFLG>
+                        [~,r] = movefiles( ...
+                            fullfilename(dcmPth, AbstractDicomConverter.reportNames{n}), reportsPth, 'f'); 
+                    end
+                catch ME
+                    handexcept(ME, r);
+                end
+            end
+        end % static cleanReports        
+    end % static methods
+    
+	methods %% set/get 
+        function pref = get.allFileprefixes(this)
+            pref = this.namingRegistry_.FSL_NAMES;
+        end
+        function fld  = get.dicomFolder(this)
+            [~,fld] = filepartsx(this.dicomPath, mlfourd.AbstractImage.FILETYPE_EXT);
+        end % get.dicomFolder
+        function pth  = get.dicomPath(this)
+            for d = 1:length(this.dicomFolders)
+                pth = fullfile(this.mrPath, this.dicomFolders{d}, '');
+                if (lexist(pth, 'dir')); return; end
+            end
+            error('mlfourd:PathNotFound', 'could not find any of:  %s', cell2str(this.dicomFolders));
+        end % get.dicomPath
+        function fld  = get.mrFolder(this)
+            [~,fld] = filepartsx(this.mrPath, mlfourd.AbstractImage.FILETYPE_EXT);
+        end % get.mrFolder
+        function pth  = get.mrPath(this)
+            pth = this.modalityPath;
+        end % get.mrPath
+    end
+    
+    methods
+        function fns  = modalFqFilenames(this, lbl)
+            %% MODALFQFILENAMES uses lazy initialization of a cache of fully-qualified filenames
+            
+            lbl_ = [lbl 'FqFilenames_'];
+            if (isempty(this.(lbl_)))
+                this.(lbl_) = this.allFqFilenames(cell2logical(strfind(this.allFqFilenames, lbl)));
+            end
+            fns = this.(lbl_);
+        end % modalFqFilenames
+        function        unpack(this, varargin)
+            %% UNPACK unpacks DICOM/NIfTI to an fsl-folder
+            %  Usage:  unpack 
+            %          unpack(unpack_path) 
+            %          unpack(unpack_path, fsl_path)
+            
+            this.dicoms2cell;
+            switch (nargin-1)
+                case 0
+                    this.unpack(this.unpackPath, this.fslPath);
+                case 1
+                    this.unpack(varargin{1},     this.fslPath);
+                case 2
+                    % funnel
+                    this.rename(varargin{1}, varargin{2}); % abstract
+                    this.reorient2std(       varargin{2});
+                otherwise
+                    error('mlfourd:TooManyNargin', 'AbstractDicomConverter.unpack.vargin->%i', cell2str(vargin));
+            end
+            this.orientChangeStrategy(this.fslPath, this.orients2fix);
+        end % unpack 
+        function cal  = dicoms2cell(this)
+            %% DICOMS2CELL
+            %  Usage:   cal = obj.dicoms2cell
+            %           ^ series-info embedded in CellArrayList
+            
+            cal = this.unpackInfo2cell(this.structInfo2unpackInfo(this.dicomQuery));
+        end % dicoms2cell
+        function cal  = unpackInfo2cell(this, unpackInfo)
+ 			%% UNPACKINFO2CELL
+ 			%  Usage:  cal = obj.unpackInfo2cell(unpackInfo)
+            %                                 ^ struct-array with fields:  index, seq_type, ext, name
+            %          ^ session info embedded in CellArrayList
+            
+            cal = this.unpackDicom(this.dicomPath, this.unpackPath, unpackInfo);
+            assert(cal.length > 0);
+ 		end % unpackInfo2cell
+    end % methods
+    
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+ 		function this = AbstractDicomConverter(mrpth)
+            %% ABSTRACTDICOMCONVERTER is the abstract interface for DICOM conversion strategies
+                       
+            this = this@mlfourd.AbstractConverter(mrpth);
+ 		end % ctor         
+    end % protected methods
+    
+    %% PRIVATE
+    
+    properties (Access = 'private')
+        irFqFilenames_
+        t1FqFilenames_
+        tofFqFilenames_
+        pdFqFilenames_
+        t2FqFilenames_
+        dwiFqFilenames_
+        irllFqFilenames_
+        localFqFilenames_
+        pcFqFilenames_
+        swiFqFilenames_
+        dsaFqFilenames_
+        adcFqFilenames_
+        greFqFilenames_
+        fieldmapFqFilenames_
+        ep2dFqFilenames_
+        aseFqFilenames_
+        aslFqFilenames_
+        hxoefFqFilenames_
+        unknownFqFilenames_
+    end % private properties
+
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
+end
+

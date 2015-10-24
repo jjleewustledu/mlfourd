@@ -1,5 +1,7 @@
-classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
+classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractSimpleIO
 	%% IMAGINGLOCATION   
+    %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
+    %             mlfourd.ImagingComponentState, mlpatterns.State
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -21,6 +23,7 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
         noclobber
         
         mgh
+        niftid
         nifti
         imcomponent
     end
@@ -64,6 +67,11 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
                 mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
             f = this.contextHandle_.mgh;
         end  
+        function f    = get.niftid(this)
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
+            f = this.contextHandle_.niftid;
+        end
         function f    = get.nifti(this)
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
@@ -117,6 +125,11 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
                 mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
             this.contextHandle_.mgh = f;
         end
+        function this = set.niftid(this, f)
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
+            this.contextHandle_.niftid = f;
+        end
         function this = set.nifti(this, f)
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
@@ -132,7 +145,6 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
     methods (Static)
         function this = load(fname, h)
             fname = mlfourd.ImagingLocation.ensureNiigz(fname);
-            %%% assert(lexist(fname, 'file'));
             this = mlfourd.ImagingLocation;
             this.fqfilename = fname;
             this.contextHandle_ = h;            
@@ -148,7 +160,14 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractIOInterface
             this.save;
         end
     end
-
+    
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+        function this = ImagingLocation
+        end
+    end
+    
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end
 

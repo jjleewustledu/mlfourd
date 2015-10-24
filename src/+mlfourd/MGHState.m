@@ -1,5 +1,8 @@
 classdef MGHState < mlfourd.ImagingState 
 	%% MGHSTATE   
+    %  TO DO;  setting filenames should not change state to ImagingLocation.
+    %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState,
+    %             mlfourd.ImagingComponentState, mlfourd.ImagingLocation, mlpatterns.State
 
 	%  $Revision$ 
  	%  was created $Date$ 
@@ -20,6 +23,7 @@ classdef MGHState < mlfourd.ImagingState
         fqfp
         
         mgh
+        niftid
         nifti	
         imcomponent	 
     end 
@@ -52,6 +56,12 @@ classdef MGHState < mlfourd.ImagingState
         function f = get.mgh(this)
             assert(~isempty(this.mgh_));
             f = this.mgh_.clone;
+        end
+        function f = get.niftid(this)
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load( ...
+                    mlsurfer.MGH.mghFilename2niiFilename(this.fqfilename), this.contextHandle_));
+            f = this.contextHandle_.niftid;
         end
         function f = get.nifti(this)
             this.contextHandle_.changeState( ...
@@ -109,6 +119,11 @@ classdef MGHState < mlfourd.ImagingState
             this.contextHandle_.changeState( ...
                 mlfourd.MGHState.load(f, this.contextHandle_));
         end
+        function this = set.niftid(this, f)
+            assert(isa(f, 'mlfourd.INIfTI'));
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(f, this.contextHandle_));
+        end
         function this = set.nifti(this, f)
             assert(isa(f, 'mlfourd.NIfTIInterface'));
             this.contextHandle_.changeState( ...
@@ -122,11 +137,18 @@ classdef MGHState < mlfourd.ImagingState
     end 
     
 	methods (Static)
-        function this = load(mgh, h)
-            if (~isa(mgh, 'mlsurfer.MGH'))
-                mgh = mlsurfer.MGH.load(mgh); end
-            this = mlfourd.MGHState;
-            this.mgh_ = mgh.clone;
+        function this = load(obj, h)
+            import mlfourd.* mlsurfer.*;
+            if (~isa(obj, 'mlsurfer.MGH'))
+                try
+                    obj = MGH.load(obj);
+                catch ME
+                    error(ME.identifier, ...
+                          'mlfourd.MGHState.load does not support objects of type %s', class(obj));
+                end
+            end
+            this = MGHState;
+            this.mgh_ = obj;
             this.contextHandle_ = h;
         end
     end 
@@ -144,6 +166,15 @@ classdef MGHState < mlfourd.ImagingState
         end
  	end 
 
+    %% PROTECTED
+    
+    methods (Access = 'protected')
+        function this = MGHState
+        end
+    end
+    
+    %% PRIVATE
+    
 	properties (Access = 'private')
         mgh_
     end 

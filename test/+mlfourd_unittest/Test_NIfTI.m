@@ -109,7 +109,8 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
             this.assertEqual(this.T1ENTROPY, this.t1.entropy, 'RelTol', 1e-10);
         end
         function test_char(this)
-            this.assertEqual('/Volumes/InnominateHD2/Local/test/np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz', this.t1.char);
+            this.assertEqual( ...
+                fullfile(getenv('MLUNIT_TEST_PATH'), 'np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz'), this.t1.char);
         end
         function test_forceDouble(this)
             forced = this.t1mask.forceDouble;
@@ -152,26 +153,6 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
 
  	methods (TestClassSetup) 
  		function setupNIfTI(this)
-            this.setupMlfourd;  
-            this.pwd0_ = pwd;
-            cd(this.fslPath);
- 			this.testObj = mlfourd.NIfTI; 
- 		end 
- 	end 
-
- 	methods (TestClassTeardown)
-        function teardownNIfTI(this)
-            this.teardownMlfourd;
-            if (lexist(this.test_saveas_fqfn, 'file'))
-                delete(this.test_saveas_fqfn); end
-            cd(this.pwd0_);
-        end
-    end 
-    
-    methods        
-        function this = Test_NIfTI(varargin)
-            this = this@mlfourd_unittest.Test_mlfourd(varargin{:});
-            this.preferredSession = 2;
             if (isempty(this.t1struct))
                 this.t1struct_     = this.fqfn2struct(this.t1_fqfn); 
                 this.t1struct_.img = this.t1struct_.img(:,:,this.ZRANGE);
@@ -184,19 +165,26 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
                 this.t1mask_     = this.fqfn2struct2NIfTI(this.t1mask_fqfn); 
                 this.t1mask_.img = this.t1mask_.img(:,:,this.ZRANGE);
             end
-        end
-    end
+            
+            this.pwd0_ = pwd;
+            cd(this.fslPath);
+ 			this.testObj = mlfourd.NIfTI; 
+            
+            if (lexist(this.test_saveas_fqfn, 'file'))
+                delete(this.test_saveas_fqfn); end
+ 		end 
+ 	end 
 
-    %% PRIVATE
+    %% PROTECTED
     
-    properties (Access = 'private')  
+    properties (Access = 'protected')  
         pwd0_
         t1_
         t1struct_
         t1mask_
     end
     
-    methods (Static, Access = 'private')
+    methods (Static, Access = 'protected')
         function obj = aCtor(arg)
             obj = mlfourd.NIfTI(arg);
         end
@@ -219,7 +207,7 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
             nii = mlfourd.NIfTI( ...
                   mlfourd_unittest.Test_NIfTI.fqfn2struct(fqfn));
         end
-    end % private methods
+    end 
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
  end 
