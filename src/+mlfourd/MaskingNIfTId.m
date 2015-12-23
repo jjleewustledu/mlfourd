@@ -5,7 +5,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
     methods (Static)        
         function this = load(varargin)
             %% LOAD 
-            %  Usage:  this = MaskingNIfTId.load(filename[, description])
+            %  Usage:  this = MaskingNIfTId.load(filename[, description]); % args passed to NIfTId
             
             import mlfourd.*;            
             this = MaskingNIfTId(NIfTId.load(varargin{:}));
@@ -106,7 +106,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
                           'MaskedNIfTI.modeall does not support images of size %s', mat2str(size(img)));
             end
         end
-        function tf   = isZeroToOne(obj)       
+        function tf   = isZeroToOne(obj)
             import mlfourd.*;
             mx = MaskingNIfTId.maxall(obj);
             mn = MaskingNIfTId.minall(obj);
@@ -120,7 +120,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
     end
     
     methods        
-        function this = MaskingNIfTId(cmp, varargin)            
+        function this = MaskingNIfTId(cmp, varargin)
             %% MASKINGNIFTID 
             %  Usage:  this = MaskingNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
             %
@@ -160,7 +160,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
                        MaskingNIfTId(p.Results.freesurfer_mask, 'binarize', true));
             end
         end           
-        function this = masked(this, niidMask)            
+        function this = masked(this, niidMask)
             %% MASKED returns this with the internal image multiplied by the passed INIfTI mask;
             %  Usage:   mn = MaskingNIfTId(...)
             %           mn = mn.masked(INIfTI_mask)
@@ -203,13 +203,13 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
             vec = this.img(niidMask.img == 1);
             x   = mode(vec);
         end
-        function N    = count(this)            
+        function N    = count(this)
             %% COUNT counts nonzero elements in the internal INIfTI component
             
             msk = this.img ~= 0;
             N   = this.sumall(msk);
         end
-        function this = thresh(this, thresh)            
+        function this = thresh(this, thresh)
             %% THRESH returns a binary mask after thresholding
             %  Usage:  mn = MaskingNIfTId(...)
             %          mn = mn.thresh(167); % returns MaskingNIfTId with MaskingNIfTId.img > 167 set as binary image
@@ -223,7 +223,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
                    'fileprefix', sprintf('_thresh%g', thresh), ...
                    'descrip', sprintf('MaskedNIfTI.thresh(%g)', thresh));
         end
-        function this = pthresh(this, pthr)            
+        function this = pthresh(this, pthr)
             %% PTHR returns binary mask after applying a robust percent threshold
             %  Usage:  mn = MaskingNIfTId(...)
             %          mn = mn.pthr(0.67) % returns MaskingNIfTId with MaskingNIfTId.img > 67% robust threshold set as binary image
@@ -238,7 +238,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecorator
                    'fileprefix', sprintf('_pthresh%g', pthr), ...
                    'descrip', sprintf('MaskedNIfTI.pthresh(%g)', pthr));
         end        
-        function this = binarize(this)            
+        function this = binarize(this)
             %% BINARIZE
             
             img  = double(this.img ~= 0);

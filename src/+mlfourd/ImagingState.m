@@ -12,7 +12,6 @@ classdef ImagingState < mlio.IOInterface
  	%  $Id: ImagingState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	 
 	properties (Abstract)
-        mgh
         niftid
         nifti
         imcomponent
@@ -20,22 +19,6 @@ classdef ImagingState < mlio.IOInterface
     
     methods (Abstract, Static)
         this = load(obj, h)
-    end
-
-    methods (Static)
-        
-        %% KLUDGE to manage MGHState
-        
-        function fname = ensureNiigz(fname) 
-            assert(ischar(fname), 'mlfourd.ImagingState.ensureNiigz does not support objects of class %s', class(fname));
-            if (lstrfind(fname, '.mgz') || lstrfind(fname, '.mgh'))
-                fname = mlsurfer.MGH.mghFilename2niiFilename(fname); end 
-        end
-        function fname = ensureMgz(fname)
-            assert(ischar(fname), 'mlfourd.ImagingState.ensureMgz does not support objects of class %s', class(fname));
-            if (lstrfind(fname, '.nii.gz'))
-                fname = mlsurfer.MGH.mri_convert(fname); end
-        end
     end
     
     methods

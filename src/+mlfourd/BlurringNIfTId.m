@@ -49,7 +49,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
     methods (Static)
         function this = load(varargin)
             %% LOAD 
-            %  Usage:  this = BlurringNIfTId.load(filename[, description]);
+            %  Usage:  this = BlurringNIfTId.load(filename[, description]); % args passed to NIfTId
             
             import mlfourd.*;
             this = BlurringNIfTId(NIfTId.load(varargin{:}));

@@ -110,7 +110,7 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
         end
         function test_char(this)
             this.assertEqual( ...
-                fullfile(getenv('MLUNIT_TEST_PATH'), 'np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz'), this.t1.char);
+                fullfile(getenv('MLUNIT_TEST_PATH'), 'cvl/np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz'), this.t1.char);
         end
         function test_forceDouble(this)
             forced = this.t1mask.forceDouble;

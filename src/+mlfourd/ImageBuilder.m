@@ -15,7 +15,7 @@ classdef ImageBuilder
         lastLogged
         lastProduct
         logFilename
-        logged
+        logger
         modalityFolder
         modalityPath
         products
@@ -54,7 +54,7 @@ classdef ImageBuilder
             this = this.addLogged(lg);
         end
         function prd   = get.lastLogged(this)
-            prd = this.logged.get(this.logged.length);
+            prd = this.logger.get(this.logger.length);
         end
         function this  = set.lastProduct(this, prd)
             assert(~isempty(prd));
@@ -68,7 +68,7 @@ classdef ImageBuilder
                clname  = clname(2:end);
             fn = fullfile(this.converter_.fslPath, mlfourd.NamingRegistry.instance.logFilename(clname));
         end
-        function lg    = get.logged(this)
+        function lg    = get.logger(this)
             assert(~isempty(this.logged_));
             lg = this.logged_.clone;
         end  

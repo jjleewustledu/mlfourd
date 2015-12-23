@@ -21,11 +21,9 @@ classdef ImagingComponentState < mlfourd.ImagingState
         fqfileprefix
         fqfn
         fqfp
-        
-        mgh
-        niftid
-        nifti	
         imcomponent	 
+        nifti	
+        niftid
  	end 
 
 	methods % GET/SET
@@ -53,28 +51,23 @@ classdef ImagingComponentState < mlfourd.ImagingState
         function f = get.fqfp(this)
             f = this.imcomponent_.fqfp;
         end    
-        function f = get.mgh(this)            
-            this.contextHandle_.changeState( ...
-                mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.mgh;
-        end
-        function f = get.niftid(this)  
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.niftid;
-        end
+        function f = get.imcomponent(this)
+            assert(~isempty(this.imcomponent_));
+            f = this.imcomponent_.clone;
+        end    
         function f = get.nifti(this)  
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
             f = this.contextHandle_.nifti;
         end
-        function f = get.imcomponent(this)
-            assert(~isempty(this.imcomponent_));
-            f = this.imcomponent_.clone;
-        end        
+        function f = get.niftid(this)  
+            this.contextHandle_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
+            f = this.contextHandle_.niftid;
+        end    
         
         function this = set.filename(this, f)
-            [~,fp,fs] = gzfileparts(f);
+            [~,fp,fs] = myfileparts(f);
             f = [fp fs];
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(fullfile(this.filepath, f), this.contextHandle_));
@@ -93,7 +86,7 @@ classdef ImagingComponentState < mlfourd.ImagingState
         end        
         function this = set.filesuffix(this, f)
             assert(ischar(f));
-            [~,~,f] = gzfileparts(f);
+            [~,~,f] = myfileparts(f);
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(fullfile(this.filepath, [this.fileprefix f]), this.contextHandle_));
         end        
@@ -111,30 +104,25 @@ classdef ImagingComponentState < mlfourd.ImagingState
         function this = set.fqfp(this, f)
             this.fqfileprefix = f;
         end     
-        function this = set.mgh(this, f)
-            assert(isa(f, 'mlsurfer.MGH'));
+        function this = set.imcomponent(this, f)
+            assert(isa(f, 'mlfourd.ImagingComponent'));
             this.contextHandle_.changeState( ...
-                mlfourd.MGHState.load(f, this.contextHandle_));
-        end
-        function this = set.niftid(this, f)
-            assert(isa(f, 'mlfourd.INIfTI'));
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(f, this.contextHandle_));
+                mlfourd.ImagingComponentState.load(f, this.contextHandle_));
         end
         function this = set.nifti(this, f)
             assert(isa(f, 'mlfourd.NIfTIInterface'));
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(f, this.contextHandle_));
         end
-        function this = set.imcomponent(this, f)
-            assert(isa(f, 'mlfourd.ImagingComponent'));
+        function this = set.niftid(this, f)
+            assert(isa(f, 'mlfourd.INIfTI'));
             this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(f, this.contextHandle_));
+                mlfourd.NIfTIdState.load(f, this.contextHandle_));
         end
     end 
     
 	methods (Static)
-        function this = load(obj, h)            
+        function this = load(obj, h)
             import mlfourd.*;
             if (~isa(obj, 'mlfourd.ImagingComponent'))
                 try

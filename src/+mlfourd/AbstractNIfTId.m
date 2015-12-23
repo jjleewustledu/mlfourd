@@ -5,11 +5,12 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
     %      properties:  descrip, img, mmppix, pixdim
     %      methods:     forceDouble, forceSingle, isequal, isequaln, makeSimilar, clone
     
-	%  Version $Revision: 2627 $ was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ by $Author: jjlee $  
- 	%  and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/AbstractNIfTId.m $ 
- 	%  Developed on Matlab 7.11.0.584 (R2010b) 
- 	%  $Id: AbstractNIfTId.m 2627 2013-09-16 06:18:10Z jjlee $ 
- 	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
+	%  $Revision$
+ 	%  was created 20-Oct-2015 19:28:49
+ 	%  by jjlee,
+ 	%  last modified $LastChangedDate$
+ 	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
+ 	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
     
     properties (Constant)
         DESC_LEN_LIM = 256; % limit to #char of desc, as desc may be used for the default fileprefix
@@ -72,7 +73,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             assert(isnumeric(im));
             this.img_                         = im;
             this                              = this.optimizePrecision;
-            this.hdr_.dime.dim                = zeros(1,8);
+            this.hdr_.dime.dim                = ones(1,8);
             this.hdr_.dime.dim(1)             = this.rank;
             this.hdr_.dime.dim(2:this.rank+1) = this.size;
             this.untouch_ = false;
@@ -336,14 +337,14 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
         end        
         function this = prod(this, varargin)
-            %% PROD overloads prod for NIfTId
+            %% PROD overloads prod for INIfTI
             
             this.img        = prod(this.img_, varargin{:});
             this.fileprefix = [this.fileprefix '_prod'];
             this.descrip    = ['prod(' this.descrip ')'];
         end
         function this = sum(this, varargin)
-            %% SUM overloads sum for NIfTId
+            %% SUM overloads sum for INIfTI
             
             this.img        = sum(this.img_, varargin{:});
             this.fileprefix = [this.fileprefix '_sum'];

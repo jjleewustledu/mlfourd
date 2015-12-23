@@ -77,7 +77,7 @@ classdef MGHState < mlfourd.ImagingState
         end
         
         function this = set.filename(this, f)
-            [~,fp,fs] = gzfileparts(f);
+            [~,fp,fs] = myfileparts(f);
             f = [fp fs];
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(fullfile(this.filepath, f), this.contextHandle_));
@@ -96,7 +96,7 @@ classdef MGHState < mlfourd.ImagingState
         end        
         function this = set.filesuffix(this, f)
             assert(ischar(f));
-            [~,~,f] = gzfileparts(f);
+            [~,~,f] = myfileparts(f);
             this.contextHandle_.changeState( ...
                 mlfourd.ImagingLocation.load(fullfile(this.filepath, [this.fileprefix f]), this.contextHandle_));
         end        

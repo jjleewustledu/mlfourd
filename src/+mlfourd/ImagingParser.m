@@ -59,7 +59,7 @@ classdef ImagingParser
             function sn = buildFilename(sn, arg)
                 import mlfourd.* mlfsl.*;
                 try                   
-                    [~,sn.stem] = gzfileparts(sn.stem);
+                    [~,sn.stem] = myfileparts(sn.stem);
                     switch (lower(arg))
                         case {'fq' 'fullqual' 'fullyqualified'}
                             sn      = makeFullyQualified(sn,k);

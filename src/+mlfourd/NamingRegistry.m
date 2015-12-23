@@ -119,10 +119,10 @@ classdef NamingRegistry < mlpatterns.Singleton
         function nm    = suffixed(nm, suf)
             %% SUFFIXED adds suffix-notation to a filename
             %  Usage:  nm = NamingRegistry.suffixed(nm, suffix)
-            %          ^                              ^ strings or stringable objects
-            %                                             ^ strings
+            %          ^                            ^ strings or stringable objects
+            %                                           ^ strings
             %      suffix = NamingRegistry.suffixed(~,  suffix)
-            nm = imcast(nm, 'fqfileprefix');
+            
             if (isempty(nm) && ~isempty(suff)) 
                 nm = suf; return; end
             if (nargin < 2)
@@ -187,14 +187,13 @@ classdef NamingRegistry < mlpatterns.Singleton
     end
     
     methods
-        function fn       = logFilename(this, str)
+        function fn       = logFilename(~, str)
             %% LOGFILENAME 
             %  unqualified_filename = instance.logFilename(name_string)
             
             fn = strtok(str);
-            import mlpipeline.*;
-            if (~lstrfind(fn, Logger.LOGFILE_EXT))
-                fn = [fn Logger.LOGFILE_EXT];
+            if (~lstrfind(fn, '.log'))
+                fn = [fn '.log'];
             end
         end
         function name     = fslName(this, name)

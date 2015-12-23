@@ -19,11 +19,9 @@ classdef NIfTIdState < mlfourd.ImagingState
         fqfileprefix
         fqfn
         fqfp
-        
-        mgh
-        niftid	
-        nifti	
         imcomponent	 
+        nifti
+        niftid		
  	end 
 
 	methods % GET/SET
@@ -50,26 +48,21 @@ classdef NIfTIdState < mlfourd.ImagingState
         end
         function f = get.fqfp(this)
             f = this.niftid_.fqfp;
-        end    
-        function f = get.mgh(this)            
-            this.contextHandle_.changeState( ...
-                mlfourd.MGHState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.mgh;
         end  
-        function f = get.niftid(this)
-            f = this.niftid_;
-            f = mlfourd.NIfTId(f);
-        end
+        function f = get.imcomponent(this)            
+            this.contextHandle_.changeState( ...
+                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextHandle_));
+            f = this.contextHandle_.imcomponent;
+        end  
         function f = get.nifti(this)            
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
             f = this.contextHandle_.nifti;
         end
-        function f = get.imcomponent(this)            
-            this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.imcomponent;
-        end        
+        function f = get.niftid(this)
+            f = this.niftid_;
+            f = mlfourd.NIfTId(f);
+        end      
         
         function this = set.filename(this, f)
             this.niftid_.filename = f;
@@ -94,31 +87,26 @@ classdef NIfTIdState < mlfourd.ImagingState
         end        
         function this = set.fqfp(this, f)
             this.fqfileprefix = f;
-        end     
-        function this = set.mgh(this, f)
-            assert(isa(f, 'mlsurfer.MGH'));
+        end   
+        function this = set.imcomponent(this, f)
+            assert(isa(f, 'mlfourd.ImagingComponent'));
             this.contextHandle_.changeState( ...
-                mlfourd.MGHState.load(f, this.contextHandle_));
-        end
-        function this = set.niftid(this, f)
-            assert(isa(f, 'mlfourd.INIfTI'));
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(f, this.contextHandle_));
+                mlfourd.ImagingComponentState.load(f, this.contextHandle_));
         end
         function this = set.nifti(this, f)
             assert(isa(f, 'mlfourd.NIfTIInterface'));
             this.contextHandle_.changeState( ...
                 mlfourd.NIfTIState.load(f, this.contextHandle_));
         end
-        function this = set.imcomponent(this, f)
-            assert(isa(f, 'mlfourd.ImagingComponent'));
+        function this = set.niftid(this, f)
+            assert(isa(f, 'mlfourd.INIfTI'));
             this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(f, this.contextHandle_));
+                mlfourd.NIfTIdState.load(f, this.contextHandle_));
         end
     end 
     
 	methods (Static)
-        function this = load(obj, h)            
+        function this = load(obj, h)
             import mlfourd.*;
             if (~isa(obj, 'mlfourd.INIfTI'))
                 try

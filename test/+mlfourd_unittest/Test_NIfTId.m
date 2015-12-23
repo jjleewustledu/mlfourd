@@ -176,7 +176,7 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourd
         end      
         function test_char(this)
             this.assertEqual( ...
-                fullfile(getenv('MLUNIT_TEST_PATH'), 'np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz'), ...
+                fullfile(getenv('MLUNIT_TEST_PATH'), 'cvl/np755/mm01-020_p7377_2009feb5/fsl/t1_default.nii.gz'), ...
                 this.t1.char);
         end
         function test_rank(this)
@@ -193,10 +193,10 @@ classdef Test_NIfTId < mlfourd_unittest.Test_mlfourd
  	methods (TestClassSetup) 
  		function setupNIfTId(this)
             import mlfourd.*;
+            cd(this.fslPath);
             this.t1struct_ = this.reducedImg(this.fqfn2struct(this.t1_fqfn));
             this.t1_       = this.reducedImg(NIfTId.load(this.t1_fqfn));
             this.t1mask_   = this.reducedImg(NIfTId.load(this.t1mask_fqfn));
-            cd(this.fslPath);
  			this.testObj = mlfourd.NIfTId; 
  		end 
  	end 

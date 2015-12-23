@@ -1,10 +1,13 @@
 classdef NIfTId < mlfourd.AbstractNIfTId
-    %% NIFTID accepts Jimmy Shen's NIfTI-structs or image arrays.   Ctor w/o args is also allowed.
+    %% NIFTID accepts Jimmy Shen's NIfTI-structs or image arrays.  Ctor w/o args is also allowed.
     %  A minimal NIfTId has hdr.dime.pixdim, hdr.hist.descrip, fileprefix & img.
     
-    %  Created by John Lee on 2009-9-3.
-    %  Copyright (c) 2009 Washington University School of Medicine.  All rights reserved.
-    %  Report bugs to bug.jjlee.wustl.edu@gmail.com.
+	%  $Revision$
+ 	%  was created 20-Oct-2015 19:28:49
+ 	%  by jjlee,
+ 	%  last modified $LastChangedDate$
+ 	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
+ 	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
 
     properties (Constant)
         ISEQUAL_IGNORES      = {'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
@@ -93,8 +96,8 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this.untouch_ = false;
             this.save;
         end % overloads AbstractSimpleIO.saveas        
-        function obj      = clone(this)
-            obj = mlfourd.NIfTId(this, this.fqfileprefix, ['clone of ' this.descrip], this.pixdim);
+        function nii      = clone(this)
+            nii = mlfourd.NIfTId(this, this.fqfileprefix, ['clone of ' this.descrip], this.pixdim);
         end        
         function nii      = makeSimilar(this, varargin)
             %% MAKESIMILAR returns a similar NIfTId object
@@ -205,7 +208,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                             rank                                 = length(size(datobj));
                             this.img                             = double(datobj);
                             this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                            this.hdr_.dime.dim                   = zeros(1,8);
+                            this.hdr_.dime.dim                   = ones(1,8);
                             this.hdr_.dime.dim(1)                = rank;
                             this.hdr_.dime.dim(2:rank+1)         = size(datobj);
                             this.hdr_.dime.datatype              = 64;

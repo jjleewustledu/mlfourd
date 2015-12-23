@@ -28,7 +28,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
     methods (Static)        
         function this = load(varargin)
             %% LOAD 
-            %  Usage:  this = MaskingNIfTId.load(filename[, description])
+            %  Usage:  this = DynamicNIfTId.load(filename[, description]); % args passed to NIfTId
             
             import mlfourd.*;            
             this = DynamicNIfTId(NIfTId.load(varargin{:}));

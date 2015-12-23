@@ -19,7 +19,7 @@ classdef UnittestRegistry < mlpatterns.Singleton
     
     methods % GET
         function g = get.sessionPath(this)
-            g = fullfile(getenv('MLUNIT_TEST_PATH'), 'np755', this.sessionFolder, '');
+            g = fullfile(getenv('MLUNIT_TEST_PATH'), 'cvl', 'np755', this.sessionFolder, '');
         end
     end
     
