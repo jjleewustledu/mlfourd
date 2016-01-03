@@ -18,21 +18,15 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         OPTIMIZED_PRECISION = false
     end
     
-    properties 
-        stack % EXPERIMENTAL
-    end
-    
     properties (Dependent)
         
-        % After mlfourd.JimmyShenInterface:  to support struct arguments to NIfTId ctor  
-        img      
+        %% Instantiation of mlfourd.JimmyShenInterface to support struct arguments to NIfTId ctor     
         ext
-        filetype   % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
-        hdr        %     N.B.:  to change the data type, set nii.hdr.dime.datatype,
-                   %            and nii.hdr.dime.bitpix to:
+        filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr        %   N.B.:  to change the data type, set nii.hdr.dime.datatype and nii.hdr.dime.bitpix to:
                    %   0 None                     (Unknown bit per voxel) 
-                   %   1 Binary                         (ubit1, bitpix=1) 
-                   %   2 Unsigned char         (uchar or uint8, bitpix=8) 
+                   %   1 Binary                        (ubit1, bitpix=1) 
+                   %   2 Unsigned char        (uchar or uint8, bitpix=8) 
                    %   4 Signed short                  (int16, bitpix=16) 
                    %   8 Signed integer                (int32, bitpix=32) 
                    %  16 Floating point    (single or float32, bitpix=32) 
@@ -42,26 +36,45 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                    % 768 Unsigned integer             (uint32, bitpix=32) 
                    %1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
                    %1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64
+        img
         originalType
         untouch
-        descrip
-        mmppix
-        pixdim
         
+        %% Instantiation of mlfourd.INIfTI        
+        
+        bitpix
         creationDate
         datatype
+        descrip
         entropy
         hdxml
         label
         machine
+        mmppix
         negentropy
         orient
+        pixdim
+        seriesNumber
+        
+        %% New for mlfourd.AbstractNIfTId
+        
         separator % for descrip & label properties, not for filesystem behaviors
-        seriesNumber        
-        bitpix
+        stack
     end 
 
  	methods %% SET/GET 
+        
+        %% Instantiation of mlfourd.JimmyShenInterface
+        
+        function e    = get.ext(this)
+            e = this.ext_;
+        end
+        function f    = get.filetype(this)
+            f = this.filetype_;
+        end
+        function h    = get.hdr(this)
+            h = this.hdr_;
+        end 
         function im   = get.img(this)
             im = this.img_;
         end        
@@ -77,56 +90,67 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             this.hdr_.dime.dim(1)             = this.rank;
             this.hdr_.dime.dim(2:this.rank+1) = this.size;
             this.untouch_ = false;
-            this.stack = [{dbstack} this.stack];
-        end 
-        function e    = get.ext(this)
-            e = this.ext_;
-        end
-        function f    = get.filetype(this)
-            f = this.filetype_;
-        end
-        function h    = get.hdr(this)
-            h = this.hdr_;
+            this.stack_ = [{dbstack} this.stack_];
         end
         function o    = get.originalType(this)
             o = this.originalType_;
         end
         function u    = get.untouch(this)
             u = this.untouch_;
-        end 
-        function d    = get.descrip(this)
-            d = this.hdr_.hist.descrip;
-        end        
-        function this = set.descrip(this, s)
-            %% SET.DESCRIP
-            %  do not add separators such as ";" or ","
+        end
+        
+        %% Instantiation of mlfourd.INIfTI  
+        
+        function bp   = get.bitpix(this) 
+            %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
             
-            assert(ischar(s));
-            this.hdr_.hist.descrip = strtrim(s);
-            this.untouch_ = false;
-        end         
-        function mpp  = get.mmppix(this)
-            mpp = this.hdr_.dime.pixdim(2:this.rank+1);
-        end        
-        function this = set.mmppix(this, mpp)
-            %% SET.MMPPIX sets voxel-time dimensions in mm, s.
-            
-            %assert(all(this.rank == length(mpp)));
-            this.hdr_.dime.pixdim(2:length(mpp)+1) = mpp;
+            switch (class(this.img_))
+                case {'uchar', 'uint8'};    bp = 8;
+                case  'int16';              bp = 16;
+                case  'int32';              bp = 32;
+                case {'single', 'float32'}; bp = 32;
+                case {'double', 'float64'}; bp = 64;
+                case  'schar';              bp = 8;
+                case  'uint16';             bp = 16;
+                case  'uint32';             bp = 32;
+                case  'int64';              bp = 64;
+                case  'uint64';             bp = 64;
+                otherwise
+                    throw(MException('mlfourd:UnknownParamType', ...
+                        ['NIfTId.get.bitpix:  class(img) -> ' class(this.img_)]));
+            end
+        end
+        function this = set.bitpix(this, bp) 
+            assert(isnumeric(bp));
+            if (bp >= 64)
+                this = this.forceDouble; 
+            else
+                this = this.forceSingle; 
+            end
             this.untouch_ = false;
         end
-        function pd   = get.pixdim(this)
-            pd = this.mmppix;
-        end        
-        function this = set.pixdim(this, pd)
-            %% SET.PIXDIM sets voxel-time dimensions in mm, s.
-            
-            this.mmppix = pd;
-        end  
-        
         function cdat = get.creationDate(this)
             cdat = this.creationDate_;
-        end     
+        end
+        function dt   = get.datatype(this)
+            %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
+            
+            switch (class(this.img_))
+                case {'uchar', 'uint8'};    dt = 2;
+                case  'int16';              dt = 4;
+                case  'int32';              dt = 8;
+                case {'single', 'float32'}; dt = 16;
+                case {'double', 'float64'}; dt = 64;
+                case  'schar';              dt = 256;
+                case  'uint16';             dt = 512;
+                case  'uint32';             dt = 768;
+                case  'int64';              dt = 1024;
+                case  'uint64';             dt = 1280;
+                otherwise
+                    throw(MException('mlfourd:UnknownParamType', ...
+                        ['NIfTId.get.datatype:  class(img) -> ' class(this.img_)]));
+            end
+        end    
         function this = set.datatype(this, dt)
             
             if (ischar(dt))
@@ -150,26 +174,18 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 paramError('UnsupportedType for NIfTId.set.datatype.dt', class(dt));
             end            
             this.untouch_ = false;
-        end  
-        function dt   = get.datatype(this)
-            %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
+        end
+        function d    = get.descrip(this)
+            d = this.hdr_.hist.descrip;
+        end        
+        function this = set.descrip(this, s)
+            %% SET.DESCRIP
+            %  do not add separators such as ";" or ","
             
-            switch (class(this.img_))
-                case {'uchar', 'uint8'};    dt = 2;
-                case  'int16';              dt = 4;
-                case  'int32';              dt = 8;
-                case {'single', 'float32'}; dt = 16;
-                case {'double', 'float64'}; dt = 64;
-                case  'schar';              dt = 256;
-                case  'uint16';             dt = 512;
-                case  'uint32';             dt = 768;
-                case  'int64';              dt = 1024;
-                case  'uint64';             dt = 1280;
-                otherwise
-                    throw(MException('mlfourd:UnknownParamType', ...
-                        ['NIfTId.get.datatype:  class(img) -> ' class(this.img_)]));
-            end
-        end             
+            assert(ischar(s));
+            this.hdr_.hist.descrip = strtrim(s);
+            this.untouch_ = false;
+        end   
         function E    = get.entropy(this)
             if (isempty(this.img_))
                 E = nan;
@@ -187,22 +203,32 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 x = '';
             end
             
-        end
-        function this = set.label(this, s)
-            assert(ischar(s));
-            this.label_ = strtrim(s);            
-            this.untouch_ = false;
-        end   
+        end 
         function d    = get.label(this)
             if (isempty(this.label_))
                 [~,this.label_] = fileparts(this.fileprefix);
             end
             d = this.label_;
-        end              
+        end     
+        function this = set.label(this, s)
+            assert(ischar(s));
+            this.label_ = strtrim(s);            
+            this.untouch_ = false;
+        end
         function ma   = get.machine(this) %#ok<MANU>
             ma.arch = computer('arch');
             [~,ma.maxsize ,ma.endian] = computer;
-        end      
+        end
+        function mpp  = get.mmppix(this)
+            mpp = this.hdr_.dime.pixdim(2:this.rank+1);
+        end        
+        function this = set.mmppix(this, mpp)
+            %% SET.MMPPIX sets voxel-time dimensions in mm, s.
+            
+            %assert(all(this.rank == length(mpp)));
+            this.hdr_.dime.pixdim(2:length(mpp)+1) = mpp;
+            this.untouch_ = false;
+        end  
         function E    = get.negentropy(this)
             E = -this.entropy;
         end
@@ -213,49 +239,41 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 o = '';
             end
         end
+        function pd   = get.pixdim(this)
+            pd = this.mmppix;
+        end        
+        function this = set.pixdim(this, pd)
+            %% SET.PIXDIM sets voxel-time dimensions in mm, s.
+            
+            this.mmppix = pd;
+        end  
+        function num  = get.seriesNumber(this)
+            num = mlchoosers.FilenameFilters.getSeriesNumber(this.fileprefix);
+        end
+        
+        %% New for mlfourd.AbstractNIfTId
+        
+        function s    = get.separator(this)
+            s = this.separator_;
+        end
         function this = set.separator(this, s)
             if (ischar(s))
                 this.separator_ = s;
                 this.untouch_ = false;
             end
         end
-        function s    = get.separator(this)
-            s = this.separator_;
+        function s    = get.stack(this)
+            s = this.stack_;
         end
-        function num  = get.seriesNumber(this)
-            num = mlchoosers.FilenameFilters.getSeriesNumber(this.fileprefix);
-        end         
-        function this = set.bitpix(this, bp) 
-            assert(isnumeric(bp));
-            if (bp >= 64)
-                this = this.forceDouble; 
-            else
-                this = this.forceSingle; 
-            end
-            this.untouch_ = false;
-        end   
-        function bp   = get.bitpix(this) 
-            %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
-            
-            switch (class(this.img_))
-                case {'uchar', 'uint8'};    bp = 8;
-                case  'int16';              bp = 16;
-                case  'int32';              bp = 32;
-                case {'single', 'float32'}; bp = 32;
-                case {'double', 'float64'}; bp = 64;
-                case  'schar';              bp = 8;
-                case  'uint16';             bp = 16;
-                case  'uint32';             bp = 32;
-                case  'int64';              bp = 64;
-                case  'uint64';             bp = 64;
-                otherwise
-                    throw(MException('mlfourd:UnknownParamType', ...
-                        ['NIfTId.get.bitpix:  class(img) -> ' class(this.img_)]));
-            end
-        end     
+        function this = set.stack(this, s)
+            this.stack_ = s;
+        end
     end
        
     methods
+        
+        %% Instantiation of mlfourd.INIfTI  
+        
         function ch   = char(this)
             ch = this.fqfilename;
         end 
@@ -335,7 +353,34 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             addOptional(p, 'fp',   ['zeros_' this.fileprefix],     @ischar);
             parse(p, varargin{:});
             z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        
+        function this = prepend_fileprefix(this, s)
+            assert(ischar(s));
+            this.fileprefix = [strtrim(s) this.fileprefix];
+            this.untouch_ = false;
         end        
+        function this = append_fileprefix(this, s)
+            assert(ischar(s));
+            this.fileprefix = [this.fileprefix strtrim(s)];
+            this.untouch_ = false;
+        end   
+        function this = append_descrip(this, s) 
+            %% APPEND_DESCRIP
+            %  do not add separators such as ";" or ","
+            
+            assert(ischar(s));
+            this.descrip = [this.descrip this.separator ' ' s];
+            this.untouch_ = false;
+        end  
+        function this = prepend_descrip(this, s) 
+            %% PREPEND_DESCRIP
+            %  do not add separators such as ";" or ","
+            
+            assert(ischar(s));
+            this.descrip = [s this.separator ' ' this.descrip];
+            this.untouch_ = false;
+        end
         function this = prod(this, varargin)
             %% PROD overloads prod for INIfTI
             
@@ -349,35 +394,11 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             this.img        = sum(this.img_, varargin{:});
             this.fileprefix = [this.fileprefix '_sum'];
             this.descrip    = ['sum(' this.descrip ')'];
-        end   
-        
-        function this = prepend_fileprefix(this, s)
-            assert(ischar(s));
-            this.fileprefix = [strtrim(s) this.fileprefix];
-            this.untouch_ = false;
-        end        
-        function this = append_fileprefix(this, s)
-            assert(ischar(s));
-            this.fileprefix = [this.fileprefix strtrim(s)];
-            this.untouch_ = false;
-        end   
-        function this = prepend_descrip(this, s) 
-            %% PREPEND_DESCRIP
-            %  do not add separators such as ";" or ","
-            
-            assert(ischar(s));
-            this.descrip = [s this.separator ' ' this.descrip];
-            this.untouch_ = false;
-        end
-        function this = append_descrip(this, s) 
-            %% APPEND_DESCRIP
-            %  do not add separators such as ";" or ","
-            
-            assert(ischar(s));
-            this.descrip = [this.descrip this.separator ' ' s];
-            this.untouch_ = false;
         end  
         
+        function f3d  = fov(this)
+            f3d = this.mmppix .* this.matrixsize;
+        end   
         function        freeview(this, varargin)
             %% FREEVIEW
             %  Usage:  this.freeview([additional_filename, ...])
@@ -385,18 +406,39 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             this.launchExternalViewer('freeview', varargin{:});
         end
         function        fslview(this, varargin)
-            %% FREEVIEW
+            %% FSLVIEW
             %  Usage:  this.fslview([additional_filename, ...])
             
             this.launchExternalViewer('fslview', varargin{:});
+        end   
+        function this = imclose(this, varargin)
+            if (nargin < 2)
+                this.img = imclose(this.img, strel('ball',2,4,0));
+            else
+                this.img = imclose(this.img, varargin{:});
+            end
         end        
-        function im   = mlimage(this)
-            %% MLIMAGE returns this.img in a form suitable for matlab's image processing toolbox
-            %          whivh expects rgb data as the 3rd dimension.  Does not change state.
-            
-            sz = this.size;
-            im = reshape(this.img_, [sz(1) sz(2) 1 sz(3)]);
-        end     
+        function this = imdilate(this, varargin)
+            if (nargin < 2)
+                this.img = imdilate(this.img, strel('line',10,0));
+            else
+                this.img = imdilate(this.img, varargin{:});
+            end
+        end        
+        function this = imerode(this, varargin)
+            if (nargin < 2)
+                this.img = imerode(this.img, strel('ball',2,4,0));
+            else
+                this.img = imerode(this.img, varargin{:});
+            end
+        end
+        function this = imopen(this, varargin)
+            if (nargin < 2)
+                this.img = imopen(this.img, strel('ball',2,4,0));
+            else
+                this.img = imopen(this.img, varargin{:});
+            end
+        end
         function himg = imshow(this, slice, varargin)
             %% IMSHOW overloads imshow from Image Processing Toolbox,
             %         displays iamge in handle graphics figure
@@ -448,7 +490,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 otherwise
                     paramError(this, 'slice #', num2str(slice));
             end
-        end 
+        end
         function himg = imtool(this, slice, varargin)
             %% IMTOOL overloads imtool from the Image Processing Toolbox.
             %     displays iamge in handle graphics figure
@@ -504,35 +546,17 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 otherwise
                     paramError(this, 'slice #', num2str(slice));
             end
-        end       
-        function this = imclose(this, varargin)
-            if (nargin < 2)
-                this.img = imclose(this.img, strel('ball',2,4,0));
-            else
-                this.img = imclose(this.img, varargin{:});
-            end
-        end        
-        function this = imdilate(this, varargin)
-            if (nargin < 2)
-                this.img = imdilate(this.img, strel('line',10,0));
-            else
-                this.img = imdilate(this.img, varargin{:});
-            end
-        end        
-        function this = imerode(this, varargin)
-            if (nargin < 2)
-                this.img = imerode(this.img, strel('ball',2,4,0));
-            else
-                this.img = imerode(this.img, varargin{:});
-            end
         end
-        function this = imopen(this, varargin)
-            if (nargin < 2)
-                this.img = imopen(this.img, strel('ball',2,4,0));
-            else
-                this.img = imopen(this.img, varargin{:});
-            end
-        end   
+        function m3d  = matrixsize(this)
+            m3d = [this.size(1) this.size(2) this.size(3)];
+        end
+        function im   = mlimage(this)
+            %% MLIMAGE returns this.img in a form suitable for matlab's image processing toolbox
+            %          whivh expects rgb data as the 3rd dimension.  Does not change state.
+            
+            sz = this.size;
+            im = reshape(this.img_, [sz(1) sz(2) 1 sz(3)]);
+        end
         function h    = montage(this, varargin)
             %% MONTAGE overloads matlab's montage;
             %  cf.  web([docroot '/toolbox/images/ref/montage.html#bq5sla5'])
@@ -541,12 +565,6 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             
             h    = montage(flip4d(this.mlimage, 'xt'), varargin{:});
         end
-        function m3d  = matrixsize(this)
-            m3d = [this.size(1) this.size(2) this.size(3)];
-        end
-        function f3d  = fov(this)
-            f3d = this.mmppix .* this.matrixsize;
-        end   
  	end     
     
     methods (Static)
@@ -592,22 +610,22 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
     %% PROTECTED 
 
     properties (Access = 'protected')
-        img_
+        creationDate_
         ext_
         filetype_ = 2
         hdr_
-        originalType_
-        untouch_ = true
-        
+        img_
         label_
+        originalType_
         separator_ = ';';
-        creationDate_
+        stack_
+        untouch_ = true        
     end
     
     methods (Access = 'protected')
         function this = AbstractNIfTId
             this.creationDate_ = datestr(now);
-        end % ctor
+        end
         function this = optimizePrecision(this)
             this.untouch_ = false;
             if (~this.OPTIMIZED_PRECISION)
@@ -682,7 +700,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 end
             end
         end 
-        function        launchExternalViewer(this, app, varargin) 
+        function        launchExternalViewer(this, app, varargin)
             assert(ischar(app));
             try
                 tmpFile = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
