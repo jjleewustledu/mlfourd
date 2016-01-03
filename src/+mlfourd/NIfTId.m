@@ -133,9 +133,9 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             
             nii.img        = p.Results.img;
             nii.datatype   = p.Results.datatype;
-            nii.label      = p.Results.label;
+            nii.label      = p.Results.label; 
             nii.bitpix     = p.Results.bitpix;
-            nii            = nii.append_descrip(p.Results.descrip);   
+            nii            = nii.append_descrip(p.Results.descrip);  
             nii.fileprefix = adjustFileprefix(p.Results.fileprefix);
             nii.mmppix     = p.Results.mmppix;
             nii.pixdim     = p.Results.pixdim;
@@ -145,8 +145,19 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                     fp = [this.fileprefix fp]; return; end
                 if ('_' == fp(end))
                     fp = [fp this.fileprefix]; return; end
-            end
+            end         
         end
+        
+        function tf = allowedCtorData(this, x)
+        end
+        function tf = allowedMmppix(this, x)
+        end
+        function fp = defaultFileprefix(this)
+        end
+        function d  = defaultDesc(this)
+        end
+        function m  = defaultMmppix(this)
+        end         
         
         function this = NIfTId(datobj, fprefix, desc, pixdim)
             %% NIfTId is a copy ctor & also accepts Jimmy Sheng's NIfTI-structs or image arrays.
@@ -159,7 +170,14 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             %                                                    ^ row vector of mm/pixel, length matched to
             %                                                      data object
             
-            this = this@mlfourd.AbstractNIfTId;                       
+            this = this@mlfourd.AbstractNIfTId; 
+            
+%             ip = inputParser;
+%             addOptional(ip, 'data',   zeros(3,3,3),           @(x) this.allowedCtorData(x));
+%             addOptional(ip, 'fp',     this.defaultFileprefix, @ischar);
+%             addOptional(ip, 'desc',   this.defaultDesc,       @ischar);
+%             addOptional(ip, 'mmppix', this.defaultMmppix,     @(x) this.allowedMmppix(x));
+%             parse(ip, varargin{:});                                  
             this = this.assignDefaults;
             
             %% Manage nargin 
@@ -219,7 +237,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                 case 3
                                     this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
-                                case 4                              
+                                case 4
                                     this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
                                     this.pixdim       = pixdim;
@@ -304,32 +322,39 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             exts = NIfTId.SUPPORTED_EXTENSIONS;
             desc0 = ['NIfTId.load_known_ext read ' fn ' on ' datestr(now)];
             p = inputParser;
-            addRequired(p, 'fn',           @(x) assert(lexist(x, 'file'), ...
-                                                sprintf('NIfTId.load_known_ext:  file not found:  %s', fn)));
+            addRequired(p, 'fn',           @ischar);
             addOptional(p, 'ext', exts{1}, @(x) any(strcmp(x, exts)));
-            addOptional(p, 'desc', desc0,  @ischar)
+            addOptional(p, 'desc', desc0,  @ischar);
             parse(p, fn, varargin{:});
             
             [pth,fp] = filepartsx(fn, p.Results.ext);
             s = false;
             try
+                if (~lexist(fn, 'file'))
+                    nii = NIfTId;
+                    nii.filepath = pth;
+                    nii.fileprefix = fp;
+                    nii.filesuffix = p.Results.ext;
+                    nii.hdr_.hist.descrip = p.Results.desc;
+                    return
+                end
                 if (lstrfind(p.Results.ext, {'.nii.gz' '.nii'}))
                     nii = NIfTId(load_untouch_nii(fn));
                     nii.filepath = pth;
                     nii.fileprefix = fp;
                     nii.filesuffix = p.Results.ext;
                     nii.hdr_.hist.descrip = p.Results.desc;
-                else
-                    niiFqfn = fullfile(pth, [fp exts{1}]);                    
-                    if (lstrfind(p.Results.ext, '.hdr'))
-                        [s,r] = mlbash(sprintf('mri_convert -it analyze4d %s %s', fp, niiFqfn));
-                    else
-                        [s,r] = mlbash(sprintf('mri_convert %s %s', fn, niiFqfn));
-                    end
-                    nii = NIfTId.load_known_ext(niiFqfn, exts{1}, p.Results.desc); % will divert to first clause of if-else
-                    if (NIfTId.CLEAN_UP_WORK_FILES)
-                        mlbash(sprintf('rm %s', niiFqfn)); end
+                    return
                 end
+                niiFqfn = fullfile(pth, [fp exts{1}]);                    
+                if (lstrfind(p.Results.ext, '.hdr'))
+                    [s,r] = mlbash(sprintf('mri_convert -it analyze4d %s %s', fp, niiFqfn));
+                else
+                    [s,r] = mlbash(sprintf('mri_convert %s %s', fn, niiFqfn));
+                end
+                nii = NIfTId.load_known_ext(niiFqfn, exts{1}, p.Results.desc); % will divert to first clause of if-else
+                if (NIfTId.CLEAN_UP_WORK_FILES)
+                    mlbash(sprintf('rm %s', niiFqfn)); end
             catch ME
                 if (s); fprintf(r); end
                 handexcept(ME);
@@ -341,7 +366,6 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         function this     = assignDefaults(this)
             this.img_                     = zeros(3,3,3);
             this.fileprefix               = ['NIfTId_D' datestr(now,30)];
-            this.filesuffix_              = mlfourd.INIfTI.FILETYPE_EXT;
             
             this.hdr_.hist                = struct;
             this.hdr_.hist.descrip        = ['NIfTId(' num2str(nargin) ' argin)'];
