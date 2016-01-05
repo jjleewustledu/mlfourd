@@ -10,17 +10,19 @@ classdef NIfTId < mlfourd.AbstractNIfTId
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
 
     properties (Constant)
-        ISEQUAL_IGNORES      = {'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
+        ISEQUAL_IGNORES      = {'hdr' 'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
         SUPPORTED_EXTENSIONS = {'.nii.gz' '.nii' '.mgh' '.mgz' '.hdr' '.dcm' '.IMA'} % fist extension is default
         CLEAN_UP_WORK_FILES  = true
     end    
     
     methods (Static) 
-        function nii = load(fn, varargin)
-            %% LOAD reads NIfTI objects from the file-system with file-names ending in NIfTId.SUPPORTED_EXTENSIONS.
-            %  Freesurfer's mri_convert provides imaging format support.  If no file-extension is included, LOAD will attempt guesses.
-            %  Usage:  nifti = NIfTId.load(filename[, description])
-                   
+        function this = load(fn, varargin)
+            %% LOAD loads imaging objects from the filesystem.  In the absence of file extension, LOAD will attempt guesses.
+            %  @param fn, a [fully-qualified] fileprefix or filename, specifies imaging objects on the filesystem.
+            %  @param [param-name, param-value[, ...]]
+            %  @return this, an instance of mlfourd.NIfTId.
+            %  See also:  mlfourd.NIfTId.NIfTId
+            
             desc0 = ['NIfTId.load read ' fn ' on ' datestr(now)];
             
             p = inputParser;
@@ -31,10 +33,10 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             import mlfourd.*;  
             fe = NIfTId.findSupportedExtension(fn);
             if (~isempty(fe))
-                nii = NIfTId.load_known_ext(fn, fe, p.Results.desc);
+                this = NIfTId.load_known_ext(fn, fe, p.Results.desc);
                 return
             else 
-                nii = NIfTId.load_guessing_ext(fn, p.Results.desc);
+                this = NIfTId.load_guessing_ext(fn, p.Results.desc);
                 return
             end
         end
@@ -53,6 +55,15 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     end 
     
     methods 
+        function niid     = clone(this, varargin)
+            %% CLONE
+            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation
+            %  @return niid copy-construction with niid.descrip prepended with 'clone of '
+            %  See also:  mlfourd.NIfTId.NIfTId
+            
+            niid = mlfourd.NIfTId(this, varargin{:});
+            niid.descrip = ['clone of ' niid.descrip];
+        end
         function this     = forceDouble(this)
             this.img_ = mlfourd.AbstractNIfTId.ensureDble(this.img_);
             this.hdr_.dime.datatype = 64;
@@ -63,15 +74,26 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this.hdr_.dime.datatype = 16;
             this.hdr_.dime.bitpix   = 32;
         end % forceSingle 
-        function [tf,msg] = isequal(this, nii)
-            [tf,msg] = this.isequaln(nii);
+        function [tf,msg] = isequal(this, obj)
+            [tf,msg] = this.isequaln(obj);
         end
-        function [tf,msg] = isequaln(this, nii)
-            msg = '';
-            tf = isa(nii, class(this));
+        function [tf,msg] = isequaln(this, obj)
+            [tf,msg] = this.classesequal(obj);
             if (tf)
-                [tf,msg] = this.fieldsequaln(nii);
+                [tf,msg] = this.fieldsequaln(obj);
+                if (tf)
+                    [tf,msg] = this.hdrsequaln(obj);
+                end
             end
+        end 
+        function niid     = makeSimilar(this, varargin)
+            %% MAKESIMILAR 
+            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation
+            %  @return niid clone with niid.descrip prepended with 'made similar to '
+            %  See also:  mlfourd.NIfTId.NIfTId
+    
+            niid = this.clone(varargin{:});
+            niid.descrip = ['made similar to ' niid.descrip];
         end
         function            save(this)
             %% SAVE saves this NIfTId to this.fileprefix with extension .nii, then compresses with gzip
@@ -95,71 +117,9 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this.fqfilename = fqfn;
             this.untouch_ = false;
             this.save;
-        end % overloads AbstractSimpleIO.saveas        
-        function nii      = clone(this)
-            nii = mlfourd.NIfTId(this, this.fqfileprefix, ['clone of ' this.descrip], this.pixdim);
-        end        
-        function nii      = makeSimilar(this, varargin)
-            %% MAKESIMILAR returns a similar NIfTId object
-            %  n  = NIfTId(...)
-            %  n1 = n.makeSimilar([paramName, paramValue][, ...])
-            %
-            %  supported parameters:  'img'
-            %                         'datatype'
-            %                         'label'
-            %                         'bitpix'
-            %                         'descrip'
-            %                         'fileprefix'
-            %                         'pixdim', 'mmppix'
-    
-            nii = this.clone;
-            if (length(nii.descrip) > this.DESC_LEN_LIM)
-                len = this.DESC_LEN_LIM - 5;
-                len2 = floor(len/2);
-                nii.descrip = ...
-                    [nii.descrip(1:len2) ' ... ' nii.descrip(end+1-len2:end)]; 
-            end
-            
-            p = inputParser;
-            addParameter(p, 'img',        this.img,        @isnumeric);
-            addParameter(p, 'datatype',   'double',        @(x) ischar(x) || isnumeric(x));
-            addParameter(p, 'label',      this.label,      @ischar);
-            addParameter(p, 'bitpix',     this.bitpix,     @isnumeric);
-            addParameter(p, 'descrip',    'made similar',  @ischar);
-            addParameter(p, 'fileprefix', this.fileprefix, @ischar);
-            addParameter(p, 'mmppix',     this.mmppix,     @isnumeric);
-            addParameter(p, 'pixdim',     this.pixdim,     @isnumeric);
-            parse(p, varargin{:});             
-            
-            nii.img        = p.Results.img;
-            nii.datatype   = p.Results.datatype;
-            nii.label      = p.Results.label; 
-            nii.bitpix     = p.Results.bitpix;
-            nii            = nii.append_descrip(p.Results.descrip);  
-            nii.fileprefix = adjustFileprefix(p.Results.fileprefix);
-            nii.mmppix     = p.Results.mmppix;
-            nii.pixdim     = p.Results.pixdim;
-            
-            function fp = adjustFileprefix(fp)
-                if ('_' == fp(1))
-                    fp = [this.fileprefix fp]; return; end
-                if ('_' == fp(end))
-                    fp = [fp this.fileprefix]; return; end
-            end         
-        end
+        end % overloads AbstractSimpleIO.saveas
         
-        function tf = allowedCtorData(this, x)
-        end
-        function tf = allowedMmppix(this, x)
-        end
-        function fp = defaultFileprefix(this)
-        end
-        function d  = defaultDesc(this)
-        end
-        function m  = defaultMmppix(this)
-        end         
-        
-        function this = NIfTId(datobj, fprefix, desc, pixdim)
+        function this = NIfTId(datobj, fprefix, desc, pixdim, varargin)
             %% NIfTId is a copy ctor & also accepts Jimmy Sheng's NIfTI-structs or image arrays.
             %  It will also convert mlfourd.NIfTI objects to mlfourd.NIfTId.
             %  A minimal NIfTId has img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim.
@@ -170,14 +130,28 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             %                                                    ^ row vector of mm/pixel, length matched to
             %                                                      data object
             
-            this = this@mlfourd.AbstractNIfTId; 
+            this = this@mlfourd.AbstractNIfTId;            
             
 %             ip = inputParser;
-%             addOptional(ip, 'data',   zeros(3,3,3),           @(x) this.allowedCtorData(x));
-%             addOptional(ip, 'fp',     this.defaultFileprefix, @ischar);
-%             addOptional(ip, 'desc',   this.defaultDesc,       @ischar);
-%             addOptional(ip, 'mmppix', this.defaultMmppix,     @(x) this.allowedMmppix(x));
-%             parse(ip, varargin{:});                                  
+%             addParameter(ip, 'bitpix',     this.bitpix,     @isnumeric);
+%             addParameter(ip, 'datatype',   'double',        @(x) ischar(x) || isnumeric(x));
+%             addParameter(ip, 'descrip',    ['made similar to ' this.descrip],  @ischar);
+%             addParameter(ip, 'fileprefix', this.fileprefix, @ischar);
+%             addParameter(ip, 'img',        this.img,        @isnumeric);
+%             addParameter(ip, 'label',      this.label,      @ischar);
+%             addParameter(ip, 'mmppix',     this.mmppix,     @isnumeric);
+%             addParameter(ip, 'pixdim',     this.pixdim,     @isnumeric);
+%             parse(ip, varargin{:});             
+%             
+%             this.img        = ip.Results.img;
+%             this.datatype   = ip.Results.datatype;
+%             this.label      = ip.Results.label;
+%             this.bitpix     = ip.Results.bitpix;
+%             this            = this.append_descrip(ip.Results.descrip);   
+%             this.fileprefix = this.adjustFileprefix(ip.Results.fileprefix);
+%             this.mmppix     = ip.Results.mmppix;
+%             this.pixdim     = ip.Results.pixdim;
+
             this = this.assignDefaults;
             
             %% Manage nargin 
@@ -204,7 +178,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                 this.pixdim       = pixdim;
                         end 
                     case 'struct'
-                        this.img          = datobj.img;
+                        this.img_         = datobj.img;
                         this.hdr_         = datobj.hdr;
                         this.filetype_    = datobj.filetype;
                         this.fqfileprefix = datobj.fileprefix;
@@ -224,7 +198,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                     otherwise
                         if (isnumeric(datobj))
                             rank                                 = length(size(datobj));
-                            this.img                             = double(datobj);
+                            this.img_                            = double(datobj);
                             this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
                             this.hdr_.dime.dim                   = ones(1,8);
                             this.hdr_.dime.dim(1)                = rank;
@@ -237,7 +211,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                 case 3
                                     this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
-                                case 4
+                                case 4                              
                                     this.fqfileprefix = fprefix;
                                     this.descrip      = desc;
                                     this.pixdim       = pixdim;
@@ -246,7 +220,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                             warning('off'); %#ok<WNOFF>
                             this = NIfTId(struct(datobj));
                             warning('on'); %#ok<WNON>
-                            this.img = double(this.img);
+                            this.img_ = double(this.img);
                             switch (nargin)
                                 case 2
                                     this.fileprefix = fprefix;
@@ -259,7 +233,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                                     this.pixdim     = pixdim;
                             end
                         elseif (isa(datobj, 'mlfourd.INIfTI')) % copy ctor
-                            this.img          = datobj.img;
+                            this.img_         = datobj.img;
                             this.hdr_         = datobj.hdr;
                             this.filetype_    = datobj.filetype;
                             this.fqfileprefix = datobj.fqfileprefix;
@@ -293,7 +267,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     %% PRIVATE
  
     methods (Static, Access = 'private')
-        function nii  = load_guessing_ext(fp, varargin)
+        function nii      = load_guessing_ext(fp, varargin)
             import mlfourd.*;
             exts = NIfTId.SUPPORTED_EXTENSIONS;
             desc0 = ['NIfTId.load_guessing_ext read ' fp ' on ' datestr(now)];
@@ -310,7 +284,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             end
             error('mlfourd:malformedFilename', 'NIfTId.load_guessing_ext could not identify format of %s', fp);
         end
-        function nii  = load_known_ext(fn, varargin)
+        function nii      = load_known_ext(fn, varargin)
             %% LOAD_KNOWN_EXT loads image formats listed in NIfTId.SUPPORTED_EXTENSIONS
             %  Usage:  nii = NIfTId.load_known_ext(filename[, extension, description])
             %                                      ^ filename with extension
@@ -324,48 +298,61 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             p = inputParser;
             addRequired(p, 'fn',           @ischar);
             addOptional(p, 'ext', exts{1}, @(x) any(strcmp(x, exts)));
-            addOptional(p, 'desc', desc0,  @ischar);
+            addOptional(p, 'desc', desc0,  @ischar)
             parse(p, fn, varargin{:});
             
             [pth,fp] = filepartsx(fn, p.Results.ext);
             s = false;
             try
-                if (~lexist(fn, 'file'))
-                    nii = NIfTId;
-                    nii.filepath = pth;
-                    nii.fileprefix = fp;
-                    nii.filesuffix = p.Results.ext;
-                    nii.hdr_.hist.descrip = p.Results.desc;
-                    return
-                end
                 if (lstrfind(p.Results.ext, {'.nii.gz' '.nii'}))
                     nii = NIfTId(load_untouch_nii(fn));
                     nii.filepath = pth;
                     nii.fileprefix = fp;
                     nii.filesuffix = p.Results.ext;
                     nii.hdr_.hist.descrip = p.Results.desc;
-                    return
-                end
-                niiFqfn = fullfile(pth, [fp exts{1}]);                    
-                if (lstrfind(p.Results.ext, '.hdr'))
-                    [s,r] = mlbash(sprintf('mri_convert -it analyze4d %s %s', fp, niiFqfn));
                 else
-                    [s,r] = mlbash(sprintf('mri_convert %s %s', fn, niiFqfn));
+                    niiFqfn = fullfile(pth, [fp exts{1}]);                    
+                    if (lstrfind(p.Results.ext, '.hdr'))
+                        [s,r] = mlbash(sprintf('mri_convert -it analyze4d %s %s', fp, niiFqfn));
+                    else
+                        [s,r] = mlbash(sprintf('mri_convert %s %s', fn, niiFqfn));
+                    end
+                    nii = NIfTId.load_known_ext(niiFqfn, exts{1}, p.Results.desc); % will divert to first clause of if-else
+                    if (NIfTId.CLEAN_UP_WORK_FILES)
+                        mlbash(sprintf('rm %s', niiFqfn)); end
                 end
-                nii = NIfTId.load_known_ext(niiFqfn, exts{1}, p.Results.desc); % will divert to first clause of if-else
-                if (NIfTId.CLEAN_UP_WORK_FILES)
-                    mlbash(sprintf('rm %s', niiFqfn)); end
             catch ME
                 if (s); fprintf(r); end
                 handexcept(ME);
             end
         end 
+        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
+            tf = true; 
+            msg = '';
+            flds = fieldnames(obj1);
+            for f = 1:length(flds)
+                if (~evalIgnore(flds{f}))
+                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
+                        tf = false;
+                        msg = sprintf('NIfTId.checkFields:  mismatch at field %s.', flds{f});
+                        break
+                    end
+                end
+            end
+        end
     end 
     
     methods (Access = 'private')
+        function fp       = adjustFileprefix(this, fp)
+            if ('_' == fp(1))
+                fp = [this.fileprefix fp]; return; end
+            if ('_' == fp(end))
+                fp = [fp this.fileprefix]; return; end
+        end
         function this     = assignDefaults(this)
             this.img_                     = zeros(3,3,3);
             this.fileprefix               = ['NIfTId_D' datestr(now,30)];
+            this.filesuffix_              = mlfourd.INIfTI.FILETYPE_EXT;
             
             this.hdr_.hist                = struct;
             this.hdr_.hist.descrip        = ['NIfTId(' num2str(nargin) ' argin)'];
@@ -420,43 +407,38 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             
             this.originalType_            = 'mlfourd.NIfTId';
         end
-        function [tf,msg] = fieldsequaln(this, imobj)
-            try
-                [tf,msg] = this.checkFields(this, imobj, ...
-                                            @(x) lstrfind(x, ['ISEQUAL_IGNORES' this.ISEQUAL_IGNORES 'hdr']));
-                if (~tf); return; end                                  
-                [tf,msg] = this.hdrsequaln(imobj);
-            catch ME
-                if (mlpipeline.PipelineRegistry.instance.verbosity > 0.5)
-                    fprintf('NIfTId.fieldsequaln:  %s\n', msg);
-                    handwarning(ME); 
-                end
-                tf = false;
+        function [tf,msg] = classesequal(this, c)
+            tf  = true; 
+            msg = '';
+            if (~isa(c, class(this)))
+                tf  = false;
+                msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
+            end
+            if (~tf)
+                warning(msg);
             end
         end
-        function [tf,msg] = hdrsequaln(this, imobj)
-            tf = true; msg = '';
-            if (isempty(this.hdr) && isempty(imobj.hdr))
-                return; end
-            [tf,msg] = this.checkFields(this.hdr.hk,   imobj.hdr.hk,   @(x) false);
+        function [tf,msg] = fieldsequaln(this, obj)
+            [tf,msg] = mlfourd.NIfTId.checkFields( ...
+                this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
             if (~tf)
-                return; end
-            [tf,msg] = this.checkFields(this.hdr.dime, imobj.hdr.dime, @(x) false);
-            if (~tf)
-                return; end
-            [tf,msg] = this.checkFields(this.hdr.hist, imobj.hdr.hist, @(x) lstrfind(x, 'descrip'));            
+                warning(msg);
+            end
         end
-        function [tf,msg] = checkFields(~, obj1, obj2, toIgnore)
-            tf = true; msg = '';
-            flds = fieldnames(obj1);
-            for f = 1:length(flds)
-                if (~toIgnore(flds{f}))
-                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
-                        tf = false;
-                        msg = sprintf('NIfTId.checkFields:  found mismatch at NIfTI.%s.', flds{f});
-                        break
-                    end
+        function [tf,msg] = hdrsequaln(this, obj)
+            tf = true; 
+            msg = '';
+            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
+            import mlfourd.*;
+            [tf,msg] = NIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) false);
+            if (tf)
+                [tf,msg] = NIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) false);
+                if (tf)
+                    [tf,msg] = NIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, 'descrip'));
                 end
+            end
+            if (~tf)
+                warning(msg);
             end
         end
     end 
