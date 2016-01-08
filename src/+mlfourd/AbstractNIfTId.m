@@ -13,29 +13,35 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
     
     properties (Constant)
-        DESC_LEN_LIM = 256; % limit to #char of desc, as desc may be used for the default fileprefix
-        LOAD_UNTOUCHED = false
+        DESC_LEN_LIM = 512; % limit to #char of desc, as desc may be used for the default fileprefix
+        LOAD_UNTOUCHED = true
         OPTIMIZED_PRECISION = false
     end
     
     properties (Dependent)
         
         %% Instantiation of mlfourd.JimmyShenInterface to support struct arguments to NIfTId ctor     
-        ext
+        ext        %   Legacy variable for mlfourd.JimmyShenInterface
         filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
-        hdr        %   N.B.:  to change the data type, set nii.hdr.dime.datatype and nii.hdr.dime.bitpix to:
-                   %   0 None                     (Unknown bit per voxel) 
-                   %   1 Binary                        (ubit1, bitpix=1) 
-                   %   2 Unsigned char        (uchar or uint8, bitpix=8) 
-                   %   4 Signed short                  (int16, bitpix=16) 
-                   %   8 Signed integer                (int32, bitpix=32) 
-                   %  16 Floating point    (single or float32, bitpix=32) 
-                   %  32 Complex, 2 float32      (Use float32, bitpix=64) 
-                   %  64 Double precision  (double or float64, bitpix=64) 
-                   % 512 Unsigned short               (uint16, bitpix=16) 
-                   % 768 Unsigned integer             (uint32, bitpix=32) 
-                   %1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
-                   %1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64
+        hdr        %   Tip: to change the data type, set nii.hdr.dime.datatype and nii.hdr.dime.bitpix to:
+                   %     0 None                     (Unknown bit per voxel)  % DT_NONE, DT_UNKNOWN 
+                   %     1 Binary                        (ubit1, bitpix=1)   % DT_BINARY 
+                   %     2 Unsigned char        (uchar or uint8, bitpix=8)   % DT_UINT8, NIFTI_TYPE_UINT8 
+                   %     4 Signed short                  (int16, bitpix=16)  % DT_INT16, NIFTI_TYPE_INT16 
+                   %     8 Signed integer                (int32, bitpix=32)  % DT_INT32, NIFTI_TYPE_INT32 
+                   %    16 Floating point    (single or float32, bitpix=32)  % DT_FLOAT32, NIFTI_TYPE_FLOAT32 
+                   %    32 Complex, 2 float32      (Use float32, bitpix=64)  % DT_COMPLEX64, NIFTI_TYPE_COMPLEX64
+                   %    64 Double precision  (double or float64, bitpix=64)  % DT_FLOAT64, NIFTI_TYPE_FLOAT64 
+                   %   128 uint RGB                  (Use uint8, bitpix=24)  % DT_RGB24, NIFTI_TYPE_RGB24 
+                   %   256 Signed char           (schar or int8, bitpix=8)   % DT_INT8, NIFTI_TYPE_INT8 
+                   %   511 Single RGB              (Use float32, bitpix=96)  % DT_RGB96, NIFTI_TYPE_RGB96
+                   %   512 Unsigned short               (uint16, bitpix=16)  % DT_UNINT16, NIFTI_TYPE_UNINT16 
+                   %   768 Unsigned integer             (uint32, bitpix=32)  % DT_UNINT32, NIFTI_TYPE_UNINT32 
+                   %  1024 Signed long long              (int64, bitpix=64)  % DT_INT64, NIFTI_TYPE_INT64
+                   %  1280 Unsigned long long           (uint64, bitpix=64)  % DT_UINT64, NIFTI_TYPE_UINT64 
+                   %  1536 Long double, float128   (Unsupported, bitpix=128) % DT_FLOAT128, NIFTI_TYPE_FLOAT128 
+                   %  1792 Complex128, 2 float64   (Use float64, bitpix=128) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
+                   %  2048 Complex256, 2 float128  (Unsupported, bitpix=256) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
         img
         originalType
         untouch
@@ -72,6 +78,24 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         function f    = get.filetype(this)
             f = this.filetype_;
         end
+        function this = set.filetype(this, ft)
+            switch (ft)
+                case 0
+                    this.filetype_ = ft;
+                    this.filesuffix = '.hdr';
+                    this.untouch_ = false;
+                case 1
+                    this.filetype_ = ft;
+                    this.filesuffix = '.hdr';
+                    this.untouch_ = false;
+                case 2
+                    this.filetype_ = ft;
+                    this.filesuffix = '.nii.gz';
+                    this.untouch_ = false;
+                otherwise
+                    error('mlfourd:unsupportedParamValue', 'AbstractNIfTId.set.filetype.ft->%g', ft);
+            end
+        end
         function h    = get.hdr(this)
             h = this.hdr_;
         end 
@@ -96,7 +120,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             o = this.originalType_;
         end
         function u    = get.untouch(this)
-            u = this.untouch_;
+            u = logical(this.untouch_);
         end
         
         %% Instantiation of mlfourd.INIfTI  
@@ -116,8 +140,8 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 case  'int64';              bp = 64;
                 case  'uint64';             bp = 64;
                 otherwise
-                    throw(MException('mlfourd:UnknownParamType', ...
-                        ['NIfTId.get.bitpix:  class(img) -> ' class(this.img_)]));
+                    error('mlfourd:unknownSwitchCase', ...
+                          'NIfTId.get.bitpix could not recognize the class(img)->%s', class(this.img_));
             end
         end
         function this = set.bitpix(this, bp) 
@@ -147,12 +171,11 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 case  'int64';              dt = 1024;
                 case  'uint64';             dt = 1280;
                 otherwise
-                    throw(MException('mlfourd:UnknownParamType', ...
-                        ['NIfTId.get.datatype:  class(img) -> ' class(this.img_)]));
+                    error('mlfourd:unknownSwitchCase', ...
+                          'NIfTId.get.datatype could not recognize the class(img)->%s', class(this.img_));
             end
         end    
         function this = set.datatype(this, dt)
-            
             if (ischar(dt))
                 switch (strtrim(dt))
                     case {'uchar', 'uint8', 'int16',  'int32', 'int', 'single', 'float32', 'float', ...
@@ -161,8 +184,8 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                     case {'int64', 'uint64' 'double', 'float64'}
                         this = this.forceDouble;
                     otherwise
-                        throw(MException('mlfourd:UnknownParamType', ...
-                            ['NIfTId.set.datatype:  class(img) -> ' class(this.img_)]));
+                        error('mlfourd:unknownSwitchCase', ...
+                              'NIfTId.set.datatype could not recognize dt->%s', strtrim(dt));
                 end
             elseif (isnumeric(dt))
                 if (dt < 64)
@@ -171,7 +194,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                     this = this.forceDouble;
                 end
             else
-                paramError('UnsupportedType for NIfTId.set.datatype.dt', class(dt));
+                error('mlfourd:unsupportedDatatype', 'NIfTId.set.datatype does not support class(dt)->%s', class(dt));
             end            
             this.untouch_ = false;
         end
@@ -183,7 +206,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             %  do not add separators such as ";" or ","
             
             assert(ischar(s));
-            this.hdr_.hist.descrip = strtrim(s);
+            this.hdr_.hist.descrip = this.adjustDescrip(s);
             this.untouch_ = false;
         end   
         function E    = get.entropy(this)
@@ -202,7 +225,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             else
                 x = '';
             end
-            
+            x = strtrim(x);
         end 
         function d    = get.label(this)
             if (isempty(this.label_))
@@ -238,6 +261,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             else
                 o = '';
             end
+            o = strtrim(o);
         end
         function pd   = get.pixdim(this)
             pd = this.mmppix;
@@ -263,10 +287,10 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             end
         end
         function s    = get.stack(this)
+            %% GET.STACK
+            %  See also:  doc('dbstack')
+            
             s = this.stack_;
-        end
-        function this = set.stack(this, s)
-            this.stack_ = s;
         end
     end
        
@@ -309,24 +333,24 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             p = inputParser;
             addOptional(p, 'obj', this.img_, @isnumeric);
             parse(p, varargin{:});
-            img = double(p.Results.obj);
+            img__ = double(p.Results.obj);
             
-            if (all(isfinite(img(:))))
+            if (all(isfinite(img__(:))))
                 return; end
-            switch (this.rank(img))
+            switch (this.rank(img__))
                 case 1
-                    img = this.scrub1D(img);
+                    img__ = this.scrub1D(img__);
                 case 2
-                    img = this.scrub2D(img);
+                    img__ = this.scrub2D(img__);
                 case 3
-                    img = this.scrub3D(img);
+                    img__ = this.scrub3D(img__);
                 case 4
-                    img = this.scrub4D(img);
+                    img__ = this.scrub4D(img__);
                 otherwise
                     error('mlfourd:unsupportedParamValue', ...
-                          'AbstractNIfTId.scrubNanInf:  this.rank(img) -> %i', this.rank(img));
+                          'AbstractNIfTId.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
             end            
-            this.img = img;
+            this.img = img__;
         end
         function s    = single(this)
             if (~isa(this.img, 'single'))
@@ -344,8 +368,11 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 sz = size(this.img_);
             end
         end
-        function ps   = prodSize(this)
-            ps = prod(this.matrixsize);
+        function N    = numel(this)
+            N = numel(this.img);
+        end
+        function N    = prodSize(this)
+            N = this.numel;
         end
         function z    = zeros(this, varargin)
             p = inputParser;
@@ -367,7 +394,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end   
         function this = append_descrip(this, s) 
             %% APPEND_DESCRIP
-            %  do not add separators such as ";" or ","
+            %  @param s must not add separators such as ";" or ","
             
             assert(ischar(s));
             this.descrip = [this.descrip this.separator ' ' s];
@@ -375,7 +402,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end  
         function this = prepend_descrip(this, s) 
             %% PREPEND_DESCRIP
-            %  do not add separators such as ";" or ","
+            %  @param s must not add separators such as ";" or ","
             
             assert(ischar(s));
             this.descrip = [s this.separator ' ' this.descrip];
@@ -565,15 +592,30 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             
             h    = montage(flip4d(this.mlimage, 'xt'), varargin{:});
         end
- 	end     
+    end
     
-    methods (Static)
+    %% PROTECTED 
+
+    properties (Access = 'protected')
+        creationDate_
+        ext_ = []
+        filetype_ = 2
+        hdr_
+        img_ = []
+        label_
+        originalType_
+        separator_ = ';'
+        stack_
+        untouch_ = true        
+    end      
+    
+    methods (Static, Access = 'protected')
         function im = ensureDble(im, varargin)
             %% ENSUREDBLE tries to return a double-precision array for the passed object
             %  Usage: obj1 = mlfourd.AbstractNIfTId.ensureDble(obj, nosqz)
             %         ^ is guaranteed to be double
             %           obj1, obj may be char, NIfTId, struct or numeric
-            %                                              ^ boolean:  don't squeeze out singleton dims
+            %                                                       ^ boolean:  don't squeeze out singleton dims
             
             im = double( ...
                 mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
@@ -583,7 +625,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
             %  Usage: obj1 = mlfourd.AbstractNIfTId.ensureSing(obj, nosqz)
             %         ^ is guaranteed to be single (all overloaded single(...) calls applied, else error)
             %           obj1, obj may be char, NIfTId, struct or numeric
-            %                                              ^ don't squeeze out singleton dims
+            %                                                       ^ don't squeeze out singleton dims
 
             im = single( ...
                 mlfourd.AbstractNIfTId.switchableSqueeze(im, varargin{:}));
@@ -607,67 +649,126 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
         end
     end
     
-    %% PROTECTED 
-
-    properties (Access = 'protected')
-        creationDate_
-        ext_
-        filetype_ = 2
-        hdr_
-        img_
-        label_
-        originalType_
-        separator_ = ';';
-        stack_
-        untouch_ = true        
-    end
-    
     methods (Access = 'protected')
         function this = AbstractNIfTId
+            
+            %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
+            
+            this.fileprefix = ['instance_' strrep(class(this), '.', '_')];
+            this.filesuffix = this.FILETYPE_EXT;
+            hk   = struct( ...
+                'sizeof_hdr', 348, ...
+                'data_type', '', ...
+                'db_name', '', ...
+                'extents', 0, ...
+                'session_error', 0, ...
+                'regular', 'r', ...
+                'dim_info', 0);
+            dime = struct( ...
+                'dim', [4 0 0 0 0 1 1 1], ...
+                'intent_p1', 0, ... 
+                'intent_p2', 0, ... 
+                'intent_p3', 0, ... 
+                'intent_code', 0, ... 
+                'datatype', 64, ... 
+                'bitpix', 64, ... 
+                'slice_start', 0, ... 
+                'pixdim', [1 1 1 1 1 0 0 0], ... 
+                'vox_offset', 352, ... 
+                'scl_slope', 1, ... 
+                'scl_inter', 0, ... 
+                'slice_end', 0, ... 
+                'slice_code', 0, ... 
+                'xyzt_units', 10, ... 
+                'cal_max', 0, ... 
+                'cal_min', 0, ... 
+                'slice_duration', 0, ... 
+                'toffset', 0, ... 
+                'glmax', 1621, ... 
+                'glmin', 0);
+            hist = struct( ...
+                'descrip', sprintf('instance of %s', class(this)), ...
+                'aux_file', '', ...
+                'qform_code', 1, ...
+                'sform_code', 1, ...
+                'quatern_b', 0, ...
+                'quatern_c', 0, ...
+                'quatern_d', 0, ...
+                'qoffset_x', 0, ...
+                'qoffset_y', 0, ...
+                'qoffset_z', 0, ...
+                'srow_x', [1 0 0 0], ...
+                'srow_y', [0 1 0 0], ...
+                'srow_z', [0 0 1 0], ...
+                'intent_name', '', ...
+                'magic', 'n+1');
+            this.hdr_ = struct('hk', hk, 'dime', dime, 'hist', hist);
+            
+            %% etc.
+            
             this.creationDate_ = datestr(now);
+            this.originalType_ = class(this);
+            this.stack_ = {this.descrip};
         end
         function this = optimizePrecision(this)
-            this.untouch_ = false;
-            if (~this.OPTIMIZED_PRECISION)
-                this.img_ = double(this.img_);
-                this.hdr_.dime.datatype = 16;
-                this.hdr_.dime.bitpix   = 32;
-                return
-            end
+            if (~this.OPTIMIZED_PRECISION); return; end
             try
                 import mlfourd.*;
-                bandwidth = dipmax(this.img_) - dipmin(this.img_);
                 if (islogical(this.img_))
                     this.img_ = NIfTId.ensureUint8(this.img_);                    
                     this.hdr_.dime.datatype = 2;
                     this.hdr_.dime.bitpix   = 8;
                     return
                 end
-                if (bandwidth < realmax('single')/10)
-                    if (bandwidth > 10*realmin('single'))
-                        this.img_ = NIfTId.ensureSing(this.img_);
-                        this.hdr_.dime.datatype = 16;
-                        this.hdr_.dime.bitpix   = 32;
-                        return
-                    end
-                end
-                
-                % default double                                
+                if (dipmax(this.img_) < realmax('single') && dipmin(this.img_) > realmin('single'))
+                    this.img_ = NIfTId.ensureSing(this.img_);
+                    this.hdr_.dime.datatype = 16;
+                    this.hdr_.dime.bitpix   = 32;
+                    return
+                end                              
                 this.img_ = NIfTId.ensureDble(this.img_);
                 this.hdr_.dime.datatype = 64;
                 this.hdr_.dime.bitpix   = 64;
             catch ME
-                warning(ME.message);
+                warning(ME);
             end
         end
-        function im   = scrub1D(this, im)
+    end 
+    
+    %% PRIVATE
+    
+    methods (Access = 'private')
+        function d  = adjustDescrip(this, d)
+            d = strtrim(d);
+            if (length(d) > this.DESC_LEN_LIM)
+                len2 = floor((this.DESC_LEN_LIM - 5)/2);
+                d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
+            end
+        end
+        function      launchExternalViewer(this, app, varargin)
+            assert(ischar(app));
+            try
+                fqfn = this.tempFqfilename;
+                this.saveas(fqfn);
+                s = 0; r = '';
+                if (~isempty(varargin))
+                    [s,r] = mlbash(sprintf('%s %s %s', app, fqfn, cell2str(varargin, 'AsRow', true)));
+                else
+                    [s,r] = mlbash(sprintf('%s %s',    app, fqfn));
+                end
+                deleteExisting(fqfn);
+            catch ME
+                handexcept(ME, 'mlfourd:viewerError', 'AbstractNIfTId.launchExternalViewer:  s->%i, r->%s', s, r);
+            end
+        end
+        function im = scrub1D(this, im)
             assert(isnumeric(im));
             for x = 1:this.size(1)
                 if (~isfinite(im(x)))
                     im(x) = 0; end
             end
         end
-        function im   = scrub2D(this, im)
+        function im = scrub2D(this, im)
             assert(isnumeric(im));
             for y = 1:this.size(2)
                 for x = 1:this.size(1)
@@ -676,7 +777,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 end
             end
         end
-        function im   = scrub3D(this, im)
+        function im = scrub3D(this, im)
             assert(isnumeric(im));
             for z = 1:this.size(3)
                 for y = 1:this.size(2)
@@ -687,7 +788,7 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 end
             end
         end
-        function im   = scrub4D(this, im)
+        function im = scrub4D(this, im)
             assert(isnumeric(im));
             for t = 1:this.size(4)
                 for z = 1:this.size(3)
@@ -700,24 +801,10 @@ classdef (Abstract) AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterfac
                 end
             end
         end 
-        function        launchExternalViewer(this, app, varargin)
-            assert(ischar(app));
-            try
-                tmpFile = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
-                this.saveas(tmpFile);
-                if (~isempty(varargin))
-                    [s,r] = mlbash(sprintf('%s %s %s', app, tmpFile, cell2str(varargin, 'AsRow', true)));
-                else
-                    [s,r] = mlbash(sprintf('%s %s',    app, tmpFile));
-                end
-                delete(tmpFile);
-            catch ME
-                if (s)
-                    fprintf('AbstractNIfTId.freeview:  %s\n', r); end
-                handexcept(ME);
-            end
+        function fn = tempFqfilename(this)
+            fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
         end
-    end 
+    end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
     
