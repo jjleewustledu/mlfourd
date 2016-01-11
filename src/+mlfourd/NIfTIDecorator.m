@@ -1,4 +1,4 @@
-classdef NIfTIdecorator < mlfourd.INIfTI
+classdef NIfTIdecorator < mlfourd.INIfTI & mlio.IOInterface
 	%% NIFTIDECORATOR maintains an internal component object by composition, 
     %  forwarding most requests to the component.  It retains an interface consistent with the component's interface.
     %  Subclasses may optionally perform additional operations before/after forwarding requests.
@@ -48,21 +48,21 @@ classdef NIfTIdecorator < mlfourd.INIfTI
         
         %% INIfTI
         
+        img
+        
+        bitpix
         creationDate
+        datatype
         descrip
         entropy   
         hdxml    
         label
         machine
+        mmppix
         negentropy
         orient
-        seriesNumber  
-        
-        bitpix
-        datatype
-        img
-        mmppix
-        pixdim           
+        pixdim 
+        seriesNumber                   
     end
     
     methods %% Set/Get
@@ -247,8 +247,32 @@ classdef NIfTIdecorator < mlfourd.INIfTI
         
         %% INIfTI
         
+        function obj  = clone(this)
+            obj = this;
+            obj.component_ = this.component_.clone;
+        end   
+        function [tf,msg] = isequal(this, niid)
+            [tf,msg] = this.isequaln(niid);
+        end
+        function [tf,msg] = isequaln(this, niid)
+            msg = '';
+            tf = isa(niid, class(this));
+            if (tf)
+                [tf,msg] = this.component_.isequaln(niid.component_);
+            end
+        end
+        function this = makeSimilar(this, varargin)
+            this.component_ = this.component_.makeSimilar(varargin{:});
+        end  
+        
         function x    = char(this)
             x = this.component_.char;
+        end
+        function this = append_descrip(this, s)
+            this.component_ = this.component_.append_descrip(s);
+        end
+        function this = prepend_descrip(this, s)
+            this.component_ = this.component_.prepend_descrip(s);
         end
         function x    = double(this)
             x = this.component_.double;
@@ -256,8 +280,23 @@ classdef NIfTIdecorator < mlfourd.INIfTI
         function x    = duration(this)
             x = this.component_.duration;
         end
+        function this = append_fileprefix(this, s)
+            this.component_ = this.component_.append_fileprefix(s);
+        end
+        function this = prepend_fileprefix(this, s)
+            this.component_ = this.component_.prepend_fileprefix(s);
+        end
+        function f    = fov(this) 
+            f = this.component_.fov;     
+        end
+        function m    = matrixsize(this)
+            m = this.component_.matrixsize;
+        end
         function this = ones(this, varargin)
             this.component_ = this.component_.ones(varargin{:});
+        end
+        function x    = prod(this)
+            x = this.component_.prod;
         end
         function x    = rank(this, varargin)
             x = this.component_.rank(varargin{:});
@@ -271,87 +310,18 @@ classdef NIfTIdecorator < mlfourd.INIfTI
         function x    = size(this, varargin)
             x = this.component_.size(varargin{:});
         end
-        function this = zeros(this, varargin)
-            this.component_ = this.component_.zeros(varargin{:});
-        end
-        
-        function x    = prod(this)
-            x = this.component_.prod;
-        end
         function x    = sum(this)
             x = this.component_.sum;
         end
-        function this = forceDouble(this)
-            this.component_ = this.component_.forceDouble;
-        end
-        function this = forceSingle(this)
-            this.component_ = this.component_.forceSingle;
-        end
-        function [tf,msg] = isequal(this, niid)
-            [tf,msg] = this.isequaln(niid);
-        end
-        function [tf,msg] = isequaln(this, niid)
-            msg = '';
-            tf = isa(niid, class(this));
-            if (tf)
-                [tf,msg] = this.component_.isequaln(niid.component_);
-            end
-        end
-        function this = prepend_fileprefix(this, s)
-            this.component_ = this.component_.prepend_fileprefix(s);
-        end
-        function this = append_fileprefix(this, s)
-            this.component_ = this.component_.append_fileprefix(s);
-        end
-        function this = prepend_descrip(this, s)
-            this.component_ = this.component_.prepend_descrip(s);
-        end
-        function this = append_descrip(this, s)
-            this.component_ = this.component_.append_descrip(s);
-        end
-        
-        function obj  = clone(this)
-            obj = this;
-            obj.component_ = this.component_.clone;
-        end   
-        function this = makeSimilar(this, varargin)
-            this.component_ = this.component_.makeSimilar(varargin{:});
-        end             
+        function this = zeros(this, varargin)
+            this.component_ = this.component_.zeros(varargin{:});
+        end        
+                   
         function        freeview(this, varargin)
             this.component_.freeview(varargin{:});
         end        
         function        fslview(this, varargin)
             this.component_.fslview(varargin{:});
-        end
-        function himg = imshow(this, slice, varargin)
-            himg = this.component_.imshow(slice, varargin{:});
-        end
-        function himg = imtool(this, slice, varargin)
-            himg = this.component_.imtool(slice, varargin{:});
-        end
-        function im   = mlimage(this)
-            im = this.component_.mlimage;
-        end
-        function this = imclose(this, varargin) 
-            this.component_ = this.component_.imclose(varargin{:});
-        end
-        function this = imdilate(this, varargin)
-            this.component_ = this.component_.imdilate(varargin{:});
-        end
-        function this = imerode(this, varargin)
-            this.component_ = this.component_.imerode(varargin{:});
-        end
-        function this = imopen(this, varargin)  
-            this.component_ = this.component_.imopen(varargin{:});
-        end      
-        function h = montage(this, varargin)        
-            h = this.component_.montage(varargin{:});
-        end
-        function m = matrixsize(this)
-            m = this.component_.matrixsize;
-        end
-        function f = fov(this) 
-            f = this.component_.fov;     
         end
     end 
     
