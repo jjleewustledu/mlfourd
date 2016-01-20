@@ -61,7 +61,7 @@ classdef NamingRegistry < mlpatterns.Singleton
         backupFolder      = 'Backups';
         studyFolderPrefix = 'np';
         sessionIdPrefixes = {'mm0' 'wu0'};
-        allNIfTI          = ['*' mlfourd.NIfTIInterface.FILETYPE_EXT];
+        allNIfTI          = ['*' mlfourd.INIfTI.FILETYPE_EXT];
     end
 
     properties (Dependent)
@@ -158,7 +158,7 @@ classdef NamingRegistry < mlpatterns.Singleton
         function       set.allNIfTI(this, str)
             switch (class(str))
                 case mlfourd.NIfTI.NIFTI_SUBCLASS
-                    this.allNIfTI = [str.fileprefix mlfourd.NIfTIInterface.FILETYPE_EXT];
+                    this.allNIfTI = [str.fileprefix mlfourd.INIfTI.FILETYPE_EXT];
                 case 'char'                    
                     this.allNIfTI = str;
                 case 'cell'

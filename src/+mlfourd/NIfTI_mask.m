@@ -40,7 +40,7 @@ classdef NIfTI_mask < mlfourd.NIfTI
                                     this.threshold  = varargin{v+1}; 
                                     this            = this.thresh(this.threshold);
                                 case 'binary'
-                                    this         = this.binarize;
+                                    this         = this.binarized;
                                 case 'blur'
                                     this         = NiiBrowser.makeBlurred(this, varargin{v+1});
                                 case 'block'
@@ -80,9 +80,9 @@ classdef NIfTI_mask < mlfourd.NIfTI
             this.img = this.img > norminv(pthr, this.dipmean, this.dipstd);
         end
         
-        function this = binarize(this)
+        function this = binarized(this)
             
-            %% BINARIZE
+            %% BINARIZED
             this.img = this.img > sqrt(eps);
         end
         

@@ -69,7 +69,7 @@ classdef Test_ImagingSeries < mlfourd_xunit.Test_AbstractComponent
             assertTrue(       isa(this.imseries, 'mlfourd.ImagingSeries'));
             assertEqual(1, length(this.imseries));
             assertTrue(       isa(this.imseries{1}, 'mlfourd.NIfTIInterface'));
-            assertTrue(   isequal(this.imseries{1}, this.imseries.cachedNext));
+            assertTrue(   isequal(this.imseries{1}, this.imseries.cached));
             assertEqual(          this.imseries{1}.fqfilename, this.t1_fqfn);
         end     
         function test_makeSimilar(this)
@@ -118,12 +118,11 @@ classdef Test_ImagingSeries < mlfourd_xunit.Test_AbstractComponent
         function test_iterator(this)
             %% TEST_ITERATOR tests reset, hasNext, next
             imseries = this.imseries;
-            imseries = imseries.reset;
+            iter = imseries.createIterator;
             cnt = 0;
-            while (imseries.hasNext)
+            while (iter.hasNext)
                 cnt = cnt + 1;
-                imseries = imseries.iterateNext;
-                assertTrue(isa(imseries.cachedNext, 'mlfourd.NIfTIInterface'));
+                assertTrue(isa(iter.next, 'mlfourd.NIfTIInterface'));
             end
             assertEqual(1, cnt);
         end

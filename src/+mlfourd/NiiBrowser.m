@@ -426,7 +426,7 @@ classdef NiiBrowser < mlfourd.NIfTI
             end
             this.blur      = blr;
             if (sum(blr) < eps); return; end            
-            this           = this.forceDouble;
+            this           = double(this);
 			this.img       = double(msk) .* this.gaussFullwidth(this.img, blr, 'mm', this.mmppix);
             this.blurCount = this.blurCount + 1;
             this.fileprefix = this.blurredFileprefix;
@@ -459,7 +459,7 @@ classdef NiiBrowser < mlfourd.NIfTI
             end
             this.blur      = blr;
             if (sum(blr) < eps); return; end            
-            this           = this.forceDouble;
+            this           = double(this);
             for t = 1:this.size(4)
                 this.img(:,:,:,t) = double(msk) .* this.gaussFullwidth(this.img(:,:,:,t), blr, 'mm', this.mmppix(1:3));
             end

@@ -1,4 +1,4 @@
-classdef INIfTI 
+classdef INIfTI
 	%% INIFTI provide a minimal set of imaging properties, methods
 
 	%  $Revision$
@@ -9,64 +9,55 @@ classdef INIfTI
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
  	
     properties (Constant) 
-        FILETYPE     = 'NIFTI_GZ';
-        FILETYPE_EXT = '.nii.gz';
+        FILETYPE     = 'NIFTI_GZ'
+        FILETYPE_EXT = '.nii.gz'
+        %ISEQUAL_IGNORES
     end
     
-	properties (Abstract)   
+	properties (Abstract)
+        img
+        
+        bitpix 
         creationDate
+        datatype
         descrip
         entropy
         hdxml
         label
         machine
+        mmppix
         negentropy
         orient
-        seriesNumber
-        
-        img
-        bitpix
-        datatype
-        mmppix
         pixdim
+        seriesNumber        
     end 
     
 	methods (Abstract) 
+        
+        %% for NIfTId and other concrete imaging classes
+        
+        this = clone(this)
+        [tf,msg] = isequal(this, n)
+        [tf,msg] = isequaln(this, n)
+        this = makeSimilar(this)
+        
+        %% for AbstractNIfTId and other abstract imaging classes
+        
         char(this)
+        append_descrip(this, s)
+        prepend_descrip(this, s)
         double(this)
         duration(this)
+        append_fileprefix(this, s)
+        prepend_fileprefix(this, s)
+        fov(this)
+        matrixsize(this)
         ones(this)
         rank(this)
         scrubNanInf(this)
         single(this)
         size(this)
-        zeros(this)        
-        
-        prod(this)
-        sum(this)
-        forceDouble(this)
-        forceSingle(this)
-        [tf,msg] = isequal(this, n)
-        [tf,msg] = isequaln(this, n)
-        prepend_fileprefix(this, s)
-        append_fileprefix(this, s)
-        prepend_descrip(this, s)
-        append_descrip(this, s)
-        
-        clone(this)
-        makeSimilar(this)
-        freeview(this)
-        fslview(this)
-        mlimage(this)
-        imshow(this)
-        imtool(this)
-        imclose(this, varargin) 
-        imdilate(this, varargin)
-        imerode(this, varargin)
-        imopen(this, varargin)        
-        montage(this, varargin)        
-        matrixsize(this)
-        fov(this)   
+        zeros(this)
     end 
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

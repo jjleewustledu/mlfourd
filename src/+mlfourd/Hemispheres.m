@@ -40,7 +40,7 @@ classdef Hemispheres
             if (size(n,1) > size(n,2)); n = n'; end     % ensure row-vector
             
             cfield  = this.coordfield1(cfield);
-            assert(isa(cfield, 'mlfourd.NIfTIInterface'));
+            assert(isa(cfield, 'mlfourd.INIfTI'));
             cfield  = cfield.dip_image;
             cfield  = reshape(cfield, [prod(sz) 3]);    % prod(sz)(x)3
             X       = 1; Y = 2; Z = 3;

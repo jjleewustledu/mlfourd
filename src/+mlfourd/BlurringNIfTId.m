@@ -1,4 +1,4 @@
-classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
+classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% BLURRINGNIFTID is a NIfTIdecorator that composes an internal INIfTI object
     %  according to the decorator design pattern.  Blur must be provided as fwhh in mm.
 
@@ -10,11 +10,11 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$  	 
 
-    properties    
+    properties
         metric = 'fwhh';
     end
     
-    properties (Dependent)        
+    properties (Dependent)
         mask
         blur
         blurCount
@@ -47,14 +47,10 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
     end
     
     methods (Static)
-        function this = load(varargin)
-            %% LOAD 
-            %  Usage:  this = BlurringNIfTId.load(filename[, description]); % args passed to NIfTId
-            
+        function this  = load(varargin)
             import mlfourd.*;
             this = BlurringNIfTId(NIfTId.load(varargin{:}));
-        end
-        
+        end        
         function width = sigma2width(sigma, fheight)
             %% SIGMA2WIDTH returns the width at fheight corresponding to sigma, metppix & metric units.
             %  Usage: width = sigma2width(sigma[, fheight])
@@ -106,7 +102,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
             %  Parameters:  'blur', numeric value, default [], fwhh in mm
             %               'mask', numeric or INIfTI value, default this.ones
 
-            this = this@mlfourd.NIfTIdecorator2(cmp);
+            this = this@mlfourd.NIfTIdecoratorProperties(cmp);
             this = this.append_descrip('decorated by BlurringNIfTId');
             
             p = inputParser;
@@ -211,13 +207,13 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
     
     %% PRIVATE    
     
-    properties (Access = 'private')
+    properties (Access = private)
         mask_
         blur_
         blurCount_ = 0;
     end
     
-    methods (Static, Access = 'private')
+    methods (Static, Access = private)
         function img   = gaussFullwidth(img, width, metric, metppix, height)
             %% GAUSSFULLWIDTH applies multi-dimensional, anisotropic, Gaussian filtering to 
             %                 numeric objects.
@@ -456,7 +452,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecorator2
         end
     end
     
-    methods (Access = 'private')
+    methods (Access = private)
         function img = blurredVolume(this, img, mmppix)
             assert(isnumeric(img));
 			img = double(this.mask) .* ...

@@ -1,8 +1,9 @@
 classdef ImagingArrayList < mlpatterns.CellArrayList
-	%% IMAGINGARRAYLIST is a CellArrayList designed for imaging data; e.g., for ImagingComponent; 
-    %  ImagingArrayList.add is robust to adding nested CellArrayLists;
-    %  helper method is ensureImagingArrayList, which casts to ImagingArrayList as needed;
-    %  child of mlpatterns.List and so is a handle class
+	%% IMAGINGARRAYLIST is a CellArrayList designed for imaging data; 
+    %  add is robust to adding nested CellArrayLists;
+    %  cell is a helper method which casts to cell;
+    %  isempty always returns a scalar logical;
+    %  ImagingArrayList is a handle class.
     
 	%  $Revision: 2618 $
  	%  was created $Date: 2013-09-08 23:15:55 -0500 (Sun, 08 Sep 2013) $
@@ -11,48 +12,37 @@ classdef ImagingArrayList < mlpatterns.CellArrayList
  	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingArrayList.m $, 
  	%  developed on Matlab 8.1.0.604 (R2013a)
  	%  $Id: ImagingArrayList.m 2618 2013-09-09 04:15:55Z jjlee $
-    
-    methods (Static)
-        function ial = ensureImagingArrayList(varargin)
-            %% ENSUREIMAGINGARRAYLIST ...
-            %  Usage:  anImagingArrayList = ensureImagingArrayList(obj[, obj2, ..., ...])
-            
-            import mlfourd.*;
-            ial = ImagingArrayList;
-            for v = 1:length(varargin)
-                ial.add(ImagingArray.flattenLists(varargin{v})); end
-            ial = ImagingArrayList(ial);
-        end
-    end
 
 	methods 
-        function add(this, elts, varargin)
+        function        add(this, elts, varargin)
             %% ADD wraps mlpatterns.CellArrayList.add to safetly add cell arrays or cell-array lists.
-            %  Usage:  ial = ial.add(elementsToAdd[, locationForAdd]) 
-            %          ^     ^ anImagingArrayList
+            %  Usage: ial.add(elementsToAdd[, locationForAdd]) 
+            %         ^ anImagingArrayList
             
             import mlfourd.*;
-            p = inputParser;
-            addRequired(p, 'this',     @(x)  isa(x, 'mlfourd.ImagingArrayList'));
-            addRequired(p, 'elts',     @(x) ~isempty(x));
-            addOptional(p, 'loc',  [], @(x)  isinf(x) || (isnumeric(x) && isscalar(x)));
-            parse(p, this, elts, varargin{:});
-            this = p.Results.this;
-            elts = this.flattenLists(p.Results.elts);
-            if (~isempty(p.Results.loc))
-                add@mlpatterns.CellArrayList(this, elts, p.Results.loc);
+            ip = inputParser;
+            addRequired(ip, 'this',     @(x)  isa(x, 'mlfourd.ImagingArrayList'));
+            addRequired(ip, 'elts',     @(x) ~isempty(x));
+            addOptional(ip, 'loc',  [], @(x)  isinf(x) || (isnumeric(x) && isscalar(x)));
+            parse(ip, this, elts, varargin{:});
+            
+            this = ip.Results.this;
+            elts = this.flattenLists(ip.Results.elts);
+            if (isempty(ip.Results.loc))
+                add@mlpatterns.CellArrayList(this, elts);
                 return
             end
-                add@mlpatterns.CellArrayList(this, elts);
+            add@mlpatterns.CellArrayList(this, elts, ip.Results.loc);
         end
         function cll  = cell(this)
             cll = mlfourd.ImagingArrayList.list2cell(this);
         end
-        function obj  = clone(this)
-            obj = mlfourd.ImagingArrayList(this);
+        function c    = clone(this)
+            c = mlfourd.ImagingArrayList(this);
         end
         function tf   = isempty(this)
             %% ISEMPTY always returns a scalar logical
+            
             tf = all(isempty@mlpatterns.CellArrayList(this));
         end
         function locs = locationsOf(this,elt)
@@ -80,6 +70,8 @@ classdef ImagingArrayList < mlpatterns.CellArrayList
         end
     end 
 
+    %% PRIVATE
+    
     methods (Static, Access = 'private')
         function obj = flattenLists(obj)
             if (iscell(obj))

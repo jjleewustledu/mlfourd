@@ -1,6 +1,6 @@
 classdef PETConverter < mlfourd.AbstractConverter
     %% PETconverter converts ECAT_EXACT or Analyze files to fsl formats
-    %  TO DO:   refactor into a composite pattern
+    %  TODO:  refactor into a composite pattern
     %
     % Created by John Lee on 2008-12-26.
     % Copyright (c) 2008 Washington University School of Medicine. All rights reserved.
@@ -277,7 +277,7 @@ classdef PETConverter < mlfourd.AbstractConverter
             workpth = p.Results.workPath;
             
             dtWorkpth = mlsystem.DirTool(fullfile(workpth, '*'));   
-            if (~lcontains(dtWorkpth.fns, NIfTIInterface.FILETYPE_EXT))
+            if (~lcontains(dtWorkpth.fns, INIfTI.FILETYPE_EXT))
                 this.analyze2nifti(workpth); 
                 this.cleanAnalyze(workpth); 
             end

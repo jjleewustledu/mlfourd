@@ -1,4 +1,4 @@
-classdef Test_DynamicNIfTId < mlfourd_unittest.Test_NIfTId
+classdef Test_DynamicNIfTId < mlfourd_unittest.Test_mlfourd
 	%% TEST_DYNAMICNIFTID  
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_DynamicNIfTId)
@@ -13,96 +13,116 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_NIfTId
  	%  developed on Matlab 8.4.0.150421 (R2014b) 
  	%  $Id$ 
 
+    properties 
+        testObj
+        testComp
+    end
+    
+    properties (Dependent)
+        mask_fqfn
+        hodyn_fqfn        
+        hodynNIfTId
+        dynamicNIfTId
+    end
+    
+    methods %% GET
+        function fn = get.mask_fqfn(this)
+            fn = fullfile(this.sessionPath, 'fsl', 'cs01-999-ho1_161616fwhh_thresh250.nii.gz');
+        end
+        function fn = get.hodyn_fqfn(this)
+            fn = fullfile(this.sessionPath, 'ECAT_EXACT', 'coss', 'cs01-999-ho1.nii.gz');
+        end
+        function niid = get.hodynNIfTId(this)
+            niid = mlfourd.NIfTId.load(this.hodyn_fqfn);
+        end
+        function niid = get.dynamicNIfTId(this)
+            niid = mlfourd.DynamicNIfTId(this.hodynNIfTId);
+        end
+    end
+    
 	methods (Test) 
         function test_load(this)
             import mlfourd.*;
-            dnii = DynamicNIfTId.load(this.hodyn_fqfn);
-            component = NIfTId.load(this.hodyn_fqfn);
-            this.assertTrue(isequal(dnii.component, component));
-            this.assertEqual(dnii.img,        component.img);
-            this.assertEqual(dnii.entropy,    0.999451341616353, 'RelTol', 1e-10);
-            this.assertEqual(dnii.fileprefix, 'cs01-999-ho1');
-            this.assertEqual(dnii.descrip(end-27:end), '; decorated by DynamicNIfTId');
-            this.assertEqual(dnii.pixdim,     component.pixdim);
+            niid  = this.testComp;
+            dniid = this.testObj;
+            this.verifyEqual(dniid.component,           niid);
+            this.verifyEqual(dniid.img,                 niid.img);
+            this.verifyEqual(dniid.entropy,             0.999451341616353, 'RelTol', 1e-10);
+            this.verifyEqual(dniid.fileprefix,          'cs01-999-ho1');
+            this.verifyEqual(dniid.descrip(end-27:end), '; decorated by DynamicNIfTId');
+            this.verifyEqual(dniid.pixdim,              niid.pixdim);
         end
  		function test_ctor(this)
             import mlfourd.*;
-            ctor = DynamicNIfTId(this.hoNIfTId_);            
-            this.assertEqual(ctor.size, [128 128 63 60]);
-            this.assertEqual(ctor.entropy, 0.999451341616353, 'RelTol', 1e-10);
-            this.assertEqual(ctor.component, this.hoNIfTId_);
+            dniid = this.dynamicNIfTId;
+            this.verifyEqual(dniid, this.dynamicNIfTId);
+            this.verifyEqual(dniid.component, this.dynamicNIfTId.component);
         end 
         function test_timeSummed(this)
-            tobj = this.testObj.timeSummed;
-            this.assertEqual(tobj.size, [128 128 63]);
-            this.assertEqual(tobj.entropy, 0.962499036230927, 'RelTol', 1e-10);
+            ts = this.testObj.timeSummed;
+            this.verifyEqual(ts.size, [128 128 63]);
+            this.verifyEqual(ts.entropy, 0.962499036230927, 'RelTol', 1e-10);
+            if (mlpipeline.PipelineRegistry.instance.verbose)
+                ts.freeview
+            end
         end
         function test_volumeSummed(this)
-            tobj = this.testObj.volumeSummed;
-            this.assertEqual(tobj.size, [1 1 1 60]);
-            this.assertEqual(tobj.entropy, 0, 'RelTol', 1e-10);
+            vs = this.testObj.volumeSummed;
+            this.verifyEqual(vs.size, [1 1 1 60]);
+            this.verifyEqual(vs.entropy, 0, 'RelTol', 1e-10);
+            if (mlpipeline.PipelineRegistry.instance.verbose)
+                plot(vs.img);s
+            end
         end
         function test_blurred(this)
             import mlfourd.*;
-            tobj = this.testObj.blurred([4 4 4]);
-            this.assertEqual(tobj.descrip, ...
-                [this.hoNIfTId_.descrip '; decorated by DynamicNIfTId; decorated by BlurringNIfTId; blurred to [4 4 4]']);
-            this.assertEqual(tobj.size, [128 128 63 60]);
-            this.assertEqual(tobj.entropy, 1.185942655963026, 'RelTol', 1e-10);
-            this.assertEqual(MaskingNIfTId.maxall( tobj), 939.327768060429, 'RelTol', 1e-10);
-            this.assertEqual(MaskingNIfTId.meanall(tobj), 10.164494152636440, 'RelTol', 1e-10);
-            this.assertEqual(MaskingNIfTId.stdall( tobj), 0.387587137442489, 'RelTol', 1e-10);
+            to = this.testObj.blurred([4 4 4]);
+            this.verifyEqual(to.descrip(142:end), ...
+                'decorated by DynamicNIfTId; decorated by BlurringNIfTId; blurred to [4 4 4]');
+            this.verifyEqual(to.size, [128 128 63 60]);
+            this.verifyEqual(to.entropy, 0.995192754170223, 'RelTol', 1e-10);
+            this.verifyEqual(dipmax( to), 939.000000000000000, 'RelTol', 1e-10);
+            this.verifyEqual(dipmean(to), 10.1645085894872, 'RelTol', 1e-10);
+            this.verifyEqual(dipstd( to), 0.387581383407035, 'RelTol', 1e-10);
+            if (mlpipeline.PipelineRegistry.instance.verbose)
+                to.freeview
+            end
         end
         function test_mcflirted(this)
         end
         function test_mcflirtedAfterBlur(this)
         end
-        function test_revertFrames(this)
+        function test_revertedFrames(this)
         end
         function test_masked(this)
             import mlfourd.*;
-            binMask = NIfTId.load(this.mask_fqfn);
-            tobj = this.testObj;
-            tobj = tobj.masked(binMask);
-            this.assertEqual(tobj.descrip, ...
-                ['clone of ' this.testObj.descrip '; DynamicNIfTI.masked(cs01-999-ho1_161616fwhh_thresh250)']);
-            this.assertEqual(tobj.fileprefix, ...
-                'cs01-999-ho1_masked');
-            this.assertEqual(tobj.size, [128 128 63 60]);
-            this.assertEqual(tobj.entropy, 0.698268544789383, 'RelTol', 1e-10);
-            this.assertEqual(MaskingNIfTId.meanall(tobj), 13.6110725200996, 'RelTol', 1e-10);
-            this.assertEqual(MaskingNIfTId.stdall( tobj), 1.68102967422769, 'RelTol', 1e-10);
-            %obj.freeview
+            mask = NIfTId.load(this.mask_fqfn);
+            to = this.testObj;
+            to = to.masked(mask);
+            this.verifyEqual(to.descrip, ...
+                ['made similar to clone of ' this.testObj.descrip '; DynamicNIfTI.masked(cs01-999-ho1_161616fwhh_thresh250)']);
+            this.verifyEqual(to.fileprefix, 'cs01-999-ho1_masked');
+            this.verifyEqual(to.size, [128 128 63 60]);
+            this.verifyEqual(to.entropy, 0.698268544789383, 'RelTol', 1e-10);
+            this.verifyEqual(dipmean(to), 13.6110725200996, 'RelTol', 1e-10);
+            this.verifyEqual(dipstd( to), 1.68102967422769, 'RelTol', 1e-10);
+            if (mlpipeline.PipelineRegistry.instance.verbose)
+                to.freeview;
+            end
         end
  	end 
 
  	methods (TestClassSetup) 
  		function setupDynamicNIfTId(this) 
-            import mlfourd.*;
-            this.hoNIfTId_      = NIfTId.load(this.hodyn_fqfn);
-            this.dynamicNIfTId_ = DynamicNIfTId(this.hoNIfTId_); 
- 			this.testObj        = this.dynamicNIfTId_; 
+            this.testComp = this.hodynNIfTId;
+ 			this.testObj = mlfourd.DynamicNIfTId(this.testComp); 
  		end 
  	end 
 
- 	methods (TestClassTeardown) 
- 	end 
-    
-    %% PRIVATE
-    
-    properties (Access = 'private')
-        dynamicNIfTId_
-        hoNIfTId_
-    end
-    
-    methods
-        function fn = hodyn_fqfn(this)
-            fn = fullfile(this.sessionPath, 'ECAT_EXACT', 'coss', 'cs01-999-ho1.nii.gz');
-        end
-        function fn = mask_fqfn(this)
-            fn = fullfile(this.sessionPath, 'fsl', 'cs01-999-ho1_161616fwhh_thresh250.nii.gz');
-        end
-    end
+ 	methods (TestMethodSetup)
+		function setupDynamicNIfTIdTest(this)
+ 		end
+    end    
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
  end 

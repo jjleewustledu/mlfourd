@@ -197,10 +197,10 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
                 try              
                     gunzip([fqnii '.gz']);
                 catch ME
-                    handexcept(ME, 'Test_NIfTI.fqfn2struct:  could not find %s', filename(fqfn));
+                    handexcept(ME,'mlfourd:ioError','Test_NIfTI.fqfn2struct:  could not find %s', filename(fqfn));
                 end
             end
-            strct = load_untouch_nii(fqnii);
+            strct = mlniftitools.load_untouch_nii(fqnii);
             delete(fqnii);
         end
         function nii   = fqfn2struct2NIfTI(fqfn)

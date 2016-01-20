@@ -1,5 +1,5 @@
-classdef (Abstract) ImageProcessingInterface  
-	%% IMAGEPROCESSINGINTERFACE   
+classdef (Abstract) IImageProcessing  
+	%% IIMAGEPROCESSING   
 
 	%  $Revision$ 
  	%  was created $Date$ 
@@ -10,18 +10,14 @@ classdef (Abstract) ImageProcessingInterface
  	%  $Id$ 
  	 
     methods (Abstract)        
-        imclose(this, varargin) % Consider moving to a decorator pattern
+        imclose(this, varargin) 
         imdilate(this, varargin)
         imerode(this, varargin)
         imopen(this, varargin)
         imshow(this, slice, varargin)
         imtool(this, slice, varargin)
         mlimage(this)
-        montage(this, varargin)
-        montage_coronal(this, varargin)
-        montage_sagittal(this, varargin)
-        matrixsize(this)
-        fov(this)        
+        montage(this, varargin)   
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

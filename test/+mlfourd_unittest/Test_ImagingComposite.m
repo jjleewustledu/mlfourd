@@ -1,4 +1,4 @@
-classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
+classdef Test_ImagingComposite < mlpatterns_unittest.Test_AbstractComposite
 	%% TEST_IMAGINGCOMPOSITE 
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_ImagingComposite)
@@ -14,7 +14,6 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
  	
 
 	properties
- 		registry
  		testObj
  	end
 
@@ -26,7 +25,7 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
                 this.verifyTrue(max(max(max(this.imcps{c}.img))) > 0);
             end
         end
-        function test_forceDouble(this)
+        function test_double(this)
             import mlfourd.*;
             ho = NIfTId.load(this.ho_fqfn);
             ho.img = uint8(ho.img > 0);
@@ -38,7 +37,7 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
             pet = pet.reset;
             while (pet.hasNext)
                 pet = pet.iterateNext;
-                pet = pet.forceDouble;
+                pet = double(pet);
             end
             for p = 1:length(pet)
                 this.verifyEqual('double', class(pet{p}.img));
@@ -46,10 +45,6 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
         end
         function test_createFromCell(this)
             imcps = mlfourd.ImagingComposite.createFromCell(this.files);
-            this.verifyTrue(isa(imcps, 'mlfourd.ImagingComposite'));
-        end
-        function test_createFromImagingArrayList(this)
-            imcps = mlfourd.ImagingComposite.createFromImagingArrayList(this.imcps.asList);
             this.verifyTrue(isa(imcps, 'mlfourd.ImagingComposite'));
         end
         function test_heterogeneousHorzcat(this)
@@ -77,7 +72,7 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
                 this.verifyTrue(isa(catted.get(c),            'mlfourd.INIfTI'));
                 this.verifyEqual(   catted.get(c).fqfilename,  this.files{c});
             end
-            this.verifyEqual(       catted.asList, this.imcps.asList);    
+            this.verifyEqual(       catted.cell, this.imcps.cell);    
         end
  		function test_subsref(this)
  			import mlfourd.*;            
@@ -136,13 +131,11 @@ classdef Test_ImagingComposite < mlfourd_unittest.Test_AbstractComponent
         function test_iterator(this)
             %% TEST_ITERATOR tests reset, hasNext, next
             imcps = this.imcps;
-            imcps.reset;
+            iter = imcps.createIterator;
             cnt = 0;
-            while (imcps.hasNext)
+            while (iter.hasNext)
                 cnt = cnt + 1;
-                imcps = imcps.iterateNext;
-                this.verifyTrue(isa(imcps.cachedNext, 'mlfourd.INIfTI'));
-                %fprintf('imcps.cachedNext.fileprefix->%s\n', imcps.cachedNext.fileprefix);
+                this.verifyTrue(isa(iter.next, 'mlfourd.INIfTI'));
             end            
             this.verifyEqual(this.imcps.length, cnt);
         end

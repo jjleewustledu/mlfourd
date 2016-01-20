@@ -21,7 +21,7 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractSimpleIO
         fqfn
         fqfp
         noclobber
-        imcomponent
+        composite
         nifti        
         niftid
     end
@@ -60,20 +60,20 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractSimpleIO
         function tf   = get.noclobber(this)
             tf = this.noclobber_;
         end    
-        function f    = get.imcomponent(this)
-            this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.imcomponent;
+        function f    = get.composite(this)
+            this.contextH_.changeState( ...
+                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextH_));
+            f = this.contextH_.composite;
         end
         function f    = get.nifti(this)
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.nifti;
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIState.load(this.fqfilename, this.contextH_));
+            f = this.contextH_.nifti;
         end
         function f    = get.niftid(this)
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.niftid;
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextH_));
+            f = this.contextH_.niftid;
         end
         
         function this = set.filename(this, fn)
@@ -112,20 +112,20 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractSimpleIO
             assert(islogical(nc));
             this.noclobber_ = nc;
         end
-        function this = set.imcomponent(this, f)
-            this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextHandle_));
-            this.contextHandle_.imcomponent = f;
+        function this = set.composite(this, f)
+            this.contextH_.changeState( ...
+                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextH_));
+            this.contextH_.composite = f;
         end
         function this = set.nifti(this, f)
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
-            this.contextHandle_.nifti = f;
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIState.load(this.fqfilename, this.contextH_));
+            this.contextH_.nifti = f;
         end
         function this = set.niftid(this, f)
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(this.fqfilename, this.contextHandle_));
-            this.contextHandle_.niftid = f;
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIdState.load(this.fqfilename, this.contextH_));
+            this.contextH_.niftid = f;
         end
     end 
 
@@ -133,7 +133,7 @@ classdef ImagingLocation < mlfourd.ImagingState & mlio.AbstractSimpleIO
         function this = load(fname, h)
             this = mlfourd.ImagingLocation;
             this.fqfilename = fname;
-            this.contextHandle_ = h;            
+            this.contextH_ = h;            
         end
     end
     

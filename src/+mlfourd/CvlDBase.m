@@ -190,7 +190,7 @@ classdef CvlDBase < mlfourd.AbstractDBase
             %  Usage:  fp = db.cvlFileprefix(file-string, [path-string])
             %                                ^ any file descriptor, NIfTI
                fp    = fileprefix(fp);
-            [~,fp,~] = filepartsx(fp, mlfourd.NIfTIInterface.FILETYPE_EXT);
+            [~,fp,~] = filepartsx(fp, mlfourd.INIfTI.FILETYPE_EXT);
             if (this.useBlurSuffix)
                 fp   = [fp this.blur_suffix];
             end
@@ -214,7 +214,7 @@ classdef CvlDBase < mlfourd.AbstractDBase
                 otherwise
                     fn = this.cvlFileprefix(fn, pth);
             end
-            fn = [fn mlfourd.NIfTIInterface.FILETYPE_EXT];
+            fn = [fn mlfourd.INIfTI.FILETYPE_EXT];
         end % cvlFilename        
         function fld  = onFolder(this)
             fld = ['on' upper(this.ref_fp(1)) this.ref_fp(2:end)];

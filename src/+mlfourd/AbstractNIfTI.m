@@ -31,7 +31,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
         squareWidth % used by imerode, imdilate, etc.
     end 
 
- 	methods %% setters/getters  
+ 	methods %% SET/GET 
         function this = set.bitpix(this, bp) 
             assert(isnumeric(bp));
             if (bp >= 64)
@@ -360,10 +360,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
             M         = this.makeSimilar(Mimg, ...
                         '', [this.fileprefix '_prod']);
             M.descrip = [  'prod(' M.descrip ')'];
-        end
-        function ps   = prodSize(this)
-            ps = prod(this.matrixsize);
-        end        
+        end      
         function rnk  = rank(this, img)
             %% RANK squeezes this.img before reporting rank of this.img or passed img
             
@@ -706,10 +703,10 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
             tf = false;
         end
         function freeview(~)
-            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.freeview');
+            warning('mlfourd:notImplemented', 'AbstractNIfTI.freeview');
         end        
         function fslview(~)
-            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.fslview');
+            warning('mlfourd:notImplemented', 'AbstractNIfTI.fslview');
         end
  	end 
     

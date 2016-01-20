@@ -14,8 +14,6 @@ classdef Test_ImagingArrayList < mlfourd_unittest.Test_mlfourd
  	
 	properties
         ialist
-        
- 		registry
  		testObj
  	end
 

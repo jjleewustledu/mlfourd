@@ -11,12 +11,12 @@ classdef NIfTId < mlfourd.AbstractNIfTId
 
     properties (Constant)
         ISEQUAL_IGNORES = {'hdr' 'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
-    end    
+    end
     
     methods (Static) 
         function this = load(varargin)
             %% LOAD loads imaging objects from the filesystem.  In the absence of file extension, LOAD will attempt guesses.
-            %  @param fn, a [fully-qualified] fileprefix or filename, specifies imaging objects on the filesystem.
+            %  @param [fn] is a [fully-qualified] fileprefix or filename, specifies imaging objects on the filesystem.
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
             %  @return this is an instance of mlfourd.NIfTId.
             %  See also:  mlfourd.NIfTId.NIfTId
@@ -31,22 +31,12 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         function niid     = clone(this, varargin)
             %% CLONE
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
-            %  @return niid copy-construction with niid.descrip prepended with 'clone of '.
+            %  @return niid copy-construction with niid.descrip appended with 'clone'.
             %  See also:  mlfourd.NIfTId.NIfTId
             
             niid = mlfourd.NIfTId(this, varargin{:});
-            niid.descrip = ['clone of ' niid.descrip];
+            niid = niid.append_descrip('cloned');
         end
-        function this     = forceDouble(this)
-            this.img_ = mlfourd.AbstractNIfTId.ensureDble(this.img_);
-            this.hdr_.dime.datatype = 64;
-            this.hdr_.dime.bitpix   = 64;
-        end         
-        function this     = forceSingle(this)
-            this.img_ = mlfourd.AbstractNIfTId.ensureSing(this.img_);
-            this.hdr_.dime.datatype = 16;
-            this.hdr_.dime.bitpix   = 32;
-        end 
         function [tf,msg] = isequal(this, obj)
             [tf,msg] = this.isequaln(obj);
         end
@@ -62,11 +52,11 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         function niid     = makeSimilar(this, varargin)
             %% MAKESIMILAR 
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
-            %  @return niid clone with niid.descrip prepended with 'made similar to '.
+            %  @return niid copy-construction with niid.descrip appended with 'made similar'.
             %  See also:  mlfourd.NIfTId.NIfTId
     
-            niid = this.clone(varargin{:});
-            niid.descrip = ['made similar to ' niid.descrip];
+            niid = mlfourd.NIfTId(this, varargin{:});
+            niid = niid.append_descrip('made similar');
         end
         function            save(this)
             %% SAVE supports extensions 
@@ -144,8 +134,8 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             addParameter(ip, 'filetype',     [], @(x) isnumeric(x) && (isempty(x) || (x >= 0 && x <= 2)));
             addParameter(ip, 'fqfilename',   '', @ischar);
             addParameter(ip, 'fqfileprefix', '', @ischar);
-            addParameter(ip, 'hdr',          struct([]), @isstruct);
-            addParameter(ip, 'img',          [], @isnumeric);
+            addParameter(ip, 'hdr',  struct([]), @isstruct);
+            addParameter(ip, 'img',          [], @(x) isnumeric(x) || islogical(x));
             addParameter(ip, 'label',        '', @ischar);
             addParameter(ip, 'mmppix',       [], @isnumeric);
             addParameter(ip, 'noclobber',    []);
@@ -185,8 +175,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                         warning('off', 'MATLAB:structOnObject');
                         this = NIfTId(struct(ip.Results.obj));
                         warning('on', 'MATLAB:structOnObject');
-                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI')) 
-                        % copy ctor
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI'))
                         this.ext_         = ip.Results.obj.ext;
                         this.fqfileprefix = ip.Results.obj.fqfileprefix;
                         this.filetype_    = ip.Results.obj.filetype;
@@ -207,7 +196,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
    
     %% PRIVATE
  
-    methods (Static, Access = 'private')
+    methods (Static, Access = private)
         function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
             tf = true; 
             msg = '';
@@ -309,7 +298,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
         end
     end 
     
-    methods (Access = 'private')
+    methods (Access = private)
         function this     = adjustFieldsAfterLoading(this)
             if (~mlfourd.NIfTId.LOAD_UNTOUCHED)
                 this = this.optimizePrecision; 

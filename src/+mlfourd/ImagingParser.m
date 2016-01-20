@@ -49,7 +49,7 @@ classdef ImagingParser
             import mlfourd.*;
             fname = imcast(fname, 'fqfilename');
             sname = struct('path', '', 'stem', '', 'ext', '');
-            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.NIfTIInterface.FILETYPE_EXT);
+            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.INIfTI.FILETYPE_EXT);
             varargin = cellfun(@ensureChar, varargin, 'UniformOutput', false);
             for k = 1:length(varargin) 
                 sname = buildFilename(sname, varargin{k});
@@ -68,7 +68,7 @@ classdef ImagingParser
                             sn.ext  = '';
                         case {'fqfilename' 'fqfn'}
                             sn      = makeFullyQualified(sn,k);
-                            sn.ext  = NIfTIInterface.FILETYPE_EXT;
+                            sn.ext  = INIfTI.FILETYPE_EXT;
                         case {'fp' 'fileprefix' 'fileprefixPattern'} 
                             sn.path = '';
                             sn.ext  = '';
@@ -106,10 +106,10 @@ classdef ImagingParser
     
     methods %% set/get 
         function this     = set.fslPath(this, pth)
-            this.imagingChoosers_.fslPath = pth;
+            this.choosers_.fslPath = pth;
         end
         function pth      = get.fslPath(this)
-            pth = this.imagingChoosers_.fslPath;
+            pth = this.choosers_.fslPath;
         end   
         function this = set.choosers(this, ch)
             assert(isa(ch, 'mlchoosers.ImagingChoosers'));

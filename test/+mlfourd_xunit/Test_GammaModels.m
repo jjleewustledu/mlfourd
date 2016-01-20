@@ -57,7 +57,7 @@ classdef Test_GammaModels < TestCase
             
             fn    = fieldnames(this.params);
             for f = 1:length(fn)
-                assert(isa(this.params.(fn{f}), 'mlfourd.NIfTIInterface'));
+                assert(isa(this.params.(fn{f}), 'mlfourd.INIfTI'));
                 fprintf(1, 'params.%s.max->%g\n', fn{f}, this.params.(fn{f}).max);
                 assert(    this.params.(fn{f}).max >= 0);
             end

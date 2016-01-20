@@ -1,7 +1,7 @@
-classdef NIfTIdState < mlfourd.ImagingState
+classdef NIfTIdState < mlfourd.NumericalState 
 	%% NIFTIDSTATE has-an mlfourd.ImagingComponentState 
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.MGHState, 
-    %             mlfourd.ImagingComponentState, mlfourd.ImagingLocation, mlpatterns.State
+    %             mlfourd.ImagingComponentState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState
 
 	%  $Revision$
  	%  was created 21-Oct-2015 00:44:09
@@ -11,141 +11,76 @@ classdef NIfTIdState < mlfourd.ImagingState
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
  	
 	properties (Dependent)
-        filename
-        filepath
-        fileprefix
-        filesuffix
-        fqfilename
-        fqfileprefix
-        fqfn
-        fqfp
-        imcomponent	 
-        nifti
-        niftid		
+        niftid
+        niftic
+        numericalNiftid
+        numericalNiftic
  	end 
 
-	methods % GET/SET
-        function f = get.filename(this)
-            f = this.niftid_.filename;
-        end
-        function f = get.filepath(this)
-            f = this.niftid_.filepath;
-        end
-        function f = get.fileprefix(this)
-            f = this.niftid_.fileprefix;
-        end
-        function f = get.filesuffix(this)
-            f = this.niftid_.filesuffix;
-        end
-        function f = get.fqfilename(this)
-            f = this.niftid_.fqfilename;
-        end
-        function f = get.fqfileprefix(this)
-            f = this.niftid_.fqfileprefix;
-        end
-        function f = get.fqfn(this)
-            f = this.niftid_.fqfn;
-        end
-        function f = get.fqfp(this)
-            f = this.niftid_.fqfp;
-        end  
-        function f = get.imcomponent(this)            
-            this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.imcomponent;
-        end  
-        function f = get.nifti(this)            
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIState.load(this.fqfilename, this.contextHandle_));
-            f = this.contextHandle_.nifti;
-        end
-        function f = get.niftid(this)
-            f = this.niftid_;
-            f = mlfourd.NIfTId(f);
-        end      
-        
-        function this = set.filename(this, f)
-            this.niftid_.filename = f;
-        end        
-        function this = set.filepath(this, f)
-            this.niftid_.filepath = f;
-        end
-        function this = set.fileprefix(this, f)
-            this.niftid_.fileprefix = f;
-        end        
-        function this = set.filesuffix(this, f)
-            this.niftid_.filesuffix = f;
-        end        
-        function this = set.fqfilename(this, f)
-            this.niftid_.fqfilename = f;
-        end        
-        function this = set.fqfileprefix(this, f)
-            this.niftid_.fqfileprefix = f;
-        end        
-        function this = set.fqfn(this, f)
-            this.fqfilename = f;
-        end        
-        function this = set.fqfp(this, f)
-            this.fqfileprefix = f;
+	methods %% GET
+        function g = get.niftid(this)
+            g = this.concreteState_;
         end   
-        function this = set.imcomponent(this, f)
-            assert(isa(f, 'mlfourd.ImagingComponent'));
-            this.contextHandle_.changeState( ...
-                mlfourd.ImagingComponentState.load(f, this.contextHandle_));
-        end
-        function this = set.nifti(this, f)
-            assert(isa(f, 'mlfourd.NIfTIInterface'));
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIState.load(f, this.contextHandle_));
-        end
-        function this = set.niftid(this, f)
-            assert(isa(f, 'mlfourd.INIfTI'));
-            this.contextHandle_.changeState( ...
-                mlfourd.NIfTIdState.load(f, this.contextHandle_));
-        end
-    end 
+        function g = get.niftic(this)
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIcState(this.concreteState_, this.contextH_));
+            g = this.contextH_.niftic;
+        end   
+        function g = get.numericalNiftid(this)            
+            g = mlfourd.NumericalNIfTId(this.concreteState_);
+        end   
+        function g = get.numericalNiftic(this)
+            this.contextH_.changeState( ...
+                mlfourd.NIfTIcState(this.concreteState_, this.contextH_));
+            g = this.contextH_.numericalNiftic;
+        end        
+    end
     
-	methods (Static)
-        function this = load(obj, h)
-            import mlfourd.*;
-            if (~isa(obj, 'mlfourd.INIfTI'))
-                try
-                    obj = NIfTId(obj);
-                catch ME
-                    error(ME.identifier, ...
-                          'mlfourd.NIfTIdState.load does not support objects of type %s', class(obj));
-                end
-            end
-            if (lstrfind(class(obj), 'mlfourd.NIfTIdecorator'))
+    methods (Static)
+        function this = load(varargin)
+            this = mlfourd.NIfTIdState(varargin{:});
+        end
+        function obj  = dedecorate(obj)
+            while (isa(obj, 'mlfourd.NIfTIdecorator'))
                 obj = obj.component;
             end
-            this = NIfTIdState;
-            this.niftid_ = obj;
-            this.contextHandle_ = h;
         end
-    end 
-    
-	methods
-        function this = save(this)
-            this.niftid_.save;
-        end
-        function this = saveas(this, f)
-            this.niftid_ = this.niftid_.saveas(f);
-        end
- 	end 
+    end
 
-    %% PROTECTED
-    
-    methods (Access = 'protected')
-        function this = NIfTIdState
+    methods        
+        function a = atlas(this, varargin)
+            %% ATLAS
+            %  @param [varargin] are any ImagingContext objects.
+            %  @return a is an ImagingContext with NIfTIdState.
+            
+            a = this.niftid;
+            a = a.prepend_fileprefix('atlas');
+            a = a.prepend_descrip('atlas');
+            a = a/dipmedian(a);
+            for v = 1:length(varargin)
+                a = a + varargin{v}.atlas;
+            end
+            a = mlfourd.ImagingContext(a);
         end
     end
     
-    %% PRIVATE
+    %% PROTECTED
     
-	properties (Access = 'private')
-        niftid_
-    end 
+    methods (Access = protected)
+        function this = NIfTIdState(obj, h)
+            if (~isa(obj, 'mlfourd.NIfTId'))
+                try
+                    obj = this.dedecorate(obj);
+                    obj = mlfourd.NIfTId(obj, 'dedecorate', true);
+                catch ME
+                    handexcept(ME, 'mlfourd:castingError', ...
+                        'NIfTIdState.load does not support objects of type %s', class(obj));
+                end
+            end
+            this.concreteState_ = obj;
+            this.contextH_ = h;
+        end
+    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

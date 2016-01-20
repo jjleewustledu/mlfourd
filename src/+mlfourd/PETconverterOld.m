@@ -431,7 +431,7 @@ classdef PETconverterOld < mlfourd.ModalityConverter
                                                         ((a(3) * f .* f + a(4) * f) - 0.835*ICbv), 1);
                 msk        = double(obj.fuzzyFg) .* double(oef > 0) .* double(oef < 1);
                 oef        = squeeze(oef .* msk);
-                obj.fgnii  = obj.fgnii.forceDouble;
+                obj.fgnii  = double(obj.fgnii);
                 obj.oefnii = obj.fgnii.makeSimilarNIfTI(oef, 'PETconverter.make_oef');  
             end            
         end % make_oef
@@ -443,7 +443,7 @@ classdef PETconverterOld < mlfourd.ModalityConverter
             if (mlfourd.NIfTI.isNIfTI(obj.oefnii))
                 nii = obj.oefnii;
             else
-                obj.fgnii = obj.fgnii.forceDouble;
+                obj.fgnii = double(obj.fgnii);
                 nii = obj.fgnii.makeSimilarNIfTI(obj.make_oef, 'PETconverter.make_oefnii'); 
                 nii = nii.append_descrip('OEF');
                 nii.fileprefix = 'oef_o15o_h15o';

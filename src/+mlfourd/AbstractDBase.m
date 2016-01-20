@@ -7,8 +7,8 @@ classdef AbstractDBase < handle
  	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
 
     properties (Constant)
-        FILETYPE_EXT = mlfourd.NIfTIInterface.FILETYPE_EXT;        
-        FILETYPE     = mlfourd.NIfTIInterface.FILETYPE;
+        FILETYPE_EXT = mlfourd.INIfTI.FILETYPE_EXT;        
+        FILETYPE     = mlfourd.INIfTI.FILETYPE;
     end
     
     properties

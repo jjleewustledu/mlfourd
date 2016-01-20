@@ -43,8 +43,8 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             dt  = mlsystem.DirTool(fullfile(studyPth, patt));
             dns = dt.fqdns;
             handles = cellfun(@convertSession, cell(size(dns)));
-            matlabpool close force local
-            matlabpool local
+            parpool close force local
+            parpool local
             parfor d = 1:length(dns)
                 try
                     handles{d}(dns{d});
@@ -52,7 +52,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
                     handwarning(ME);
                 end
             end
-            matlabpool close
+            parpool close
         end % static convertStudy  
         function          convertStudy(studyPth, patt, varargin)
             if (~exist('patt', 'var'))
@@ -70,7 +70,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
         function          orientRepair(obj, o2fix)
             %% ORIENTCHANGESTRATEGY flips image-objects along requested orientations
             %  Usage:  nifti = AbstractConverter.orientRepair(imgObj, o2fix)
-            %                                                 ^ fileprefix, filename, numerics, NIfTIInterface, cell-array
+            %                                                 ^ fileprefix, filename, numerics, INIfTI, cell-array
             %                                                         ^ struct
             
             import mlfourd.*;
@@ -89,7 +89,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             if (~exist('pth', 'var')); pth = pwd; end
             dt = mlsystem.DirTool(fullfile(pth, '*.hdr'));
             for n = 1:length(dt.fqfns)  %#ok<FORFLG>
-                mlbash(['fslchfiletype ' mlfourd.NIfTIInterface.FILETYPE ' ' dt.fqfns{n}]);  
+                mlbash(['fslchfiletype ' mlfourd.INIfTI.FILETYPE ' ' dt.fqfns{n}]);  
             end
         end % static analyze2nifti       
         
@@ -154,7 +154,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             this.allFqFilenames = cellfun(@(x) fullfile(this.fslPath, x), fns, 'UniformOutput', false);
         end % set.allFilenames
         function fns  = get.allFilenames(this)
-            [~,f,e] = cellfun(@(x) filepartsx(x, mlfourd.NIfTIInterface.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
+            [~,f,e] = cellfun(@(x) filepartsx(x, mlfourd.INIfTI.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
              fns    = cellfun(@(x,y) [x y], f, e, 'UniformOutput', false);
         end % get.allFilenames    
         function this = set.modalityPath(this, pth)
@@ -166,7 +166,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             assert(lexist(pth, 'dir'));
         end % get.modalityPath    
         function fld  = get.modalityFolder(this)
-            [~,fld] = filepartsx(this.modalityPath, mlfourd.NIfTIInterface.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.modalityPath, mlfourd.INIfTI.FILETYPE_EXT);
         end % get.modalityFolder
         function this = set.unpackPath(this, pth)
             this.unpackPath_ = ensureFolderExists(pth);
@@ -201,7 +201,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             pth = this.sessionPath_;
         end % get.sessionPath   
         function fld  = get.sessionId(this)
-            [~,fld] = filepartsx(this.sessionPath, mlfourd.NIfTIInterface.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.sessionPath, mlfourd.INIfTI.FILETYPE_EXT);
         end % get.sessionId
         function this = set.studyPath(  this, pth)
             assert(lstrfind(this.modalityPath, pth));
@@ -331,7 +331,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             try
                 r = ''; [~,r] = mlbash( ...
                     sprintf('mkdir %s',  ...
-                             fullfile(this.fslPath, foldname, ''))); %#ok<NASGU>
+                             fullfile(this.fslPath, foldname, ''))); 
             catch ME
                 handexcept(ME, r);
             end
@@ -405,7 +405,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
         function ensureOriented2Standard(fp)
             try
                 r = ''; [~,r] = mlbash( ...
-                    sprintf('fslreorient2std %s %s', fp, fp)); %#ok<NASGU>
+                    sprintf('fslreorient2std %s %s', fp, fp)); 
             catch ME
                 handwarning(ME,r);
             end
@@ -430,10 +430,10 @@ classdef AbstractConverter < mlfourd.ConverterInterface
         function fixImageLeafOrientLeaf(imobj, o2fix)
             %% FIXIMAGELEAFORIENTLEAF is the final common function
             %  fixImageLeafOrientLeaf(img, o2fix)
-            %                         ^ NIfTIInterface
+            %                         ^ INIfTI
             %                              ^ struct('img_type', string_pattern, 'orientation', axis_char), may be array
             
-            assert(isa(imobj, 'mlfourd.NIfTIInterface'));
+            assert(isa(imobj, 'mlfourd.INIfTI'));
             assert(isstruct(o2fix));
             assert(isfield( o2fix, 'img_type'));
             assert(isfield( o2fix, 'orientation'));

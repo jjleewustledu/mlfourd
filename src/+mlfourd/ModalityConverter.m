@@ -33,7 +33,7 @@ classdef ModalityConverter < handle
         function set.fgnii(obj, nii)
             
             obj.fgnii = mlfourd.NIfTI(nii); % TODO:  ensure mask qualities
-            obj.fgnii = obj.fgnii.forceDouble;
+            obj.fgnii = double(obj.fgnii);
         end % set.fgnii         
         function set.cbfnii(obj, nii)
             obj.cbfnii = mlfourd.ModalityConverter.acceptableNIfTI(nii);
@@ -109,7 +109,7 @@ classdef ModalityConverter < handle
                     throw(MException('mlfourd:UnsupportedNumberOfParameters', ...
                         ['ModalityConverter.ctor:  nargin -> ' num2str(nargin)]));
             end
-            %if (~isempty(obj.fgnii)); obj.fgnii = obj.fgnii.forceDouble; end
+            %if (~isempty(obj.fgnii)); obj.fgnii = double(obj.fgnii); end
         end % ctor
     end % protected methods
     

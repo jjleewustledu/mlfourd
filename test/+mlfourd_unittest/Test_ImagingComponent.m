@@ -1,4 +1,4 @@
-classdef Test_ImagingComponent < mlfourd_unittest.Test_AbstractComponent
+classdef Test_ImagingComponent < mlpatterns_unittest.Test_AbstractComposite
 	%% TEST_IMAGINGCOMPONENT 
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_ImagingComponent)
@@ -14,7 +14,6 @@ classdef Test_ImagingComponent < mlfourd_unittest.Test_AbstractComponent
  	
 
 	properties
- 		registry
  		testObj
  	end
 
@@ -33,14 +32,6 @@ classdef Test_ImagingComponent < mlfourd_unittest.Test_AbstractComponent
         end
         function test_seriesNumber(this)
             this.verifyEqual(nan, this.imcps.get(2).seriesNumber);
-        end
-        function test_asList(this)
-            cal = this.imcps.asList;
-            this.verifyTrue(isa(cal, 'mlfourd.ImagingArrayList'));
-            this.verifyEqual(this.imcps.length, cal.length);
-            this.verifyEqual(this.imcps.get(1), cal.get(1));
-            cal = mlfourd.ImagingArrayList; %#ok<NASGU>
-            this.verifyTrue(~isempty(this.imcps.asList));
         end
         function test_ctor(this) 
             if (mlpipeline.PipelineRegistry.instance.verbose)

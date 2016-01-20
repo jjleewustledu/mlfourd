@@ -1,4 +1,4 @@
-classdef Test_ImagingSeries < mlfourd_unittest.Test_AbstractComponent
+classdef Test_ImagingSeries < mlpatterns_unittest.Test_AbstractComposite
 	%% TEST_IMAGINGSERIES 
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_ImagingSeries)
@@ -14,7 +14,6 @@ classdef Test_ImagingSeries < mlfourd_unittest.Test_AbstractComponent
  	
 
 	properties
- 		registry
  		testObj
  	end
 
@@ -77,7 +76,7 @@ classdef Test_ImagingSeries < mlfourd_unittest.Test_AbstractComponent
             this.assertTrue(       isa(this.imseries, 'mlfourd.ImagingSeries'));
             this.assertEqual(1, length(this.imseries));
             this.assertTrue(       isa(this.imseries{1}, 'mlfourd.INIfTI'));
-            this.assertTrue(   isequal(this.imseries{1}, this.imseries.cachedNext));
+            this.assertTrue(   isequal(this.imseries{1}, this.imseries.cached));
             this.assertEqual(          this.imseries{1}.fqfilename, this.t1_fqfn);
         end     
         function test_makeSimilar(this)
@@ -126,12 +125,11 @@ classdef Test_ImagingSeries < mlfourd_unittest.Test_AbstractComponent
         function test_iterator(this)
             %% TEST_ITERATOR tests reset, hasNext, next
             imseries = this.imseries;
-            imseries = imseries.reset;
+            iter = imseries.createIterator;
             cnt = 0;
-            while (imseries.hasNext)
+            while (iter.hasNext)
                 cnt = cnt + 1;
-                imseries = imseries.iterateNext;
-                this.assertTrue(isa(imseries.cachedNext, 'mlfourd.INIfTI'));
+                this.assertTrue(isa(iter.next, 'mlfourd.INIfTI'));
             end
             this.assertEqual(1, cnt);
         end

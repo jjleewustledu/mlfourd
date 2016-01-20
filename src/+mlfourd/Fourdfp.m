@@ -52,7 +52,7 @@ classdef Fourdfp < mlfourd.NIfTI
     
     methods (Access = 'private')
         function convert2NIfTI(~, fqfn)
-            convertFile(fqfn, mlfourd.NIfTIInterface.FILETYPE);
+            convertFile(fqfn, mlfourd.INIfTI.FILETYPE);
         end
         function convert2Fourdfp(~, fqfn)
             convertFile(fqfn, 'ANALYZE');

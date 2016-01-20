@@ -33,14 +33,6 @@ classdef Test_ImagingComponent < mlfourd_xunit.Test_AbstractComponent
         function test_seriesNumber(this)
             assertEqual(nan, this.imcps.get(2).seriesNumber);
         end
-        function test_asList(this)
-            cal = this.imcps.asList;
-            assertTrue(isa(cal, 'mlfourd.ImagingArrayList'));
-            assertEqual(this.imcps.length, cal.length);
-            assertEqual(this.imcps.get(1), cal.get(1));
-            cal = mlfourd.ImagingArrayList; %#ok<NASGU>
-            assertTrue(~isempty(this.imcps.asList));
-        end
         function test_ctor(this) 
             if (mlpipeline.PipelineRegistry.instance.verbose)
                 disp(this); end

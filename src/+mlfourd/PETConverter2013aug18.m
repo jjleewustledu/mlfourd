@@ -86,7 +86,7 @@ classdef PETConverter2013aug18 < mlfourd.AbstractConverter
                           'PETConverter.convertModalityPath');
                 end
                 dirnii = mlsystem.DirTool(this.unpackPath);
-                if (~lcontains(dirnii.fns, NIfTIInterface.FILETYPE_EXT))
+                if (~lcontains(dirnii.fns, INIfTI.FILETYPE_EXT))
                     this.analyze2nifti(this.unpackPath);
                 end
                 this.cleanAnalyze(this.unpackPath);

@@ -1,9 +1,9 @@
-classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
+classdef ImagingComponent <  mlfourd.AbstractImagingComponent
 	%% IMAGINGCOMPONENT is the root interface for a composite design pattern.
-    %  See also:  mlfourd.NIfTId
     
 	%  Version $Revision: 2642 $ was created $Date: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ by $Author: jjlee $,  
- 	%  last modified $LastChangedDate: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingComponent.m $ 
+ 	%  last modified $LastChangedDate: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ and checked into svn repository 
+    %  $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingComponent.m $ 
  	%  Developed on Matlab 7.13.0.564 (R2011b) 
  	%  $Id: ImagingComponent.m 2642 2013-09-21 22:58:30Z jjlee $ 
  	%  N.B. classdef (Sealed, Hidden, InferiorClasses = {?class1,?class2}, ConstructOnLoad) 
@@ -20,7 +20,7 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
             this = [];
             try
                 if (isa(objs, 'mlfourd.ImagingContext'))
-                    this = objs.imcomponent;
+                    this = objs.composite;
                     return
                 end
                 if (isa(objs, 'mlfourd.INIfTI'))
@@ -52,12 +52,6 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
     end 
     
     methods
-        function this = forceDouble(this)
-            this.cachedNext = this.cachedNext.forceDouble;
-        end
-        function this = forceSingle(this)
-            this.cachedNext = this.cachedNext.forceSingle;
-        end
         function tf   = isequal(this, nii)
             tf = this.isequaln(nii);
         end
@@ -76,8 +70,8 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
             cn.save;
         end
         function cmp  = saveas(this, fn)
-            cmp  = this.cachedNext;
-            cmp  = cmp.saveas(fn);
+            cmp = this.cachedNext;
+            cmp = cmp.saveas(fn);
         end
         function obj  = clone(this)
             obj = mlfourd.ImagingComponent(this);
@@ -94,7 +88,7 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
             %% HORZCAT overloads [], manages ImagingComposites, ImagingSeries
             %  Usage:   imaging_composite = [imaging_component imaging_component2 ...]
             
-            cal = horzcat@mlfourd.AbstractComponent(this, varargin{:});
+            cal = horzcat@mlpatterns.AbstractComposite(this, varargin{:});
             import mlfourd.*;
             if (1 == length(cal))
                 cmp = ImagingSeries(cal); return; end
@@ -111,10 +105,10 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                     this = builtin('subsasgn', this, substr, rhs);
                 case '{}' 
                     locs = substr(1).subs{:};
-                    if (~isa(rhs, 'mlfourd.AbstractComponent'))
+                    if (~isa(rhs, 'mlpatterns.AbstractComposite'))
                         rhs = imcast(rhs, 'mlfourd.NIfTI'); end
                     this.componentCurrent_ = this.componentList_.get(locs);   
-                    if (length(substr) < 2) 
+                    if (length(substr) < 2)
                         this.componentList_.remove(locs);
                         this.componentList_.add(rhs, locs);
                     else
@@ -141,7 +135,7 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                     end
                 case '{}'   
                     this.componentCurrent_ = this.componentList_.get(substr(1).subs{:});
-                    if (length(substr) < 2)                        
+                    if (length(substr) < 2)
                         obj = this.componentCurrent_;
                     else
                         obj = builtin('subsref', this.componentCurrent_, substr(2:end));
@@ -149,20 +143,6 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
                 case '()'
                     error('mlfourd:NotImplemented', 'subsref() not implemented for debugging');
             end
-        end  
-        
-        %% Overloaded methods of mlfourd.AbstractComponent, mlpatterns.ValueList:
-        %  prefer convenience, readability and clarity over safety
-        
-        function this        = add(this, varargin)
-            this = this.componentCast( ...
-                   add@mlfourd.AbstractComponent(this, ...
-                   this.imagingContextCast(varargin{:})));
-        end      
-        function [this,elts] = remove(this, locs)
-            assert(~isempty(this.componentList_));
-            [this,elts] = remove@mlfourd.AbstractComponent(this, locs);
-             this       = this.componentCast(this);
         end
     end 
 
@@ -179,7 +159,7 @@ classdef ImagingComponent <  mlfourd.AbstractNIfTIComponent
             %          Using a cell array vector 'cav' will populate the list with numel(cav) unique elements, 
             %          otherwise the input will be treated as a single element.
                     
-            this = this@mlfourd.AbstractNIfTIComponent(varargin{:});
+            this = this@mlfourd.AbstractImagingComponent(varargin{:});
         end
         function tf   = fieldsequaln(this, imobj)
             try

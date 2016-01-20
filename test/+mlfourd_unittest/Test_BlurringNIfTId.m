@@ -119,14 +119,14 @@ classdef Test_BlurringNIfTId < mlfourd_unittest.Test_NIfTId
 
  	methods (TestClassSetup) 
  		function setupBlurringNIfTId(this) 
-            this.blurringNIfTIdObj_ = mlfourd.BlurringNIfTId(this.t1); 
+            this.blurringNIfTIdObj_ = mlfourd.BlurringNIfTId(this.smallT1_niid); 
  			this.testObj            = this.blurringNIfTIdObj_;
  		end 
     end 
     
     %% PRIVATE
     
-    properties (Access = 'private')
+    properties (Access = private)
         blurringNIfTIdObj_
     end
     

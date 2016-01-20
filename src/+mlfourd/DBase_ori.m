@@ -29,7 +29,7 @@ classdef (Sealed) DBase_ori < mlfourd.AbstractDBase
         timepoint      = 'tp1';
         pv_variant     = '';            % naming convention
         t1_variant     = 't1_rot';      % naming convention
-        img_format     = mlfourd.NIfTIInterface.FILETYPE_EXT;
+        img_format     = mlfourd.INIfTI.FILETYPE_EXT;
         useQBOLD       = false;
         metricThresh   = [eps 1e7]; % refine in MR/PETconverter    
         iscomparator   = false;
@@ -114,7 +114,8 @@ classdef (Sealed) DBase_ori < mlfourd.AbstractDBase
                     pnum = db.vnum2pnum(id);
                     return;
                 catch ME
-                    handerror(ME, ['DBase_ori.ensurePnum:  ensurePnum could not find p-number for identifier ' id]);
+                    handerror(ME, 'mlfourd:unknownError', ...
+                        ['DBase_ori.ensurePnum:  ensurePnum could not find p-number for identifier ' id]);
                 end
             end
             if (strncmpi('p', id, 1) || numel(id) == 3)

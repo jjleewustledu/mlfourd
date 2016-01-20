@@ -45,7 +45,7 @@ classdef Test_ImageBuilder < mlfourd_unittest.Test_mlfourd
 	methods        
  		function this = Test_ImageBuilder(varargin) 
  			this = this@mlfourd_unittest.Test_mlfourd(varargin{:}); 
-            this.modalityPath = this.petPath;
+            this.modalityPath = this.ecatPath;
             this.converter = mlfourd.PETConverter.createFromModalityPath(this.modalityPath);
             this.imbuilder = mlfourd.ImageBuilder.createFromConverter(this.converter);
  		end 

@@ -14,39 +14,49 @@ classdef Test_NIfTId < matlab.unittest.TestCase
  	%  $Id$ 
 
 	properties
-        smallT1_fp = 't1_default_on_ho_meanvol_default'
-        smallT1_mask_fp = 'bt1_default_mask_on_ho_meanvol_default'
+        registry
  		testObj 
  	end 
 
     properties (Dependent)
-        fslPath
+        fslPath 
+        maskT1_fp
+        maskT1_fqfn
+        maskT1_niid
         sessionPath
+        smallT1_fp
         smallT1_fqfn  
-        smallT1_niid   
-        smallT1_mask
+        smallT1_niid  
         smallT1_struct
     end
     
     methods %% GET/SET
         function g = get.fslPath(this)
-            g = fullfile(this.sessionPath, 'fsl', '');
+            g = this.registry.fslPath;
         end
-        function g = get.sessionPath(~)
-            g = fullfile(getenv('MLUNIT_TEST_PATH'), 'cvl', 'np755', 'mm01-020_p7377_2009feb5', '');
+        function g = get.maskT1_fp(this)
+            g = this.registry.maskT1_fp;
+        end
+        function g = get.maskT1_fqfn(this)
+            g = this.registry.maskT1_fqfn;
+        end
+        function g = get.maskT1_niid(this)
+            g = mlfourd.NIfTId(this.maskT1_fqfn);
+        end
+        function g = get.sessionPath(this)
+            g = this.registry.sessionPath;
+        end
+        function g = get.smallT1_fp(this)
+            g = this.registry.smallT1_fp;
         end
         function g = get.smallT1_fqfn(this)
-            g = fullfile(this.fslPath, [this.smallT1_fp '.nii.gz']);
+            g = this.registry.smallT1_fqfn;
         end
         function g = get.smallT1_niid(this)
             g = mlfourd.NIfTId(this.smallT1_fqfn);
         end
-        function g  = get.smallT1_struct(this)
+        function g = get.smallT1_struct(this)
             g = mlniftitools.load_untouch_nii(this.smallT1_fqfn);
-        end
-        function g  = get.smallT1_mask(this)
-            g = mlfourd.NIfTId( ...
-                fullfile(this.fslPath, [this.smallT1_mask_fp '.nii.gz']));
         end
     end
     
@@ -225,14 +235,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         
         %% test methods
         
-        function test_forceDouble(this)
-            forced = this.testObj.forceDouble;
-            this.verifyEqual('double', class(forced.img));
-        end
-        function test_forceSingle(this)
-            forced = this.testObj.forceSingle;
-            this.verifyEqual('single', class(forced.img));
-        end
         function test_isequaln(this)
             o = mlfourd.NIfTId(this.testObj);
             this.verifyTrue(o.isequaln(this.testObj));
@@ -420,9 +422,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_size(this)
             this.verifyEqual(this.testObj.size, size(this.testObj.img));
         end
-        function test_prodSize(this)
-            this.verifyEqual(this.testObj.prodSize, numel(this.testObj.img));
-        end
         function test_sum(this)
             o = sum(this.testObj, 3);
             this.verifyEqual(o.img, sum(this.testObj.img, 3));
@@ -565,24 +564,25 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             [s,r] = mlbash('pwd', 'logger', lg);
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyEqual(lg.contents(180:200), 'mlbashLogger.cmdline:');
-            this.verifyEqual(lg.contents(202:204), 'pwd');
-            this.verifyEqual(lg.contents(207:221), 'mlbashLogger.r:');
-            this.verifyEqual(lg.contents(223:293), this.fslPath);
+            this.verifyEqual(lg.contents(1:45), 'mlpipeline.Logger from jjlee at innominate on');
+            this.verifyEqual(lg.contents(216:218), 'pwd');
+            this.verifyEqual(lg.contents(end-70:end), this.fslPath);
             
             deleteExisting(fqfn);
         end
  	end 
 
  	methods (TestClassSetup) 
- 		function setupNIfTId(this) %#ok<MANU>
+ 		function setupNIfTId(this)
+            this.registry = mlfourd.UnittestRegistry.instance;
+            this.registry.sessionFolder = 'mm01-020_p7377_2009feb5';
+ 			this.testObj_ = this.smallT1_niid; 
  		end 
  	end 
 
  	methods (TestMethodSetup)
 		function setupNIfTIdTest(this)
-            cd(this.fslPath);
- 			this.testObj = this.smallT1_niid; 
+ 			this.testObj = this.testObj_; 
  		end
     end
     
@@ -590,6 +590,10 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function teardownNIfTId(this) %#ok<MANU>
         end
     end 
+    
+    properties (Access = 'private')
+        testObj_
+    end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
  end 

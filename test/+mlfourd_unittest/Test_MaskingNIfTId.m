@@ -1,4 +1,4 @@
-classdef Test_MaskingNIfTId < mlfourd_unittest.Test_NIfTId
+classdef Test_MaskingNIfTId < matlab.unittest.TestCase
 	%% TEST_MASKINGNIFTID  
 
 	%  Usage:  >> results = run(mlfourd_unittest.Test_MaskingNIfTId)
@@ -13,93 +13,201 @@ classdef Test_MaskingNIfTId < mlfourd_unittest.Test_NIfTId
  	%  developed on Matlab 8.4.0.150421 (R2014b) 
  	%  $Id$ 
 
+    properties
+        registry
+        testObj
+        thr300
+        viewManually = false
+    end
+    
+    properties (Dependent)
+        smallT1_fp
+        smallT1_fqfn  
+        smallT1_niid
+    end
+    
+    methods %% GET/SET
+        function g = get.smallT1_fp(this)
+            g = this.registry.smallT1_fp;
+        end
+        function g = get.smallT1_fqfn(this)
+            g = this.registry.smallT1_fqfn;
+        end
+        function g = get.smallT1_niid(this)
+            g = mlfourd.NIfTId(this.smallT1_fqfn);
+        end
+    end
+    
 	methods (Test) 
         function test_load(this)
-            import mlfourd.*;
-            mnii = MaskingNIfTId.load(this.t1_fqfn);
-            component = NIfTId.load(this.t1_fqfn);
-            this.assertTrue(isequal(mnii.component, component));
-            this.assertEqual(mnii.img,        component.img);
-            this.assertEqual(mnii.entropy,    0.120310143405054, 'RelTol', 1e-10);
-            this.assertEqual(mnii.fileprefix, 't1_default');
-            this.assertEqual(mnii.descrip(end-27:end), '; decorated by MaskingNIfTId');
-            this.assertEqual(mnii.pixdim,     component.pixdim);
+            m = this.testObj;
+            this.verifyEqual(m.component,           this.smallT1_niid);
+            this.verifyEqual(m.bitpix,              this.smallT1_niid.bitpix);
+            this.verifyEqual(m.descrip(end-27:end), '; decorated by MaskingNIfTId');
+            this.verifyEqual(m.entropy,             2.075192819312446e-05, 'RelTol', 1e-6);
+            this.verifyEqual(m.fqfilename,          this.smallT1_fqfn);
+            this.verifyEqual(m.hdxml,               this.smallT1_niid.hdxml);
+            this.verifyEqual(m.img,                 this.smallT1_niid.img);
+            this.verifyEqual(m.mmppix,              this.smallT1_niid.mmppix);
         end
-        function test_sumall(this)
-            this.assertEqual(this.testObj.sumall(this.t1), 38708914);
-        end
-        function test_maxall(this)
-            this.assertEqual(this.testObj.maxall(this.t1), 887);
-        end
-        function test_minall(this)
-            this.assertEqual(this.testObj.minall(this.t1), 0);
-        end
-        function test_meanall(this)
-            this.assertEqual(this.testObj.meanall(this.t1), 145.391053185096, 'RelTol', 1e-10);
-        end
-        function test_stdall(this)
-            this.assertEqual(this.testObj.stdall(this.t1), 0.711757577388281, 'RelTol', 1e-10);
-        end
-        
         function test_ctor(this)
-            ctor         = mlfourd.MaskingNIfTId(this.t1);
-            binarized    = mlfourd.MaskingNIfTId(this.t1, 'binarize', true);
-            threshed     = mlfourd.MaskingNIfTId(this.t1, 'thresh', 300);
-            pthreshed    = mlfourd.MaskingNIfTId(this.t1, 'pthresh', 0.05);
-            niftied      = mlfourd.MaskingNIfTId(this.t1, 'niftid_mask', binarized);
-            freesurfered = mlfourd.MaskingNIfTId(this.t1, 'freesurfer_mask', this.t1);
+            import mlfourd.*;
+            c   = this.testObj;
+            t   = MaskingNIfTId(this.smallT1_niid, 'thresh', 300);
+            tp  = MaskingNIfTId(this.smallT1_niid, 'threshp', 87.65);
+            tPZ = MaskingNIfTId(this.smallT1_niid, 'threshPZ', 87.65);            
+            b   = MaskingNIfTId(this.thr300.component, 'binarized', true);
             
-            this.assertEqual(ctor.component, this.t1);              
-            this.assertEqual(binarized.entropy, 0.110414616093301, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(binarized.img))), 262332);
-            this.assertEqual(threshed.entropy, 0.864484339468461, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(threshed.img))), 76344);
-            this.assertEqual(pthreshed.entropy, 0.947745004328329, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(pthreshed.img))), 97509);
-            this.assertEqual(niftied.entropy, 0.110414616093301, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(niftied.img))), 38708914);
-            this.assertEqual(freesurfered.entropy, 0.110414616093301, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(freesurfered.img))), 38708914);
-            this.assertEqual(niftied.img, freesurfered.img);
+            this.verifyEqual(c.component, this.smallT1_niid);
+            if (this.viewManually); c.freeview(this.smallT1_fqfn); end                           
+            
+            this.verifyObj(t, 0.532765334419431, 49403676.2174377, [this.smallT1_fp '_thr300']);  
+            if (this.viewManually); t.freeview; end   
+            
+            this.verifyObj(tp, 0.539339309326423, 50114752.9769897, [this.smallT1_fp '_thrp88']);  
+            if (this.viewManually); tp.freeview; end
+            
+            this.verifyObj(tPZ, 0.539339309326423,  50114752.9769897, [this.smallT1_fp '_thrPZ88']);  
+            if (this.viewManually); tPZ.freeview; end   
+            
+            this.verifyObj(b, 0.532765334419431,  125089, [this.smallT1_fp '_thr300_binarized']);  
+            if (this.viewManually); b.freeview; end      
         end
-        function test_masked(this)
-            obj = this.testObj.masked(this.binaryMask_);
-            this.assertEqual(obj.entropy, 0.583001993712199, 'RelTol', 1e-10);
-            %obj.freeview
+        function test_ctorMasked(this)            
+            this.verifyWarning( ...
+                @() mlfourd.MaskingNIfTId(this.smallT1_niid, 'masked', this.thr300), ...
+                'mlfourd:possibleMaskingError');         
+        end
+        function test_ctorMultiArg(this)
+            import mlfourd.*;
+            b = MaskingNIfTId(this.thr300.component, 'binarize', true);
+            c = MaskingNIfTId(this.smallT1_niid, 'masked', b, 'thresh', 400, 'threshp', 95, 'binarized', true);
+            this.verifyObj(c, 0.286398603290942, 51610, [this.smallT1_fp '_masked_thr400_thrp95_binarized']);             
+            if (this.viewManually); c.freeview; end      
+        end        
+        function test_binarized(this)
+            this.verifyObj(this.thr300.binarized, ...
+                0.532765334419431, 125089, [this.smallT1_fp '_thr300_binarized']);
         end
         function test_count(this)
-            cnt = this.testObj.count;
-            this.assertEqual(cnt, 262332, 'RelTol', 1e-10);
+            this.verifyEqual(this.thr300.count, 125089);
+        end
+        function test_masked(this)
+            this.verifyWarning( ...
+                @() this.testObj.masked(this.thr300), ...
+                'mlfourd:possibleMaskingError');  
+            
+            %this.verifyObj(m, 0.532765334419431, 19999911339.7188, [this.smallT1_fp '_masked']);
+            %if (this.viewManually); m.freeview; end
         end
         function test_thresh(this)
-            obj = this.testObj.thresh(300);
-            this.assertEqual(obj.entropy, 0.864484339468461, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(obj.img))), 76344);
-            %obj.freeview
+            t = this.thr300.thresh(400);
+            this.verifyObj(t, 0.293711917140021, 24252622.0848694, [this.smallT1_fp '_thr300_thr400']);
+            if (this.viewManually); t.freeview; end
         end
-        function test_pthresh(this)
-            obj = this.testObj.pthresh(0.05);
-            this.assertEqual(obj.entropy, 0.947745004328329, 'RelTol', 1e-10);
-            this.assertEqual(sum(sum(sum(obj.img))), 97509);
-            %obj.freeview
+        function test_threshp(this)
+            t = this.testObj.threshp(87.65);
+            this.verifyObj(t, 0.539339309326423, 50114752.9769897, [this.smallT1_fp '_thrp88']);
+            if (this.viewManually); t.freeview; end
+        end
+        function test_threshPZ(this)
+            t = this.testObj.threshPZ(87.65);
+            this.verifyObj(t, 0.539339309326423, 50114752.9769897, [this.smallT1_fp '_thrPZ88']);
+            if (this.viewManually); t.freeview; end
+        end
+        
+        %% test helpers
+        
+        function test_dipiqr(this)
+            this.verifyEqual(dipiqr(this.testObj), 47.4210848808289, 'RelTol', 1e-6);
+        end
+        function test_dipmad(this)
+            this.verifyEqual(dipmad(this.testObj), 102.225440919867, 'RelTol', 1e-6);
+        end
+        function test_dipprctile(this)
+            this.verifyEqual(dipprctile(this.testObj, 25), 2.27962350845337, 'RelTol', 1e-6);
+        end
+        function test_dipquantile(this)
+            this.verifyEqual(dipquantile(this.testObj, 0.25), 2.27962350845337, 'RelTol', 1e-6);
+        end
+        function test_diptrimmean(this)
+            this.verifyEqual(diptrimmean(this.testObj, 25), 34.6399866578098, 'RelTol', 1e-6);
+        end
+        
+        function test_dipisfinite(this)
+            this.verifyEqual(dipisfinite(this.testObj), true);
+        end
+        function test_dipisinf(this)
+            this.verifyEqual(dipisinf(this.testObj), false);
+        end
+        function test_dipisnan(this)
+            this.verifyEqual(dipisnan(this.testObj), false);
+        end
+        function test_dipisreal(this)
+            this.verifyEqual(dipisreal(this.testObj), true);
+        end
+        function test_dipmax(this)
+            this.verifyEqual(dipmax(this.testObj), 821.725952, 'RelTol', 1e-6);
+        end
+        function test_dipmean(this)
+            this.verifyEqual(dipmean(this.testObj), 75.257871, 'RelTol', 1e-6);
+        end
+        function test_dipmedian(this)
+            this.verifyEqual(dipmedian(this.testObj), 7.238812, 'RelTol', 1e-6);
+        end
+        function test_dipmin(this)
+            this.verifyEqual(dipmin(this.testObj), 0.918649315834045, 'RelTol', 1e-5);
+        end
+        function test_dipmode(this)
+            this.verifyEqual(dipmode(this.testObj), 2.279624, 'RelTol', 1e-6);
+        end
+        function test_dipprod(this)
+            this.verifyFalse(isfinite(dipprod(this.testObj))); % numerical overflow
+        end
+        function test_diplogprod(this)
+            this.verifyEqual(diplogprod(this.testObj), 2684005.06836689, 'RelTol', 1e-6);
+        end
+        function test_dipstd(this)
+            this.verifyEqual(dipstd(this.testObj), 135.029968, 'RelTol', 1e-6);
+        end
+        function test_dipsum(this)
+            this.verifyEqual(dipsum(this.testObj), 77680572.851196, 'RelTol', 1e-6);
         end
  	end 
 
  	methods (TestClassSetup) 
  		function setupMaskedNIfTI(this) 
-            this.MaskingNIfTIdObj_ = mlfourd.MaskingNIfTId(this.t1); 
-            this.binaryMask_       = this.MaskingNIfTIdObj_.makeSimilar( ...
-                                     'img', double(this.MaskingNIfTIdObj_.img > 400), ...
-                                     'fileprefix', 'Test_MaskingNIfTId_binaryMask');
- 			this.testObj           = this.MaskingNIfTIdObj_; 
+            import mlfourd.*;
+            this.registry = UnittestRegistry.instance; 
+            this.registry.sessionFolder = 'mm01-020_p7377_2009feb5';
+            this.MaskingNIfTId_ = MaskingNIfTId(this.smallT1_niid); 
+            this.thr300_ = this.MaskingNIfTId_.thresh(300);
+            this.verifyObj(this.thr300_, 0.532765334419431, 49403676.2174377, [this.smallT1_fp '_thr300']);
  		end 
- 	end 
+    end 
+    
+ 	methods (TestMethodSetup)
+		function setupMaskingNIfTIdTest(this)
+            import mlfourd.*;
+ 			this.testObj = this.MaskingNIfTId_;
+            this.thr300  = this.thr300_;
+ 		end
+    end
     
     %% PRIVATE
     
-    properties (Access = 'private')
-        MaskingNIfTIdObj_
-        binaryMask_
+    properties (Access = private)
+        MaskingNIfTId_
+        thr300_
+    end
+    
+    methods (Access = private)
+        function verifyObj(this, obj, e, s, fp)
+            this.assumeInstanceOf(obj, 'mlfourd.INIfTI');
+            this.verifyEqual(obj.entropy,    e, 'RelTol', 1e-6);
+            this.verifyEqual(dipsum(obj),    s, 'RelTol', 1e-4);
+            this.verifyEqual(obj.fileprefix, fp); 
+        end
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

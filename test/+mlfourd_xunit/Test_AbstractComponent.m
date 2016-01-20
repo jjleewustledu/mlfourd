@@ -1,5 +1,5 @@
 classdef Test_AbstractComponent  < mlfourd_xunit.Test_mlfourd
-	%% TEST_NIfTIInterface 
+	%% TEST_ABSTRACTCOMPONENT 
 	%  Usage:  >> runtests tests_dir 
 	%          >> runtests mlfourd.Test_NIfTIInterface % in . or the matlab path
 	%          >> runtests mlfourd.Test_NIfTIInterface:test_nameoffunc
@@ -64,7 +64,7 @@ classdef Test_AbstractComponent  < mlfourd_xunit.Test_mlfourd
                 this.imseries = ImagingSeries.createFromFilename(this.t1_fqfn);
             end
             assertEqual(1, this.imseries.length);
-            assertEqual(1, this.imseries.asList.length);
+            assertEqual(1, this.imseries.length);
         end        
         function tearDown(this)
             tearDown@mlfourd_xunit.Test_mlfourd(this);

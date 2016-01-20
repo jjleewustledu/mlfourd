@@ -1,223 +1,357 @@
-classdef AbstractNIfTIComponent < mlfourd.AbstractComponent & mlio.AbstractComponentIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI 
-	%% ABSTRACTNIFTICOMPONENT is a parallel hierarchy of AbstractNIfTId, intended for composite design patterns. 
-    %  See also:  mlfourd.AbstractNIfTId
-    %  Yet abstract:
-    %      properties:  descrip, img, mmppix, pixdim
-    %      methods:     makeSimilar, clone
+classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+	%% ABSTRACTNIFTICOMPONENT  
+    %  yet abstract:  load, save, saveas
 
-	%  $Revision: 2618 $ 
- 	%  was created $Date: 2013-09-08 23:15:55 -0500 (Sun, 08 Sep 2013) $ 
- 	%  by $Author: jjlee $,  
- 	%  last modified $LastChangedDate: 2013-09-08 23:15:55 -0500 (Sun, 08 Sep 2013) $ 
- 	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/AbstractNIfTIComponent.m $,  
- 	%  developed on Matlab 8.1.0.604 (R2013a) 
- 	%  $Id: AbstractNIfTIComponent.m 2618 2013-09-09 04:15:55Z jjlee $ 
-    
-	properties (Dependent)  
+	%  $Revision$
+ 	%  was created 20-Jan-2016 00:28:23
+ 	%  by jjlee,
+ 	%  last modified $LastChangedDate$
+ 	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
+ 	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
+ 	
+
+	properties (Dependent) 
         
-        % After mlfourd.JimmyShenInterface:  to support struct arguments to NIfTId ctor  
-        img
+        %% mlio.IOInterface
+        
+        filename
+        filepath
+        fileprefix 
+        filesuffix
+        fqfilename
+        fqfileprefix
+        fqfn
+        fqfp        
+        
+        %% JimmyShenInterface
+        
         ext
-        filetype   % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
-        hdr        %     N.B.:  to change the data type, set nii.hdr.dime.datatype,
-                   %            and nii.hdr.dime.bitpix to:
-                   %   0 None                     (Unknown bit per voxel) 
-                   %   1 Binary                         (ubit1, bitpix=1) 
-                   %   2 Unsigned char         (uchar or uint8, bitpix=8) 
-                   %   4 Signed short                  (int16, bitpix=16) 
-                   %   8 Signed integer                (int32, bitpix=32) 
-                   %  16 Floating point    (single or float32, bitpix=32) 
-                   %  32 Complex, 2 float32      (Use float32, bitpix=64) 
-                   %  64 Double precision  (double or float64, bitpix=64) 
-                   % 512 Unsigned short               (uint16, bitpix=16) 
-                   % 768 Unsigned integer             (uint32, bitpix=32) 
-                   %1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
-                   %1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64
+        filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr
+        img
         originalType
         untouch
-        descrip
-        mmppix
-        pixdim
         
-        creationDate 
+        %% INIfTI
+        
+        bitpix
+        creationDate
         datatype
+        descrip
         entropy
         hdxml
         label
         machine
-        negentropy        
+        mmppix
+        negentropy
         orient
-        separator
+        pixdim
         seriesNumber
-        bitpix     
-    end 
-
-    methods %% GET; SET each cachedNext directly
-        function im = get.img(this)
-            im = this.cachedNext.img;
-        end
-        function im = get.ext(this)
-            im = this.cachedNext.ext;
-        end
-        function im = get.filetype(this)
-            im = this.cachedNext.filetype;
-        end
-        function im = get.hdr(this)
-            im = this.cachedNext.hdr;
-        end
-        function im = get.originalType(this)
-            im = this.cachedNext.originalType;
-        end
-        function im = get.untouch(this)
-            im = this.cachedNext.untouch;
-        end
-        function d  = get.descrip(this)
-            d = this.cachedNext.descrip;
-        end
-        function m  = get.mmppix(this)
-            m = this.cachedNext.mmppix;
-        end
-        function p  = get.pixdim(this)
-            p = this.cachedNext.pixdim;
-        end 
         
-        function c  = get.creationDate(this)
-            c = this.cachedNext.creationDate;
+        %% New for AbstractNIfTIComponent
+        
+        separator % for descrip & label properties, not for filesystem behaviors
+        stack
+    end
+    
+    methods %% SET/GET
+        
+        %% mlio.IOInterface
+        
+        function this = set.filename(this, fn)
+            this.innerIO_.filename = fn;
         end
-        function d  = get.datatype(this)
-            d = this.cachedNext.datatype;
+        function fn   = get.filename(this)
+            fn = this.innerIO_.filename;
         end
-        function e  = get.entropy(this)
-            e = this.cachedNext.entropy;
+        function this = set.filepath(this, pth)
+            this.innerIO_.filepath = pth;
         end
-        function x  = get.hdxml(this)
-            x = this.cachedNext.hdxml;
+        function pth  = get.filepath(this)
+            pth = this.innerIO_.filepath;
         end
-        function l  = get.label(this)
-            l = this.cachedNext.label;
-        end   
-        function m  = get.machine(this)
-            m = this.cachedNext.machine;
+        function this = set.fileprefix(this, fp)
+            this.innerIO_.fileprefix = fp;
+        end
+        function fp   = get.fileprefix(this)
+            fp = this.innerIO_.fileprefix;
+        end
+        function this = set.filesuffix(this, fs)
+            this.innerIO_.filesuffix = fs;
+        end
+        function fs   = get.filesuffix(this)
+            fs = this.innerIO_.filesuffix;
+        end        
+        function this = set.fqfilename(this, fqfn)
+            this.innerIO_.fqfilename = fqfn;
+        end
+        function fqfn = get.fqfilename(this)
+            fqfn = this.innerIO_.fqfilename;
+        end
+        function this = set.fqfileprefix(this, fqfp)
+            this.innerIO_.fqfileprefix = fqfp;
+        end
+        function fqfp = get.fqfileprefix(this)
+            fqfp = this.innerIO_.fqfileprefix;
+        end
+        function this = set.fqfn(this, f)
+            this.fqfilename = f;
+        end
+        function f    = get.fqfn(this)
+            f = this.fqfilename;
+        end
+        function this = set.fqfp(this, f)
+            this.fqfileprefix = f;
+        end
+        function f    = get.fqfp(this)
+            f = this.fqfileprefix;
+        end  
+        
+        %% JimmyShenInterface
+        
+        function e    = get.ext(this)
+            e = this.innerJimmyShen_.ext;
+        end
+        function f    = get.filetype(this)
+            f = this.innerJimmyShen_.filetype;
+        end
+        function this = set.filetype(this, ft)
+            this.innerJimmyShen_.filetype = ft;
+        end
+        function h    = get.hdr(this)
+            h = this.innerJimmyShen_.hdr;
+        end 
+        function im   = get.img(this)
+            im = this.innerJimmyShen_.img;
+        end        
+        function this = set.img(this, im)
+            %% SET.IMG sets new image state. 
+            %  @param im is numeric; it updates datatype, bitpix, dim
+            
+            this.innerJimmyShen_.img = im;
+        end
+        function o    = get.originalType(this)
+            o = this.originalType_;
+        end
+        function u    = get.untouch(this)
+            u = this.innerJimmyShen_.untouch;
+        end
+        
+        %% INIfTI  
+        
+        function bp   = get.bitpix(this) 
+            %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
+            
+            bp = this.innerNIfTI_.bitpix;
+        end
+        function this = set.bitpix(this, bp) 
+            this.innerNIfTI_.bitpix = bp;
+        end
+        function cdat = get.creationDate(this)
+            cdat = this.innerNIfTI_.creationDate;
+        end
+        function dt   = get.datatype(this)
+            %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
+            
+            dt = this.innerNIfTI_.datatype;
         end    
-        function e  = get.negentropy(this)
-            e = this.cachedNext.negentropy;
+        function this = set.datatype(this, dt)
+            this.innerNIfTI_.datatype = dt;
+        end
+        function d    = get.descrip(this)
+            d = this.innerNIfTI_.descrip;
+        end        
+        function this = set.descrip(this, s)
+            %% SET.DESCRIP
+            %  do not add separators such as ";" or ","
+            
+            this.innerNIfTI_.descrip = s;
+        end   
+        function E    = get.entropy(this)
+            E = this.innerNIfTI_.entropy;
+        end
+        function x    = get.hdxml(this)
+            %% GET.HDXML writes the xml file if this objects exists on disk
+            
+            x = this.innerNIfTI_.hdxml;
         end 
-        function o  = get.orient(this)
-            o = this.cachedNext.orient;
+        function d    = get.label(this)
+            d = this.innerNIfTI_.label;
+        end     
+        function this = set.label(this, s)
+            this.innerNIfTI_.label = s;
         end
-        function o  = get.separator(this)
-            o = this.cachedNext.separator;
+        function ma   = get.machine(this)
+            ma = this.innerNIfTI_.machine;
         end
-        function num = get.seriesNumber(this)
-            num = this.cachedNext.seriesNumber;
+        function mpp  = get.mmppix(this)
+            mpp = this.innerNIfTI_.mmppix;
+        end        
+        function this = set.mmppix(this, mpp)
+            %% SET.MMPPIX sets voxel-time dimensions in mm, s.
+            
+            this.innerNIfTI_.mmppix = mpp;
+        end  
+        function E    = get.negentropy(this)
+            E = this.innerNIfTI_.negentropy;
         end
-        function b  = get.bitpix(this)
-            b = this.cachedNext.bitpix;
-        end 
+        function o    = get.orient(this)
+            o = this.innerNIfTI_.orient;
+        end
+        function pd   = get.pixdim(this)
+            pd = this.innerNIfTI_.pixdim;
+        end        
+        function this = set.pixdim(this, pd)
+            %% SET.PIXDIM sets voxel-time dimensions in mm, s.
+            
+            this.innerNIfTI_.pixdim = pd;
+        end  
+        function num  = get.seriesNumber(this)
+            num = this.innerNIfTI_.seriesNumber;
+        end
+        
+        %% New for AbstractNIfTIComponent
+        
+        function s    = get.separator(this)
+            s = this.innerNIfTI_.separator;
+        end
+        function this = set.separator(this, s)
+            this.innerNIfTI_.separator = s;
+        end
+        function s    = get.stack(this)
+            %% GET.STACK
+            %  See also:  doc('dbstack')
+            
+            s = this.innerNIfTI_.stack;
+        end
     end
     
 	methods
-        function ch  = char(this)
-            ch = this.cachedNext.char;
-        end
-        function d   = double(this)
-            d = this.cachedNext.double;
-        end
-        function d   = duration(this)
-            d = this.cachedNext.duration;
-        end
-        function o   = ones(this, varargin)
-            o = this.cachedNext.ones(varargin{:});
-        end
-        function rnk = rank(this, varargin)
-             rnk = this.cachedNext.rank(varargin{:});
-        end
-        function nii = scrubNanInf(this)
-            nii = this.cachedNext.scrubNanInf;
-        end
-        function s   = single(this)
-            s = this.cachedNext.single;
-        end
-        function sz  = size(this, varargin)
-            sz = this.cachedNext.size(varargin{:});
-        end
-        function ps  = prodSize(this)
-            ps = this.cachedNext.prodSize;
-        end
-        function ps  = zeros(this)
-            ps = this.cachedNext.zeros;
-        end
-        function M   = prod(this)
-            M = this.cachedNext.prod;
-        end
-        function M   = sum(this)
-            M = this.cachedNext.sum;
-        end
         
-        function this = prepend_fileprefix(this, s)
-            this = this.cachedNext.prepend_fileprefix(s);
-        end
-        function this = append_fileprefix(this, s)
-            this = this.cachedNext.append_fileprefix(s);
-        end
-        function this = prepend_descrip(this, s)
-            this = this.cachedNext.prepend_descrip(s);
-        end
-        function this = append_descrip(this, s)
-            this = this.cachedNext.append_descrip(s);
-        end
+        %% mlio.IOInterface
         
-        function        freeview(~)
-            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.freeview');
+        function this = saveas(this, fqfn)
+            this.fqfilename = fqfn;
+            this.save;
+        end
+        function this = saveasx(this, fqfn, x)
+            this.fqfileprefix = fqfn(1:strfind(fqfn, x)-1);
+            this.filesuffix = x;
+            this.save;
         end        
-        function        fslview(~)
-            warning('mlfourd:notImplemented', 'AbstractNIfTIComponent.fslview');
+        
+        %% INIfTI  
+        
+        function c = char(this)
+            c = this.innerNIfTI_.char;
         end
-        function im   = mlimage(this)
-            im = this.cachedNext.mlimage;
+        function this = append_descrip(this, varargin)
+            this = this.innerNIfTI_.append_descrip(varargin{:});
         end
-        function himg = imshow(this, slice, varargin)
-            himg = this.cachedNext.imshow(slice, varargin{:});
+        function this = prepend_descrip(this, varargin)
+            this = this.innerNIfTI_.prepend_descrip(varargin{:});
         end
-        function himg = imtool(this, slice, varargin)
-            himg = this.cachedNext.imtool(slice, varargin{:});
+        function d = double(this)
+            d = this.innerNIfTI_.double;
         end
-        function this = imclose(this, varargin)
-            this = this.cachedNext.imclose(varargin{:});
+        function d = duration(this)
+            d = this.innerNIfTI_.duration;
         end
-        function this = imdilate(this, varargin)
-            this = this.cachedNext.imdilate(varargin{:});
+        function this = append_fileprefix(this, varargin)
+            this = this.innerNIfTI_.append_fileprefix(varargin{:});
         end
-        function this = imerode(this, varargin)
-            this = this.cachedNext.imerode(varargin{:});
+        function this = prepend_fileprefix(this, varargin)
+            this = this.innerNIfTI_.prepend_fileprefix(varargin{:});
         end
-        function this = imopen(this, varargin)
-            this = this.cachedNext.imopen(varargin{:});
+        function f = fov(this)
+            f = this.innerNIfTI_.fov;
         end
-        function h    = montage(this, varargin)
-            h = this.cachedNext.montage(varargin{:});
+        function m = matrixsize(this)
+            m = this.innerNIfTI_.matrixsize;
         end
-        function m3d  = matrixsize(this)
-            m3d = this.cachedNext.matrixsize;
+        function o = ones(this)
+            o = this.innerNIfTI_.ones;
         end
-        function f3d  = fov(this)
-            f3d = this.cachedNext.fov;
+        function r = rank(this)
+            r = this.innerNIfTI_.rank;
         end
-    end 
-
-    %% PROTECTED
-    
-    properties (Access = 'protected')
-        componentCreationDate_
+        function this = scrubNanInf(this)
+            this = this.innerNIfTI_.scrubNanInf;
+        end
+        function s = single(this)
+            s = this.innerNIfTI_.single;
+        end
+        function z = zeros(this)
+            z = this.innerNIfTI_.zeros;
+        end
+        
+        %% New for AbstractNIfTIComponent
+        
+        function e = fslentropy(this)
+            e = this.innerNIfTI_.fslentropy;
+        end
+        function E = fslEntropy(this)
+            E = this.innerNIfTI_.fslEntropy;
+        end
+        function freeview(this, varargin)
+            this.innerNIfTI_.freeview(varargin{:});
+        end
+        function fslview(this, varargin)
+            this.innerNIfTI_.fslview(varargin{:});
+        end
+        
+        %% mlpatterns.Composite
+        
+        function this = add(this, varargin)
+            this = this.innerNIfTI_.add(varargin{:});
+        end        
+        function iter = createIterator(this)
+            iter = this.innerNIfTI_.createIterator;
+        end
+        function        disp(this)
+            this.innerNIfTI_.disp;
+        end
+        function idx  = find(this, obj)
+            idx = this.innerNIfTI_.find(obj);
+        end
+        function obj  = get(this, idx)
+            obj = this.innerNIfTI_.get(idx);
+        end
+        function tf   = isempty(this)
+            tf = this.innerNIfTI_.isempty;
+        end
+        function len  = length(this)
+            len = this.innerNIfTI_.length;
+        end
+        function        rm(this, idx)
+            this.innerNIfTI_.rm(idx);
+        end
+        function s    = size(this)   
+            s = this.innerNIfTI_.size;
+        end     
     end
     
-    methods (Access = 'protected')
-        function this = AbstractNIfTIComponent(varargin)
-            this = this@mlfourd.AbstractComponent(varargin{:});
-            this.componentCreationDate_ = datestr(now);
-        end % ctor
+    %% PROTECTED
+    
+    methods (Access = protected)
+ 		function this = AbstractNIfTIComponent(innerIO, innerJS, innerNI)
+            assert(isa(innerIO, 'mlio.IOInterface'));
+            assert(isa(innerIO, 'mlfourd.JimmyShenInterface') && ...
+                   isa(innerIO, 'mlfourd.INIfTI'));
+            this.innerIO_ = innerIO;
+            this.innerJimmyShen_ = innerJS;
+            this.innerNIfTI_ = innerNI;
+ 		end
     end 
     
-	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
-end
+    %% PRIVATE
+    
+    properties (Access = private)
+        innerIO_
+        innerJimmyShen_
+        innerNIfTI_
+    end
+
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
+ end
 

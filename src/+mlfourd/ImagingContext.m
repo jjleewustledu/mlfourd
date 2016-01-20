@@ -1,9 +1,11 @@
 classdef ImagingContext < handle
-	%% IMAGINGCONTEXT provides the context for a state design pattern, 
-    %  wrapping filesystem I/O and NIfTIInterfaces.   Cf. properties mgh, nifti, imcomponent, stateTypeClass
+	%% IMAGINGCONTEXT provides the context for a state design pattern for imaging data.  It also 
+    %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
+    %  is to improve the fluent expressivity of behaviors involving imaging data.
     %  See also:  mlfourd.ImagingState, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState,
-    %             mlfourd.ImagingComponentState, mlfourd.ImagingLocation, mlpatterns.State
-
+    %             mlfourd.ImagingComponentState, mlfourd.FilenameState, mlpatterns.State, 
+    %             mlio.IOInterface, mlfourd.DoubleState.
+    
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
  	%  by $Author: jjlee $,  
@@ -11,7 +13,6 @@ classdef ImagingContext < handle
  	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext.m $,  
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id: ImagingContext.m 2627 2013-09-16 06:18:10Z jjlee $ 
-
     
 	properties (Dependent)
         filename
@@ -22,11 +23,11 @@ classdef ImagingContext < handle
         fqfileprefix
         fqfn
         fqfp
-        fqxfm
         
+        composite
+        mgh
         nifti
-        imcomponent     
-        niftid   
+        niftid        
         stateTypeclass
     end
     
@@ -55,175 +56,243 @@ classdef ImagingContext < handle
         function f = get.fqfp(this)
             f = this.state_.fqfp;
         end
-        function f = get.fqxfm(this)
-            f = [this.fqfileprefix mlfsl.FlirtVisitor.XFM_SUFFIX];
+        
+        function f = get.composite(this)
+            f = this.state_.composite;
         end
-        function f = get.niftid(this)
-            f = this.state_.niftid;
+        function f = get.mgh(this)
+            f = this.state_.mgh;
         end
         function f = get.nifti(this)
             f = this.state_.nifti;
         end
-        function f = get.imcomponent(this)
-            f = this.state_.imcomponent;
-        end
-        function set.filename(this, f)
-            assert(ischar(f));
-            this.state_.filename = f;
-        end
-        function set.filepath(this, f)
-            assert(lexist(f, 'dir'));
-            this.state_.filepath = f;
-        end        
-        function set.fileprefix(this, f)
-            assert(ischar(f));
-            this.state_.fileprefix = f;
-        end        
-        function set.filesuffix(this, f)
-            assert(ischar(f));
-            this.state_.filesuffix = f;
-        end        
-        function set.fqfilename(this, f)
-            assert(lexist(myfileparts(f), 'dir'));
-            this.state_.fqfilename = f;
-        end        
-        function set.fqfileprefix(this, f)
-            assert(lexist(myfileparts(f), 'dir'));
-            this.state_.fqfileprefix = f;
-        end        
-        function set.fqfn(this, f)
-            assert(lexist(myfileparts(f), 'dir'));
-            this.state_.fqfn = f;
-        end        
-        function set.fqfp(this, f)
-            assert(lexist(myfileparts(f), 'dir'));
-            this.state_.fqfp = f;
-        end
-        function set.fqxfm(this, f)
-            [pth,fp] = filepartsx(f, mlfsl.FlirtVisitor.XFM_SUFFIX);
-            assert(lexist(pth, 'dir'));
-            this.state_.fqfileprefix = fullfile(pth, fp);
-        end
-        function set.niftid(this, f)
-            assert(isa(f, 'mlfourd.INIfTI'));
-            this.state_.niftid = f;
-        end   
-        function set.nifti(this, f)
-            assert(isa(f, 'mlfourd.NIfTIInterface'));
-            this.state_.nifti = f;
-        end        
-        function set.imcomponent(this, f)
-            assert(isa(f, 'mlfourd.ImagingComponent'));
-            this.state_.imcomponent = f;
+        function f = get.niftid(this)
+            f = this.state_.niftid;
         end
         
         function c = get.stateTypeclass(this)
             c = class(this.state_);
+        end       
+        
+        function set.filename(this, f)
+            this.state_.filename = f;
+        end
+        function set.filepath(this, f)
+            this.state_.filepath = f;
         end        
+        function set.fileprefix(this, f)
+            this.state_.fileprefix = f;
+        end        
+        function set.filesuffix(this, f)
+            this.state_.filesuffix = f;
+        end        
+        function set.fqfilename(this, f)
+            this.state_.fqfilename = f;
+        end        
+        function set.fqfileprefix(this, f)
+            this.state_.fqfileprefix = f;
+        end        
+        function set.fqfn(this, f)
+            this.state_.fqfn = f;
+        end        
+        function set.fqfp(this, f)
+            this.state_.fqfp = f;
+        end
     end 
-
+    
     methods (Static)
         function this = load(obj)
-            %% LOAD
-            %  Usage:  this = ImagingContext.load(object)
-            %                                     ^ fileprefix, filename, NIfTI, NIfTId, MGH, ImagingComponent
+            %% LOAD:  cf. ctor
             
             this = mlfourd.ImagingContext(obj);
         end
     end
+
+    methods
+        function a = atlas(this, varargin)
+            %% ATLAS
+            %  @param imaging_objects[, ...] have typeclasses supported by ImagingContext.  All alignment
+            %  operations between imaging objects must have been completed.
+            %  @return a is the voxel-by-voxel weighted sum of this image and any submitted images; 
+            %  each image is weighted by its median value.
+            %  @throws MATLAB:dimagree, MATLAB:UndefinedFunction
+            
+            a = this.state_.atlas(varargin{:});
+        end
+        function     add(this, varargin)
+            %% ADD
+            %  @param varargin are objects supported by ImagingComponent.add
+            %  which will be added to the imaging state.
+            
+            this.state_.add(varargin{:});
+        end
+        function     addLog(this, lg)
+        end
+        function b = binarized(this)
+        end
+        function     blurred(this, varargin)
+            ip = inputParser;
+            addOptional(ip, 'blur', mlpet.PETRegistry.instance.petPointSpread, @isnumeric);
+            parse(ip, varargin{:});
+            
+            niid = mlfourd.BlurringNIfTId(this.niftid_);
+            niid = niid.blurred(ip.Results.blur);
+            this.niftid_ = niid.component;
+        end 
+        function f = char(this)
+            f = char(this.state_);
+        end
+        function     disp(this)
+            disp(this.state_);
+        end
+        function d = double(this)
+            d = double(this.state_);
+        end
+        function e = ecatExactHRPlus(this)
+        end
+        function g = get(this, varargin)
+            %% GET
+            %  @param varargin are integer locations corresponding to the imaging state
+            %  @return g is an element of the imaging state
+            
+            g = this.state_.get(varargin{:});
+        end
+        function l = length(this)
+            %% LENGTH
+            %  @return l is the number of elements of the imaging state
+            l = this.state_.length;
+        end
+        function m = masked(this, mask)
+        end
+        function     remove(this, varargin)
+            %% REMOVE
+            %  @param varargin are integer locations corresponding to the imaging state
+            %  which will be removed .
+            
+            this.state_.remove(varargin{:});
+        end
+        function     save(this)
+            %% SAVE saves the imaging state as this.fqfilename on the filesystem.
+            
+            this.state_.save;
+        end
+        function     saveas(this, filename)
+            %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
+            %  @param filename is a string that is compatible with requirements of the filesystem;
+            %  it replaces internal filename & filesystem information.
+
+            this.state_ = this.state_.saveas(filename);
+        end
+        function     summed(this, varargin)
+            %% SUMMED returns the voxel-by-voxel sum of imaging state with 
+            %  all passed images.
+            %  Usage:  voxelwise_summed_image = this.summed(image2[,image3,...]);
+            
+            img  = this.niftid_.img;
+            fp   = this.niftid_.fileprefix;
+            for n = 1:length(varargin)
+                ic  = mlfourd.ImagingContext(varargin{n});
+                img = img + ic.niftid.img;
+                fp  = [fp '+' ic.fileprefix];
+            end
+            this.niftid_.img = img;
+            this.niftid_.fileprefix = fp;
+            [~,d] = strtok(fp, '+');
+            this.niftid_ = this.niftid_.append_descrip(d);
+        end
+        function t = thresh(this)
+        end
+        function p = threshp(this)
+        end
+        function     timeSummed(this)
+            niid = mlfourd.DynamicNIfTId(this.niftid_);
+            niid = niid.timeSummed;
+            this.niftid_ = niid.component;
+        end
+        function u = uthresh(this)
+        end
+        function p = uthreshp(this)
+        end
+        function     volumeSummed(this, varargin)
+            error('mlfourd:notImplemented', 'ImagingState.volumeSummed');
+        end
+        function     view(this)
+            %% VIEW
+            %  @return new window with a view of the imaging state
+            this.state_.view;
+        end
+        
+        %% CTOR
+        
+        function this = ImagingContext(obj)
+            %% IMAGINGCONTEXT 
+            %  @param obj is imaging data:  filename, INIfTI, MGH, ImagingComponent, double, [] or 
+            %  ImagingContext for copy-ctor.  
+            %  @return initializes context for a state design pattern.  
+            %  @throws mlfourd:switchCaseError, mlfourd:unsupportedTypeclass.
+            
+            import mlfourd.*;
+            if (nargin == 1 && isa(obj, 'mlfourd.ImagingContext'))
+                switch (obj.stateTypeclass)
+                    case 'mlpatterns.Composite'
+                        this = ImagingContext(obj.composite);
+                    case 'mlfourd.NIfTIdState'
+                        this = ImagingContext(obj.niftid);
+                    case 'mlfourd.NIfTIState'
+                        this = ImagingContext(obj.nifti);
+                    case 'mlfourd.MGHState'
+                        this = ImagingContext(obj.mgh);
+                    case 'mlfourd.FilenameState'
+                        this = ImagingContext(obj.fqfilename);
+                    case 'mlfourd.DoubleState'
+                        this = ImagingContext(obj.double);
+                    otherwise
+                        error('mlfourd:switchCaseError', ...
+                              'ImagingContext.ctor.obj.stateTypeclass -> %s', obj.stateTypeclass);
+                end
+                return
+            end
+            
+            if (isa(obj, 'mlpatterns.Composite'))
+                return
+            end            
+            if (isa(obj, 'mlfourd.INIfTI'))
+                obj = mlfourd.ImagingState.dedecorateNiftid(obj);
+                this.state_ = NIfTIdState(obj, this);
+                return
+            end
+            if (ischar(obj)) % filename need not yet exist 
+                this.state_ = FilenameState(obj, this);
+                return
+            end
+            if (isnumeric(obj)) % includes []
+                this.state_ = DoubleState(obj, this);
+                return
+            end
+            error('mlfourd:unsupportedTypeclass', ...
+                  'class(ctor.obj)->%s\nchar(ctor.obj)->%s', class(obj), char(obj));
+        end
+        function c = clone(this)
+            %% CLONE simplifies calling the copy constructor.
+            %  @return deep copy on new handle
+            
+            c = mlfourd.ImagingContext(this);
+        end
+    end
     
-	methods 
-        function     changeState(this, s)
-            %% CHANGESTATE is intended for use by ImagingState subclasses or debuggers;
-            %  it cannot be made protected because ImagingContext is not part of the ImagingState class hierarchy.
-            %  Usage:  this.changeState(imagingStateObject)
+	methods (Hidden)     
+        function changeState(this, s)
+            %% CHANGESTATE
+            %  @param s must be an ImagingState; it replaces the current internal state.
             
             assert(isa(s, 'mlfourd.ImagingState'));
             this.state_ = s;
         end
-        function f = char(this)
-            f = this.fqfilename;
-        end
-        function c = clone(this)
-            %% CLONE returns with state typeclass of mlfourd.ImagingLocation.
-            %  Usage:  a_clone = this.clone;
-            
-            import mlfourd.*;
-            c = ImagingContext([]);
-            c.state_ = ImagingLocation.load(this.fqfilename, c);
-        end
-        function     forceState(this, stype)
-            %% FORCESTATE
-            %  Usage:  this.forceState(name_of_stateTypeclass)
-            %                          ^ subclasses of ImagingState, as string
-            
-            assert(ischar(stype));
-            stype = lower(stype);
-            import mlfourd.*;
-            if (lstrfind(stype, 'location'))
-                this.state_ = ImagingLocation.load(this.fqfilename, this);
-                return
-            end
-            if (lstrfind(stype, 'niftid'))
-                this.state_ = NIfTIdState.load(this.niftid, this);
-                return
-            end
-            if (lstrfind(stype, 'nifti'))
-                this.state_ = NIfTIState.load(this.nifti, this);
-                return
-            end
-            if (lstrfind(stype, 'component'))
-                this.state_ = ImagingComponentState.load(this.imcomponent, this);
-                return
-            end
-        end
-        function     save(this)
-            this.state_.save;
-        end
-        function     saveas(this,fileprefix)
-            this.state_.saveas(fileprefix);
-        end
-        
-        function this = ImagingContext(obj)
-            %% IMAGINGCONTEXT.  The copy-ctor returns with state typeclass of mlfourd.ImagingLocation.
-            %  Usage:  this = ImagingContext(object)
-            %                                ^ fileprefix, filename, NIfTI, NIfTId, MGH, ImagingComponent,
-            %                                  ImagingContext
-            
-            import mlfourd.*;
-            if (ischar(obj))
-                this.state_ = ImagingLocation.load(obj, this);
-                return
-            end
-            if (isa(obj, 'mlfourd.ImagingContext'))
-                if (~lexist(obj.fqfilename, 'file'))
-                    obj.save; end
-                this.state_ = ImagingLocation.load(obj.fqfilename, this);
-                return
-            end
-            if (isa(obj, 'mlfourd.ImagingComponent'))
-                this.state_ = ImagingComponentState.load(obj, this);
-                return
-            end
-            if (isa(obj, 'mlfourd.NIfTIInterface'))
-                this.state_ = NIfTIState.load(obj, this); 
-                return
-            end
-            if (isa(obj, 'mlfourd.INIfTI'))
-                this.state_ = NIfTIdState.load(obj, this); 
-                return
-            end
-            if (isempty(obj))
-                this.state_ = [];
-                return
-            end
-            error('mlfourd:unsupportedTypeclass', 'class(ImagingContext.ctor.obj)->%s', class(obj));
-        end
-    end
+    end    
     
     %% PROTECTED
     
-    properties (Access = 'protected')
+    properties (Access = protected)
         state_
     end
     

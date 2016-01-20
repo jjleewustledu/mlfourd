@@ -1,4 +1,4 @@
-classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
+classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% DYNAMICNIFTID   
 
 	%  $Revision$ 
@@ -25,26 +25,18 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
         end
     end
 
-    methods (Static)        
+    methods (Static)
         function this = load(varargin)
-            %% LOAD 
-            %  Usage:  this = DynamicNIfTId.load(filename[, description]); % args passed to NIfTId
-            
             import mlfourd.*;            
             this = DynamicNIfTId(NIfTId.load(varargin{:}));
         end
     end
     
-	methods 		  
+	methods
  		function this = DynamicNIfTId(cmp, varargin)
             %% DYNAMICNIFTID 
-            %  Usage:  this = DynamicNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
-            %
-            %          options:  'blur'            numeric 3-vector
-            %                    'nifti_mask'      INIfTI
-            %                    'freesurfer_mask' INIfTI, to be binarized internally
             
-            this = this@mlfourd.NIfTIdecorator3(cmp);
+            this = this@mlfourd.NIfTIdecoratorProperties(cmp);
             this = this.append_descrip('decorated by DynamicNIfTId');
             
             p = inputParser;
@@ -94,7 +86,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
             
             mcffn = sprintf('%s_mcf%s', this.fqfileprefix, this.FILETYPE_EXT);
             if (isempty(ip.Results.reffile))
-                system(sprintf('mcflirt -in %s -refvol %i  -meanvol -stats -mats -plots -report', this.fqfn, this.referenceVolume));
+                system(sprintf('mcflirt -in %s -refvol %i  -meanvol -stats -mats -plots -report', this.fqfn, this.referenceVolumeIndex));
             else
                 assert(lexist(ip.Results.reffile, 'file'));
                 system(sprintf('mcflirt -in %s -reffile %i -meanvol -stats -mats -plots -report', this.fqfn, ip.Results.reffile));
@@ -117,7 +109,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
                 rmdir(matfn, 's');
             end
             if (isempty(ip.Results.reffile))
-                system(sprintf('mcflirt -in %s -refvol %i  -cost normcorr -meanvol -stats -mats -plots -report', working.fqfn, working.referenceVolume));
+                system(sprintf('mcflirt -in %s -refvol %i  -cost normcorr -meanvol -stats -mats -plots -report', working.fqfn, working.referenceVolumeIndex));
                 system(sprintf('applyxfm4D %s %s %s %s -fourdigit', this.fqfn, this.fqfn, mcffn, matfn));
             else                
                 assert(lexist(ip.Results.reffile, 'file'));
@@ -126,10 +118,10 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
             end
             this = this.load(mcffn);
         end
-        function this = revertFrames(this, origNiid, frames)
-            %% REVERTFRAMES reverts time-frames of this DynamicNIfTId object using the time-indices of
+        function this = withRevertedFrames(this, origNiid, frames)
+            %% REVERTEDFRAMES reverts time-frames of this DynamicNIfTId object using the time-indices of
             %  original_NIfTId_object as enumerated in frames_object.
-            %  Usage:  this = this.revertFrames(original_NIfTId_object, frames_vector)
+            %  Usage:  this = this.withRevertedFrames(original_NIfTId_object, frames_vector)
             
             assert(isa(origNiid, 'mlfourd.INIfTI'));
             assert(isnumeric(frames));
@@ -140,7 +132,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
             end            
             this = this.makeSimilar( ...
                    'img', revImg, ...
-                   'descrip', sprintf('DynamicNIfTI.revertFrames(%s)', mat2str(frames)), ...
+                   'descrip', sprintf('DynamicNIfTI.withRevertedFrames(%s)', mat2str(frames)), ...
                    'fileprefix', sprintf('_revf%ito%i', frames(1), frames(end)));
         end
         function this = masked(this, niidMask)
@@ -153,8 +145,8 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
             sz = this.size;
             assert(all(sz(1:3) == niidMask.size));
             import mlfourd.*;
-            mx = MaskingNIfTId.maxall(niidMask);
-            mn = MaskingNIfTId.minall(niidMask);
+            mx = dipmax(niidMask);
+            mn = dipmin(niidMask);
             if (mx > 1 || mn < 0)
                 warning('mlfourd:possibleNumericalInconsistency', ...
                         'DynamicNIfTI.masked received a mask object with min->%g, max->%g', mn, mx); 
@@ -167,9 +159,9 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
             this = this.makeSimilar( ...
                    'img', maskedImg, ...
                    'descrip', sprintf('DynamicNIfTI.masked(%s)', niidMask.fileprefix), ...
-                   'fileprefix', '_masked');
+                   'fileprefix', [this.fileprefix '_masked']);
         end
-        function tidx = referenceVolume(this)
+        function tidx = referenceVolumeIndex(this)
             tcurve = this.clone;
             tcurve = tcurve.volumeSummed;
             [~,tidx] = max(squeeze(tcurve.img));
@@ -178,7 +170,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecorator3
 
     %% PRIVATE
     
-    properties (Access = 'private')
+    properties (Access = private)
         blur_
         mask_
     end

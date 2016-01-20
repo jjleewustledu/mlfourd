@@ -54,8 +54,8 @@ classdef Test_ImagingContext < MyTestCase
             assertEqual('mlfourd.NIfTIState', ic.stateTypeclass);
             ic.forceState('MGH');
             assertEqual('mlfourd.MGHState', ic.stateTypeclass);
-            ic.forceState('mlfourd.ImagingLocation');
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            ic.forceState('mlfourd.FilenameState');
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
         end
         function test_changeState(this)
             import mlfourd.*;
@@ -65,14 +65,14 @@ classdef Test_ImagingContext < MyTestCase
             assertEqual('mlfourd.NIfTIState', ic.stateTypeclass);
             ic.changeState(MGHState.load(this.mgh, ic));  
             assertEqual('mlfourd.MGHState', ic.stateTypeclass);
-            ic.changeState(ImagingLocation.load(this.t1_fqfn, ic));  
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            ic.changeState(FilenameState.load(this.t1_fqfn, ic));  
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
         end
         
  		function test_assignImcomponent(this)
             import mlfourd.*;
             ic = ImagingContext.load(this.t2_fqfn);
-            ic.imcomponent = this.imcps;
+            ic.composite = this.imcps;
             assertEqual('mlfourd.ImagingComponentState', ic.stateTypeclass);
             assertEqual(this.t1_fqfn, ic.fqfilename);
         end 
@@ -94,7 +94,7 @@ classdef Test_ImagingContext < MyTestCase
             import mlfourd.*;
             ic = ImagingContext.load(this.t2_fqfn);
             ic.filename = this.testFslFile;
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
             assertEqual(this.testFslFile, ic.fqfilename);
         end 
                 
@@ -104,18 +104,18 @@ classdef Test_ImagingContext < MyTestCase
             ic.nifti;
             assertEqual('mlfourd.NIfTIState', ic.stateTypeclass);
         end 
- 		function test_nift2imcomponent(this)
+ 		function test_nift2composite(this)
             import mlfourd.*;
             ic = ImagingContext.load(this.nii);
-            ic.imcomponent;
+            ic.composite;
             assertEqual('mlfourd.ImagingComponentState', ic.stateTypeclass);
             ic.nifti;
             assertEqual('mlfourd.NIfTIState', ic.stateTypeclass);
  		end 
- 		function test_location2imcomponent(this)
+ 		function test_location2composite(this)
             import mlfourd.*;
             ic = ImagingContext.load(this.t1_fqfn);
-            ic.imcomponent;
+            ic.composite;
             assertEqual('mlfourd.ImagingComponentState', ic.stateTypeclass);
  		end 
  		function test_location2nifti(this)
@@ -147,25 +147,25 @@ classdef Test_ImagingContext < MyTestCase
             cd(fullfile(this.sessionPath, 'fsl', ''));
             ic = ImagingContext.load(this.t1_fqfn);
             ic.saveas(this.testFslFile);
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
             assertTrue(lexist(this.testFslFile, 'file'));
             %delete(this.testFslFile);
             
             ic = ImagingContext.load(this.nii);
             ic.saveas(this.testFslFile);
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
             assertTrue(lexist(this.testFslFile, 'file'));
             %delete(this.testFslFile);
             ic = ImagingContext.load(this.imcps);
             ic.saveas(this.testFslFile);
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
             assertTrue(lexist(this.testFslFile, 'file'));
             %delete(this.testFslFile);
             
             cd(fullfile(this.sessionPath, 'fsl', ''));
             ic = ImagingContext.load(this.mgh);
             ic.saveas(this.testMriFile);
-            assertEqual('mlfourd.ImagingLocation', ic.stateTypeclass);
+            assertEqual('mlfourd.FilenameState', ic.stateTypeclass);
             assertTrue(lexist(this.testMriFile, 'file'));
             %delete(this.testMriFile);
         end

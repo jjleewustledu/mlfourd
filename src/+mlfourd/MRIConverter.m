@@ -242,7 +242,7 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             %                                                   ^ e.g., DirTool.fns
 
             for j = 1:length(ca)
-                [~,info,~]    = filepartsx(ca{j}, mlfourd.NIfTIInterface.FILETYPE_EXT);
+                [~,info,~]    = filepartsx(ca{j}, mlfourd.INIfTI.FILETYPE_EXT);
                 structInfo(j) = mlfourd.MRIConverter.parseInfoFile(info); %#ok<AGROW>
             end
         end

@@ -1,251 +1,227 @@
-classdef MaskingNIfTId < mlfourd.NIfTIdecorator
+classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% MASKINGNIFTID is a NIfTIdecorator that composes an internal INIfTI object
     %  according to the decorator design pattern
         
-    methods (Static)        
+    methods (Static)
         function this = load(varargin)
-            %% LOAD 
-            %  Usage:  this = MaskingNIfTId.load(filename[, description]); % args passed to NIfTId
-            
             import mlfourd.*;            
             this = MaskingNIfTId(NIfTId.load(varargin{:}));
         end
-        function S    = sumall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    S = sum(img);
-                case 2
-                    S = sum(sum(img));
-                case 3
-                    S = sum(sum(sum(img)));
-                case 4
-                    S = sum(sum(sum(sum(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.sumall does not support images of size %s', mat2str(size(img)));
-            end
-        end
-        function M    = maxall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    M = max(img);
-                case 2
-                    M = max(max(img));
-                case 3
-                    M = max(max(max(img)));
-                case 4
-                    M = max(max(max(max(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.maxall does not support images of size %s', mat2str(size(img)));
-            end
-        end
-        function M    = minall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    M = min(img);
-                case 2
-                    M = min(min(img));
-                case 3
-                    M = min(min(min(img)));
-                case 4
-                    M = min(min(min(min(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.minall does not support images of size %s', mat2str(size(img)));
-            end
-        end
-        function M    = meanall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    M = mean(img);
-                case 2
-                    M = mean(mean(img));
-                case 3
-                    M = mean(mean(mean(img)));
-                case 4
-                    M = mean(mean(mean(mean(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.meanall does not support images of size %s', mat2str(size(img)));
-            end
-        end
-        function S    = stdall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    S = std(img);
-                case 2
-                    S = std(std(img));
-                case 3
-                    S = std(std(std(img)));
-                case 4
-                    S = std(std(std(std(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.stdall does not support images of size %s', mat2str(size(img)));
-            end
-        end
-        function M    = modeall(obj)
-            img = double(obj); % N.B. overload in NIfTIdecorator
-            switch length(size(img))
-                case 1
-                    M = mode(img);
-                case 2
-                    M = mode(mode(img));
-                case 3
-                    M = mode(mode(mode(img)));
-                case 4
-                    M = mode(mode(mode(mode(img))));
-                otherwise
-                    error('mlfourd:notImplemented', ...
-                          'MaskedNIfTI.modeall does not support images of size %s', mat2str(size(img)));
-            end
-        end
         function tf   = isZeroToOne(obj)
-            import mlfourd.*;
-            mx = MaskingNIfTId.maxall(obj);
-            mn = MaskingNIfTId.minall(obj);
-            tf = true;
-            if ( mx >  1 || mn <  0)
+            img = double(obj);
+            mx  = dipmax(img);
+            mn  = dipmin(img);
+            tf  = true;
+            if ( mn <  0 || 1 <  mx)
                 tf = false;
-                warning('mlfourd:possibleNumericalInconsistency', ...
-                        'MaskedNIfTI.masked received a mask object with min->%g, max->%g', mn, mx); 
             end 
         end
     end
     
-    methods        
+    methods
         function this = MaskingNIfTId(cmp, varargin)
             %% MASKINGNIFTID 
-            %  Usage:  this = MaskingNIfTId(NIfTIdecorator_object[, option-name, option-value, ...])
-            %
-            %          options:  'binarize'        logical
-            %                    'thresh'          numerical
-            %                    'pthresh'         numerical
-            %                    'niftid_mask'     INIfTI
-            %                    'freesurfer_mask' INIfTI, to be binarized internally
+            %  @param cmp is an mlfourd.NIfTIdecorator instance.
+            %  @param [options, option-values] directly apply masking operations from the ctor.
+            %  Options are evaluated in the order:  
+            %  masked, thresh, threshp, threshPZ, uthreshp, uthreshPZ, binarize.
+            %  Option-values are INIfTI, 5x numerical and logical, respectively.  
+            %  @return mlfourd.MaskingNIfTId instance.
+            %  @throw
             
             import mlfourd.*; 
-            this = this@mlfourd.NIfTIdecorator(cmp);
+            this = this@mlfourd.NIfTIdecoratorProperties(cmp);
             this = this.append_descrip('decorated by MaskingNIfTId');
             
             p = inputParser;
-            addParameter(p, 'binarize',        false, @islogical);
-            addParameter(p, 'thresh',          [],    @isnumeric);
-            addParameter(p, 'pthresh',         [],    @isnumeric);
-            addParameter(p, 'niftid_mask',     [],    @(x) isa(x, 'mlfourd.INIfTI'));
-            addParameter(p, 'freesurfer_mask', [],    @(x) isa(x, 'mlfourd.INIfTI'));
+            addParameter(p, 'masked',    [],   @(x) isa(x, 'mlfourd.INIfTI'));
+            addParameter(p, 'thresh',    [],   @isnumeric);
+            addParameter(p, 'threshp',   [],   @isnumeric);
+            addParameter(p, 'threshPZ',  [],   @isnumeric);
+            addParameter(p, 'uthresh',   [],   @isnumeric);
+            addParameter(p, 'uthreshp',  [],   @isnumeric);
+            addParameter(p, 'uthreshPZ', [],   @isnumeric);
+            addParameter(p, 'binarized', false, @islogical);
             parse(p, varargin{:});
             
-            if (p.Results.binarize)
-                this = this.binarize;
+            if (~isempty(p.Results.masked))
+                this = this.masked(p.Results.masked);
             end
             if (~isempty(p.Results.thresh))
                 this = this.thresh(p.Results.thresh);
             end
-            if (~isempty(p.Results.pthresh))
-                this = this.pthresh(p.Results.pthresh);
+            if (~isempty(p.Results.threshp))
+                this = this.threshp(p.Results.threshp);
             end
-            if (~isempty(p.Results.niftid_mask))
-                this = this.masked(p.Results.niftid_mask);
+            if (~isempty(p.Results.threshPZ))
+                this = this.threshPZ(p.Results.threshPZ);
             end
-            if (~isempty(p.Results.freesurfer_mask))
-                import mlfourd.*; 
-                this = this.masked( ...
-                       MaskingNIfTId(p.Results.freesurfer_mask, 'binarize', true));
+            if (~isempty(p.Results.uthresh))
+                this = this.uthresh(p.Results.uthresh);
             end
-        end           
-        function this = masked(this, niidMask)
-            %% MASKED returns this with the internal image multiplied by the passed INIfTI mask;
-            %  Usage:   mn = MaskingNIfTId(...)
-            %           mn = mn.masked(INIfTI_mask)
-            
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            assert(all(this.size == niidMask.size));
-            assert(this.isZeroToOne(niidMask));            
-            this = this.makeSimilar( ...
-                   'img', this.img .* niidMask.img, ...
-                   'descrip', sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
-                   'fileprefix', '_masked');
-        end
-        function x    = maskedSum(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = sum(vec);
-        end
-        function x    = maskedMax(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = max(vec);
-        end
-        function x    = maskedMin(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = min(vec);
-        end
-        function x    = maskedMean(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = mean(vec);
-        end
-        function x    = maskedStd(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = std(vec);
-        end
-        function x    = maskedMode(this, niidMask)
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            vec = this.img(niidMask.img == 1);
-            x   = mode(vec);
-        end
-        function N    = count(this)
-            %% COUNT counts nonzero elements in the internal INIfTI component
-            
-            msk = this.img ~= 0;
-            N   = this.sumall(msk);
-        end
-        function this = thresh(this, thresh)
-            %% THRESH returns a binary mask after thresholding
-            %  Usage:  mn = MaskingNIfTId(...)
-            %          mn = mn.thresh(167); % returns MaskingNIfTId with MaskingNIfTId.img > 167 set as binary image
-            %          max(max(max(mn.img)))
-            %          ans = 1
-            
-            assert(isscalar(thresh));
-            img  = double(this.img > thresh);
-            this = this.makeSimilar( ...
-                   'img', img, ...
-                   'fileprefix', sprintf('_thresh%g', thresh), ...
-                   'descrip', sprintf('MaskedNIfTI.thresh(%g)', thresh));
-        end
-        function this = pthresh(this, pthr)
-            %% PTHR returns binary mask after applying a robust percent threshold
-            %  Usage:  mn = MaskingNIfTId(...)
-            %          mn = mn.pthr(0.67) % returns MaskingNIfTId with MaskingNIfTId.img > 67% robust threshold set as binary image
-            
-            if (pthr >= 1)
-                pthr = pthr/100; 
-                assert(pthr <= 1);
+            if (~isempty(p.Results.uthreshp))
+                this = this.uthreshp(p.Results.uthreshp);
             end
-            img  = double(this.img > norminv(pthr, this.meanall(this.img), this.stdall(this.img)));
-            this = this.makeSimilar( ...
-                   'img', img, ...
-                   'fileprefix', sprintf('_pthresh%g', pthr), ...
-                   'descrip', sprintf('MaskedNIfTI.pthresh(%g)', pthr));
-        end        
-        function this = binarize(this)
-            %% BINARIZE
-            
+            if (~isempty(p.Results.uthreshPZ))
+                this = this.uthreshPZ(p.Results.uthreshPZ);
+            end
+            if (p.Results.binarized)
+                this = this.binarized;
+            end
+        end
+        
+        function this = binarized(this)
             img  = double(this.img ~= 0);
             this = this.makeSimilar( ...
                    'img', img, ...
-                   'fileprefix', sprintf('_binarize'), ...
-                   'descrip', sprintf('MaskedNIfTI.binarize'));
+                   'fileprefix', sprintf('%s_binarized', this.fileprefix), ...
+                   'descrip',    'MaskedNIfTI.binarized');
+             if (dipsum(img) == prod(this.size))
+                 warning('mlfourd:possibleMaskingError', ...
+                         'MaskingNIfTId.binarized mask spans the image space');
+             end
+        end
+        function N    = count(this)
+            %% COUNT 
+            %  @return N = nonzero elements in the internal INIfTI component
+            
+            N   = dipsum(this.img ~= 0);
+        end
+        function this = masked(this, niidMask)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            assert(all(this.size == niidMask.size));
+            if (~this.isZeroToOne(niidMask))
+                 warning('mlfourd:possibleMaskingError', ...
+                         'MaskingNIfTId.masked received a mask with values outside of [0 1]');
+            end
+            this = this.makeSimilar( ...
+                   'img', this.img .* niidMask.img, ...
+                   'descrip',    sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
+                   'fileprefix', sprintf('%s_masked', this.fileprefix));
+        end    
+        function this = thresh(this, t)
+            assert(isscalar(t));
+            bin  = double(this.img > t);
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin, ...
+                   'fileprefix', sprintf('%s_thr%s', this.fileprefix, this.decimal2str(t)), ...
+                   'descrip',    sprintf('MaskedNIfTI.thresh(%g)', t));
+        end
+        function this = threshp(this, p)
+            bin  = double(this.img > dipprctile(this.img, p));
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin, ...
+                   'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
+                   'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
+        end          
+        function this = threshPZ(this, p)
+            bin0 = double(this.img ~= 0);
+            img  = this.img .* bin0;
+            bin  = double(img > dipprctile(img, p));
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin, ...
+                   'fileprefix', sprintf('%s_thrPZ%s', this.fileprefix, this.prct2str(p)), ...
+                   'descrip',    sprintf('MaskedNIfTId.threshPZ(%g)', p));
+        end
+        function this = uthresh(this, t)
+            assert(isscalar(t));
+            bin  = double(this.img < t);
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin, ...
+                   'fileprefix', sprintf('%s_uthr%s', this.fileprefix, this.decimal2str(t)), ...
+                   'descrip',    sprintf('MaskedNIfTI.uthresh(%g)', t));
+        end
+        function this = uthreshp(this, p)
+            bin  = double(this.img < dipprctile(this.img, p));
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin, ...
+                   'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
+                   'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
+        end          
+        function this = uthreshPZ(this, p)
+            bin0 = double(this.img ~= 0);
+            bin  = double(this.img < dipprctile(this.img, p));
+            this = this.makeSimilar( ...
+                   'img', this.img .* bin0 .* bin, ...
+                   'fileprefix', sprintf('%s_uthrPZ%s', this.fileprefix, this.prct2str(p)), ...
+                   'descrip',    sprintf('MaskedNIfTId.uthreshPZ(%g)', p));
+        end
+        
+        %% Convenience methods 
+        
+        function x    = maskedIqr(     this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = iqr(vec, varargin{:});
+        end
+        function x    = maskedMad(     this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = mad(vec, varargin{:});
+        end
+        function x    = maskedMax(     this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = max(vec, varargin{:});
+        end
+        function x    = maskedMean(    this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = mean(vec, varargin{:});
+        end
+        function x    = maskedMedian(  this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = median(vec, varargin{:});
+        end
+        function x    = maskedMin(     this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = min(vec, varargin{:});
+        end
+        function x    = maskedMode(    this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = mode(vec, varargin{:});
+        end
+        function x    = maskedPrctile( this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = prctile(vec, varargin{:});
+        end
+        function x    = maskedQuantile(this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = quantile(vec, varargin{:});
+        end
+        function x    = maskedStd(     this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = std(vec, varargin{:});
+        end
+        function x    = maskedSum (    this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = sum(vec, varargin{:});
+        end
+        function x    = maskedTrimmean(this, niidMask, varargin)
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            vec = this.img(niidMask.img == 1);
+            x   = trimmean(vec, varargin{:});
+        end
+    end
+    
+    %% PRIVATE
+    
+    methods (Static, Access = private)
+        function s = decimal2str(d)
+            s = strrep(num2str(d), '.', '_');
+        end
+        function s = prct2str(p)
+            if (p < 1)
+                p = 100*p;
+            end
+            s = num2str(round(p));
         end
     end
     

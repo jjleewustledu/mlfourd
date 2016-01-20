@@ -164,9 +164,9 @@ classdef NIfTI < mlfourd.AbstractNIfTI
             warning('off');  %#ok<WNOFF>
             delete(this.fqfilename);
             if (this.untouch)
-                save_untouch_nii(struct(this), [this.fqfileprefix '.nii']);
+                mlniftitools.save_untouch_nii(struct(this), [this.fqfileprefix '.nii']);
             else
-                save_nii(        struct(this), [this.fqfileprefix '.nii']);
+                mlniftitools.save_nii(        struct(this), [this.fqfileprefix '.nii']);
             end
             warning('on'); %#ok<WNON>
             this.gzip;
@@ -527,7 +527,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
                 switch (fext)
                     case {'.hdr.' '.nii'}
                         assert(lexist(fn, 'file'), sprintf('NIfTI.load_suff:  file not found:  %s', fn));
-                        nii = NIfTI(load_untouch_nii(fn), fpre, p.Results.desc);
+                        nii = NIfTI(mlniftitools.load_untouch_nii(fn), fpre, p.Results.desc);
                         nii.filepath = fpth;
                         nii.filesuffix = suff;
                     case {'.mgz' '.mgh'}

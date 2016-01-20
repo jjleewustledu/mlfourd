@@ -40,10 +40,6 @@ classdef Test_ImagingComposite < mlfourd_xunit.Test_AbstractComponent
             imcps = mlfourd.ImagingComposite.createFromCell(this.files);
             assertTrue(isa(imcps, 'mlfourd.ImagingComposite'));
         end
-        function test_createFromImagingArrayList(this)
-            imcps = mlfourd.ImagingComposite.createFromImagingArrayList(this.imcps.asList);
-            assertTrue(isa(imcps, 'mlfourd.ImagingComposite'));
-        end
         function test_heterogeneousHorzcat(this)
             import mlfourd.*;
             objs = ImagingComposite.load([this.files this.files2 this.files3]);
@@ -69,7 +65,7 @@ classdef Test_ImagingComposite < mlfourd_xunit.Test_AbstractComponent
                 assertTrue(isa(catted.get(c),            'mlfourd.NIfTIInterface'));
                 assertEqual(   catted.get(c).fqfilename,  this.files{c});
             end
-            assertEqual(       catted.asList, this.imcps.asList);    
+            assertEqual(       catted.cell, this.imcps.cell);    
         end
  		function test_subsref(this)
  			import mlfourd.*;            
@@ -128,13 +124,11 @@ classdef Test_ImagingComposite < mlfourd_xunit.Test_AbstractComponent
         function test_iterator(this)
             %% TEST_ITERATOR tests reset, hasNext, next
             imcps = this.imcps;
-            imcps.reset;
+            iter = imcps.createIterator;
             cnt = 0;
-            while (imcps.hasNext)
+            while (iter.hasNext)
                 cnt = cnt + 1;
-                imcps = imcps.iterateNext;
-                assertTrue(isa(imcps.cachedNext, 'mlfourd.NIfTIInterface'));
-                %fprintf('imcps.cachedNext.fileprefix->%s\n', imcps.cachedNext.fileprefix);
+                assertTrue(isa(iter.next, 'mlfourd.NIfTIInterface'));
             end            
             assertEqual(this.imcps.length, cnt);
         end
