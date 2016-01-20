@@ -1,4 +1,4 @@
-classdef NIfTId < mlfourd.AbstractNIfTId
+classdef NIfTId < mlfourd.InnerNIfTId
     %% NIFTID specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
     %  described by Jimmy Shen's entries at Mathworks File Exchange
     
@@ -28,7 +28,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     end 
     
     methods 
-        function niid     = clone(this, varargin)
+        function niid = clone(this, varargin)
             %% CLONE
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
             %  @return niid copy-construction with niid.descrip appended with 'clone'.
@@ -37,19 +37,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('cloned');
         end
-        function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.isequaln(obj);
-        end
-        function [tf,msg] = isequaln(this, obj)
-            [tf,msg] = this.classesequal(obj);
-            if (tf)
-                [tf,msg] = this.fieldsequaln(obj);
-                if (tf)
-                    [tf,msg] = this.hdrsequaln(obj);
-                end
-            end
-        end 
-        function niid     = makeSimilar(this, varargin)
+        function niid = makeSimilar(this, varargin)
             %% MAKESIMILAR 
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
             %  @return niid copy-construction with niid.descrip appended with 'made similar'.
@@ -57,52 +45,6 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('made similar');
-        end
-        function            save(this)
-            %% SAVE supports extensions 
-            %  mlfourd.JimmyShenInterface.SUPPORTED_EXT and mlsurfer.SurferRegistry.SUPPORTED_EXT,
-            %   defaulting to this.FILETYPE_EXT if needed. 
-            %  If this.noclobber == true, it will never overwrite files.
-            %  If this.noclobber == false, it may overwrite files. 
-            %  If this.untouch   == true, it will retain the untouched state.
-            %  If this.untouch   == false, it may further adjust state before saving.
-            %  @return saves this NIfTId to this.fqfilename.  
-            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
-            
-            import mlfourd.* mlniftitools.*;
-            this = this.ensureExtension;
-            if (this.noclobber)
-                if (lexist(this.fqfilename, 'file'))
-                    error('mlfourd:IOError', ...
-                          'NIfTId.save.fqfilename->%s already exists but noclobber->%s', this.fqfilename, this.noclobber);
-                end
-                if (this.untouch)
-                    this.save_untouched;
-                    return
-                end
-                this.save_touched;
-                return
-            end            
-            deleteExisting(this.fqfilename);
-            if (this.untouch)
-                this.save_untouched;
-                return
-            end
-            this.save_touched;                
-        end 
-        function this     = saveas(this, fn)
-            %% SAVEAS
-            %  @param fn updates internal filename
-            %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
-            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
-            
-            [p,f,e] = myfileparts(fn);
-            if (isempty(e))
-                e = this.FILETYPE_EXT;
-            end
-            this.fqfilename = fullfile(p, [f e]);
-            this.untouch_ = false;
-            this.save;
         end
         
         function this = NIfTId(varargin)
@@ -118,7 +60,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed
             %  See also:  http://www.mathworks.com/matlabcentral/fileexchange/authors/20638
             
-            this = this@mlfourd.AbstractNIfTId;
+            this = this@mlfourd.InnerNIfTId;
             if (0 == nargin); return; end
             
             import mlfourd.*;
@@ -197,21 +139,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     %% PRIVATE
  
     methods (Static, Access = private)
-        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
-            tf = true; 
-            msg = '';
-            flds = fieldnames(obj1);
-            for f = 1:length(flds)
-                if (~evalIgnore(flds{f}))
-                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
-                        tf = false;
-                        msg = sprintf('NIfTId.checkFields:  mismatch at field %s.', flds{f});
-                        break
-                    end
-                end
-            end
-        end 
-        function ff       = existingFileform(ff)
+        function ff   = existingFileform(ff)
             if (lexist(ff, 'file'))
                 return
             end
@@ -232,7 +160,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             end
             ff = '';
         end
-        function this     = load_existing(fn)
+        function this = load_existing(fn)
             try
                 import mlfourd.*;
                 e = NIfTId.selectExistingExtension(fn);
@@ -251,11 +179,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                     'mlfourd:fileNotFound', 'NIfTId.load_existing could not open fn->%s', fn);
             end
         end
-        function this     = load_JimmyShen(fn)
-            this = mlfourd.NIfTId(mlniftitools.load_untouch_nii(fn));
-            this.fqfilename = fn;
-        end
-        function this     = load_surfer(fn)
+        function this = load_surfer(fn)
             import mlfourd.*;
             [p,f] = myfileparts(fn);
             fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]);
@@ -263,7 +187,11 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             this = NIfTId.load_JimmyShen(fn2);
             deleteExisting(fn2);
         end
-        function e        = selectExistingExtension(fn)
+        function this = load_JimmyShen(fn)
+            this = mlfourd.NIfTId(mlniftitools.load_untouch_nii(fn));
+            this.fqfilename = fn;
+        end
+        function e    = selectExistingExtension(fn)
             [~,~,e] = myfileparts(fn);
             if (lexist(fn, 'file'))
                 if (isempty(e))
@@ -289,7 +217,7 @@ classdef NIfTId < mlfourd.AbstractNIfTId
             error('mlfourd:fileTypeNotSupported', ...
                 'NIfTId.load_existing does not support file extension %s', e);
         end
-        function            validateCtorObj(obj)
+        function        validateCtorObj(obj)
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
                     isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface')))
                 error('mlfourd:invalidCtorObj', ...
@@ -299,68 +227,14 @@ classdef NIfTId < mlfourd.AbstractNIfTId
     end 
     
     methods (Access = private)
-        function this     = adjustFieldsAfterLoading(this)
-            if (~mlfourd.NIfTId.LOAD_UNTOUCHED)
+        function this = adjustFieldsAfterLoading(this)
+            if (~mlfourd.InnerNIfTId.LOAD_UNTOUCHED)
                 this = this.optimizePrecision; 
             end
             this.hdr_.hist.descrip = sprintf('NIfTId.load read %s on %s', this.fqfilename, datestr(now, 30));
             this.label_ = this.fileprefix;
         end
-        function fp       = adjustFileprefix(this, fp)
-            if ('_' == fp(1))
-                fp = [this.fileprefix fp]; return; end
-            if ('_' == fp(end))
-                fp = [fp this.fileprefix]; return; end
-        end
-        function [tf,msg] = classesequal(this, c)
-            tf  = true; 
-            msg = '';
-            if (~isa(c, class(this)))
-                tf  = false;
-                msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
-            end
-            if (~tf)
-                warning(msg);
-            end
-        end
-        function this     = ensureExtension(this)
-            if (isempty(this.filesuffix))
-                this.filesuffix = this.FILETYPE_EXT;
-            end
-            assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
-                   lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT));
-        end
-        function [tf,msg] = fieldsequaln(this, obj)
-            [tf,msg] = mlfourd.NIfTId.checkFields( ...
-                this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
-            if (~tf)
-                warning(msg);
-            end
-        end
-        function fqfn     = fqfilenameNiiGz(this)
-            if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
-                fqfn = [this.fqfileprefix this.FILETYPE_EXT];
-                return
-            end
-            fqfn = this.fqfilename;
-        end
-        function [tf,msg] = hdrsequaln(this, obj)
-            tf = true; 
-            msg = '';
-            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
-            import mlfourd.*;
-            [tf,msg] = NIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) false);
-            if (tf)
-                [tf,msg] = NIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) false);
-                if (tf)
-                    [tf,msg] = NIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, 'descrip'));
-                end
-            end
-            if (~tf)
-                warning(msg);
-            end
-        end
-        function this     = populateFieldsFromInputParser(this, ip)
+        function this = populateFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
                 if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
@@ -376,26 +250,6 @@ classdef NIfTId < mlfourd.AbstractNIfTId
                     end
                 end
             end
-        end
-        function            save_JimmyShen(this, h)
-            warning('off', 'MATLAB:structOnObject');
-            if (lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT)) 
-                h(struct(this), this.fqfilename);
-                warning('on', 'MATLAB:structOnObject');
-                return
-            end
-            assert(~strcmp(this.fqfilename, this.fqfilenameNiiGz))
-            h(struct(this), this.fqfilenameNiiGz);
-            mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-            deleteExisting(this.fqfilenameNiiGz);
-            warning('on', 'MATLAB:structOnObject');
-        end
-        function            save_touched(this)
-            this = this.optimizePrecision;
-            this.save_JimmyShen(@mlniftitools.save_nii)
-        end
-        function            save_untouched(this)
-            this.save_JimmyShen(@mlniftitools.save_untouch_nii)
         end
     end 
     

@@ -12,7 +12,7 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
 
 	properties (Dependent) 
         
-        %% mlio.IOInterface
+        %% NIfTIIO
         
         filename
         filepath
@@ -56,43 +56,43 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
     
     methods %% SET/GET
         
-        %% mlio.IOInterface
+        %% NIfTIIO
         
         function this = set.filename(this, fn)
-            this.innerIO_.filename = fn;
+            this.innerNIfTI_.filename = fn;
         end
         function fn   = get.filename(this)
-            fn = this.innerIO_.filename;
+            fn = this.innerNIfTI_.filename;
         end
         function this = set.filepath(this, pth)
-            this.innerIO_.filepath = pth;
+            this.innerNIfTI_.filepath = pth;
         end
         function pth  = get.filepath(this)
-            pth = this.innerIO_.filepath;
+            pth = this.innerNIfTI_.filepath;
         end
         function this = set.fileprefix(this, fp)
-            this.innerIO_.fileprefix = fp;
+            this.innerNIfTI_.fileprefix = fp;
         end
         function fp   = get.fileprefix(this)
-            fp = this.innerIO_.fileprefix;
+            fp = this.innerNIfTI_.fileprefix;
         end
         function this = set.filesuffix(this, fs)
-            this.innerIO_.filesuffix = fs;
+            this.innerNIfTI_.filesuffix = fs;
         end
         function fs   = get.filesuffix(this)
-            fs = this.innerIO_.filesuffix;
+            fs = this.innerNIfTI_.filesuffix;
         end        
         function this = set.fqfilename(this, fqfn)
-            this.innerIO_.fqfilename = fqfn;
+            this.innerNIfTI_.fqfilename = fqfn;
         end
         function fqfn = get.fqfilename(this)
-            fqfn = this.innerIO_.fqfilename;
+            fqfn = this.innerNIfTI_.fqfilename;
         end
         function this = set.fqfileprefix(this, fqfp)
-            this.innerIO_.fqfileprefix = fqfp;
+            this.innerNIfTI_.fqfileprefix = fqfp;
         end
         function fqfp = get.fqfileprefix(this)
-            fqfp = this.innerIO_.fqfileprefix;
+            fqfp = this.innerNIfTI_.fqfileprefix;
         end
         function this = set.fqfn(this, f)
             this.fqfilename = f;
@@ -110,31 +110,31 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         %% JimmyShenInterface
         
         function e    = get.ext(this)
-            e = this.innerJimmyShen_.ext;
+            e = this.innerNIfTI_.ext;
         end
         function f    = get.filetype(this)
-            f = this.innerJimmyShen_.filetype;
+            f = this.innerNIfTI_.filetype;
         end
         function this = set.filetype(this, ft)
-            this.innerJimmyShen_.filetype = ft;
+            this.innerNIfTI_.filetype = ft;
         end
         function h    = get.hdr(this)
-            h = this.innerJimmyShen_.hdr;
+            h = this.innerNIfTI_.hdr;
         end 
         function im   = get.img(this)
-            im = this.innerJimmyShen_.img;
+            im = this.innerNIfTI_.img;
         end        
         function this = set.img(this, im)
             %% SET.IMG sets new image state. 
             %  @param im is numeric; it updates datatype, bitpix, dim
             
-            this.innerJimmyShen_.img = im;
+            this.innerNIfTI_.img = im;
         end
         function o    = get.originalType(this)
             o = this.originalType_;
         end
         function u    = get.untouch(this)
-            u = this.innerJimmyShen_.untouch;
+            u = this.innerNIfTI_.untouch;
         end
         
         %% INIfTI  
@@ -228,16 +228,13 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
     
 	methods
         
-        %% mlio.IOInterface
+        %% NIfTIIO
         
         function this = saveas(this, fqfn)
-            this.fqfilename = fqfn;
-            this.save;
+            this.innerNIfTI_ = this.innerNIfTI_.saveas(fqfn);
         end
         function this = saveasx(this, fqfn, x)
-            this.fqfileprefix = fqfn(1:strfind(fqfn, x)-1);
-            this.filesuffix = x;
-            this.save;
+            this.innerNIfTI_ = this.innerNIfTI_.saveasx(fqfn, x);
         end        
         
         %% INIfTI  
@@ -246,10 +243,10 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
             c = this.innerNIfTI_.char;
         end
         function this = append_descrip(this, varargin)
-            this = this.innerNIfTI_.append_descrip(varargin{:});
+            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
         end
         function this = prepend_descrip(this, varargin)
-            this = this.innerNIfTI_.prepend_descrip(varargin{:});
+            this.innerNIfTI_ = this.innerNIfTI_.prepend_descrip(varargin{:});
         end
         function d = double(this)
             d = this.innerNIfTI_.double;
@@ -258,10 +255,10 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
             d = this.innerNIfTI_.duration;
         end
         function this = append_fileprefix(this, varargin)
-            this = this.innerNIfTI_.append_fileprefix(varargin{:});
+            this.innerNIfTI_ = this.innerNIfTI_.append_fileprefix(varargin{:});
         end
         function this = prepend_fileprefix(this, varargin)
-            this = this.innerNIfTI_.prepend_fileprefix(varargin{:});
+            this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
         end
         function f = fov(this)
             f = this.innerNIfTI_.fov;
@@ -276,10 +273,13 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
             r = this.innerNIfTI_.rank;
         end
         function this = scrubNanInf(this)
-            this = this.innerNIfTI_.scrubNanInf;
+            this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
         end
         function s = single(this)
             s = this.innerNIfTI_.single;
+        end
+        function s = size(this, varargin)
+            s = this.innerNIfTI_.size(varargin{:});
         end
         function z = zeros(this)
             z = this.innerNIfTI_.zeros;
@@ -326,29 +326,25 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         function        rm(this, idx)
             this.innerNIfTI_.rm(idx);
         end
-        function s    = size(this)   
-            s = this.innerNIfTI_.size;
+        function s    = csize(this)   
+            s = this.innerNIfTI_.csize;
         end     
     end
     
     %% PROTECTED
     
     methods (Access = protected)
- 		function this = AbstractNIfTIComponent(innerIO, innerJS, innerNI)
-            assert(isa(innerIO, 'mlio.IOInterface'));
-            assert(isa(innerIO, 'mlfourd.JimmyShenInterface') && ...
-                   isa(innerIO, 'mlfourd.INIfTI'));
-            this.innerIO_ = innerIO;
-            this.innerJimmyShen_ = innerJS;
-            this.innerNIfTI_ = innerNI;
+ 		function this = AbstractNIfTIComponent(inner)
+            assert(isa(inner, 'mlfourd.NIfTIIO') && ...
+                   isa(inner, 'mlfourd.JimmyShenInterface') && ...
+                   isa(inner, 'mlfourd.INIfTI'));
+            this.innerNIfTI_ = inner;
  		end
     end 
     
     %% PRIVATE
     
     properties (Access = private)
-        innerIO_
-        innerJimmyShen_
         innerNIfTI_
     end
 

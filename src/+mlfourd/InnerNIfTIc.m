@@ -1,5 +1,5 @@
-classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
-	%% ABSTRACTNIFTIC  
+classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+	%% INNERNIFTIC  
 
 	%  $Revision$
  	%  was created 15-Jan-2016 03:04:23
@@ -11,6 +11,7 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
     properties (Dependent)
         
         %% Instantiation of mlfourd.JimmyShenInterface to support struct arguments to NIfTId ctor
+        
         ext        %   Legacy variable for mlfourd.JimmyShenInterface
         filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
         hdr        %   Tip: to change the data type, set nii.hdr.dime.datatype and nii.hdr.dime.bitpix to:
@@ -52,7 +53,7 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
         pixdim
         seriesNumber
         
-        %% New for mlfourd.AbstractNIfTIc
+        %% New for mlfourd.InnerNIfTIc
         
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -162,35 +163,15 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
     
 	methods        
         
-        %% mlpatterns.Composite
+        %% NIfTIIO
         
-        function this = add(this, obj)
-            this = this.innerCellComp_.add(obj);
-        end        
-        function iter = createIterator(this)
-            iter = this.innerCellComp_.createIterator;
+        function save(this)
+            this.fevalNone('save');
         end
-        function        disp(this)
-            this.innerCellComp_.disp;
+        function this = saveas(this, fn)
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('saveas', fn);
         end
-        function idx  = find(this, obj)
-            idx = this.innerCellComp_.find(obj);
-        end
-        function obj  = get(this, idx)
-            obj = this.innerCellComp_.get(idx);
-        end
-        function tf   = isempty(this)
-            tf = this.innerCellComp_.isempty;
-        end
-        function len  = length(this)
-            len = this.innerCellComp_.length;
-        end
-        function        rm(this, idx)
-            this.innerCellComp_.rm(idx);
-        end
-        function s    = size(this)   
-            s = this.innerCellComp_.size;
-        end     
+    
         
         %% INIfTI  
         
@@ -198,10 +179,10 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
             c = this.innerCellComp_.fevalOut('char');
         end
         function this = append_descrip(this, varargin)
-            this = this.innerCellComp_.fevalThis('append_descrip', varargin{:});
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('append_descrip', varargin{:});
         end
         function this = prepend_descrip(this, varargin)
-            this = this.innerCellComp_.fevalThis('prepend_descrip', varargin{:});
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('prepend_descrip', varargin{:});
         end
         function d = double(this)
             d = this.innerCellComp_.fevalOut('double');
@@ -210,13 +191,16 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
             d = this.innerCellComp_.fevalOut('duration');
         end
         function this = append_fileprefix(this, varargin)
-            this = this.innerCellComp_.fevalThis('append_fileprefix', varargin{:});
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('append_fileprefix', varargin{:});
         end
         function this = prepend_fileprefix(this, varargin)
-            this = this.innerCellComp_.fevalThis('prepend_fileprefix', varargin{:});
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('prepend_fileprefix', varargin{:});
         end
         function f = fov(this)
             f = this.innerCellComp_.fevalOut('fov');
+        end
+        function [tf,msg] = isequal(this, obj)
+            [tf,msg] = this.innerCellComp_.isequal(obj);
         end
         function m = matrixsize(this)
             m = this.innerCellComp_.fevalOut('matrixsize');
@@ -228,16 +212,19 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
             r = this.innerCellComp_.fevalOut('rank');
         end
         function this = scrubNanInf(this)
-            this = this.innerCellComp_.fevalThis('scrubNanInf');
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('scrubNanInf');
         end
         function s = single(this)
             s = this.innerCellComp_.fevalOut('single');
+        end
+        function s = size(this, varargin)
+            s = this.innerCellComp_.fevalOut('size', varargin{:});
         end
         function z = zeros(this)
             z = this.innerCellComp_.fevalOut('zeros');
         end
         
-        %% New for AbstractNIfTIc
+        %% New for InnerNIfTIc
         
         function e = fslentropy(this)
             e = this.innerCellComp_.fevalOut('fslentropy');
@@ -257,34 +244,36 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
             fqfns = [fqfns{2:end} varargin{:}];
             first.fslview(fqfns{:});
         end
-        function this = subsasgn(this, S, varargin)
-            %% SUBSASGN
-            %  See also:  web(fullfile(docroot, 'matlab/matlab_oop/class-with-modified-indexing.html'))
-            %             web(fullfile(docroot, 'matlab/ref/numargumentsfromsubscript.html'))
-            
-            switch (S(1).type)
-                case '.'
-                    this = builtin('subsasgn', this, S, varargin{:});
-                case '{}' 
-                    this.innerCellComp_ = builtin('subsasgn', this.innerCellComp_, S, varargin{:});
-                case '()'
-                    this.innerCellComp_ = builtin('subsasgn', this.innerCellComp_, S, varargin{:});
-            end
+        
+        %% mlpatterns.Composite
+        
+        function this = add(this, obj)
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('add', obj);
+        end        
+        function iter = createIterator(this)
+            iter = this.innerCellComp_.fevalOut('createIterator');
         end
-        function varargout = subsref(this, S)
-            %% SUBSREF
-            %  See also:  web(fullfile(docroot, 'matlab/matlab_oop/class-with-modified-indexing.html'))
-            %             web(fullfile(docroot, 'matlab/ref/numargumentsfromsubscript.html'))
-            
-            switch (S(1).type)
-                case '.'
-                     varargout = {builtin('subsref', this, S)};
-                 case '{}'
-                     varargout = {builtin('subsref', this.innerCellComp_, S)};
-                case '()'
-                     varargout = {builtin('subsref', this.innerCellComp_, S)};
-            end
+        function        disp(this)
+            this.innerCellComp_.fevalNone('disp');
         end
+        function idx  = find(this, obj)
+            idx = this.innerCellComp_.fevalOut('find', obj);
+        end
+        function obj  = get(this, idx)
+            obj = this.innerCellComp_.fevalOut('get', idx);
+        end
+        function tf   = isempty(this)
+            tf = this.innerCellComp_.fevalOut('isempty');
+        end
+        function len  = length(this)
+            len = this.innerCellComp_.fevalOut('length');
+        end
+        function        rm(this, idx)
+            this.innerCellComp_.fevalNone('rm', idx);
+        end
+        function s    = csize(this)   
+            s = this.innerCellComp_.fevalOut('csize');
+        end     
     end 
     
     %% PROTECTED
@@ -294,8 +283,8 @@ classdef AbstractNIfTIc < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface 
     end
     
     methods (Access = protected)
- 		function this = AbstractNIfTIc(varargin)            
-            if (nargin == 1 && isa(varargin{1}, 'mlfourd.AbstractNIfTIc'))
+ 		function this = InnerNIfTIc(varargin)            
+            if (nargin == 1 && isa(varargin{1}, 'mlfourd.InnerNIfTIc'))
                 this.innerCellComp_ = varargin{1}.innerCellComp_;
                 return
             end

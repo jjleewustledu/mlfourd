@@ -11,7 +11,6 @@ classdef INIfTI
     properties (Constant) 
         FILETYPE     = 'NIFTI_GZ'
         FILETYPE_EXT = '.nii.gz'
-        %ISEQUAL_IGNORES
     end
     
 	properties (Abstract)

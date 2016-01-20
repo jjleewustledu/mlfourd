@@ -1,5 +1,5 @@
-classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
-	%% ABSTRACTNIFTID 
+classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+	%% INNERNIFTID 
     
 	%  $Revision$
  	%  was created 20-Oct-2015 19:28:49
@@ -59,7 +59,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
         pixdim
         seriesNumber
         
-        %% New for AbstractNIfTId
+        %% New for InnerNIfTId
         
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -90,7 +90,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                     this.filesuffix = '.nii.gz';
                     this.untouch_ = false;
                 otherwise
-                    error('mlfourd:unsupportedParamValue', 'AbstractNIfTId.set.filetype.ft->%g', ft);
+                    error('mlfourd:unsupportedParamValue', 'InnerNIfTId.set.filetype.ft->%g', ft);
             end
         end
         function h    = get.hdr(this)
@@ -124,7 +124,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
         %% INIfTI  
         
         function bp   = get.bitpix(this) 
-            %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
+            %% BIPPIX returns a datatype code as described by the INIfTI specificaitons
             
             switch (class(this.img_))
                 case {'uchar', 'uint8'};    bp = 8;
@@ -139,7 +139,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 case  'uint64';             bp = 64;
                 otherwise
                     error('mlfourd:unknownSwitchCase', ...
-                          'NIfTId.get.bitpix could not recognize the class(img)->%s', class(this.img_));
+                          'InnerNIfTId.get.bitpix could not recognize the class(img)->%s', class(this.img_));
             end
         end
         function this = set.bitpix(this, bp) 
@@ -155,7 +155,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             cdat = this.creationDate_;
         end
         function dt   = get.datatype(this)
-            %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
+            %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
             switch (class(this.img_))
                 case {'uchar', 'uint8'};    dt = 2;
@@ -170,7 +170,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 case  'uint64';             dt = 1280;
                 otherwise
                     error('mlfourd:unknownSwitchCase', ...
-                          'NIfTId.get.datatype could not recognize the class(img)->%s', class(this.img_));
+                          'InnerNIfTId.get.datatype could not recognize the class(img)->%s', class(this.img_));
             end
         end    
         function this = set.datatype(this, dt)
@@ -183,7 +183,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                         this = this.ensureDouble;
                     otherwise
                         error('mlfourd:unknownSwitchCase', ...
-                              'NIfTId.set.datatype could not recognize dt->%s', strtrim(dt));
+                              'InnerNIfTId.set.datatype could not recognize dt->%s', strtrim(dt));
                 end
             elseif (isnumeric(dt))
                 if (dt < 64)
@@ -192,7 +192,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                     this = this.ensureDouble;
                 end
             else
-                error('mlfourd:unsupportedDatatype', 'NIfTId.set.datatype does not support class(dt)->%s', class(dt));
+                error('mlfourd:unsupportedDatatype', 'InnerNIfTId.set.datatype does not support class(dt)->%s', class(dt));
             end            
             this.untouch_ = false;
         end
@@ -272,7 +272,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             num = mlchoosers.FilenameFilters.getSeriesNumber(this.fileprefix);
         end
         
-        %% New for AbstractNIfTId
+        %% New for InnerNIfTId
         
         function s    = get.separator(this)
             s = this.separator_;
@@ -292,6 +292,55 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
     end
        
     methods
+        
+        %% NIfTIIO
+        
+        function        save(this)
+            %% SAVE supports extensions 
+            %  mlfourd.JimmyShenInterface.SUPPORTED_EXT and mlsurfer.SurferRegistry.SUPPORTED_EXT,
+            %  defaulting to this.FILETYPE_EXT if needed. 
+            %  If this.noclobber == true, it will never overwrite files.
+            %  If this.noclobber == false, it may overwrite files. 
+            %  If this.untouch   == true, it will retain the untouched state.
+            %  If this.untouch   == false, it may further adjust state before saving.
+            %  @return saves this NIfTId to this.fqfilename.  
+            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
+            
+            import mlfourd.* mlniftitools.*;
+            this = this.ensureExtension;
+            if (this.noclobber)
+                if (lexist(this.fqfilename, 'file'))
+                    error('mlfourd:IOError', ...
+                          'NIfTId.save.fqfilename->%s already exists but noclobber->%s', this.fqfilename, this.noclobber);
+                end
+                if (this.untouch)
+                    this.save_untouched;
+                    return
+                end
+                this.save_touched;
+                return
+            end            
+            deleteExisting(this.fqfilename);
+            if (this.untouch)
+                this.save_untouched;
+                return
+            end
+            this.save_touched;                
+        end 
+        function this = saveas(this, fn)
+            %% SAVEAS
+            %  @param fn updates internal filename
+            %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
+            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
+            
+            [p,f,e] = myfileparts(fn);
+            if (isempty(e))
+                e = this.FILETYPE_EXT;
+            end
+            this.fqfilename = fullfile(p, [f e]);
+            this.untouch_ = false;
+            this.save;
+        end
         
         %% INIfTI  
         
@@ -371,6 +420,18 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
         function f3d  = fov(this)
             f3d = this.mmppix .* this.matrixsize;
         end   
+        function [tf,msg] = isequal(this, obj)
+            [tf,msg] = this.isequaln(obj);
+        end
+        function [tf,msg] = isequaln(this, obj)
+            [tf,msg] = this.classesequal(obj);
+            if (tf)
+                [tf,msg] = this.fieldsequaln(obj);
+                if (tf)
+                    [tf,msg] = this.hdrsequaln(obj);
+                end
+            end
+        end 
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
         end
@@ -417,7 +478,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                     img__ = this.scrub4D(img__);
                 otherwise
                     error('mlfourd:unsupportedParamValue', ...
-                          'AbstractNIfTId.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
+                          'InnerNIfTId.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
             end            
             this.img = img__;
         end
@@ -450,7 +511,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
         end     
         
-        %% New for AbstractNIfTId
+        %% New for InnerNIfTId
         
         function e    = fslentropy(this)
             if (~lexist(this.fqfilename, 'file'))
@@ -470,21 +531,64 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
         end        
         function        freeview(this, varargin)
             %% FREEVIEW
-            %  Usage:  this.freeview([additional_filename, ...])
+            %  @param [filename[, ...]]
             
             this.launchExternalViewer('freeview', varargin{:});
         end
         function        fslview(this, varargin)
             %% FSLVIEW
-            %  Usage:  this.fslview([additional_filename, ...])
+            %  @param [filename[, ...]]
             
             this.launchExternalViewer('fslview', varargin{:});
         end   
+        
+        %% mlpatterns.Composite
+        
+        function this = add(~, ~) %#ok<STOUT>
+            error('mlfourd:notImplemented', 'InnerNIfTId.add should not be called');
+        end        
+        function iter = createIterator(~) %#ok<STOUT>
+            error('mlfourd:notImplemented', 'InnerNIfTId.createIterator should not be called');
+        end
+        function        disp(this)
+            builtin('disp', this)
+        end
+        function idx  = find(this, obj)
+            if (this.isequal(obj))
+                idx = 1;
+                return
+            end
+            idx = [];
+        end
+        function obj  = get(this, idx)
+            if (idx == 1)
+                obj = this;
+                return
+            end
+            obj = [];
+        end
+        function tf   = isempty(this)
+            tf = isempty(this.img);
+        end
+        function len  = length(~)
+            len = 1;
+        end
+        function        rm(~, ~)
+            error('mlfourd:notImplemented', 'InnerNIfTId.rm should not be called');
+        end
+        function s    = csize(~)   
+            s = [1 1];
+        end     
     end
     
     %% PROTECTED 
 
     properties (Access = protected)
+        filepath_   = '';
+        fileprefix_ = '';
+        filesuffix_ = '';
+        noclobber_  = false;
+        
         creationDate_
         ext_ = []
         filetype_ = 2
@@ -498,7 +602,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
     end      
     
     methods (Access = protected)
-        function this = AbstractNIfTId
+        function this = InnerNIfTId
             
             %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
             
@@ -606,15 +710,80 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
     
     %% PRIVATE
     
+    methods (Static, Access = private)
+        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
+            tf = true; 
+            msg = '';
+            flds = fieldnames(obj1);
+            for f = 1:length(flds)
+                if (~evalIgnore(flds{f}))
+                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
+                        tf = false;
+                        msg = sprintf('InnerNIfTId.checkFields:  mismatch at field %s.', flds{f});
+                        break
+                    end
+                end
+            end
+        end 
+    end
+    
     methods (Access = private)
-        function d  = adjustDescrip(this, d)
+        function d        = adjustDescrip(this, d)
             d = strtrim(d);
             if (length(d) > this.DESC_LEN_LIM)
                 len2 = floor((this.DESC_LEN_LIM - 5)/2);
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
         end
-        function      launchExternalViewer(this, app, varargin)
+        function this     = ensureExtension(this)
+            if (isempty(this.filesuffix))
+                this.filesuffix = this.FILETYPE_EXT;
+            end
+            assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
+                   lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT));
+        end
+        function fqfn     = fqfilenameNiiGz(this)
+            if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
+                fqfn = [this.fqfileprefix this.FILETYPE_EXT];
+                return
+            end
+            fqfn = this.fqfilename;
+        end
+        function [tf,msg] = classesequal(this, c)
+            tf  = true; 
+            msg = '';
+            if (~isa(c, class(this)))
+                tf  = false;
+                msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
+            end
+            if (~tf)
+                warning(msg);
+            end
+        end
+        function [tf,msg] = fieldsequaln(this, obj)
+            [tf,msg] = mlfourd.InnerNIfTId.checkFields( ...
+                this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
+            if (~tf)
+                warning(msg);
+            end
+        end
+        function [tf,msg] = hdrsequaln(this, obj)
+            tf = true; 
+            msg = '';
+            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
+            import mlfourd.*;
+            [tf,msg] = InnerNIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) false);
+            if (tf)
+                [tf,msg] = InnerNIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) false);
+                if (tf)
+                    [tf,msg] = InnerNIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, 'descrip'));
+                end
+            end
+            if (~tf)
+                warning(msg);
+            end
+        end
+        function            launchExternalViewer(this, app, varargin)
             assert(ischar(app));
             try
                 fqfn = this.tempFqfilename;
@@ -627,17 +796,37 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 end
                 deleteExisting(fqfn);
             catch ME
-                handexcept(ME, 'mlfourd:viewerError', 'AbstractNIfTId.launchExternalViewer:  s->%i, r->%s', s, r);
+                handexcept(ME, 'mlfourd:viewerError', 'InnerNIfTId.launchExternalViewer:  s->%i, r->%s', s, r);
             end
         end
-        function im = scrub1D(this, im)
+        function            save_JimmyShen(this, h)
+            warning('off', 'MATLAB:structOnObject');
+            if (lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT)) 
+                h(struct(this), this.fqfilename);
+                warning('on', 'MATLAB:structOnObject');
+                return
+            end
+            assert(~strcmp(this.fqfilename, this.fqfilenameNiiGz))
+            h(struct(this), this.fqfilenameNiiGz);
+            mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+            deleteExisting(this.fqfilenameNiiGz);
+            warning('on', 'MATLAB:structOnObject');
+        end
+        function            save_touched(this)
+            this = this.optimizePrecision;
+            this.save_JimmyShen(@mlniftitools.save_nii)
+        end
+        function            save_untouched(this)
+            this.save_JimmyShen(@mlniftitools.save_untouch_nii)
+        end
+        function im       = scrub1D(this, im)
             assert(isnumeric(im));
             for x = 1:this.size(1)
                 if (~isfinite(im(x)))
                     im(x) = 0; end
             end
         end
-        function im = scrub2D(this, im)
+        function im       = scrub2D(this, im)
             assert(isnumeric(im));
             for y = 1:this.size(2)
                 for x = 1:this.size(1)
@@ -646,7 +835,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 end
             end
         end
-        function im = scrub3D(this, im)
+        function im       = scrub3D(this, im)
             assert(isnumeric(im));
             for z = 1:this.size(3)
                 for y = 1:this.size(2)
@@ -657,7 +846,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 end
             end
         end
-        function im = scrub4D(this, im)
+        function im       = scrub4D(this, im)
             assert(isnumeric(im));
             for t = 1:this.size(4)
                 for z = 1:this.size(3)
@@ -670,7 +859,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 end
             end
         end 
-        function fn = tempFqfilename(this)
+        function fn       = tempFqfilename(this)
             fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
         end
     end
