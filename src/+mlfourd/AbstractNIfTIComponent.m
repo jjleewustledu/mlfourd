@@ -1,4 +1,4 @@
-classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
 	%% ABSTRACTNIFTICOMPONENT  
     %  yet abstract:  load, save, saveas
 
@@ -21,7 +21,8 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         fqfilename
         fqfileprefix
         fqfn
-        fqfp        
+        fqfp  
+        noclobber
         
         %% JimmyShenInterface
         
@@ -107,6 +108,13 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
             f = this.fqfileprefix;
         end  
         
+        function this = set.noclobber(this, nc)
+            this.innerNIfTI_.noclobber = nc;
+        end            
+        function nc   = get.noclobber(this)
+            nc = this.innerNIfTI_.noclobber;
+        end    
+        
         %% JimmyShenInterface
         
         function e    = get.ext(this)
@@ -131,7 +139,7 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
             this.innerNIfTI_.img = im;
         end
         function o    = get.originalType(this)
-            o = this.originalType_;
+            o = this.innerNIfTI_.originalType_;
         end
         function u    = get.untouch(this)
             u = this.innerNIfTI_.untouch;
@@ -230,12 +238,15 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         
         %% NIfTIIO
         
+        function        save(this)
+            this.innerNIfTI_.save;
+        end
         function this = saveas(this, fqfn)
             this.innerNIfTI_ = this.innerNIfTI_.saveas(fqfn);
         end
         function this = saveasx(this, fqfn, x)
             this.innerNIfTI_ = this.innerNIfTI_.saveasx(fqfn, x);
-        end        
+        end
         
         %% INIfTI  
         
@@ -263,14 +274,23 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         function f = fov(this)
             f = this.innerNIfTI_.fov;
         end
+%         function [tf,msg] = isequal(this, obj)
+%             [tf,msg] = this.innerNIfTI_.isequal(obj);
+%         end
+%         function [tf,msg] = isequaln(this, obj)            
+%             [tf,msg] = this.innerNIfTI_.isequaln(obj);
+%         end
         function m = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
         end
         function o = ones(this)
             o = this.innerNIfTI_.ones;
         end
-        function r = rank(this)
-            r = this.innerNIfTI_.rank;
+        function this = prod(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
+        end
+        function r = rank(this, varargin)
+            r = this.innerNIfTI_.rank(varargin{:});
         end
         function this = scrubNanInf(this)
             this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
@@ -280,6 +300,9 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         end
         function s = size(this, varargin)
             s = this.innerNIfTI_.size(varargin{:});
+        end
+        function this = sum(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.sum(varargin{:});
         end
         function z = zeros(this)
             z = this.innerNIfTI_.zeros;
@@ -298,6 +321,9 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
         end
         function fslview(this, varargin)
             this.innerNIfTI_.fslview(varargin{:});
+        end
+        function this = optimizePrecision(this)
+            this.innerNIfTI_ = this.innerNIfTI_.optimizePrecision;
         end
         
         %% mlpatterns.Composite
@@ -342,9 +368,7 @@ classdef AbstractNIfTIComponent < mlio.IOInterface & mlfourd.JimmyShenInterface 
  		end
     end 
     
-    %% PRIVATE
-    
-    properties (Access = private)
+    properties (Access = protected)
         innerNIfTI_
     end
 

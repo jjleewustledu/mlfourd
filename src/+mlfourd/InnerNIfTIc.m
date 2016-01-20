@@ -81,8 +81,8 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.img(this, s)
             this = this.innerCellComp_.setter('img', s);
         end
-        function g    = get.originalType(this)
-            g = this.innerCellComp_.getter('originalType');
+        function o    = get.originalType(this)
+            o = this.originalType_;
         end
         function g    = get.untouch(this)
             g = this.innerCellComp_.getter('untouch');
@@ -199,14 +199,11 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function f = fov(this)
             f = this.innerCellComp_.fevalOut('fov');
         end
-        function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.innerCellComp_.isequal(obj);
-        end
         function m = matrixsize(this)
             m = this.innerCellComp_.fevalOut('matrixsize');
         end
-        function o = ones(this)
-            o = this.innerCellComp_.fevalOut('ones');
+        function this = prod(this)
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('prod');
         end
         function r = rank(this)
             r = this.innerCellComp_.fevalOut('rank');
@@ -220,8 +217,8 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function s = size(this, varargin)
             s = this.innerCellComp_.fevalOut('size', varargin{:});
         end
-        function z = zeros(this)
-            z = this.innerCellComp_.fevalOut('zeros');
+        function this = sum(this)
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('sum');
         end
         
         %% New for InnerNIfTIc
@@ -243,6 +240,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             fqfns = this.innerCellComp_.fevalOut('fqfilename');
             fqfns = [fqfns{2:end} varargin{:}];
             first.fslview(fqfns{:});
+        end
+        function this = optimizePrecision(this)
+            this.innerCellComp_ = this.innerCellComp_.fevalThis('optimizePrecision');
         end
         
         %% mlpatterns.Composite
@@ -274,16 +274,10 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function s    = csize(this)   
             s = this.innerCellComp_.fevalOut('csize');
         end     
-    end 
-    
-    %% PROTECTED
-    
-    properties (Access = protected)
-        innerCellComp_ 
-    end
-    
-    methods (Access = protected)
- 		function this = InnerNIfTIc(varargin)            
+        
+        %% Ctor
+        
+ 		function this = InnerNIfTIc(varargin)
             if (nargin == 1 && isa(varargin{1}, 'mlfourd.InnerNIfTIc'))
                 this.innerCellComp_ = varargin{1}.innerCellComp_;
                 return
@@ -295,6 +289,13 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             parse(ip, varargin{:});            
             this.innerCellComp_ = InnerCellComposite(ip.Results.obj);
  		end
+    end 
+    
+    %% HIDDEN
+    
+    properties (Hidden)
+        innerCellComp_ 
+        originalType_
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

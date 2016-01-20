@@ -1,4 +1,4 @@
-classdef NIfTId < mlfourd.InnerNIfTId
+classdef NIfTId < mlfourd.AbstractNIfTIComponent
     %% NIFTID specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
     %  described by Jimmy Shen's entries at Mathworks File Exchange
     
@@ -23,6 +23,9 @@ classdef NIfTId < mlfourd.InnerNIfTId
             
             assert(nargin >= 1);
             assert(ischar(varargin{1}));
+%            assert(lexist(varargin{1}), ...
+%                'mlfourd.NIfTId.load could not find file %s', varargin{1}); % breaks
+%                mlfourd_unittest.Test_NIfTId.test_loadMissingFileAdjusted,test_loadFiletypes,test_loadNoExtension,test_filename
             this = mlfourd.NIfTId(varargin{:});
         end 
     end 
@@ -37,6 +40,18 @@ classdef NIfTId < mlfourd.InnerNIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('cloned');
         end
+        function [tf,msg] = isequal(this, obj)
+            [tf,msg] = this.isequaln(obj);
+        end
+        function [tf,msg] = isequaln(this, obj)
+            [tf,msg] = this.classesequal(obj);
+            if (tf)
+                [tf,msg] = this.fieldsequaln(obj);
+                if (tf)
+                    [tf,msg] = this.hdrsequaln(obj);
+                end
+            end
+        end 
         function niid = makeSimilar(this, varargin)
             %% MAKESIMILAR 
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
@@ -46,6 +61,20 @@ classdef NIfTId < mlfourd.InnerNIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('made similar');
         end
+        function o    = ones(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'ones', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_ones'], @ischar);
+            parse(p, varargin{:});
+            o = this.makeSimilar('img', ones(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function z    = zeros(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'zeros', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_zeros'],     @ischar);
+            parse(p, varargin{:});
+            z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end   
         
         function this = NIfTId(varargin)
             %% NIfTId specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
@@ -60,12 +89,12 @@ classdef NIfTId < mlfourd.InnerNIfTId
             %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed
             %  See also:  http://www.mathworks.com/matlabcentral/fileexchange/authors/20638
             
-            this = this@mlfourd.InnerNIfTId;
+            this = this@mlfourd.AbstractNIfTIComponent(mlfourd.InnerNIfTId);
             if (0 == nargin); return; end
             
             import mlfourd.*;
             ip = inputParser;
-            addOptional( ip, 'obj',          [], @NIfTId.validateCtorObj);
+            addOptional( ip, 'obj',          [], @NIfTId.assertCtorObj);
             addParameter(ip, 'bitpix',       [], @isnumeric);
             addParameter(ip, 'datatype',     [], @(x) isnumeric(x) || ischar(x));
             addParameter(ip, 'descrip',      '', @ischar);
@@ -85,7 +114,7 @@ classdef NIfTId < mlfourd.InnerNIfTId
             addParameter(ip, 'separator',    '', @ischar);
             parse(ip, varargin{:});
             
-            this.originalType_ = class(ip.Results.obj);
+            this.innerNIfTI_.originalType_ = class(ip.Results.obj);
             switch (this.originalType) % no returns within switch!  must reach this.populateFieldsFromInputParser.
                 case 'char'
                     ff = this.existingFileform(ip.Results.obj);
@@ -97,38 +126,38 @@ classdef NIfTId < mlfourd.InnerNIfTId
                     end
                 case 'struct' 
                     % as described by mlniftitools.load_untouch_nii
-                    this.hdr_         = ip.Results.obj.hdr;
-                    this.filetype_    = ip.Results.obj.filetype;
-                    this.fileprefix   = ip.Results.obj.fileprefix;
-                    this.ext_         = ip.Results.obj.ext;
-                    this.img_         = ip.Results.obj.img;
-                    this.untouch_     = ip.Results.obj.untouch;
+                    this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
+                    this.innerNIfTI_.filetype_    = ip.Results.obj.filetype;
+                    this.innerNIfTI_.fileprefix   = ip.Results.obj.fileprefix;
+                    this.innerNIfTI_.ext_         = ip.Results.obj.ext;
+                    this.innerNIfTI_.img_         = ip.Results.obj.img;
+                    this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;
                 otherwise
                     if (isnumeric(ip.Results.obj))
                         rank                                 = length(size(ip.Results.obj));
-                        this.img_                            = double(ip.Results.obj);
-                        this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                        this.hdr_.dime.dim                   = ones(1,8);
-                        this.hdr_.dime.dim(1)                = rank;
-                        this.hdr_.dime.dim(2:rank+1)         = size(ip.Results.obj);
-                        this.hdr_.dime.datatype              = 64;
-                        this.hdr_.dime.bitpix                = 64;
+                        this.innerNIfTI_.img_                            = double(ip.Results.obj);
+                        this.innerNIfTI_.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
+                        this.innerNIfTI_.hdr_.dime.dim                   = ones(1,8);
+                        this.innerNIfTI_.hdr_.dime.dim(1)                = rank;
+                        this.innerNIfTI_.hdr_.dime.dim(2:rank+1)         = size(ip.Results.obj);
+                        this.innerNIfTI_.hdr_.dime.datatype              = 64;
+                        this.innerNIfTI_.hdr_.dime.bitpix                = 64;
                     elseif (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
                         warning('off', 'MATLAB:structOnObject');
                         this = NIfTId(struct(ip.Results.obj));
                         warning('on', 'MATLAB:structOnObject');
-                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI'))
-                        this.ext_         = ip.Results.obj.ext;
-                        this.fqfileprefix = ip.Results.obj.fqfileprefix;
-                        this.filetype_    = ip.Results.obj.filetype;
-                        this.hdr_         = ip.Results.obj.hdr;
-                        this.img_         = ip.Results.obj.img;                     
-                        this.label        = ip.Results.obj.label;
-                        this.noclobber    = ip.Results.obj.noclobber;
-                        this.separator    = ip.Results.obj.separator;
-                        this.untouch_     = ip.Results.obj.untouch;   
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI')) %% dedecorates
+                        this.innerNIfTI_.ext_         = ip.Results.obj.ext;
+                        this.innerNIfTI_.fqfileprefix = ip.Results.obj.fqfileprefix;
+                        this.innerNIfTI_.filetype_    = ip.Results.obj.filetype;
+                        this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
+                        this.innerNIfTI_.img_         = ip.Results.obj.img;                     
+                        this.innerNIfTI_.label        = ip.Results.obj.label;
+                        this.innerNIfTI_.noclobber    = ip.Results.obj.noclobber;
+                        this.innerNIfTI_.separator    = ip.Results.obj.separator;
+                        this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;   
                     else
-                        NIfTId.validateCtorObj(ip.Results.obj);
+                        NIfTId.assertCtorObj(ip.Results.obj);
                     end
             end
             
@@ -139,6 +168,20 @@ classdef NIfTId < mlfourd.InnerNIfTId
     %% PRIVATE
  
     methods (Static, Access = private)
+        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
+            tf = true; 
+            msg = '';
+            flds = fieldnames(obj1);
+            for f = 1:length(flds)
+                if (~evalIgnore(flds{f}))
+                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
+                        tf = false;
+                        msg = sprintf('NIfTId.checkFields:  mismatch at field %s.', flds{f});
+                        break
+                    end
+                end
+            end
+        end 
         function ff   = existingFileform(ff)
             if (lexist(ff, 'file'))
                 return
@@ -217,11 +260,11 @@ classdef NIfTId < mlfourd.InnerNIfTId
             error('mlfourd:fileTypeNotSupported', ...
                 'NIfTId.load_existing does not support file extension %s', e);
         end
-        function        validateCtorObj(obj)
+        function        assertCtorObj(obj)
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
                     isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface')))
                 error('mlfourd:invalidCtorObj', ...
-                      'NIfTId.validateCtorObj does not support class(obj)->%s', class(obj));
+                      'NIfTId.assertCtorObj does not support class(obj)->%s', class(obj));
             end
         end
     end 
@@ -231,19 +274,53 @@ classdef NIfTId < mlfourd.InnerNIfTId
             if (~mlfourd.InnerNIfTId.LOAD_UNTOUCHED)
                 this = this.optimizePrecision; 
             end
-            this.hdr_.hist.descrip = sprintf('NIfTId.load read %s on %s', this.fqfilename, datestr(now, 30));
-            this.label_ = this.fileprefix;
+            this.innerNIfTI_.hdr_.hist.descrip = sprintf('NIfTId.load read %s on %s', this.fqfilename, datestr(now, 30));
+            this.innerNIfTI_.label_ = this.fileprefix;
+        end
+        function [tf,msg] = classesequal(this, c)
+            tf  = true; 
+            msg = '';
+            if (~isa(c, class(this)))
+                tf  = false;
+                msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
+            end
+            if (~tf)
+                warning(msg);
+            end
+        end
+        function [tf,msg] = fieldsequaln(this, obj)
+            [tf,msg] = mlfourd.NIfTId.checkFields( ...
+                this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
+            if (~tf)
+                warning(msg);
+            end
+        end
+        function [tf,msg] = hdrsequaln(this, obj)
+            tf = true; 
+            msg = '';
+            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
+            import mlfourd.*;
+            [tf,msg] = NIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) false);
+            if (tf)
+                [tf,msg] = NIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) false);
+                if (tf)
+                    [tf,msg] = NIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, 'descrip'));
+                end
+            end
+            if (~tf)
+                warning(msg);
+            end
         end
         function this = populateFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
                 if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
                         case 'descrip'
-                            this = this.append_descrip(ip.Results.descrip);
+                            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
                         case 'ext'
-                            this.ext_ = ip.Results.ext;
+                            this.innerNIfTI_.ext_ = ip.Results.ext;
                         case 'hdr'
-                            this.hdr_ = ip.Results.hdr;
+                            this.innerNIfTI_.hdr_ = ip.Results.hdr;
                         case 'obj'
                         otherwise
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});

@@ -77,9 +77,9 @@ classdef NIfTIcIO < mlfourd.NIfTIIO
         end
     end 
 
-    %% PROTECTED
+    %% HIDDEN
     
-    properties (Abstract, Access = protected)
+    properties (Abstract, Hidden)
         innerCellComp_
     end
     

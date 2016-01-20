@@ -74,10 +74,14 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
             this.verifyEqual(this.testObj.entropy, ...
                 {0.998338839919038 0.999074795939385 0.982401060352590 0.808870803446918}, 'RelTol', 1e-6);
         end
-        function test_decoration(this)
-            d = mlfourd.NumericalNIfTIc(this.testObj);
-            disp(d.component);
-            this.verifyTrue(isa(d.component, 'mlfourd.NIfTIc'));
+        function test_dedecoration(this)
+            import mlfourd.*;
+            obj = NIfTIc({ ...
+                NumericalNIfTId(this.ho_niid) NumericalNIfTId(this.oo_niid)});
+            
+            for g = 1:obj.length
+                this.verifyFalse(isa(obj.get(g), 'mlfourd.NIfTIdecorator'));
+            end
         end
 	end
 

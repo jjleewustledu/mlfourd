@@ -420,31 +420,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function f3d  = fov(this)
             f3d = this.mmppix .* this.matrixsize;
         end   
-        function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.isequaln(obj);
-        end
-        function [tf,msg] = isequaln(this, obj)
-            [tf,msg] = this.classesequal(obj);
-            if (tf)
-                [tf,msg] = this.fieldsequaln(obj);
-                if (tf)
-                    [tf,msg] = this.hdrsequaln(obj);
-                end
-            end
-        end 
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
-        end
-        function N    = numel(this)
-            N = numel(this.img);
-        end     
-        function o    = ones(this, varargin)
-            p = inputParser;
-            addOptional(p, 'desc', 'ones', @ischar);
-            addOptional(p, 'fp',   [this.fileprefix '_ones'], @ischar);
-            parse(p, varargin{:});
-            o = this.makeSimilar('img', ones(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
-        end
+        end   
         function this = prod(this, varargin)
             %% PROD overloads prod for INIfTI
             
@@ -502,14 +480,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %% SUM overloads sum for INIfTI
             
             this.img = sum(this.img_, varargin{:});
-        end  
-        function z    = zeros(this, varargin)
-            p = inputParser;
-            addOptional(p, 'desc', 'zeros', @ischar);
-            addOptional(p, 'fp',   [this.fileprefix '_zeros'],     @ischar);
-            parse(p, varargin{:});
-            z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
-        end     
+        end    
         
         %% New for InnerNIfTId
         
@@ -541,6 +512,25 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             this.launchExternalViewer('fslview', varargin{:});
         end   
+        function this = optimizePrecision(this)
+            if (~this.OPTIMIZED_PRECISION); return; end
+            try
+                import mlfourd.*;
+                if (islogical(this.img_)) % ensures numerical operations on this.img_
+                    this = this.ensureUint8;
+                    return
+                end
+                if (dipmax(this.img_) <  realmax('single') && ...
+                    dipmin(this.img_) > -realmax('single') && ...
+                    dipmin(abs(this.img_)) > eps('single'))
+                    this = this.ensureSingle;
+                    return
+                end                              
+                this = this.ensureDouble;
+            catch ME
+                warning(ME);
+            end
+        end
         
         %% mlpatterns.Composite
         
@@ -576,32 +566,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function        rm(~, ~)
             error('mlfourd:notImplemented', 'InnerNIfTId.rm should not be called');
         end
-        function s    = csize(~)   
+        function s    = csize(~)
             s = [1 1];
-        end     
-    end
-    
-    %% PROTECTED 
-
-    properties (Access = protected)
-        filepath_   = '';
-        fileprefix_ = '';
-        filesuffix_ = '';
-        noclobber_  = false;
+        end    
         
-        creationDate_
-        ext_ = []
-        filetype_ = 2
-        hdr_
-        img_ = []
-        label_
-        originalType_
-        separator_ = ';'
-        stack_
-        untouch_ = true        
-    end      
-    
-    methods (Access = protected)
+        %% Ctor
+        
         function this = InnerNIfTId
             
             %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
@@ -661,71 +631,30 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.creationDate_ = datestr(now);
             this.originalType_ = class(this);
             this.stack_ = {this.descrip};
-        end
+        end        
+    end
+    
+    %% HIDDEN
+    
+    properties (Hidden)
+        filepath_   = '';
+        fileprefix_ = '';
+        filesuffix_ = '';
+        noclobber_  = false;
         
-        function this = ensureDouble(this)
-            if (isa(this.img_, 'double'))
-                return
-            end
-            this.img_ = double(this.img_);
-            this.hdr_.dime.datatype = 64;
-            this.hdr_.dime.bitpix   = 64;
-        end 
-        function this = ensureSingle(this)
-            if (isa(this.img_, 'single'))
-                return
-            end
-            this.img_ = single(this.img_);
-            this.hdr_.dime.datatype = 16;
-            this.hdr_.dime.bitpix   = 32;
-        end 
-        function this = ensureUint8(this)
-            if (isa(this.img_, 'uint8'))
-                return
-            end
-            this.img_ = uint8(this.img_);
-            this.hdr_.dime.datatype = 2;
-            this.hdr_.dime.bitpix   = 8;
-        end
-        function this = optimizePrecision(this)
-            if (~this.OPTIMIZED_PRECISION); return; end
-            try
-                import mlfourd.*;
-                if (islogical(this.img_)) % ensures numerical operations on this.img_
-                    this = this.ensureUint8;
-                    return
-                end
-                if (dipmax(this.img_) <  realmax('single') && ...
-                    dipmin(this.img_) > -realmax('single') && ...
-                    dipmin(abs(this.img_)) > eps('single'))
-                    this = this.ensureSingle;
-                    return
-                end                              
-                this = this.ensureDouble;
-            catch ME
-                warning(ME);
-            end
-        end
-    end 
+        creationDate_
+        ext_ = []
+        filetype_ = 2
+        hdr_
+        img_ = []
+        label_
+        originalType_
+        separator_ = ';'
+        stack_
+        untouch_ = true        
+    end
     
     %% PRIVATE
-    
-    methods (Static, Access = private)
-        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
-            tf = true; 
-            msg = '';
-            flds = fieldnames(obj1);
-            for f = 1:length(flds)
-                if (~evalIgnore(flds{f}))
-                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
-                        tf = false;
-                        msg = sprintf('InnerNIfTId.checkFields:  mismatch at field %s.', flds{f});
-                        break
-                    end
-                end
-            end
-        end 
-    end
     
     methods (Access = private)
         function d        = adjustDescrip(this, d)
@@ -735,6 +664,14 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
         end
+        function this     = ensureDouble(this)
+            if (isa(this.img_, 'double'))
+                return
+            end
+            this.img_ = double(this.img_);
+            this.hdr_.dime.datatype = 64;
+            this.hdr_.dime.bitpix   = 64;
+        end 
         function this     = ensureExtension(this)
             if (isempty(this.filesuffix))
                 this.filesuffix = this.FILETYPE_EXT;
@@ -742,46 +679,28 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
                    lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT));
         end
+        function this     = ensureSingle(this)
+            if (isa(this.img_, 'single'))
+                return
+            end
+            this.img_ = single(this.img_);
+            this.hdr_.dime.datatype = 16;
+            this.hdr_.dime.bitpix   = 32;
+        end 
+        function this     = ensureUint8(this)
+            if (isa(this.img_, 'uint8'))
+                return
+            end
+            this.img_ = uint8(this.img_);
+            this.hdr_.dime.datatype = 2;
+            this.hdr_.dime.bitpix   = 8;
+        end
         function fqfn     = fqfilenameNiiGz(this)
             if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
                 fqfn = [this.fqfileprefix this.FILETYPE_EXT];
                 return
             end
             fqfn = this.fqfilename;
-        end
-        function [tf,msg] = classesequal(this, c)
-            tf  = true; 
-            msg = '';
-            if (~isa(c, class(this)))
-                tf  = false;
-                msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
-            end
-            if (~tf)
-                warning(msg);
-            end
-        end
-        function [tf,msg] = fieldsequaln(this, obj)
-            [tf,msg] = mlfourd.InnerNIfTId.checkFields( ...
-                this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
-            if (~tf)
-                warning(msg);
-            end
-        end
-        function [tf,msg] = hdrsequaln(this, obj)
-            tf = true; 
-            msg = '';
-            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
-            import mlfourd.*;
-            [tf,msg] = InnerNIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) false);
-            if (tf)
-                [tf,msg] = InnerNIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) false);
-                if (tf)
-                    [tf,msg] = InnerNIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, 'descrip'));
-                end
-            end
-            if (~tf)
-                warning(msg);
-            end
         end
         function            launchExternalViewer(this, app, varargin)
             assert(ischar(app));

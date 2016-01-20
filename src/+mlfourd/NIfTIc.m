@@ -1,4 +1,4 @@
-classdef NIfTIc < mlfourd.AbstractNIfTIc
+classdef NIfTIc < mlfourd.AbstractNIfTIComponent
 	%% NIFTIC  
 
 	%  $Revision$
@@ -18,30 +18,27 @@ classdef NIfTIc < mlfourd.AbstractNIfTIc
             
             assert(nargin >= 1);
             assert(iscell(varargin{1}));
-            this = mlfourd.NIfTId(varargin{:});
+            this = mlfourd.NIfTIc(varargin{:});
         end
     end
 
 	methods  
-        
-        %% From INIfTI
-        
-        function obj      = clone(this)
-            obj = this.innerCellComp_.clone;
+        function niic = clone(this, varargin)
+            %% CLONE
+            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
+            %  @return niid copy-construction with niid.descrip appended with 'clone'.
+            %  See also:  mlfourd.NIfTIc.NIfTIc
+            
+            niic = mlfourd.NIfTIc(this, varargin{:});
+            niic = niic.append_descrip('made similar');
         end
         function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.isequaln(obj);
+            [tf,msg] = this.innerNIfTI_.innerCellComp_.fevalOut2('isequal', obj);
         end
         function [tf,msg] = isequaln(this, obj)
-            assert(iscell(obj) && size(obj) == size(this.innerCellComp_));
-            
-            tf  = this.innerCellComp_.cellEmpty;
-            msg = this.innerCellComp_.cellEmpty;
-            for c = 1:this.innerCellComp_.length
-                [tf{c},msg{c}] = this.innerCellComp_{c}.isequaln(obj{c});
-            end
+            [tf,msg] = this.innerNIfTI_.innerCellComp_.fevalOut2('isequaln', obj);
         end
-        function niic     = makeSimilar(this, varargin)
+        function niic = makeSimilar(this, varargin)
             %% MAKESIMILAR 
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
             %  @return niic copy-construction with niic.descrip appended with 'made similar'.
@@ -50,30 +47,33 @@ classdef NIfTIc < mlfourd.AbstractNIfTIc
             niic = mlfourd.NIfTIc(this, varargin{:});
             niic = niic.append_descrip('made similar');
 
-        end
-        function            save(this)
-            for c = 1:this.innerCellComp_.length
-                this.innerCellComp_{c}.save;
-            end
-        end
-        function this     = saveas(this, fn)
-            assert(iscell(fn) && length(fn) == this.length);
-            for c = 1:this.innerCellComp_.length
-                this.innerCellComp_{c}.saveas(fn{c});
-            end
+        end   
+        function o = ones(this)
+            o = this.innerNIfTI_.innerCellComp_.fevalOut('ones');
+        end     
+        function z = zeros(this)
+            z = this.innerNIfTI_.innerCellComp_.fevalOut('zeros');
         end
         
-        %% Ctor
-        
- 		function this = NIfTIc(obj, varargin)
- 			%% NIFTIC
+ 		function this = NIfTIc(varargin)
+ 			%% NIFTIC specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
+            %  described by Jimmy Shen's entries at Mathworks File Exchange.  
+            %  @ param [obj] may be a filename, numerical, INIfTI instantiation, struct compliant with 
+            %  package mlniftitools; it constructs the class instance. 
+            %  @ param [param-name, param-value[, ...]] allow adjusting public fields at creation.
+            %  Valid param-names:  bitpix, datatype, descrip, ext, filename, filepath, fileprefix,
+            %  filetype, fqfilename, fqfileprefix, hdr, img, label, mmppix, noclobber, pixdim, separator.
+            %  @ return this as a class instance.  Without arguments, this has default values.
+            %  @ throws mlfourd:invalidCtorObj, mlfourd:fileTypeNotSupported, mlfourd:fileNotFound, mlfourd:unsupportedParamValue, 
+            %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed
+            %  See also:  http://www.mathworks.com/matlabcentral/fileexchange/authors/20638
 
- 			this = this@mlfourd.AbstractNIfTIc;
+ 			this = this@mlfourd.AbstractNIfTIComponent(mlfourd.InnerNIfTIc);
             if (0 == nargin); return; end
             
             import mlfourd.*;
             ip = inputParser;
-            addOptional( ip, 'obj',          [], @NIfTId.validateCtorObj);
+            addOptional( ip, 'obj',          [], @NIfTIc.assertCtorObj);
             addParameter(ip, 'bitpix',       [], @isnumeric);
             addParameter(ip, 'datatype',     [], @(x) isnumeric(x) || ischar(x));
             addParameter(ip, 'descrip',      '', @ischar);
@@ -92,107 +92,79 @@ classdef NIfTIc < mlfourd.AbstractNIfTIc
             addParameter(ip, 'pixdim',       [], @isnumeric);
             addParameter(ip, 'separator',    '', @ischar);
             parse(ip, varargin{:});
-            
-            %this.innerCellComp_ = InnerCellComposite(CellComposite(cell(1, length(obj))));
-            %for idx = 1:this.innerCellComp_.length
-                this.originalType_ = class(ip.Results.obj);
-                switch (this.originalType) % no returns within switch!  must reach this.populateFieldsFromInputParser.
-                    case 'cell'
-                        for o = 1:length(ip.Results.obj);
-                            niids{o} = NIfTId(ip.Results.obj{o});
+
+            this.innerNIfTI_.originalType_ = class(ip.Results.obj);
+            switch (this.originalType) % no returns within switch!  must reach this.populateFieldsFromInputParser.
+                case 'char'
+                    this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                case 'struct' 
+                    % as described by mlniftitools.load_untouch_nii
+                    this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                otherwise
+                    if (isnumeric(ip.Results.obj))
+                        this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                    elseif (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
+                        warning('off', 'MATLAB:structOnObject');
+                        this = NIfTIc(struct(ip.Results.obj));
+                        warning('on', 'MATLAB:structOnObject');
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI')) %% dedecorates
+                        this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                    elseif (iscell(ip.Results.obj)) %% dedecorates
+                        for idx = 1:length(ip.Results.obj)
+                            this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj{idx}));
                         end
-                        this.innerCellComp_ = InnerCellComposite();
-                    case 'char'
-                        ff = this.existingFileform(ip.Results.obj);
-                        if (~isempty(ff))
-                            this = NIfTId.load_existing(ff);
-                        else
-                            [p,f] = myfileparts(ip.Results.obj);
-                            this.fqfilename = fullfile(p, [f this.FILETYPE_EXT]);
+                    elseif (isa(ip.Results.obj, 'mlpatterns.Composite')) %% dedecorates
+                        iter = ip.Results.obj.createIterator;
+                        while (iter.hasNext)                            
+                            this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(iter.next));
                         end
-                    case 'struct' 
-                        % as described by mlniftitools.load_untouch_nii
-                        this.hdr_         = ip.Results.obj.hdr;
-                        this.filetype_    = ip.Results.obj.filetype;
-                        this.fileprefix   = ip.Results.obj.fileprefix;
-                        this.ext_         = ip.Results.obj.ext;
-                        this.img_         = ip.Results.obj.img;
-                        this.untouch_     = ip.Results.obj.untouch;
-                    otherwise
-                        if (isnumeric(ip.Results.obj))
-                            rank                                 = length(size(ip.Results.obj));
-                            this.img_                            = double(ip.Results.obj);
-                            this.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-                            this.hdr_.dime.dim                   = ones(1,8);
-                            this.hdr_.dime.dim(1)                = rank;
-                            this.hdr_.dime.dim(2:rank+1)         = size(ip.Results.obj);
-                            this.hdr_.dime.datatype              = 64;
-                            this.hdr_.dime.bitpix                = 64;
-                        elseif (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
-                            warning('off', 'MATLAB:structOnObject');
-                            this = NIfTId(struct(ip.Results.obj));
-                            warning('on', 'MATLAB:structOnObject');
-                        elseif (isa(ip.Results.obj, 'mlfourd.INIfTI'))
-                            this.ext_         = ip.Results.obj.ext;
-                            this.fqfileprefix = ip.Results.obj.fqfileprefix;
-                            this.filetype_    = ip.Results.obj.filetype;
-                            this.hdr_         = ip.Results.obj.hdr;
-                            this.img_         = ip.Results.obj.img;                     
-                            this.label        = ip.Results.obj.label;
-                            this.noclobber    = ip.Results.obj.noclobber;
-                            this.separator    = ip.Results.obj.separator;
-                            this.untouch_     = ip.Results.obj.untouch;   
-                        else
-                            NIfTId.validateCtorObj(ip.Results.obj);
-                        end
-                end
-                
-                this = this.populateFieldsFromInputParser(ip, idx);
-            %end
+                    else
+                        NIfTIc.assertCtorObj(ip.Results.obj);
+                    end
+            end
+
+            this = this.populateFieldsFromInputParser(ip);
  		end
     end 
     
     %% PRIVATE
     
     methods (Static, Access = private)
-        function tf = ischar__(x)
-            tf = ischar(x) || iscell(x);
-        end
-        function tf = isfiletype__(x)
-            tf = (isnumeric(x) && (isempty(x) || (x >= 0 && x <= 2))) || ...
-                  iscell(x); 
-        end
-        function tf = isnumeric__(x)
-            tf = isnumeric(x) || iscell(x);
-        end
-        function tf = isnumericOrChar__(x)
-            tf = isnumeric(x) || ischar(x) || iscell(x);
-        end
-        function tf = isnumericOrLogical__(x)
-            tf = isnumeric(x) || islogical(x) || iscell(x);
-        end
-        function      validateCtorObj(obj)
-            if (~(isa(obj, 'mlpatterns.Composite') || iscell(obj)))
+        function      assertCtorObj(obj)
+            if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
+                    isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface') || ...
+                    isa(obj, 'mlpatterns.Composite') || iscell(obj)))
                 error('mlfourd:invalidCtorObj', ...
-                      'NIfTId.validateCtorObj does not support class(obj)->%s', class(obj));
+                      'NIfTIc.assertCtorObj does not support class(obj)->%s', class(obj));
             end
         end
     end
     
-    methods (Access = private)        
-        function this = populateFieldsFromInputParser(this, ip, idx)
+    methods (Access = private)      
+        function this = adjustFieldsAfterLoading(this)
+            if (~mlfourd.InnerNIfTIc.LOAD_UNTOUCHED)
+                this = this.optimizePrecision; 
+            end
+            for idx = 1:this.innerNIfTI_.length
+                this.innerNIfTI_.innerCellComp_{idx}.hdr_.hist.descrip = sprintf('NIfTIc.load read %s on %s', this.fqfilename{idx}, datestr(now, 30));
+                this.innerNIfTI_.innerCellComp_{idx}.label_ = this.fileprefix{idx};
+            end
+        end  
+        function this = populateFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
                 if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
-                    switch (ip.Parameters{p})
-                        case 'descrip'
-                            this.innerCellComp_{idx} = this.innerCellComp_{idx}.append_descrip(ip.Results.descrip);
-                        case 'ext'
-                            this.innerCellComp_{idx}.ext_ = ip.Results.ext;
-                        case 'hdr'
-                            this.innerCellComp_{idx}.hdr_ = ip.Results.hdr;
-                        case 'obj'
-                        otherwise
-                            this.innerCellComp_{idx}.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
+                    for idx = 1:this.innerNIfTI_.length
+                        switch (ip.Parameters{p})
+                            case 'descrip'
+                                this.innerNIfTI_.innerCellComp_{idx} = this.innerNIfTI_.innerCellComp_{idx}.append_descrip(ip.Results.descrip);
+                            case 'ext'
+                                this.innerNIfTI_.innerCellComp_{idx}.ext_ = ip.Results.ext;
+                            case 'hdr'
+                                this.innerNIfTI_.innerCellComp_{idx}.hdr_ = ip.Results.hdr;
+                            case 'obj'
+                            otherwise
+                                this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
+                        end
                     end
                 end
             end

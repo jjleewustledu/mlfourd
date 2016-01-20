@@ -104,14 +104,14 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_loadMissingFileAdjusted(this)
             niid = mlfourd.NIfTId.load('nonexistentFile.nii.gz'); % remaining parameters are default
             this.verifyEqual(niid.bitpix, 64);
-            this.verifyEqual(niid.descrip, 'instance of mlfourd.NIfTId');
+            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTId');
             this.verifyEqual(niid.filename, 'nonexistentFile.nii.gz');
             this.verifyEqual(niid.filetype, 2);
             this.verifyEqual(niid.hdr.dime.dim, [4 0 0 0 0 1 1 1]);
             this.verifyEqual(niid.hdr.dime.datatype, 64);
             this.verifyEqual(niid.hdr.dime.bitpix, 64);
             this.verifyEqual(niid.hdr.dime.pixdim, [1 1 1 1 1 0 0 0]);
-            this.verifyEqual(niid.hdr.hist.descrip, 'instance of mlfourd.NIfTId');
+            this.verifyEqual(niid.hdr.hist.descrip, 'instance of mlfourd.InnerNIfTId');
             this.verifyEqual(niid.img, []);
             this.verifyEqual(niid.originalType, 'char');
             this.verifyTrue( niid.untouch);
@@ -162,7 +162,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
                 'separator', '--');            
             this.verifyEqual(niid.bitpix, 64);
             this.verifyEqual(niid.datatype, 64);
-            this.verifyEqual(niid.descrip, 'instance of mlfourd.NIfTId; new');
+            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTId; new');
             this.verifyEqual(niid.ext, magic(2));
             this.verifyEqual(niid.filename, [this.testObj.fileprefix '.hdr']);
             this.verifyEqual(niid.filepath, this.testObj.filepath);
@@ -397,9 +397,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_matrixsize(this)
             this.verifyEqual(this.testObj.matrixsize, [128 128 63]);
         end        
-        function test_numel(this)
-            this.verifyEqual(this.testObj.numel, numel(this.testObj.img));
-        end
+%         function test_numel(this)
+%             this.verifyEqual(this.testObj.numel, numel(this.testObj.img));
+%         end
         function test_ones(this)
             this.verifyEqual(this.testObj.ones.img, ones(size(this.testObj.img)));
         end
@@ -409,6 +409,10 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         end
         function test_rank(this)
             this.verifyEqual(this.testObj.rank, 3);
+        end
+        function test_repmat(this)
+            this.verifyEqual(repmat({this.testObj}, 1, 2), ...
+                {this.testObj this.testObj});
         end
         function test_scrubNanInf(this)
             o = this.testObj;

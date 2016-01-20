@@ -15,7 +15,7 @@ classdef InnerCellComposite < mlpatterns.CellComposite
         end
         
         function c    = cellEmpty(this)
-            c = cell(1, this.cell_.length);
+            c = cell(1, length(this.cell_));
         end
         function this = fevalThis(this, funname, varargin)
             args = this.repmat(varargin{:});
@@ -52,6 +52,28 @@ classdef InnerCellComposite < mlpatterns.CellComposite
                 else
                     out{c} = this.cell_{c}.(funname)(args{c}{:});
                 end
+            end
+        end
+        function [o,o2] = fevalOut2(this, funname, varargin)
+            o  = this.cellEmpty;
+            o2 = this.cellEmpty;
+            args = this.repmat(varargin{:});
+            for c = 1:this.length
+                if (isempty(args))
+                    [o{c},o2{c}] = this.cell_{c}.(funname);
+                elseif (length(varargin) == 1)
+                    [o{c},o2{c}] = this.cell_{c}.(funname)(args{c});
+                else
+                    [o{c},o2{c}] = this.cell_{c}.(funname)(args{c}{:});
+                end
+            end
+        end
+        function [tf,msg] = fevalIsequal(this, in)
+            tf  = this.cellEmpty;
+            msg = this.cellEmpty;
+            for c = 1:this.length
+                item = this.cell_{c};
+                [tf{c},msg{c}] = item.isequal(in);
             end
         end
         function out  = getter(this, fldname)

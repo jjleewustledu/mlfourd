@@ -35,10 +35,10 @@ classdef INIfTI
         
         %% for NIfTId and other concrete imaging classes
         
-        this = clone(this)
-        [tf,msg] = isequal(this, n)
-        [tf,msg] = isequaln(this, n)
-        this = makeSimilar(this)
+        %this = clone(this)
+        %[tf,msg] = isequal(this, n)
+        %[tf,msg] = isequaln(this, n)
+        %this = makeSimilar(this)
         
         %% for AbstractNIfTId and other abstract imaging classes
         
@@ -51,12 +51,12 @@ classdef INIfTI
         prepend_fileprefix(this, s)
         fov(this)
         matrixsize(this)
-        ones(this)
+        %ones(this)
         rank(this)
         scrubNanInf(this)
         single(this)
         size(this)
-        zeros(this)
+        %zeros(this)
     end 
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

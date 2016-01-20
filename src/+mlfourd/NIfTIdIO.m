@@ -91,9 +91,9 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         end
     end
     
-    %% PROTECTED
+    %% HIDDEN
     
-    properties (Abstract, Access = protected)
+    properties (Abstract, Hidden)
         filepath_
         fileprefix_
         filesuffix_
