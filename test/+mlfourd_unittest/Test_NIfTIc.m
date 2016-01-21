@@ -77,11 +77,30 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
         function test_dedecoration(this)
             import mlfourd.*;
             obj = NIfTIc({ ...
-                NumericalNIfTId(this.ho_niid) NumericalNIfTId(this.oo_niid)});
-            
+                NumericalNIfTId(this.ho_niid) NumericalNIfTId(this.oo_niid)});            
             for g = 1:obj.length
                 this.verifyFalse(isa(obj.get(g), 'mlfourd.NIfTIdecorator'));
             end
+        end
+        function test_decoration(this)
+            import mlfourd.*;
+            nc = NIfTIc;
+            for l = 1:this.testObj.length
+                nnd = NumericalNIfTId(this.testObj.get(l));
+                nnd = nnd.timeSummed;
+                nnd = nnd / dipmedian(nnd);
+                nc  = nc.add(nnd);
+            end
+            this.verifyEqual(nc.length, this.testObj.length);
+            acc = nc.get(1).zeros;
+            iter = nc.createIterator;
+            while (iter.hasNext)
+                acc = acc + iter.next;
+            end
+            this.verifyEqual(size(acc), [128 128 63]);
+            this.verifyEqual(acc.dipmedian, 4.29219835940293, 'RelTol', 1e-6);
+            this.verifyEqual(acc.entropy,   1.59063853530086, 'RelTol', 1e-6);
+            %acc.freeview;
         end
 	end
 

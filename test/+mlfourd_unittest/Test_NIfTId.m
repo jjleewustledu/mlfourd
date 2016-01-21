@@ -410,10 +410,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_rank(this)
             this.verifyEqual(this.testObj.rank, 3);
         end
-        function test_repmat(this)
-            this.verifyEqual(repmat({this.testObj}, 1, 2), ...
-                {this.testObj this.testObj});
-        end
         function test_scrubNanInf(this)
             o = this.testObj;
             o.img(:,:,1) = nan;

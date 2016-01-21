@@ -39,8 +39,8 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
                                                            func2str(funh), this.fileprefix, b.fileprefix));
             else
                 this = this.makeSimilar('img', bsxfun(funh, this.component.img, b), ...
-                                        'descrip', sprintf('NumericalNIfTId.bsxfun %s %s %g', ...
-                                                           func2str(funh), this.fileprefix, b));
+                                        'descrip', sprintf('NumericalNIfTId.bsxfun %s %s %s', ...
+                                                           func2str(funh), this.fileprefix, mat2str(b)));
             end
         end
         
@@ -73,6 +73,34 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         function this = mod(this, b)
             this = this.bsxfun(@mod, b);
         end
+        function this = mpower(this, b)
+            this = this.bsxfun(@mpower, b);
+        end
+        function this = mldivide(this, b)            
+            if (isa(b, 'mlfourd.INIfTI'))
+                this = this.makeSimilar('img', mldivide(this.component.img, b.img), ...
+                                        'descrip', sprintf('NumericalNIfTId.mldivide %s %s', ...
+                                                           this.fileprefix, b.fileprefix));
+            else
+                this = this.makeSimilar('img', mldivide(this.component.img, b), ...
+                                        'descrip', sprintf('NumericalNIfTId.mldivide %s %s', ...
+                                                           this.fileprefix, mat2str(b)));
+            end
+        end
+        function this = mrdivide(this, b)     
+            if (isa(b, 'mlfourd.INIfTI'))
+                this = this.makeSimilar('img', mrdivide(this.component.img, b.img), ...
+                                        'descrip', sprintf('NumericalNIfTId.mrdivide %s %s', ...
+                                                           this.fileprefix, b.fileprefix));
+            else
+                this = this.makeSimilar('img', mrdivide(this.component.img, b), ...
+                                        'descrip', sprintf('NumericalNIfTId.mrdivide %s %s', ...
+                                                           this.fileprefix, mat2str(b)));
+            end            
+        end
+        function this = mtimes(this, b)
+            this = this.bsxfun(@mtimes, b);
+        end
         function this = plus(this, b)
             this = this.bsxfun(@plus, b);
         end
@@ -82,6 +110,11 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         function this = rem(this, b)
             this = this.bsxfun(@rem, b);
         end
+        function this = sum(this, varargin)
+            this = this.makeSimilar('img', sum(this.component.img, varargin{:}), ...
+                                    'descrip', sprintf('NumericalNIfTId.sum %s %s', ...
+                                                       this.fileprefix, mat2str(varargin{:})));  
+        end
         function this = times(this, b)
             this = this.bsxfun(@times, b);
         end
@@ -90,6 +123,9 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         end
         function this = transpose(this)
             this = this.usxfun(@transpose);
+        end
+        function this = uminus(this)
+            this = this.usxfun(@uminus);
         end
         
         function this = eq(this, b)
@@ -125,59 +161,106 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
                 
         %% Overloaded DipNumerical
         
-        function this = dipiqr(this)
+        function x = dipiqr(this)
             this = this.usxfun(@dipiqr);
+            x = this.img;
         end
-        function this = dipisfinite(this)
+        function x = dipisfinite(this)
             this = this.usxfun(@dipisfinite);
+            x = this.img;
         end
-        function this = dipisinf(this)
+        function x = dipisinf(this)
             this = this.usxfun(@dipisinf);
+            x = this.img;
         end
-        function this = dipisnan(this)
+        function x = dipisnan(this)
             this = this.usxfun(@dipisnan);
+            x = this.img;
         end
-        function this = dipisreal(this)
+        function x = dipisreal(this)
             this = this.usxfun(@dipisreal);
+            x = this.img;
         end
-        function this = diplogprod(this)
+        function x = diplogprod(this)
             this = this.usxfun(@diplogprod);
+            x = this.img;
         end
-        function this = dipmad(this)
+        function x = dipmad(this)
             this = this.usxfun(@dipmad);
+            x = this.img;
         end        
-        function this = dipmax(this)
+        function x = dipmax(this)
             this = this.usxfun(@dipmax);
+            x = this.img;
         end        
-        function this = dipmean(this)
+        function x = dipmean(this)
             this = this.usxfun(@dipmean);
+            x = this.img;
         end        
-        function this = dipmedian(this)
+        function x = dipmedian(this)
             this = this.usxfun(@dipmedian);
+            x = this.img;
         end        
-        function this = dipmin(this)
+        function x = dipmin(this)
             this = this.usxfun(@dipmin);
+            x = this.img;
         end   
-        function this = dipmode(this)
+        function x = dipmode(this)
             this = this.usxfun(@dipmode);
+            x = this.img;
         end
-        function this = dipprctile(this, b)
+        function x = dipprctile(this, b)
             this = this.bsxfun(@dipprctile, b);
+            x = this.img;
         end
-        function this = dipprod(this)
+        function x = dipprod(this)
             this = this.usxfun(@dipprod);
+            x = this.img;
         end        
-        function this = dipquantile(this, b)
+        function x = dipquantile(this, b)
             this = this.bsxfun(@dipquantile, b);
+            x = this.img;
         end
-        function this = dipstd(this)
+        function x = dipstd(this)
             this = this.usxfun(@dipstd);
+            x = this.img;
         end                
-        function this = dipsum(this)
+        function x = dipsum(this)
             this = this.usxfun(@dipsum);
+            x = this.img;
         end 
-        function this = diptrimmean(this, b)
+        function x = diptrimmean(this, b)
             this = this.bsxfun(@diptrimmean, b);
+            x = this.img;
+        end
+        
+        %% Using NIfTIdecorators
+        
+        function this = blurred(this, varargin)
+            import mlfourd.*;
+            b = BlurringNIfTId(this.component);
+            b = b.blurred(varargin{:});
+            this = NumericalNIfTId(b.component);
+        end
+        function this = masked(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.masked(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
+        function this = timeSummed(this)
+            import mlfourd.*;
+            d = DynamicNIfTId(this.component);
+            d = d.timeSummed;
+            %d.img = squeeze(d.img);
+            this = NumericalNIfTId(d.component);
+        end
+        function this = volumeSummed(this)
+            import mlfourd.*;
+            d = DynamicNIfTId(this.component);
+            d = d.volumeSummed;
+            %d.img = squeeze(d.img);
+            this = NumericalNIfTId(d.component);
         end
                 
         %% Ctor

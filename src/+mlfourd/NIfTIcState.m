@@ -9,80 +9,101 @@ classdef NIfTIcState < mlfourd.ImagingState
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
  	
 	properties (Dependent)
-        niftid
+        cellComposite
+        mgh
         niftic
+        niftid
         numericalNiftid
-        numericalNiftic
  	end 
 
 	methods %% GET
         function g = get.niftid(this)
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIdState(this.concreteState_, this.contextH_));
-            g = this.contextH_.niftid;
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.niftid;
         end   
         function g = get.niftic(this)
-            g = this.concreteState_;
+            g = this.concreteObj_;
         end   
         function g = get.numericalNiftid(this)       
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIdState(this.concreteState_, this.contextH_));
-            g = this.contextH_.numericalNiftid;     
-        end   
-        function g = get.numericalNiftic(this)
-            niic = mlfourd.NIfTIc;
-            iter = this.concreteState_.createIterator;
-            while (iter.hasNext)
-                niic = niic.add(mlfourd.NumericalNIfTId(iter.next));
-            end
-            g = niic;
-        end       
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;     
+        end         
     end
     
     methods (Static)
         function this = load(varargin)
             this = mlfourd.NIfTIcState(varargin{:});
         end
-        function obj  = dedecorate(obj)
-            while (isa(obj, 'mlfourd.NIfTIdecorator'))
-                obj = obj.component;
-            end
-        end
     end
     
     methods 
-        function a = atlas(this, varargin)
-            %% ATLAS
+        function a = add(this, varargin)
+            %% ADD combines the composite with addition of images.
             %  @param [varargin] are any ImagingContext objects.
             %  @return a is an ImagingContext with NIfTIdState.
             
-            a = this.niftic;
-            a = a.prepend_fileprefix('atlas');
-            a = a.prepend_descrip('atlas');
-            a = a/dipmedian(a);
-            for v = 1:length(varargin)
-                a = a + varargin{v}.atlas;
+            this = this.accumulateNIfTId(varargin{:});
+            
+            import mlfourd.*;
+            niic = this.niftic;
+            a = NumericalNIfTId(niic.get(1).zeros);
+            a = a.timeSummed; % reduce to 3D
+            for o = 1:niic.length
+                b = NumericalNIfTId(niic.get(o));
+                b = b.timeSummed;
+                a = a + b;
             end
-            a = mlfourd.ImagingContext(a);
+            a = a.append_fileprefix('_add');
+            a = a.append_descrip('add');
+            a = ImagingContext(NIfTId(a));
         end
-    end
-
-    
-    %% PROTECTED
-    
-    methods (Access = protected)
+        function a = atlas(this, varargin)
+            %% ATLAS builds an atlas over the composite.
+            %  @param [varargin] are any ImagingContext objects.
+            %  @return a is an ImagingContext with NIfTIdState.
+            
+            this = this.accumulateNIfTId(varargin{:});
+            
+            import mlfourd.*;
+            niic = this.niftic;
+            a = NumericalNIfTId(niic.get(1).zeros);
+            a = a.timeSummed; % reduce to 3D
+            for o = 1:niic.length
+                b = NumericalNIfTId(niic.get(o));
+                b = b.timeSummed;
+                a = a + b/dipmedian(b);
+            end
+            a = a.append_fileprefix('_atlas');
+            a = a.append_descrip('atlas');
+            a = ImagingContext(NIfTId(a));
+        end
+        function this = accumulateNIfTId(this, varargin)
+            for v = 1:length(varargin)
+                if (isa(varargin{v}, 'mlfourd.INIfTIc'))
+                    for w = 1:length( varargin{v})
+                        this.concreteObj_ = this.concreteObj_.add( ...
+                            mlfourd.NIfTId(varargin{v}.get(w)));
+                    end
+                else
+                    this.concreteObj_ = this.concreteObj_.add( ...
+                        mlfourd.NIfTId(varargin{v}));
+                end
+            end
+        end
+        
         function this = NIfTIcState(obj, h)
             if (~isa(obj, 'mlfourd.NIfTIc'))
                 try
-                    obj = this.dedecorate(obj);
-                    obj = mlfourd.NIfTIc(obj, 'dedecorate', true);
+                    obj = mlfourd.NIfTIc(this.dedecorate(obj), 'dedecorate', true);
                 catch ME
                     handexcept(ME, 'mlfourd:castingError', ...
                         'NIfTIcState.load does not support objects of type %s', class(obj));
                 end
             end
-            this.concreteState_ = obj;
-            this.contextH_ = h;
+            this.concreteObj_ = obj;
+            this.contexth_ = h;
         end
  	end 
 

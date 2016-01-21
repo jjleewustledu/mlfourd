@@ -334,9 +334,9 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         function iter = createIterator(this)
             iter = this.innerNIfTI_.createIterator;
         end
-        function        disp(this)
-            this.innerNIfTI_.disp;
-        end
+%         function        disp(this)
+%             this.innerNIfTI_.disp;
+%         end
         function idx  = find(this, obj)
             idx = this.innerNIfTI_.find(obj);
         end

@@ -48,10 +48,8 @@ classdef Test_InnerCellComposite < matlab.unittest.TestCase
                 { NIfTId(magic(2), 'fileprefix', 'one') ...
                   NIfTId(magic(3), 'fileprefix', 'two') ...
                   NIfTId(magic(4), 'fileprefix', 'three') });
-            [tf,msg] = icc.fevalOut('isequaln', NIfTId(magic(4), 'fileprefix', 'three'));
+            tf = icc.fevalOut('isequal', NIfTId(magic(4), 'fileprefix', 'three'));
             this.verifyEqual(tf, {false false true});
-            this.verifyEqual(msg, {'NIfTId.checkFields:  mismatch at field filename' ...
-                                   'NIfTId.checkFields:  mismatch at field filename' ''});
         end
         function test_fevalIsequal(this)
             import mlfourd.* mlpatterns.*;
@@ -59,16 +57,33 @@ classdef Test_InnerCellComposite < matlab.unittest.TestCase
                 { NIfTId(magic(2), 'fileprefix', 'one') ...
                   NIfTId(magic(3), 'fileprefix', 'two') ...
                   NIfTId(magic(4), 'fileprefix', 'three') });
-            [tf,msg] = icc.fevalIsequal(NIfTId(magic(4), 'fileprefix', 'three'));
+            tf = icc.fevalIsequal(NIfTId(magic(4), 'fileprefix', 'three'));
             this.verifyEqual(tf, {false false true});
-            this.verifyEqual(msg, {'' '' ''});
         end
 		function test_repmat(this)
             this.verifyTrue(isempty(this.testObj.repmat()));
             this.verifyEqual(this.testObj.repmat(1),       { 1     1     1     1});
             this.verifyEqual(this.testObj.repmat([1 2]),   {[1 2] [1 2] [1 2] [1 2]});
             this.verifyEqual(this.testObj.repmat(1, 2),    {{1 2} {1 2} {1 2} {1 2}});
-            this.verifyEqual(this.testObj.repmat(1, 2, 3), {{1 2 3 } {1 2 3} {1 2 3} {1 2 3}});
+            this.verifyEqual(this.testObj.repmat(1, 2, 3), {{1 2 3} {1 2 3} {1 2 3} {1 2 3}});
+        end
+        function test_repmat_NIfTId(this)
+            import mlfourd.*;
+            m2 = NIfTId(magic(2));
+            m3 = NIfTId(magic(3));
+            m4 = NIfTId(magic(4));
+            m5 = NIfTId(magic(4));
+            icc = InnerCellComposite({m2 m3 m4 m5});
+            
+            this.verifyTrue(isempty(icc.repmat()));
+            this.verifyEqual(icc.repmat(1),       { 1     1     1     1});
+            this.verifyEqual(icc.repmat([1 2]),   {[1 2] [1 2] [1 2] [1 2]});
+            this.verifyEqual(icc.repmat(1, 2),    {{1 2} {1 2} {1 2} {1 2}});
+            this.verifyEqual(icc.repmat(1, 2, 3), {{1 2 3} {1 2 3} {1 2 3} {1 2 3}});
+            
+            this.verifyEqual(icc.repmat(m2),         { m2      m2      m2      m2});
+            this.verifyEqual(icc.repmat(m2, m3),     {{m2 m3} {m2 m3} {m2 m3} {m2 m3}});
+            this.verifyEqual(icc.repmat(m2, m3, m4), {{m2 m3 m4} {m2 m3 m4} {m2 m3 m4} {m2 m3 m4}});
         end
 	end
 

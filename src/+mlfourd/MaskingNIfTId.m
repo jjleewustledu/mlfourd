@@ -99,6 +99,21 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
                    'fileprefix', sprintf('%s_masked', this.fileprefix));
         end    
+        function this = maskedByZ(this, rng)
+            %% MASKEDBYZ
+            %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
+            %  @return internal image is cropped by rng.  
+            
+            assert(isnumeric(rng) && all(size(rng) == [1 2]));
+            assert(0 < rng(1) && rng(1) < rng(2) && rng(2) < this.size(3));
+            sz = this.size;
+            ze = zeros(sz(1:2));
+            for z = 1:sz(3)
+                if (z < rng(1) || rng(2) < z)
+                    this.img(:,:,z) = ze;
+                end
+            end
+        end            
         function this = thresh(this, t)
             assert(isscalar(t));
             bin  = double(this.img > t);

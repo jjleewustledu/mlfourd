@@ -52,10 +52,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             g = fullfile(this.registry.petPath, [this.registry.pnum 'oo1_frames'], [this.registry.pnum 'oo1.nii.gz']);
         end
         function g = get.oc_fqfn(this)            
-            g = fullfile(this.registry.petPath, [this.registry.pnum 'oc1_frames'], [this.registry.pnum 'oc_03.nii.gz']);
+            g = fullfile(this.registry.petPath, [this.registry.pnum 'oc1_frames'], [this.registry.pnum 'oc1_03.nii.gz']);
         end
         function g = get.tr_fqfn(this)            
-            g = fullfile(this.registry.petPath, [this.registry.pnum 'tr1_frames'], [this.registry.pnum 'tr_01.nii.gz']);
+            g = fullfile(this.registry.petPath, [this.registry.pnum 'tr1_frames'], [this.registry.pnum 'tr1_01.nii.gz']);
         end
         function g = get.niftic(this)
             g = mlfourd.NIfTIc.load(this.pet_fqfns);
@@ -98,6 +98,9 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
     end
 
 	methods (Test)
+        function test_setup(this)
+            this.verifyInstanceOf(this.testObj, 'mlfourd.ImagingContext');
+        end
         
         %% properties
         
@@ -340,34 +343,39 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         %% state changes
         
         function test_add(this)
-            import mlfourd.*;
-            niid = this.smallT1_niid.makeSimilar('fileprefix', 'Test_ImagingContext_test_add');
-            ic = this.testObj;
-            ic.add(niid);
-            this.verifyTrue(ic.stateTypeclass, 'mlfourd.ImagingComponentState');
-            this.verifyEqual(ic.get(1), this.smallT1_niid);
-            this.verifyEqual(ic.get(2), niid);
-            ic.remove(2);
-            this.verifyTrue(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(ic.niftid, this.smallT1_niid);
-            if (getenv('VERBOSE'))
-                ic.view(this.testObj);
-            end
-        end
-        function test_atlas(this)
-            import mlfourd.*;
-            ic = ImagingContext(this.niftic);
-            ic.atlas;
+            ic = mlfourd.ImagingContext(this.niftic);
+            ic = ic.add(this.niftic);
+            
+            this.verifyInstanceOf(ic, 'mlfourd.ImagingContext');
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            n = ic.niftid;
-            this.verifyNiftid(n, nan, nan, '');
-            this.verifyEqual(n.orient, '');
-            this.verifyEqual(n.mmmpix, []);
-            this.verifyEqual(n.rank, 3);
-            this.verifyEqual(n.size, []);
-            if (getenv('VERBOSE'))
-                ic.view(this.testObj);
-            end
+            this.verifyEqual(ic.niftid.size, [128 128 63]);
+            this.verifyNiftid(ic.niftid, 0.924201528155629, 11706.365062886, 'p7686ho1_zeros_sumt_add');
+            %ic.view;
+        end
+        function test_atlas_niftid(this)
+            import mlfourd.*;
+            ho = ImagingContext(NIfTId.load(this.ho_fqfn));
+            oc = ImagingContext(NIfTId.load(this.oc_fqfn));
+            oo = ImagingContext(NIfTId.load(this.oo_fqfn));
+            tr = ImagingContext(NIfTId.load(this.tr_fqfn));
+            
+            atl = ho.atlas(oc, oo, tr);
+            
+            this.verifyInstanceOf(atl, 'mlfourd.ImagingContext');
+            this.verifyEqual(atl.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(atl.niftid.size, [128 128 63]);
+            this.verifyNiftid(atl.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_sumt_atlas');
+            %atl.view;            
+        end
+        function test_atlas_niftic(this)
+            ic = mlfourd.ImagingContext(this.niftic);
+            ic = ic.atlas;
+            
+            this.verifyInstanceOf(ic, 'mlfourd.ImagingContext');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.niftid.size, [128 128 63]);
+            this.verifyNiftid(ic.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_zeros_sumt_atlas');
+            %ic.view;
         end
         function test_binarized(this)
             ic  = this.testObj;            

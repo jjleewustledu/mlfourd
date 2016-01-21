@@ -1,4 +1,4 @@
-classdef NIfTIc < mlfourd.AbstractNIfTIComponent
+classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
 	%% NIFTIC  
 
 	%  $Revision$
@@ -32,11 +32,11 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent
             niic = mlfourd.NIfTIc(this, varargin{:});
             niic = niic.append_descrip('made similar');
         end
-        function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.innerNIfTI_.innerCellComp_.fevalOut2('isequal', obj);
+        function tf = isequal(this, obj)
+            tf = this.innerNIfTI_.innerCellComp_.fevalOut2('isequal', obj);
         end
-        function [tf,msg] = isequaln(this, obj)
-            [tf,msg] = this.innerNIfTI_.innerCellComp_.fevalOut2('isequaln', obj);
+        function tf = isequaln(this, obj)
+            tf = this.innerNIfTI_.innerCellComp_.fevalOut2('isequaln', obj);
         end
         function niic = makeSimilar(this, varargin)
             %% MAKESIMILAR 

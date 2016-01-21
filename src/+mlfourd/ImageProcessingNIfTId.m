@@ -1,4 +1,4 @@
-classdef ImageProcessingNIfTId < mlfourd.NIfTIdecorator7
+classdef ImageProcessingNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% IMAGEPROCESSINGNIFTID  
 
 	%  $Revision$
@@ -186,7 +186,7 @@ classdef ImageProcessingNIfTId < mlfourd.NIfTIdecorator7
  			%% IMAGEPROCESSINGNIFTID
  			%  Usage:  this = ImageProcessingNIfTId()
 
- 			this = this@mlfourd.NIfTIdecorator7(varargin{:});
+ 			this = this@mlfourd.NIfTIdecoratorProperties(varargin{:});
             this = this.append_descrip('decorated by ImageProcessingNIfTId');
  		end
  	end 

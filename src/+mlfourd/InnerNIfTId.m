@@ -531,7 +531,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 warning(ME);
             end
         end
-        
+
         %% mlpatterns.Composite
         
         function this = add(~, ~) %#ok<STOUT>
@@ -540,9 +540,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function iter = createIterator(~) %#ok<STOUT>
             error('mlfourd:notImplemented', 'InnerNIfTId.createIterator should not be called');
         end
-        function        disp(this)
-            builtin('disp', this)
-        end
+%         function        disp(this)
+%             builtin('disp', this)
+%         end
         function idx  = find(this, obj)
             if (this.isequal(obj))
                 idx = 1;
@@ -636,7 +636,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     %% HIDDEN
     
-    properties (Hidden)
+    properties %(Hidden)
         filepath_   = '';
         fileprefix_ = '';
         filesuffix_ = '';

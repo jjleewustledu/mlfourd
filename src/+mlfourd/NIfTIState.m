@@ -1,7 +1,7 @@
 classdef NIfTIState < mlfourd.ImagingState
     %% NIFTISTATE 
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIdState, mlfourd.MGHState, 
-    %             mlfourd.ImagingComponentState, mlfourd.ImagingLocation, mlpatterns.State, mlfourd.DoubleState.
+    %             mlfourd.CellCompositeState, mlfourd.ImagingLocation, mlpatterns.State, mlfourd.DoubleState.
     
     %  $Revision: 2627 $
     %  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $
@@ -12,30 +12,32 @@ classdef NIfTIState < mlfourd.ImagingState
     %  $Id: NIfTIState.m 2627 2013-09-16 06:18:10Z jjlee $
 
 	properties (Dependent)
-        composite
+        cellComposite
         mgh
-        nifti
+        niftic
         niftid
     end
 
 	methods %% GET
-        function f = get.composite(this)            
-            this.contextH_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.composite;
+        function f = get.cellComposite(this)            
+            this.contexth_.changeState( ...
+                mlfourd.CellCompositeState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.cellComposite;
         end
         function f = get.mgh(this)
-            this.contextH_.changeState( ...
-                mlfourd.MGHState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.mgh;
+            this.contexth_.changeState( ...
+                mlfourd.MGHState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.mgh;
         end
-        function f = get.nifti(this)
-            f = this.concreteState_;
+        function f = get.niftic(this)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIcState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.niftic;
         end
         function f = get.niftid(this)            
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIdState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.niftid;
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.niftid;
         end
     end
     
@@ -57,8 +59,8 @@ classdef NIfTIState < mlfourd.ImagingState
                         'NIfTIState.ctor does not support objects of type %s', class(obj));
                 end
             end
-            this.concreteState_ = obj;
-            this.contextH_ = h;
+            this.concreteObj_ = obj;
+            this.contexth_ = h;
         end
     end
     

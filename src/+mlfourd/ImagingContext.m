@@ -3,7 +3,7 @@ classdef ImagingContext < handle
     %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
     %  is to improve the fluent expressivity of behaviors involving imaging data.
     %  See also:  mlfourd.ImagingState, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState,
-    %             mlfourd.ImagingComponentState, mlfourd.FilenameState, mlpatterns.State, 
+    %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, 
     %             mlio.IOInterface, mlfourd.DoubleState.
     
 	%  $Revision: 2627 $ 
@@ -24,10 +24,12 @@ classdef ImagingContext < handle
         fqfn
         fqfp
         
-        composite
+        cellComposite
         mgh
-        nifti
-        niftid        
+        niftic
+        niftid
+        numericalNiftid
+        
         stateTypeclass
     end
     
@@ -57,19 +59,21 @@ classdef ImagingContext < handle
             f = this.state_.fqfp;
         end
         
-        function f = get.composite(this)
-            f = this.state_.composite;
+        function f = get.cellComposite(this)
+            f = this.state_.cellComposite;
         end
         function f = get.mgh(this)
             f = this.state_.mgh;
         end
-        function f = get.nifti(this)
-            f = this.state_.nifti;
+        function f = get.niftic(this)
+            f = this.state_.niftic;
         end
         function f = get.niftid(this)
             f = this.state_.niftid;
         end
-        
+        function f = get.numericalNiftid(this)
+            f = this.state_.numericalNiftid;
+        end        
         function c = get.stateTypeclass(this)
             c = class(this.state_);
         end       
@@ -112,19 +116,21 @@ classdef ImagingContext < handle
         function a = atlas(this, varargin)
             %% ATLAS
             %  @param imaging_objects[, ...] have typeclasses supported by ImagingContext.  All alignment
-            %  operations between imaging objects must have been completed.
+            %  operations between imaging objects must have been completed.  Time-domains will be summed.
             %  @return a is the voxel-by-voxel weighted sum of this image and any submitted images; 
             %  each image is weighted by its median value.
             %  @throws MATLAB:dimagree, MATLAB:UndefinedFunction
             
             a = this.state_.atlas(varargin{:});
         end
-        function     add(this, varargin)
+        function a = add(this, varargin)
             %% ADD
-            %  @param varargin are objects supported by ImagingComponent.add
-            %  which will be added to the imaging state.
+            %  @param imaging_objects[, ...] are objects supported by ImagingContext.  All alignment
+            %  operations between imaging objects must have been completed.  Time-domains will be summed.
+            %  @return a is the voxel-by-voxel sum of this image and any submitted images.
+            %  @throws MATLAB:dimagree, MATLAB:UndefinedFunction
             
-            this.state_.add(varargin{:});
+            a = this.state_.add(varargin{:});
         end
         function     addLog(this, lg)
         end
@@ -234,14 +240,16 @@ classdef ImagingContext < handle
             import mlfourd.*;
             if (nargin == 1 && isa(obj, 'mlfourd.ImagingContext'))
                 switch (obj.stateTypeclass)
-                    case 'mlpatterns.Composite'
-                        this = ImagingContext(obj.composite);
-                    case 'mlfourd.NIfTIdState'
-                        this = ImagingContext(obj.niftid);
-                    case 'mlfourd.NIfTIState'
-                        this = ImagingContext(obj.nifti);
+                    case 'mlfourd.CellCompositeState'
+                        this = ImagingContext(obj.cellComposite);
+                    case 'mlfourd.NIfTIcState'
+                        this = ImagingContext(obj.niftic);
                     case 'mlfourd.MGHState'
                         this = ImagingContext(obj.mgh);
+                    case 'mlfourd.NumericalNIfTIdState'
+                        this = ImagingContext(obj.numericalNiftid);
+                    case 'mlfourd.NIfTIdState'
+                        this = ImagingContext(obj.niftid);
                     case 'mlfourd.FilenameState'
                         this = ImagingContext(obj.fqfilename);
                     case 'mlfourd.DoubleState'
@@ -253,11 +261,23 @@ classdef ImagingContext < handle
                 return
             end
             
-            if (isa(obj, 'mlpatterns.Composite'))
+            if (isa(obj, 'mlpatterns.CellComposite') || iscell(obj))
+                this.state_ = CellCompositeState(obj, this);
                 return
-            end            
-            if (isa(obj, 'mlfourd.INIfTI'))
-                obj = mlfourd.ImagingState.dedecorateNiftid(obj);
+            end
+            if (isa(obj, 'mlfourd.NIfTIc'))
+                this.state_ = NIfTIcState(obj, this);
+                return
+            end
+            if (isa(obj, 'mlsurfer.MGH'))
+                this.state_ = MGHState(obj, this);
+                return
+            end
+            if (isa(obj, 'mlfourd.NumericalNIfTId'))
+                this.state_ = NumericalNIfTIdState(obj, this);
+                return
+            end
+            if (isa(obj, 'mlfourd.NIfTId'))
                 this.state_ = NIfTIdState(obj, this);
                 return
             end

@@ -1,7 +1,7 @@
-classdef (Abstract) ImagingState < mlio.IOInterface
+classdef (Abstract) ImagingState < mlfourd.NIfTIIO
 	%% IMAGINGSTATE is the parent class for all internal states used by ImagingContext in a state design pattern.
     %  See also:  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
-    %             mlfourd.ImagingComponentState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
+    %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -12,16 +12,11 @@ classdef (Abstract) ImagingState < mlio.IOInterface
  	%  $Id: ImagingState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	 
 	properties (Abstract)
-        composite
+        cellComposite
         mgh
-        nifti
+        niftic
         niftid
-    end
-    
-    methods (Abstract)
-%        g    = get(this, locs)
-%        l    = length(this)
-%        this = remove(this, locs)
+        numericalNiftid
     end
     
     properties (Dependent)
@@ -32,103 +27,133 @@ classdef (Abstract) ImagingState < mlio.IOInterface
         fqfilename
         fqfileprefix
         fqfn
-        fqfp        
+        fqfp
+        noclobber
     end
     
     methods %% GET
         function f = get.filename(this)
-            f = this.concreteState_.filename;
+            f = this.concreteObj_.filename;
         end
         function f = get.filepath(this)
-            f = this.concreteState_.filepath;
+            f = this.concreteObj_.filepath;
         end
         function f = get.fileprefix(this)
-            f = this.concreteState_.fileprefix;
+            f = this.concreteObj_.fileprefix;
         end
         function f = get.filesuffix(this)
-            f = this.concreteState_.filesuffix;
+            f = this.concreteObj_.filesuffix;
         end
         function f = get.fqfilename(this)
-            f = this.concreteState_.fqfilename;
+            f = this.concreteObj_.fqfilename;
         end
         function f = get.fqfileprefix(this)
-            f = this.concreteState_.fqfileprefix;
+            f = this.concreteObj_.fqfileprefix;
         end
         function f = get.fqfn(this)
-            f = this.concreteState_.fqfn;
+            f = this.concreteObj_.fqfn;
         end
         function f = get.fqfp(this)
-            f = this.concreteState_.fqfp;
+            f = this.concreteObj_.fqfp;
+        end
+        function f = get.noclobber(this)
+            f = this.concreteObj_.noclobber;
         end
         
         function this = set.filename(this, f)
-            this.concreteState_.filename = f;
+            this.concreteObj_.filename = f;
         end  
         function this = set.filepath(this, f)
-            this.concreteState_.filepath = f;
+            this.concreteObj_.filepath = f;
         end  
         function this = set.fileprefix(this, f)
-            this.concreteState_.fileprefix = f;
+            this.concreteObj_.fileprefix = f;
         end        
         function this = set.filesuffix(this, f)
-            this.concreteState_.filesuffix = f;
+            this.concreteObj_.filesuffix = f;
         end        
         function this = set.fqfilename(this, f)
-            this.concreteState_.fqfilename = f;
+            this.concreteObj_.fqfilename = f;
         end        
         function this = set.fqfileprefix(this, f)
-            this.concreteState_.fqfileprefix = f;
+            this.concreteObj_.fqfileprefix = f;
         end        
         function this = set.fqfn(this, f)
-            this.concreteState_.fqfilename = f;
+            this.concreteObj_.fqfilename = f;
         end        
         function this = set.fqfp(this, f)
-            this.concreteState_.fqfileprefix = f;
+            this.concreteObj_.fqfileprefix = f;
+        end     
+        function this = set.noclobber(this, f)
+            this.concreteObj_.noclobber = f;
         end
     end    
+        
+    methods (Static)
+        function obj = dedecorateNIfTId(obj)
+            if (isa(obj, 'mlfourd.INIfTId'))
+                while (isa(obj, 'mlfourd.INIfTIdecorator'))
+                    obj = obj.component;
+                end
+                return
+            end
+        end
+    end
     
     methods
-        function this = add(this, varargin)            
-            this.contextH_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.concreteState_, this.contextH_));
-            cmps = this.contextH_.composite;
-            this.concreteState_ = cmps.add(varargin{:});
+        function a = atlas(this, varargin)
+            %% ATLAS
+            %  @param [varargin] are passed to NIfTIcState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIcState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.atlas(varargin{:});
+        end
+        function a = add(this, varargin)
+            %% ADD
+            %  @param varargin are objects supported by NIfTIcState; the state changes
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIcState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.atlas(varargin{:});
         end
         function c    = char(this)
-            c = char(this.concreteState_);
+            c = char(this.concreteObj_);
         end
         function        disp(this)
-            disp(this.concreteState_);
+            disp(this.concreteObj_);
         end
         function d    = double(this)
-            d = double(this.concreteState_);
+            d = double(this.concreteObj_);
         end
         function        save(this)
-            if (~strcmp(this.contextH_.stateTypeclass, 'mlfourd.FilenameState'))
-                this.concreteState_.save;
-                this.contextH_.changeState( ...
-                    mlfourd.FilenameState(this.concreteState_, this.contextH_));
+            if (~strcmp(this.contexth_.stateTypeclass, 'mlfourd.FilenameState'))
+                this.concreteObj_.save;
+                this.contexth_.changeState( ...
+                    mlfourd.FilenameState(this.concreteObj_, this.contexth_));
             end
         end
         function this = saveas(this, f)
-            this.concreteState_ = this.concreteState_.saveas(f);
+            this.concreteObj_ = this.concreteObj_.saveas(f);
         end
-        function        view(this)
-            this.concreteState_.freeview;
+        function        view(this, varargin)
+            this.concreteObj_.freeview(varargin{:});
         end
     end
     
     methods (Hidden)
         function this = changeState(this, s)
-            this.contextH_.changeState(s);
+            this.contexth_.changeState(s);
         end
     end
     
     %% PROTECTED
     
     properties (Access = protected)
-        contextH_
-        concreteState_
+        contexth_
+        concreteObj_
     end
     
     methods (Access = protected)

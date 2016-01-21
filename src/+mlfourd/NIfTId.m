@@ -1,4 +1,4 @@
-classdef NIfTId < mlfourd.AbstractNIfTIComponent
+classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
     %% NIFTID specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
     %  described by Jimmy Shen's entries at Mathworks File Exchange
     
@@ -40,15 +40,15 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('cloned');
         end
-        function [tf,msg] = isequal(this, obj)
-            [tf,msg] = this.isequaln(obj);
+        function tf = isequal(this, obj)
+            tf = this.isequaln(obj);
         end
-        function [tf,msg] = isequaln(this, obj)
-            [tf,msg] = this.classesequal(obj);
+        function tf = isequaln(this, obj)
+            tf = this.classesequal(obj);
             if (tf)
-                [tf,msg] = this.fieldsequaln(obj);
+                tf = this.fieldsequaln(obj);
                 if (tf)
-                    [tf,msg] = this.hdrsequaln(obj);
+                    tf = this.hdrsequaln(obj);
                 end
             end
         end 

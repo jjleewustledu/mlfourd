@@ -1,7 +1,7 @@
 classdef FilenameState < mlfourd.ImagingState
 	%% FILENAMESTATE 
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
-    %             mlfourd.ImagingComponentState, mlpatterns.State, mlfourd.DoubleState.
+    %             mlfourd.CellCompositeState, mlpatterns.State, mlfourd.DoubleState.
     %  TODO:      setting filenames should not change state to FilenameState.  
 
 	%  $Revision: 2627 $ 
@@ -13,32 +13,32 @@ classdef FilenameState < mlfourd.ImagingState
  	%  $Id: FilenameState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	
 	properties (Dependent)
-        composite
+        cellComposite
         mgh
-        nifti
+        niftic
         niftid
     end
     
     methods %% GET
-        function f  = get.composite(this)
-            this.contextH_.changeState( ...
-                mlfourd.ImagingComponentState(this.fqfilename, this.contextH_));
-            f = this.contextH_.composite;
+        function f  = get.cellComposite(this)
+            this.contexth_.changeState( ...
+                mlfourd.CellCompositeState(this.fqfilename, this.contexth_));
+            f = this.contexth_.cellComposite;
         end
         function f  = get.mgh(this)
-            this.contextH_.changeState( ...
-                mlfourd.MGHState(this.fqfilename, this.contextH_));
-            f = this.contextH_.mgh;
+            this.contexth_.changeState( ...
+                mlfourd.MGHState(this.fqfilename, this.contexth_));
+            f = this.contexth_.mgh;
         end
-        function f  = get.nifti(this)
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIState(this.fqfilename, this.contextH_));
-            f = this.contextH_.nifti;
+        function f  = get.niftic(this)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIState(this.fqfilename, this.contexth_));
+            f = this.contexth_.niftic;
         end
         function f  = get.niftid(this)
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIdState(this.fqfilename, this.contextH_));
-            f = this.contextH_.niftid;
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
+            f = this.contexth_.niftid;
         end
     end
     
@@ -48,22 +48,11 @@ classdef FilenameState < mlfourd.ImagingState
         end
     end
     
-    methods 
-        function a = atlas(this, varargin)
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIdState(this.fqfilename, this.contextH_));
-            a = this.contextH_.atlas(varargin{:});
-        end
-        function view(~)
-        end
-    end
-    
-    %% PROTECTED
-    
-    methods (Access = protected)
+    methods
+        
         function this = FilenameState(obj, h)
-            this.concreteState_ = mlio.ConcreteIO(obj);
-            this.contextH_ = h;
+            this.concreteObj_ = mlio.ConcreteIO(obj);
+            this.contexth_ = h;
         end
     end
     

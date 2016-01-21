@@ -1,4 +1,4 @@
-classdef NIfTIdecorator < mlfourd.INIfTI & mlio.IOInterface
+classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
 	%% NIFTIDECORATOR maintains an internal component object by composition, 
     %  forwarding most requests to the component.  It retains an interface consistent with the component's interface.
     %  Subclasses may optionally perform additional operations before/after forwarding requests.
@@ -27,6 +27,10 @@ classdef NIfTIdecorator < mlfourd.INIfTI & mlio.IOInterface
             obj = this.clone;
             obj.component = this.component.saveas(fqfn);
         end
+        function obj  = saveasx(this, fqfn, x)
+            obj = this.clone;
+            obj.component = this.component.saveasx(fqfn, x);
+        end
         
         %% INIfTI
         
@@ -34,14 +38,13 @@ classdef NIfTIdecorator < mlfourd.INIfTI & mlio.IOInterface
             obj = this;
             obj.component = this.component.clone;
         end   
-        function [tf,msg] = isequal(this, niid)
-            [tf,msg] = this.isequaln(niid);
+        function tf   = isequal(this, niid)
+            tf = this.isequaln(niid);
         end
-        function [tf,msg] = isequaln(this, niid)
-            msg = '';
+        function tf   = isequaln(this, niid)
             tf = isa(niid, class(this));
             if (tf)
-                [tf,msg] = this.component.isequaln(niid.component);
+                tf = this.component.isequaln(niid.component);
             end
         end
         function this = makeSimilar(this, varargin)

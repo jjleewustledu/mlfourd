@@ -1,7 +1,7 @@
 classdef DoubleState < mlfourd.ImagingState
 	%% DOUBLESTATE  
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
-    %             mlfourd.ImagingComponentState, mlfourd.FilenameState, mlpatterns.State.
+    %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State.
     %  TODO:      setting filenames should not change state to FilenameState.
 
 	%  $Revision$
@@ -12,45 +12,37 @@ classdef DoubleState < mlfourd.ImagingState
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64. 	
 
 	properties (Dependent)
-        composite
+        cellComposite
         mgh
-        nifti
+        niftic
         niftid
  	end
 
     methods %% GET
-        function f = get.composite(this)            
-            this.contextH_.changeState( ...
-                mlfourd.ImagingComponentState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.composite;
+        function f = get.cellComposite(this)            
+            this.contexth_.changeState( ...
+                mlfourd.CellCompositeState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.composite;
         end
         function f = get.mgh(this)
-            this.contextH_.changeState( ...
-                mlfourd.MGHState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.mgh;
+            this.contexth_.changeState( ...
+                mlfourd.MGHState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.mgh;
         end
-        function f = get.nifti(this)            
-            this.contextH_.changeState( ...
-                mlfourd.NIfTIState.load(this.concreteState_, this.contextH_));
-            f = this.contextH_.nifti;
+        function f = get.niftic(this)            
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIState.load(this.concreteObj_, this.contexth_));
+            f = this.contexth_.niftic;
         end
         function f = get.niftid(this)
-            f = this.concreteState_;
+            f = this.concreteObj_;
         end  
     end 
-    
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.DoubleState(varargin{:});
-        end
-    end
-        
-    %% PROTECTED
-    
-    methods (Access = protected)
+     
+    methods 
  		function this = DoubleState(obj, h)
-            this.concreteState_ = mlfourd.NIfTId(obj);
-            this.contextH_ = h; 
+            this.concreteObj_ = mlfourd.NIfTId(obj);
+            this.contexth_ = h; 
  		end
  	end 
 

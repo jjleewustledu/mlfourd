@@ -14,6 +14,33 @@ classdef InnerCellComposite < mlpatterns.CellComposite
             this = this@mlpatterns.CellComposite(varargin{:});
         end
         
+        %% Composite        
+        
+        function this = add(this, varargin)
+            this = this.horzcat(varargin{:});
+        end
+        function this = clone(this)
+            this = mlfourd.InnerCellComposite(this);
+        end
+        function this = horzcat(this, varargin)
+            this = mlfourd.InnerCellComposite(horzcat@mlpatterns.CellComposite(this, varargin{:}));
+        end
+        function this = rm(this, idx)
+            this = mlfourd.InnerCellComposite(rm@mlpatterns.CellComposite(this, idx));
+        end
+        function this = subsasgn(this, S, varargin)
+            %% SUBSASGN
+            %  See also:  web(fullfile(docroot, 'matlab/matlab_oop/class-with-modified-indexing.html'))
+            %             web(fullfile(docroot, 'matlab/ref/numargumentsfromsubscript.html'))
+            
+            this = mlfourd.InnerCellComposite(subsasgn@mlpatterns.CellComposite(this, S, varargin{:}));
+        end
+        function this = vertcat(this, varargin)
+            this = mlfourd.InnerCellComposite(vertcat@mlpatterns.CellComposite(this, varargin{:}));
+        end
+        
+        %% New for CellComposite
+        
         function c    = cellEmpty(this)
             c = cell(1, length(this.cell_));
         end
@@ -68,12 +95,11 @@ classdef InnerCellComposite < mlpatterns.CellComposite
                 end
             end
         end
-        function [tf,msg] = fevalIsequal(this, in)
+        function tf = fevalIsequal(this, in)
             tf  = this.cellEmpty;
-            msg = this.cellEmpty;
             for c = 1:this.length
                 item = this.cell_{c};
-                [tf{c},msg{c}] = item.isequal(in);
+                tf{c} = item.isequal(in);
             end
         end
         function out  = getter(this, fldname)
@@ -87,6 +113,13 @@ classdef InnerCellComposite < mlpatterns.CellComposite
                 return
             end
             if (length(varargin) == 1)
+                if (isa(varargin{1}, 'mlfourd.INIfTI')) %% KLUDGE for helper function repmat
+                    args = cell(1, this.length);
+                    for a = 1:this.length
+                        args{a} = varargin{1};
+                    end
+                    return
+                end
                 args = repmat({varargin{1}}, 1, this.length); %#ok<CCAT1> % for clarity of data structure
                 return
             end

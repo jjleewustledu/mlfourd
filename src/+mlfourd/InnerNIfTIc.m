@@ -248,31 +248,31 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         %% mlpatterns.Composite
         
         function this = add(this, obj)
-            this.innerCellComp_ = this.innerCellComp_.fevalThis('add', obj);
+            this.innerCellComp_ = this.innerCellComp_.add(obj);
         end        
         function iter = createIterator(this)
-            iter = this.innerCellComp_.fevalOut('createIterator');
+            iter = this.innerCellComp_.createIterator;
         end
         function        disp(this)
-            this.innerCellComp_.fevalNone('disp');
-        end
+           this.innerCellComp_.disp;
+       end
         function idx  = find(this, obj)
-            idx = this.innerCellComp_.fevalOut('find', obj);
+            idx = this.innerCellComp_.find(obj);
         end
         function obj  = get(this, idx)
-            obj = this.innerCellComp_.fevalOut('get', idx);
+            obj = this.innerCellComp_.get(idx);
         end
         function tf   = isempty(this)
-            tf = this.innerCellComp_.fevalOut('isempty');
+            tf = this.innerCellComp_.isempty;
         end
         function len  = length(this)
-            len = this.innerCellComp_.fevalOut('length');
+            len = this.innerCellComp_.length;
         end
-        function        rm(this, idx)
-            this.innerCellComp_.fevalNone('rm', idx);
+        function this = rm(this, idx)
+            this.innerCellComp_ = this.innerCellComp_.rm(idx);
         end
         function s    = csize(this)   
-            s = this.innerCellComp_.fevalOut('csize');
+            s = this.innerCellComp_.csize;
         end     
         
         %% Ctor
@@ -285,7 +285,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             import mlfourd.*;
             ip = inputParser;
-            addOptional(ip, 'obj', InnerCellComposite, @(x) isa(x, 'mlpatterns.CellComposite') || iscell(x));
+            addOptional(ip, 'obj', {}, @(x) isa(x, 'mlpatterns.CellComposite') || iscell(x));
             parse(ip, varargin{:});            
             this.innerCellComp_ = InnerCellComposite(ip.Results.obj);
  		end
@@ -293,7 +293,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     %% HIDDEN
     
-    properties (Hidden)
+    properties %(Hidden)
         innerCellComp_ 
         originalType_
     end

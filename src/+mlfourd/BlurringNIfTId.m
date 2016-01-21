@@ -168,8 +168,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             end
             fp = [this.fileprefix '_' twoDigits{1} twoDigits{2} twoDigits{3} this.metric];
         end
-        function [tf,msg] = isequaln(this, bnii)
-            msg = '';
+        function tf = isequaln(this, bnii)
             tf = isa(bnii, class(this));
             if (tf)
                 tf = isa(bnii, 'mlfourd.BlurringNIfTId');
@@ -180,7 +179,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
                         if (tf)
                             tf = isequaln(this.mask_, bnii.mask);
                             if (tf)
-                                [tf,msg] = isequaln@mlfourd.NIfTIdecorator2(this, bnii);
+                                tf = isequaln@mlfourd.NIfTIdecorator2(this, bnii);
                             end
                         end
                     end
@@ -189,17 +188,17 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             
             if (~isequaln(this.mask_, bnii.mask))
                 tf  = false;
-                msg = sprintf('BlurringNIfTId.isequaln:  found mismatch at this.mask.');
+                warning('mlfourd:notIsequaln', 'BlurringNIfTId.isequaln:  found mismatch at this.mask.');
                 return
             end
             if (~isequaln(this.blur_, bnii.blur))
                 tf  = false;
-                msg = sprintf('BlurringNIfTId.isequaln:  found mismatch at this.blur.');
+                warning('mlfourd:notIsequaln', 'BlurringNIfTId.isequaln:  found mismatch at this.blur.');
                 return
             end
             if (~isequaln(this.blurCount_, bnii.blurCount))
                 tf  = false;
-                msg = sprintf('BlurringNIfTId.isequaln:  found mismatch at this.blurCount.');
+                warning('mlfourd:notIsequaln', 'BlurringNIfTId.isequaln:  found mismatch at this.blurCount.');
                 return
             end
         end

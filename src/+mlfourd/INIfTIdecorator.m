@@ -1,5 +1,5 @@
-classdef (Abstract) INIfTId < mlfourd.INIfTI
-    %% INIFTID marks imaging decorator classes in packages mlfourd.
+classdef (Abstract) INIfTIdecorator < mlfourd.INIfTId
+    %% INIFTIDECORATOR marks imaging decorator classes in packages mlfourd.
     
 	%  $Revision: 2608 $
  	%  was created $Date: 2013-09-07 19:14:08 -0500 (Sat, 07 Sep 2013) $
