@@ -1,4 +1,4 @@
-classdef (Abstract) INIfTIc < mlfourd.INIfTI
+classdef (Abstract) INIfTIc < mlfourd.INIfTI & mlpatterns.Composite
     %% INIFTIC marks imaging composite classes in packages mlfourd.
     
 	%  $Revision: 2608 $

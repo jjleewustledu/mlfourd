@@ -65,20 +65,55 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
                 this = this.masked(this.mask);
             end
         end 
-        function this = timeSummed(this)
-            this.img = sum(this.img, 4);
-            this = this.append_fileprefix('_sumt');
-        end        
-        function this = volumeSummed(this)
-            this.img = sum(sum(sum(this.img, 1), 2), 3);
-            this = this.append_fileprefix('_sumxyz');
-        end
         function this = blurred(this, varargin)
             bnii = mlfourd.BlurringNIfTId(this.component_);
             bnii = bnii.blurred(varargin{:});
             this.component_ = bnii.component;
             this.blur_ = bnii.blur;
         end
+        function this = masked(this, niidMask)
+            %% MASKED returns this with the internal image multiplied by the passed INIfTI mask for each time sample;
+            %  forked from MaskingNIfTId.masked to accomodate dynamic data.
+            %  Usage:   dn = DynamicNIfTId(...)
+            %           dn = dn.masked(INIfTI_mask)
+            
+            assert(isa(niidMask, 'mlfourd.INIfTI'));
+            sz = this.size;
+            assert(all(sz(1:3) == niidMask.size));
+            import mlfourd.*;
+            mx = dipmax(niidMask);
+            mn = dipmin(niidMask);
+            if (mx > 1 || mn < 0)
+                warning('mlfourd:possibleNumericalInconsistency', ...
+                        'DynamicNIfTI.masked received a mask object with min->%g, max->%g', mn, mx); 
+            end
+            
+            maskedImg = zeros(this.size);
+            for t = 1:size(this, 4)
+                maskedImg(:,:,:,t) = double(this.img(:,:,:,t)) .* double(niidMask.img);
+            end
+            this = this.makeSimilar( ...
+                   'img', maskedImg, ...
+                   'descrip', sprintf('DynamicNIfTI.masked(%s)', niidMask.fileprefix), ...
+                   'fileprefix', [this.fileprefix '_masked']);
+        end
+        function this = timeSummed(this)
+            %% TIMESUMMED integrates over imaging dimension 4. 
+            %  @return dynamic image reduced to summed volume.
+            
+            this.img = sum(this.img, 4);
+            this = this.append_fileprefix('_sumt');
+        end        
+        function this = volumeSummed(this)
+            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
+            %  @return dynamic image reduced to time series.
+            
+            this.img = sum(sum(sum(this.img, 1), 2), 3);
+            this = this.append_fileprefix('_sumxyz');
+        end
+        
+        %% DEPRECATED; functionality belongs better in mlfsl.AlignmentFacade
+        
         function this = mcflirted(this, varargin)
             ip = inputParser;
             addParameter('reffile', '', @ischar);
@@ -134,32 +169,6 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', revImg, ...
                    'descrip', sprintf('DynamicNIfTI.withRevertedFrames(%s)', mat2str(frames)), ...
                    'fileprefix', sprintf('_revf%ito%i', frames(1), frames(end)));
-        end
-        function this = masked(this, niidMask)
-            %% MASKED returns this with the internal image multiplied by the passed INIfTI mask for each time sample;
-            %  forked from MaskingNIfTId.masked to accomodate dynamic data.
-            %  Usage:   dn = DynamicNIfTId(...)
-            %           dn = dn.masked(INIfTI_mask)
-            
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            sz = this.size;
-            assert(all(sz(1:3) == niidMask.size));
-            import mlfourd.*;
-            mx = dipmax(niidMask);
-            mn = dipmin(niidMask);
-            if (mx > 1 || mn < 0)
-                warning('mlfourd:possibleNumericalInconsistency', ...
-                        'DynamicNIfTI.masked received a mask object with min->%g, max->%g', mn, mx); 
-            end
-            
-            maskedImg = zeros(this.size);
-            for t = 1:size(this, 4)
-                maskedImg(:,:,:,t) = double(this.img(:,:,:,t)) .* double(niidMask.img);
-            end
-            this = this.makeSimilar( ...
-                   'img', maskedImg, ...
-                   'descrip', sprintf('DynamicNIfTI.masked(%s)', niidMask.fileprefix), ...
-                   'fileprefix', [this.fileprefix '_masked']);
         end
         function tidx = referenceVolumeIndex(this)
             tcurve = this.clone;

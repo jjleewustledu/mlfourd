@@ -16,34 +16,34 @@ classdef NIfTIState < mlfourd.ImagingState
         mgh
         niftic
         niftid
+        numericalNiftid
     end
 
 	methods %% GET
         function f = get.cellComposite(this)            
             this.contexth_.changeState( ...
-                mlfourd.CellCompositeState.load(this.concreteObj_, this.contexth_));
+                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
             f = this.contexth_.cellComposite;
         end
         function f = get.mgh(this)
             this.contexth_.changeState( ...
-                mlfourd.MGHState.load(this.concreteObj_, this.contexth_));
+                mlfourd.MGHState(this.concreteObj_, this.contexth_));
             f = this.contexth_.mgh;
         end
         function f = get.niftic(this)
             this.contexth_.changeState( ...
-                mlfourd.NIfTIcState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
         function f = get.niftid(this)            
             this.contexth_.changeState( ...
-                mlfourd.NIfTIdState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftid;
         end
-    end
-    
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.NIfTIState(varargin{:});
+        function g = get.numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
         end
     end
     

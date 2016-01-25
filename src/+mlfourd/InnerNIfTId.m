@@ -1,4 +1,4 @@
-classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
 	%% INNERNIFTID 
     
 	%  $Revision$
@@ -10,8 +10,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     properties (Constant)
         DESC_LEN_LIM = 1024*1024; % limit to #char of desc; accumulate extended descriptions with LoggingNIfTId
-        LOAD_UNTOUCHED = true
-        OPTIMIZED_PRECISION = false
     end
     
     properties (Dependent)
@@ -61,11 +59,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
+        logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
     end 
 
- 	methods %% SET/GET 
+ 	methods %% GET/SET
         
         %% JimmyShenInterface
         
@@ -101,16 +100,15 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end        
         function this = set.img(this, im)
             %% SET.IMG sets new image state. 
-            %  updates datatype, bitpix, dim
+            %  @param im is the incoming imaging array; converted to single if data bandwidth is appropriate.
+            %  @return updates img, datatype, bitpix, dim.
             
-            import mlfourd.*;
-            if (islogical(im)); im = double(im); end
-            assert(isnumeric(im));
             this.img_                         = im;
             this                              = this.optimizePrecision;
             this.hdr_.dime.dim                = ones(1,8);
             this.hdr_.dime.dim(1)             = this.rank;
             this.hdr_.dime.dim(2:this.rank+1) = this.size;
+            
             this.untouch_ = false;
             this.stack_ = [{dbstack} this.stack_];
         end
@@ -121,10 +119,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             u = logical(this.untouch_);
         end
         
-        %% INIfTI  
+        %% INIfTI
         
         function bp   = get.bitpix(this) 
-            %% BIPPIX returns a datatype code as described by the INIfTI specificaitons
+            %% BITPIX returns a datatype code as described by the INIfTI specifications
             
             switch (class(this.img_))
                 case {'uchar', 'uint8'};    bp = 8;
@@ -142,7 +140,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                           'InnerNIfTId.get.bitpix could not recognize the class(img)->%s', class(this.img_));
             end
         end
-        function this = set.bitpix(this, bp) 
+        function this = set.bitpix(this, bp)
             assert(isnumeric(bp));
             if (bp >= 64)
                 this = this.ensureDouble; 
@@ -172,7 +170,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                     error('mlfourd:unknownSwitchCase', ...
                           'InnerNIfTId.get.datatype could not recognize the class(img)->%s', class(this.img_));
             end
-        end    
+        end
         function this = set.datatype(this, dt)
             if (ischar(dt))
                 switch (strtrim(dt))
@@ -201,7 +199,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end        
         function this = set.descrip(this, s)
             %% SET.DESCRIP
-            %  do not add separators such as ";" or ","
+            %  @param s:  do not add separators such as ";" or ","
             
             assert(ischar(s));
             this.hdr_.hist.descrip = this.adjustDescrip(s);
@@ -253,12 +251,16 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             E = -this.entropy;
         end
         function o    = get.orient(this)
-            if (exist(this.fqfilename, 'file'))
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
-            else
-                o = '';
+            if (~isempty(this.orient_))
+                o = this.orient_;
+                return
             end
-            o = strtrim(o);
+            if (lexist(this.fqfilename, 'file'))
+                [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
+                o = strtrim(o);
+                return
+            end
+            o = '';
         end
         function pd   = get.pixdim(this)
             pd = this.mmppix;
@@ -274,6 +276,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
+        function s    = get.logger(this)
+            s = this.logger_;
+        end
         function s    = get.separator(this)
             s = this.separator_;
         end
@@ -299,39 +304,32 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %% SAVE supports extensions 
             %  mlfourd.JimmyShenInterface.SUPPORTED_EXT and mlsurfer.SurferRegistry.SUPPORTED_EXT,
             %  defaulting to this.FILETYPE_EXT if needed. 
-            %  If this.noclobber == true, it will never overwrite files.
+            %  If this.noclobber == true,  it will never overwrite files.
             %  If this.noclobber == false, it may overwrite files. 
-            %  If this.untouch   == true, it will retain the untouched state.
-            %  If this.untouch   == false, it may further adjust state before saving.
+            %  If this.untouch   == true,  it will never overwrite files.
+            %  If this.untouch   == false, it may saving imaging data with modified state.
             %  @return saves this NIfTId to this.fqfilename.  
-            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
+            %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
+            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed,
             
-            import mlfourd.* mlniftitools.*;
             this = this.ensureExtension;
-            if (this.noclobber)
-                if (lexist(this.fqfilename, 'file'))
-                    error('mlfourd:IOError', ...
-                          'NIfTId.save.fqfilename->%s already exists but noclobber->%s', this.fqfilename, this.noclobber);
-                end
-                if (this.untouch)
-                    this.save_untouched;
-                    return
-                end
-                this.save_touched;
-                return
+            if (this.noclobber && lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:noclobberPreventedSaving', ...
+                      'NIfTId.save.noclobber->%i and fqfilename->%s already exists; data not saved', this.noclobber, this.fqfilename);
+            end
+            if (this.untouch && lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:untouchPreventedSaving', ...
+                      'NIfTId.save.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
             end            
             deleteExisting(this.fqfilename);
-            if (this.untouch)
-                this.save_untouched;
-                return
-            end
-            this.save_touched;                
+            this.save_nii;
+            this.saveLogger;
         end 
         function this = saveas(this, fn)
             %% SAVEAS
             %  @param fn updates internal filename
             %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
-            %  @throws mlfourd.IOError, mfiles:unixException, MATLAB:assertion:failed
+            %  See also:  mlfourd.InnerNIfTId.save
             
             [p,f,e] = myfileparts(fn);
             if (isempty(e))
@@ -341,8 +339,14 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.untouch_ = false;
             this.save;
         end
+        function        saveLogger(this)
+            if (~isempty(this.logger_))
+                this.logger_.fqfileprefix = this.fqfileprefix;
+                this.logger_.save;
+            end
+        end
         
-        %% INIfTI  
+        %% INIfTI
         
         function ch   = char(this)
             ch = this.fqfilename;
@@ -354,11 +358,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  @throws MATLAB:printf:invalidInputType
             
             if (nargin > 2)
-                argin = sprintf(varargin{:});
+                astring = sprintf(varargin{:});
             else
-                argin = varargin{:};
+                astring = varargin{:};
             end
-            this.descrip = sprintf('%s%s %s', this.descrip, this.separator, argin);
+            this.descrip = sprintf('%s%s %s', this.descrip, this.separator, astring);
+            this.addLog(astring);
             this.untouch_ = false;
         end  
         function this = prepend_descrip(this, varargin) 
@@ -368,11 +373,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  @throws MATLAB:printf:invalidInputType
             
             if (nargin > 2)
-                argin = sprintf(varargin{:});
+                astring = sprintf(varargin{:});
             else
-                argin = varargin{:};
+                astring = varargin{:};
             end
-            this.descrip = sprintf('%s%s %s', argin, this.separator, this.descrip);
+            this.descrip = sprintf('%s%s %s', astring, this.separator, this.descrip);
+            this.addLog(astring);
             this.untouch_ = false;
         end
         function d    = double(this)
@@ -396,11 +402,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  @throws MATLAB:printf:invalidInputType
             
             if (nargin > 2)
-                argin = sprintf(varargin{:});
+                astring = sprintf(varargin{:});
             else
-                argin = varargin{:};
+                astring = varargin{:};
             end
-            this.fileprefix = sprintf('%s%s', this.fileprefix, argin);
+            this.fileprefix = sprintf('%s%s', this.fileprefix, astring);
+            this.addLog(['append_fileprefix:  ' astring]);
             this.untouch_ = false;
         end   
         function this = prepend_fileprefix(this, varargin)
@@ -410,11 +417,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  @throws MATLAB:printf:invalidInputType
             
             if (nargin > 2)
-                argin = sprintf(varargin{:});
+                astring = sprintf(varargin{:});
             else
-                argin = varargin{:};
+                astring = varargin{:};
             end
-            this.fileprefix = sprintf('%s%s', argin, this.fileprefix);
+            this.fileprefix = sprintf('%s%s', astring, this.fileprefix);
+            this.addLog(['prepend_fileprefix:  ' astring]);
             this.untouch_ = false;
         end             
         function f3d  = fov(this)
@@ -484,6 +492,13 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
+        function        addLog(this, lg)
+            if (isempty(this.logger_))
+                return
+            end
+            assert(ischar(lg));
+            this.logger_.add(lg);
+        end
         function e    = fslentropy(this)
             if (~lexist(this.fqfilename, 'file'))
                 e = nan;
@@ -512,25 +527,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             this.launchExternalViewer('fslview', varargin{:});
         end   
-        function this = optimizePrecision(this)
-            if (~this.OPTIMIZED_PRECISION); return; end
-            try
-                import mlfourd.*;
-                if (islogical(this.img_)) % ensures numerical operations on this.img_
-                    this = this.ensureUint8;
-                    return
-                end
-                if (dipmax(this.img_) <  realmax('single') && ...
-                    dipmin(this.img_) > -realmax('single') && ...
-                    dipmin(abs(this.img_)) > eps('single'))
-                    this = this.ensureSingle;
-                    return
-                end                              
-                this = this.ensureDouble;
-            catch ME
-                warning(ME);
-            end
-        end
 
         %% mlpatterns.Composite
         
@@ -540,9 +536,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function iter = createIterator(~) %#ok<STOUT>
             error('mlfourd:notImplemented', 'InnerNIfTId.createIterator should not be called');
         end
-%         function        disp(this)
-%             builtin('disp', this)
-%         end
         function idx  = find(this, obj)
             if (this.isequal(obj))
                 idx = 1;
@@ -640,7 +633,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         filepath_   = '';
         fileprefix_ = '';
         filesuffix_ = '';
-        noclobber_  = false;
+        noclobber_  = true;
         
         creationDate_
         ext_ = []
@@ -648,6 +641,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         hdr_
         img_ = []
         label_
+        logger_
+        orient_ = ''
         originalType_
         separator_ = ';'
         stack_
@@ -657,52 +652,55 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     %% PRIVATE
     
     methods (Access = private)
-        function d        = adjustDescrip(this, d)
+        function d    = adjustDescrip(this, d)
             d = strtrim(d);
             if (length(d) > this.DESC_LEN_LIM)
                 len2 = floor((this.DESC_LEN_LIM - 5)/2);
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
         end
-        function this     = ensureDouble(this)
+        function this = ensureDouble(this)
+            this.hdr_.dime.datatype = 64;
+            this.hdr_.dime.bitpix   = 64;
             if (isa(this.img_, 'double'))
                 return
             end
             this.img_ = double(this.img_);
-            this.hdr_.dime.datatype = 64;
-            this.hdr_.dime.bitpix   = 64;
         end 
-        function this     = ensureExtension(this)
+        function this = ensureExtension(this)
             if (isempty(this.filesuffix))
                 this.filesuffix = this.FILETYPE_EXT;
             end
             assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
                    lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT));
         end
-        function this     = ensureSingle(this)
+        function this = ensureSingle(this)
+            this.hdr_.dime.datatype = 16;
+            this.hdr_.dime.bitpix   = 32;
             if (isa(this.img_, 'single'))
                 return
             end
             this.img_ = single(this.img_);
-            this.hdr_.dime.datatype = 16;
-            this.hdr_.dime.bitpix   = 32;
         end 
-        function this     = ensureUint8(this)
+        function this = ensureUint8(this)
+            this.hdr_.dime.datatype = 2;
+            this.hdr_.dime.bitpix   = 8;
             if (isa(this.img_, 'uint8'))
                 return
             end
             this.img_ = uint8(this.img_);
-            this.hdr_.dime.datatype = 2;
-            this.hdr_.dime.bitpix   = 8;
         end
-        function fqfn     = fqfilenameNiiGz(this)
+        function fqfn = fqfilenameNiiGz(this)
             if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
                 fqfn = [this.fqfileprefix this.FILETYPE_EXT];
                 return
             end
             fqfn = this.fqfilename;
         end
-        function            launchExternalViewer(this, app, varargin)
+        function tf   = hasJimmyShenExtension(this)
+            tf = lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT);
+        end
+        function        launchExternalViewer(this, app, varargin)
             assert(ischar(app));
             try
                 fqfn = this.tempFqfilename;
@@ -718,34 +716,56 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 handexcept(ME, 'mlfourd:viewerError', 'InnerNIfTId.launchExternalViewer:  s->%i, r->%s', s, r);
             end
         end
-        function            save_JimmyShen(this, h)
-            warning('off', 'MATLAB:structOnObject');
-            if (lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT)) 
-                h(struct(this), this.fqfilename);
-                warning('on', 'MATLAB:structOnObject');
-                return
+        function this = optimizePrecision(this)
+            try
+                if (isempty(this.img_))
+                    this = this.ensureDouble;
+                    return
+                end
+                if (islogical(this.img_)) % ensures numerical operations on this.img_
+                    this = this.ensureUint8;
+                    return
+                end
+                if (isa(this.img_, 'double'))
+                    this = this.ensureDouble; % ensures bitpix, datatype
+                    if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
+                        (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
+                        this = this.ensureSingle;
+                        return
+                    end
+                end
+            catch ME
+                handerror(ME);
             end
-            assert(~strcmp(this.fqfilename, this.fqfilenameNiiGz))
-            h(struct(this), this.fqfilenameNiiGz);
-            mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-            deleteExisting(this.fqfilenameNiiGz);
-            warning('on', 'MATLAB:structOnObject');
         end
-        function            save_touched(this)
+        function        save_nii(this)
             this = this.optimizePrecision;
-            this.save_JimmyShen(@mlniftitools.save_nii)
+            try
+                if (this.hasJimmyShenExtension) 
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_nii(struct(this), this.fqfilename);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
+                warning('off', 'MATLAB:structOnObject');
+                mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+                mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+                deleteExisting(this.fqfilenameNiiGz);
+                warning('on', 'MATLAB:structOnObject');
+            catch ME
+                handerror(ME, ...
+                    'mlfourd:IOError', ...
+                    'InnerNIfTId.save_nii failed to save %s', this.fqfilename);
+            end
         end
-        function            save_untouched(this)
-            this.save_JimmyShen(@mlniftitools.save_untouch_nii)
-        end
-        function im       = scrub1D(this, im)
+        function im   = scrub1D(this, im)
             assert(isnumeric(im));
             for x = 1:this.size(1)
                 if (~isfinite(im(x)))
                     im(x) = 0; end
             end
         end
-        function im       = scrub2D(this, im)
+        function im   = scrub2D(this, im)
             assert(isnumeric(im));
             for y = 1:this.size(2)
                 for x = 1:this.size(1)
@@ -754,7 +774,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
             end
         end
-        function im       = scrub3D(this, im)
+        function im   = scrub3D(this, im)
             assert(isnumeric(im));
             for z = 1:this.size(3)
                 for y = 1:this.size(2)
@@ -765,7 +785,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
             end
         end
-        function im       = scrub4D(this, im)
+        function im   = scrub4D(this, im)
             assert(isnumeric(im));
             for t = 1:this.size(4)
                 for z = 1:this.size(3)
@@ -778,7 +798,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
             end
         end 
-        function fn       = tempFqfilename(this)
+        function fn   = tempFqfilename(this)
             fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
         end
     end

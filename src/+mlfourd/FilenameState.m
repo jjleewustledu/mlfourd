@@ -17,6 +17,7 @@ classdef FilenameState < mlfourd.ImagingState
         mgh
         niftic
         niftid
+        numericalNiftid
     end
     
     methods %% GET
@@ -40,6 +41,11 @@ classdef FilenameState < mlfourd.ImagingState
                 mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftid;
         end
+        function g = get.numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
+        end
     end
     
     methods (Static)
@@ -49,9 +55,19 @@ classdef FilenameState < mlfourd.ImagingState
     end
     
     methods
+        function        view(this, varargin)
+            mlbash(sprintf( ...
+                'freeview %s %s', this.concreteObj_.fqfilename, cell2str(varargin, 'AsRow', true)));
+        end
         
         function this = FilenameState(obj, h)
-            this.concreteObj_ = mlio.ConcreteIO(obj);
+            try
+                obj = mlio.ConcreteIO(obj);
+            catch ME
+                handexcept(ME, 'mlfourd:castingError', ...
+                    'FilenameState.load does not support objects of type %s', class(obj));
+            end
+            this.concreteObj_ = obj;
             this.contexth_ = h;
         end
     end

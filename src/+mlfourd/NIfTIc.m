@@ -94,7 +94,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             parse(ip, varargin{:});
 
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
-            switch (this.originalType) % no returns within switch!  must reach this.populateFieldsFromInputParser.
+            switch (this.originalType) % no returns within switch!  must reach this.adjustFieldsFromInputParser.
                 case 'char'
                     this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
                 case 'struct' 
@@ -107,7 +107,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                         warning('off', 'MATLAB:structOnObject');
                         this = NIfTIc(struct(ip.Results.obj));
                         warning('on', 'MATLAB:structOnObject');
-                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI')) %% dedecorates
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTId')) %% dedecorates
                         this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
                     elseif (iscell(ip.Results.obj)) %% dedecorates
                         for idx = 1:length(ip.Results.obj)
@@ -122,8 +122,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                         NIfTIc.assertCtorObj(ip.Results.obj);
                     end
             end
-
-            this = this.populateFieldsFromInputParser(ip);
+            this = this.adjustFieldsFromInputParser(ip);
  		end
     end 
     
@@ -141,16 +140,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
     end
     
     methods (Access = private)      
-        function this = adjustFieldsAfterLoading(this)
-            if (~mlfourd.InnerNIfTIc.LOAD_UNTOUCHED)
-                this = this.optimizePrecision; 
-            end
-            for idx = 1:this.innerNIfTI_.length
-                this.innerNIfTI_.innerCellComp_{idx}.hdr_.hist.descrip = sprintf('NIfTIc.load read %s on %s', this.fqfilename{idx}, datestr(now, 30));
-                this.innerNIfTI_.innerCellComp_{idx}.label_ = this.fileprefix{idx};
-            end
-        end  
-        function this = populateFieldsFromInputParser(this, ip)
+        function this = adjustFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
                 if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
                     for idx = 1:this.innerNIfTI_.length

@@ -38,27 +38,33 @@ classdef Test_InnerCellComposite < matlab.unittest.TestCase
             this.verifyEqual(icc.fevalOut('size'), { [2 2] [3 3] [4 4] });
             this.verifyEqual(icc.fevalOut('rank', magic(2)), { 2 2 2 });
             out = icc.fevalOut('sum', 2);
-            this.verifyEqual({out{1}.img out{2}.img out{3}.img}, {[4;6] [15;15;15] [34;34;34;34]});
+            this.verifyEqual({out{1}.img out{2}.img out{3}.img}, ...
+                cellfun(@(x) single(x), {[4;6] [15;15;15] [34;34;34;34]}, 'UniformOutput', false));
             out = icc.fevalOut('sum', 2, 'double');
-            this.verifyEqual({out{1}.img out{2}.img out{3}.img}, {[4;6] [15;15;15] [34;34;34;34]});
+            this.verifyEqual({out{1}.img out{2}.img out{3}.img}, ...
+                cellfun(@(x) single(x), {[4;6] [15;15;15] [34;34;34;34]}, 'UniformOutput', false));
         end
         function test_fevalOut2(this)
             import mlfourd.* mlpatterns.*;
+            warning('off', 'mlfourd:isequal:mismatchedField');
             icc = InnerCellComposite( ...
                 { NIfTId(magic(2), 'fileprefix', 'one') ...
                   NIfTId(magic(3), 'fileprefix', 'two') ...
                   NIfTId(magic(4), 'fileprefix', 'three') });
             tf = icc.fevalOut('isequal', NIfTId(magic(4), 'fileprefix', 'three'));
-            this.verifyEqual(tf, {false false true});
+            this.verifyEqual(tf, {false false true});            
+            warning('on', 'mlfourd:isequal:mismatchedField');
         end
         function test_fevalIsequal(this)
             import mlfourd.* mlpatterns.*;
+            warning('off', 'mlfourd:isequal:mismatchedField');
             icc = InnerCellComposite( ...
                 { NIfTId(magic(2), 'fileprefix', 'one') ...
                   NIfTId(magic(3), 'fileprefix', 'two') ...
                   NIfTId(magic(4), 'fileprefix', 'three') });
             tf = icc.fevalIsequal(NIfTId(magic(4), 'fileprefix', 'three'));
             this.verifyEqual(tf, {false false true});
+            warning('on', 'mlfourd:isequal:mismatchedField');
         end
 		function test_repmat(this)
             this.verifyTrue(isempty(this.testObj.repmat()));

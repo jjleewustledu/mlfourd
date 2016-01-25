@@ -71,15 +71,20 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
         end
         
         function this = binarized(this)
+            %% BINARIZED
+            %  @return internal image is binary: values are only 0 or 1.
+            %  @warning mlfourd:possibleMaskingError
+            
             img  = double(this.img ~= 0);
             this = this.makeSimilar( ...
                    'img', img, ...
                    'fileprefix', sprintf('%s_binarized', this.fileprefix), ...
-                   'descrip',    'MaskedNIfTI.binarized');
-             if (dipsum(img) == prod(this.size))
-                 warning('mlfourd:possibleMaskingError', ...
-                         'MaskingNIfTId.binarized mask spans the image space');
-             end
+                   'descrip',    'MaskedNIfTI.binarized');            
+            if (dipsum(img) == numel(img))
+                warning('mlfourd:possibleMaskingError', ...
+                    'MaskingNIfTId.binarized mask spans the image space');
+            end
+            this.assertVolumeFraction;
         end
         function N    = count(this)
             %% COUNT 
@@ -88,6 +93,11 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
             N   = dipsum(this.img ~= 0);
         end
         function this = masked(this, niidMask)
+            %% MASKED
+            %  @param INIfTId of a mask with values [0 1], not required to be binary.
+            %  @return internal image is masked.
+            %  @warning mflourd:possibleMaskingError
+            
             assert(isa(niidMask, 'mlfourd.INIfTI'));
             assert(all(this.size == niidMask.size));
             if (~this.isZeroToOne(niidMask))
@@ -95,14 +105,16 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                          'MaskingNIfTId.masked received a mask with values outside of [0 1]');
             end
             this = this.makeSimilar( ...
-                   'img', this.img .* niidMask.img, ...
+                   'img', double(this.img) .* double(niidMask.img), ...
                    'descrip',    sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
                    'fileprefix', sprintf('%s_masked', this.fileprefix));
-        end    
+            this.assertVolumeFraction;
+        end
         function this = maskedByZ(this, rng)
             %% MASKEDBYZ
             %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
             %  @return internal image is cropped by rng.  
+            %  @throws MATLAB:assertion:failed for rng out of bounds.
             
             assert(isnumeric(rng) && all(size(rng) == [1 2]));
             assert(0 < rng(1) && rng(1) < rng(2) && rng(2) < this.size(3));
@@ -115,6 +127,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
             end
         end            
         function this = thresh(this, t)
+            %% THRESH
+            %  @param t:  use t to threshold current image (zero anything below the number)
+
             assert(isscalar(t));
             bin  = double(this.img > t);
             this = this.makeSimilar( ...
@@ -123,6 +138,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTI.thresh(%g)', t));
         end
         function this = threshp(this, p)
+            %% THRESHP
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            
             bin  = double(this.img > dipprctile(this.img, p));
             this = this.makeSimilar( ...
                    'img', this.img .* bin, ...
@@ -130,6 +148,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
         end          
         function this = threshPZ(this, p)
+            %% THRESHPZ
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE of non-zero voxels and threshold below
+            
             bin0 = double(this.img ~= 0);
             img  = this.img .* bin0;
             bin  = double(img > dipprctile(img, p));
@@ -139,6 +160,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTId.threshPZ(%g)', p));
         end
         function this = uthresh(this, t)
+            %% UTHRESH
+            %  @param t:  use t to upper-threshold current image (zero anything above the number)
+            
             assert(isscalar(t));
             bin  = double(this.img < t);
             this = this.makeSimilar( ...
@@ -147,6 +171,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTI.uthresh(%g)', t));
         end
         function this = uthreshp(this, p)
+            %% UTHRESHP
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE to upper-threshold current image (zero anything above the number)
+            
             bin  = double(this.img < dipprctile(this.img, p));
             this = this.makeSimilar( ...
                    'img', this.img .* bin, ...
@@ -154,6 +181,9 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
         end          
         function this = uthreshPZ(this, p)
+            %% UTHRESHPZ
+            %  @param p:  use  percentage p (0-100) of ROBUST RANGE of non-zero voxels and threshold above
+            
             bin0 = double(this.img ~= 0);
             bin  = double(this.img < dipprctile(this.img, p));
             this = this.makeSimilar( ...
@@ -227,6 +257,17 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
     end
     
     %% PRIVATE
+    
+    methods (Access = private)
+        function assertVolumeFraction(this)            
+            volFrac = this.count/numel(this.img);
+            if (volFrac > 0.25)
+                warning('mlfourd:possibleMaskingError', ...
+                        'MaskingNIfTId encountered a masked image with a large volume-fraction:  %g', ...
+                        volFrac);
+            end
+        end
+    end
     
     methods (Static, Access = private)
         function s = decimal2str(d)

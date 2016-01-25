@@ -24,39 +24,59 @@ classdef CellCompositeState < mlfourd.ImagingState
         end
         function f = get.mgh(this)
             this.contexth_.changeState( ...
-                mlfourd.MGHState.load(this.concreteObj_, this.contexth_));
+                mlfourd.MGHState(this.concreteObj_, this.contexth_));
             f = this.contexth_.mgh;
         end
         function f = get.niftic(this)  
             this.contexth_.changeState( ...
-                mlfourd.NIfTIState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
         function f = get.niftid(this)  
+            import mlfourd.*;
             this.contexth_.changeState( ...
-                mlfourd.NIfTIdState.load(this.concreteObj_, this.contexth_));
+                NIfTIdState(NIfTId(this.concreteObj_.get(1)), this.contexth_));
             f = this.contexth_.niftid;
+        end
+        function g = get.numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
         end
     end 
     
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.CellCompositeState(varargin{:});
-        end
-    end
-    
     methods 
         function this = CellCompositeState(obj, h)
-            if (~isa(obj, 'mlfourd.ImagingComponent'))
-                try
-                    obj = mlfourd.ImagingComponent.load(obj);
-                catch ME
-                    handexcept(ME, 'mlfourd:castingError', ...
-                        'CellCompositeState.load does not support objects of type %s', class(obj));
+            if (~isa(obj, 'mlpatterns.CellComposite'))
+                if (~isa(obj, 'mlpatterns.Composite'))
+                    obj = mlpatterns.CellComposite( ...
+                        this.ensureCell(obj));
                 end
+                obj = this.composite2cellComposite(obj);
             end
             this.concreteObj_ = obj;
             this.contexth_ = h;
+        end
+    end
+    
+    %% PRIVATE
+    
+    methods (Static, Access = private)
+        function obj = composite2cellComposite(obj)
+            if (~isa(obj, 'mlpatterns.CellComposite'))
+                assert(isa(obj, 'mlpatterns.Composite'));
+                cc   = CellComposite;
+                iter = obj.createIterator;
+                while iter.hasNext
+                    cc = cc.add(iter.next);
+                end
+                obj = cc;
+            end
+        end
+        function obj  = ensureCell(obj)
+            if (~iscell(obj))
+                obj = cell(obj);
+            end
         end
     end
     

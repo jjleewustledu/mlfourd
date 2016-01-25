@@ -41,10 +41,13 @@ classdef NIfTIdState < mlfourd.ImagingState
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
-        end     
+        end
     end
 
-    methods 
+    methods
+        function        view(this, varargin)
+            this.concreteObj_.freeview(varargin{:});
+        end
         
         function this = NIfTIdState(obj, h)
             if (~isa(obj, 'mlfourd.NIfTId'))

@@ -36,22 +36,27 @@ classdef Test_NumericalNIfTId < matlab.unittest.TestCase
         function test_usxfun(this)
             c = transpose(this.testObj);
             this.verifyInstanceOf(c, 'mlfourd.NumericalNIfTId');
-            this.verifyEqual(c.img, transpose(magic(2)));
+            this.verifyEqual(c.img, transpose(pi*magic(2)));
         end
         function test_bsxfun(this)
-            c = this.testObj + magic(2); % overloaded plus
+            c = this.testObj + pi*magic(2); % overloaded plus
             this.verifyInstanceOf(c, 'mlfourd.NumericalNIfTId');
-            this.verifyEqual(c.img, 2*magic(2));
+            this.verifyEqual(c.img, 2*pi*magic(2));
         end
         function test_umethods(this)
+            meths = { 'abs' 'ctranspose' 'transpose' 'not' };
+            for m = 1:length(meths)
+                h = str2func(meths{m});
+                this.verifyEqual(this.testObj.(meths{m}).img, double(h(pi*magic(2))));
+            end
+        end
+        function test_uscalarmethods(this)
             meths = { ...
-                'abs' 'ctranspose' 'transpose' ...
-                'not' ...
                 'dipiqr' 'dipisinf' 'dipisnan' 'dipisfinite' 'dipisreal' 'diplogprod' 'dipmad' ...
                 'dipmax' 'dipmean' 'dipmedian' 'dipmin' 'dipmode' 'dipprod' 'dipstd' 'dipsum'};
             for m = 1:length(meths)
                 h = str2func(meths{m});
-                this.verifyEqual(this.testObj.(meths{m}).img, double(h(magic(2))));
+                this.verifyEqual(this.testObj.(meths{m}), double(h(pi*magic(2))));
             end
         end
         function test_bmethods(this)            
@@ -60,7 +65,7 @@ classdef Test_NumericalNIfTId < matlab.unittest.TestCase
             b = pi * magic(2);
             for m = 1:length(meths)
                 h = str2func(meths{m});
-                this.verifyEqual(this.testObj.(meths{m})(b).img, double(h(magic(2), b)));
+                this.verifyEqual(this.testObj.(meths{m})(b).img, double(h(pi*magic(2), b)));
             end
         end
         function test_bscalarmethods(this)
@@ -68,7 +73,7 @@ classdef Test_NumericalNIfTId < matlab.unittest.TestCase
             b = 0.5;
             for m = 1:length(meths)
                 h = str2func(meths{m});
-                this.verifyEqual(this.testObj.(meths{m})(b).img, h(magic(2), b));
+                this.verifyEqual(this.testObj.(meths{m})(b), h(pi*magic(2), b));
             end
         end
 	end
@@ -76,7 +81,7 @@ classdef Test_NumericalNIfTId < matlab.unittest.TestCase
  	methods (TestClassSetup)
 		function setupNumericalNIfTId(this)
  			import mlfourd.*;
- 			this.testObj_ = NumericalNIfTId(NIfTId(magic(2)));
+ 			this.testObj_ = NumericalNIfTId(NIfTId(pi*magic(2)));
  		end
 	end
 

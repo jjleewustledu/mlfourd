@@ -22,7 +22,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             %  @return this is modified.
             %  @throws MATLAB
                          
-            this = this.makeSimilar('img', funh(this.component.img), ...
+            this = this.makeSimilar('img', double(funh(this.component.img)), ...
                                     'descrip', sprintf('NumericalNIfTId.usxfun %s %s', ...
                                                        func2str(funh), this.fileprefix));
         end
@@ -34,11 +34,11 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             %  @throws MATLAB:bsxfun:nonnumericOperands
             
             if (isa(b, 'mlfourd.INIfTI'))
-                this = this.makeSimilar('img', bsxfun(funh, this.component.img, b.img), ...
+                this = this.makeSimilar('img', double(bsxfun(funh, this.component.img, b.img)), ...
                                         'descrip', sprintf('NumericalNIfTId.bsxfun %s %s %s', ...
                                                            func2str(funh), this.fileprefix, b.fileprefix));
             else
-                this = this.makeSimilar('img', bsxfun(funh, this.component.img, b), ...
+                this = this.makeSimilar('img', double(bsxfun(funh, this.component.img, b)), ...
                                         'descrip', sprintf('NumericalNIfTId.bsxfun %s %s %s', ...
                                                            func2str(funh), this.fileprefix, mat2str(b)));
             end
@@ -234,8 +234,14 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             x = this.img;
         end
         
-        %% Using NIfTIdecorators
+        %% Using other NIfTIdecorators
         
+        function this = binarized(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.binarized(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
         function this = blurred(this, varargin)
             import mlfourd.*;
             b = BlurringNIfTId(this.component);
@@ -248,12 +254,42 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             m = m.masked(varargin{:});
             this = NumericalNIfTId(m.component);
         end
+        function this = maskedByZ(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.maskedByZ(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
+        function this = thresh(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.thresh(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
+        function this = threshp(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.threshp(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
         function this = timeSummed(this)
             import mlfourd.*;
             d = DynamicNIfTId(this.component);
             d = d.timeSummed;
             %d.img = squeeze(d.img);
             this = NumericalNIfTId(d.component);
+        end
+        function this = uthresh(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.uthresh(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
+        function this = uthreshp(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.uthreshp(varargin{:});
+            this = NumericalNIfTId(m.component);
         end
         function this = volumeSummed(this)
             import mlfourd.*;

@@ -82,26 +82,21 @@ classdef UnittestRegistry < mlpatterns.Singleton
     
     methods (Static)
         function this = instance(qualifier)
-            %% INSTANCE uses string qualifiers to implement registry behavior that
-            %  requires access to the persistent uniqueInstance
-            persistent uniqueInstance
-            
-            if (exist('qualifier','var') && ischar(qualifier))
+            persistent uniqueInstance            
+            if (exist('qualifier','var'))
+                assert(ischar(qualifier));
                 if (strcmp(qualifier, 'initialize'))
                     uniqueInstance = [];
                 end
-            end
-            
+            end            
             if (isempty(uniqueInstance))
-                this = mlfourd.UnittestRegistry();
-                uniqueInstance = this;
-            else
-                this = uniqueInstance;
+                uniqueInstance = mlfourd.UnittestRegistry();
             end
+            this = uniqueInstance;
         end
     end
     
-	methods (Access = 'private')		  
+	methods (Access = private)	 
  		function this = UnittestRegistry(varargin) 			
  			this = this@mlpatterns.Singleton(varargin{:}); 			
  		end

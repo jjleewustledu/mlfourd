@@ -55,6 +55,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for mlfourd.InnerNIfTIc
         
+        logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
     end 
@@ -150,6 +151,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for AbstractNIfTId
         
+        function s    = get.logger(this)
+            s = this.innerCellComp_.getter('logger');
+        end
         function g    = get.separator(this)
             g = this.innerCellComp_.getter('separator');
         end
@@ -223,6 +227,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTIc
         
+        function addLog(this, varargin)
+            this.fevalNone('addLog', varargin{:});
+        end
         function e = fslentropy(this)
             e = this.innerCellComp_.fevalOut('fslentropy');
         end
@@ -240,9 +247,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             fqfns = this.innerCellComp_.fevalOut('fqfilename');
             fqfns = [fqfns{2:end} varargin{:}];
             first.fslview(fqfns{:});
-        end
-        function this = optimizePrecision(this)
-            this.innerCellComp_ = this.innerCellComp_.fevalThis('optimizePrecision');
         end
         
         %% mlpatterns.Composite
@@ -294,7 +298,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
     %% HIDDEN
     
     properties %(Hidden)
-        innerCellComp_ 
+        innerCellComp_
         originalType_
     end
     

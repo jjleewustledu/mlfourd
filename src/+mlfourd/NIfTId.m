@@ -40,10 +40,10 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('cloned');
         end
-        function tf = isequal(this, obj)
+        function tf   = isequal(this, obj)
             tf = this.isequaln(obj);
         end
-        function tf = isequaln(this, obj)
+        function tf   = isequaln(this, obj)
             tf = this.classesequal(obj);
             if (tf)
                 tf = this.fieldsequaln(obj);
@@ -115,11 +115,12 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             parse(ip, varargin{:});
             
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
-            switch (this.originalType) % no returns within switch!  must reach this.populateFieldsFromInputParser.
+            switch (this.originalType) % no returns within switch!  must reach this.adjustFieldsFromInputParser.
                 case 'char'
                     ff = this.existingFileform(ip.Results.obj);
                     if (~isempty(ff))
                         this = NIfTId.load_existing(ff);
+                        this = this.adjustFieldsAfterLoading;
                     else
                         [p,f] = myfileparts(ip.Results.obj);
                         this.fqfilename = fullfile(p, [f this.FILETYPE_EXT]);
@@ -132,39 +133,44 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                     this.innerNIfTI_.ext_         = ip.Results.obj.ext;
                     this.innerNIfTI_.img_         = ip.Results.obj.img;
                     this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;
+                    this                          = this.populateLogger;
                 otherwise
                     if (isnumeric(ip.Results.obj))
-                        rank                                 = length(size(ip.Results.obj));
-                        this.innerNIfTI_.img_                            = double(ip.Results.obj);
+                        rank                                             = length(size(ip.Results.obj));
+                        this.innerNIfTI_.img_                            = ip.Results.obj;
                         this.innerNIfTI_.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
                         this.innerNIfTI_.hdr_.dime.dim                   = ones(1,8);
                         this.innerNIfTI_.hdr_.dime.dim(1)                = rank;
                         this.innerNIfTI_.hdr_.dime.dim(2:rank+1)         = size(ip.Results.obj);
                         this.innerNIfTI_.hdr_.dime.datatype              = 64;
                         this.innerNIfTI_.hdr_.dime.bitpix                = 64;
+                        this                                             = this.populateLogger;
                     elseif (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
                         warning('off', 'MATLAB:structOnObject');
                         this = NIfTId(struct(ip.Results.obj));
                         warning('on', 'MATLAB:structOnObject');
-                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTI')) %% dedecorates
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTId')) %% dedecorates
                         this.innerNIfTI_.ext_         = ip.Results.obj.ext;
                         this.innerNIfTI_.fqfileprefix = ip.Results.obj.fqfileprefix;
                         this.innerNIfTI_.filetype_    = ip.Results.obj.filetype;
                         this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
-                        this.innerNIfTI_.img_         = ip.Results.obj.img;                     
+                        this.innerNIfTI_.img_         = ip.Results.obj.img;
                         this.innerNIfTI_.label        = ip.Results.obj.label;
                         this.innerNIfTI_.noclobber    = ip.Results.obj.noclobber;
+                        this.innerNIfTI_.orient_      = ip.Results.obj.orient;
                         this.innerNIfTI_.separator    = ip.Results.obj.separator;
-                        this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;   
+                        this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;  
+                        this                          = this.populateLogger;
+                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTIc'))
+                        this = NIfTId(ip.Results.obj.get(1));
                     else
                         NIfTId.assertCtorObj(ip.Results.obj);
                     end
             end
-            
-            this = this.populateFieldsFromInputParser(ip);
+            this = this.adjustFieldsFromInputParser(ip);
         end 
     end
-   
+    
     %% PRIVATE
  
     methods (Static, Access = private)
@@ -209,12 +215,10 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 e = NIfTId.selectExistingExtension(fn);
                 if (lstrfind(e, JimmyShenInterface.SUPPORTED_EXT))
                     this = NIfTId.load_JimmyShen(fn);
-                    this = this.adjustFieldsAfterLoading;
                     return
                 end
                 if (lstrfind(e, mlsurfer.SurferRegistry.SUPPORTED_EXT))
                     this = NIfTId.load_surfer(fn);
-                    this = this.adjustFieldsAfterLoading;
                     return
                 end
             catch ME
@@ -232,37 +236,33 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         end
         function this = load_JimmyShen(fn)
             this = mlfourd.NIfTId(mlniftitools.load_untouch_nii(fn));
-            this.fqfilename = fn;
         end
         function e    = selectExistingExtension(fn)
             [~,~,e] = myfileparts(fn);
             if (lexist(fn, 'file'))
-                if (isempty(e))
-                    error('mlfourd:fileTypeNotSupported', ...
-                        'NIfTId.selectExistingExtension could not find a file extension in %s', fn);
-                end
+                assert(~isempty(e));
                 return
             end
             if (isempty(e))
                 files = mlsystem.DirTool([fn '.*']);
                 for f = 1:length(files)
-                    if (lstrfind(files{f}, mlfourd.JimmyShenInterface.SUPPORTED_EXT))
+                    if (lstrfind(files{f}, mlfourd.JimmyShenInterface.SUPPORTED_EXT) || ...
+                        lstrfind(files{f}, mlsurfer.SurferRegistry.SUPPORTED_EXT))
                         [~,~,e] = myfileparts(files{f});
                         return
                     end
-                    if (lstrfind(files{f}, mlsurfer.SurferRegistry.SUPPORTED_EXT))
-                        [~,~,e] = myfileparts(files{f});
-                        return
-                    end
-                    
                 end
             end
-            error('mlfourd:fileTypeNotSupported', ...
-                'NIfTId.load_existing does not support file extension %s', e);
+            error('mlfourd:IOError:fileNotFound', ...
+                  'NIfTId.load_existing could not find %s', fn);
         end
         function        assertCtorObj(obj)
+            if (isa(obj, 'mlpatterns.Composite'))
+                error('mlfourd:invalidCtorObj', ...
+                      'NIfTId.assertCtorObj received an mlpatterns.Composite; consider using mlfourd.NIfTIc');
+            end
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
-                    isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface')))
+                    isa(obj, 'mlfourd.INIfTId') || isa(obj, 'mlfourd.NIfTIInterface')))
                 error('mlfourd:invalidCtorObj', ...
                       'NIfTId.assertCtorObj does not support class(obj)->%s', class(obj));
             end
@@ -270,12 +270,28 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
     end 
     
     methods (Access = private)
-        function this = adjustFieldsAfterLoading(this)
-            if (~mlfourd.InnerNIfTId.LOAD_UNTOUCHED)
-                this = this.optimizePrecision; 
-            end
+        function this     = adjustFieldsAfterLoading(this)
+            this.innerNIfTI_.orient_ = this.innerNIfTI_.orient; % caches results of fslorient
             this.innerNIfTI_.hdr_.hist.descrip = sprintf('NIfTId.load read %s on %s', this.fqfilename, datestr(now, 30));
-            this.innerNIfTI_.label_ = this.fileprefix;
+        end
+        function this     = adjustFieldsFromInputParser(this, ip)
+            for p = 1:length(ip.Parameters)
+                if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
+                    switch (ip.Parameters{p})
+                        case 'descrip'
+                            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
+                        case 'ext'
+                            this.innerNIfTI_.ext_ = ip.Results.ext;
+                        case 'hdr'
+                            this.innerNIfTI_.hdr_ = ip.Results.hdr;
+                        case 'img'                            
+                            this.innerNIfTI_.img_ = ip.Results.img;
+                        case 'obj'
+                        otherwise
+                            this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
+                    end
+                end
+            end
         end
         function [tf,msg] = classesequal(this, c)
             tf  = true; 
@@ -285,14 +301,14 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 msg = sprintf('class(this)-> %s but class(compared)->%s', class(this), class(c));
             end
             if (~tf)
-                warning(msg);
+                warning('mlfourd:isequal:mismatchedClass', msg);
             end
         end
         function [tf,msg] = fieldsequaln(this, obj)
             [tf,msg] = mlfourd.NIfTId.checkFields( ...
                 this, obj, @(x) lstrfind(x, this.ISEQUAL_IGNORES));            
             if (~tf)
-                warning(msg);
+                warning('mlfourd:isequal:mismatchedField', msg);
             end
         end
         function [tf,msg] = hdrsequaln(this, obj)
@@ -308,24 +324,25 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 end
             end
             if (~tf)
-                warning(msg);
+                warning('mlfourd:isequal:mismatchedField', msg);
             end
         end
-        function this = populateFieldsFromInputParser(this, ip)
-            for p = 1:length(ip.Parameters)
-                if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
-                    switch (ip.Parameters{p})
-                        case 'descrip'
-                            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
-                        case 'ext'
-                            this.innerNIfTI_.ext_ = ip.Results.ext;
-                        case 'hdr'
-                            this.innerNIfTI_.hdr_ = ip.Results.hdr;
-                        case 'obj'
-                        otherwise
-                            this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
-                    end
-                end
+        function this     = populateLogger(this)
+            if (str2double(getenv('NO_INTERNAL_LOGGER')) == 1)
+                return
+            end
+            
+            logfn  = [this.fqfileprefix mlpipeline.Logger.FILETYPE_EXT];
+            imgrec = [this.fqfileprefix '.img.rec'];
+            
+            import mlpipeline.*;
+            this.innerNIfTI_.logger_ = Logger(logfn, this);
+            if (~lexist(logfn, 'file') && lexist(imgrec, 'file'))
+                c = mlsystem.FilesystemRegistry.textfileToCell(imgrec);
+                this.innerNIfTI_.logger_.add(cell2str(c));
+            end
+            if (~isempty(this.descrip))
+                this.innerNIfTI_.logger_.add(['Previous descrip:  ' this.descrip]);
             end
         end
     end 

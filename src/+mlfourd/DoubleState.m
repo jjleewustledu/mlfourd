@@ -16,33 +16,47 @@ classdef DoubleState < mlfourd.ImagingState
         mgh
         niftic
         niftid
+        numericalNiftid
  	end
 
     methods %% GET
         function f = get.cellComposite(this)            
             this.contexth_.changeState( ...
-                mlfourd.CellCompositeState.load(this.concreteObj_, this.contexth_));
+                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
             f = this.contexth_.composite;
         end
         function f = get.mgh(this)
             this.contexth_.changeState( ...
-                mlfourd.MGHState.load(this.concreteObj_, this.contexth_));
+                mlfourd.MGHState(this.concreteObj_, this.contexth_));
             f = this.contexth_.mgh;
         end
         function f = get.niftic(this)            
             this.contexth_.changeState( ...
-                mlfourd.NIfTIState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
-        function f = get.niftid(this)
-            f = this.concreteObj_;
-        end  
+        function g = get.niftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.niftid;
+        end
+        function g = get.numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
+        end
     end 
      
     methods 
  		function this = DoubleState(obj, h)
-            this.concreteObj_ = mlfourd.NIfTId(obj);
-            this.contexth_ = h; 
+            try
+                obj = double(obj);
+            catch ME
+                handexcept(ME, 'mlfourd:castingError', ...
+                    'DoubleState.load does not support objects of type %s', class(obj));
+            end
+            this.concreteObj_ = obj;
+            this.contexth_ = h;
  		end
  	end 
 

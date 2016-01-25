@@ -31,6 +31,9 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         end
         function this = set.filepath(this, pth)
             assert(ischar(pth));
+            if (~isempty(this.filepath_))
+                this.untouch_ = false;
+            end
             this.filepath_ = pth;
         end
         function pth  = get.filepath(this)
@@ -41,6 +44,10 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         end
         function this = set.fileprefix(this, fp)
             assert(ischar(fp));
+            assert(~isempty(fp));
+            if (~isempty(this.fileprefix_))
+                this.untouch_ = false;
+            end
             [~,this.fileprefix_] = myfileparts(fp);
         end
         function fp   = get.fileprefix(this)
@@ -50,8 +57,11 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
             assert(ischar(fs));
             if (~isempty(fs) && ~strcmp('.', fs(1)))
                 fs = ['.' fs];
+            end            
+            if (~isempty(this.filesuffix_))
+                this.untouch_ = false;
             end
-            this.filesuffix_ = fs;
+            [~,~,this.filesuffix_] = myfileparts(fs);
         end
         function fs   = get.filesuffix(this)
             fs = this.filesuffix_;
@@ -83,8 +93,8 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
             f = this.fqfileprefix;
         end
         function this = set.noclobber(this, nc)
-            assert(islogical(nc));
-            this.noclobber_ = nc;
+            this.untouch_ = false;
+            this.noclobber_ = logical(nc);
         end
         function tf   = get.noclobber(this)
             tf = this.noclobber_;

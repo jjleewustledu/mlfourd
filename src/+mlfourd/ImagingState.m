@@ -110,14 +110,41 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NIfTIcState(this.concreteObj_, this.contexth_));
             a = this.contexth_.atlas(varargin{:});
         end
-        function a = add(this, varargin)
-            %% ADD
-            %  @param varargin are objects supported by NIfTIcState; the state changes
+        function a = binarized(this, varargin)
+            %% BINARIZED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...
-                NIfTIcState(this.concreteObj_, this.contexth_));
-            a = this.contexth_.atlas(varargin{:});
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.binarized(varargin{:});
+        end
+        function a = blurred(this, varargin)
+            %% BLURRED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.blurred(varargin{:});
+        end
+        function a = masked(this, varargin)
+            %% MASKED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.masked(varargin{:});
+        end
+        function a = maskedByZ(this, varargin)
+            %% MASKEDBYZ
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.maskedByZ(varargin{:});
         end
         function c    = char(this)
             c = char(this.concreteObj_);
@@ -138,8 +165,68 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function this = saveas(this, f)
             this.concreteObj_ = this.concreteObj_.saveas(f);
         end
+        function a = thresh(this, varargin)
+            %% THRESH
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.thresh(varargin{:});
+        end
+        function a = threshp(this, varargin)
+            %% THRESHP
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.threshp(varargin{:});
+        end
+        function a = timeSummed(this, varargin)
+            %% TIMESUMMED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.timeSummed(varargin{:});
+        end
+        function a = uthresh(this, varargin)
+            %% UTHRESH
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.uthresh(varargin{:});
+        end
+        function a = uthreshp(this, varargin)
+            %% UTHRESHP
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.uthreshp(varargin{:});
+        end
+        function a = volumeSummed(this, varargin)
+            %% VOLUMESUMMED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            a = this.contexth_.volumeSummed(varargin{:});
+        end
         function        view(this, varargin)
-            this.concreteObj_.freeview(varargin{:});
+            %% VIEW
+            %  @param [varargin] are passed to NIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                FilenameState(this.concreteObj_, this.contexth_));
+            this.contexth_.view(varargin{:});
         end
     end
     

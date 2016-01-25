@@ -274,7 +274,7 @@ classdef (Abstract) Test_mlfourd < matlab.unittest.TestCase
     
     methods (TestClassSetup)
         function setupMlfourd(this)
-            this.registry = mlfourd.UnittestRegistry.instance;
+            this.registry = mlfourd.UnittestRegistry.instance('initialize');
             this.pwdOri = pwd;
             this.addTeardown(@cd, this.pwdOri);
             cd(this.sessionPath); 

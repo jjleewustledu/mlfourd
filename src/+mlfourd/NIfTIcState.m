@@ -17,17 +17,27 @@ classdef NIfTIcState < mlfourd.ImagingState
  	end 
 
 	methods %% GET
-        function g = get.niftid(this)
+        function f = get.cellComposite(this)
             this.contexth_.changeState( ...
-                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
-            g = this.contexth_.niftid;
-        end   
+                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.cellComposite;            
+        end
+        function f = get.mgh(this)
+            this.contexth_.changeState( ...
+                mlfourd.MGHState(this.concreteObj_.get(1), this.contexth_));
+            f = this.contexth_.mgh;
+        end
         function g = get.niftic(this)
             g = this.concreteObj_;
-        end   
+        end  
+        function g = get.niftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.concreteObj_.get(1), this.contexth_));
+            g = this.contexth_.niftid;
+        end    
         function g = get.numericalNiftid(this)       
             this.contexth_.changeState( ...
-                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIdState(this.concreteObj_.get(1), this.contexth_));
             g = this.contexth_.numericalNiftid;     
         end         
     end
@@ -39,26 +49,6 @@ classdef NIfTIcState < mlfourd.ImagingState
     end
     
     methods 
-        function a = add(this, varargin)
-            %% ADD combines the composite with addition of images.
-            %  @param [varargin] are any ImagingContext objects.
-            %  @return a is an ImagingContext with NIfTIdState.
-            
-            this = this.accumulateNIfTId(varargin{:});
-            
-            import mlfourd.*;
-            niic = this.niftic;
-            a = NumericalNIfTId(niic.get(1).zeros);
-            a = a.timeSummed; % reduce to 3D
-            for o = 1:niic.length
-                b = NumericalNIfTId(niic.get(o));
-                b = b.timeSummed;
-                a = a + b;
-            end
-            a = a.append_fileprefix('_add');
-            a = a.append_descrip('add');
-            a = ImagingContext(NIfTId(a));
-        end
         function a = atlas(this, varargin)
             %% ATLAS builds an atlas over the composite.
             %  @param [varargin] are any ImagingContext objects.
@@ -92,11 +82,24 @@ classdef NIfTIcState < mlfourd.ImagingState
                 end
             end
         end
+        function        view(this, varargin)
+            niid1 = this.concreteObj_.get(1);
+            fns = {};
+            for f = 2:this.concreteObj_.length
+                niid = this.concreteObj_.get(f);
+                if (~lexist(niid.fqfilename))
+                    niid.save;
+                end
+                fns = [fns niid.fqfilename];
+            end
+            viewArgin = this.segregateForView(fns, varargin{:});
+            niid1.freeview(viewArgin{:});
+        end
         
         function this = NIfTIcState(obj, h)
             if (~isa(obj, 'mlfourd.NIfTIc'))
                 try
-                    obj = mlfourd.NIfTIc(this.dedecorate(obj), 'dedecorate', true);
+                    obj = mlfourd.NIfTIc(obj);
                 catch ME
                     handexcept(ME, 'mlfourd:castingError', ...
                         'NIfTIcState.load does not support objects of type %s', class(obj));
@@ -105,7 +108,29 @@ classdef NIfTIcState < mlfourd.ImagingState
             this.concreteObj_ = obj;
             this.contexth_ = h;
         end
- 	end 
+    end 
+    
+    %% PRIVATE
+    
+    methods (Static, Access = private)
+        function viewArgs = segregateForView(fns, varargin)
+            if (~isempty(varargin))
+                opts = varargin;
+                for o = 1:length(opts)
+                    if (ischar(opts{o}))
+                        if (lexist(opts{o}, 'file'))
+                            fns = [fns opts{o}];
+                            opts(o) = [];
+                        end
+                    end
+                end
+                viewArgs = sprintf('%s %s', ...
+                    cell2str(fns, 'AsRow', true), cell2str(opts, 'AsRow', true));
+                return
+            end
+            viewArgs = fns;
+        end
+    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

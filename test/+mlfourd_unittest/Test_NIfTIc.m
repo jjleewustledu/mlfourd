@@ -98,7 +98,7 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
                 acc = acc + iter.next;
             end
             this.verifyEqual(size(acc), [128 128 63]);
-            this.verifyEqual(acc.dipmedian, 4.29219835940293, 'RelTol', 1e-6);
+            this.verifyEqual(acc.dipmedian, 4.29219835940292, 'RelTol', 1e-6);
             this.verifyEqual(acc.entropy,   1.59063853530086, 'RelTol', 1e-6);
             %acc.freeview;
         end
@@ -107,7 +107,7 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
  	methods (TestClassSetup)
 		function setupNIfTIc(this)
  			import mlfourd.*;
-            this.registry = UnittestRegistry.instance;
+            this.registry = UnittestRegistry.instance('initialize');
             this.registry.sessionFolder = 'mm01-007_p7686_2010aug20';
  			this.testObj_ = NIfTIc({this.ho_niid, this.oo_niid, this.oc_niid, this.tr_niid});
  		end

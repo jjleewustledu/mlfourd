@@ -112,6 +112,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             
             this.mask = p.Results.mask;
             this.blur = p.Results.blur;
+            this.img  = double(this.img);
             if (~isempty(this.blur))
                 this = this.blurred(this.blur, this.mask);
             end

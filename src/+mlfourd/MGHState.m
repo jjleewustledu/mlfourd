@@ -17,12 +17,13 @@ classdef MGHState < mlfourd.ImagingState
         mgh
         niftic
         niftid
+        numericalNiftid
     end 
     
 	methods %% GET
         function f = get.cellComposite(this)
             this.contexth_.changeState( ...
-                mlfourd.CellCompositeState.load(this.concreteObj_, this.contexth_));
+                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
             f = this.contexth_.cellComposite;
         end
         function f = get.mgh(this)
@@ -30,21 +31,20 @@ classdef MGHState < mlfourd.ImagingState
         end
         function f = get.niftic(this)
             this.contexth_.changeState( ...
-                mlfourd.NIfTIState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
         function f = get.niftid(this)
             this.contexth_.changeState( ...
-                mlfourd.NIfTIdState.load(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftid;
         end
-    end 
-    
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.MGHState(varargin{:});
+        function g = get.numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
         end
-    end
+    end 
 
     %% PROTECTED
     
@@ -52,7 +52,7 @@ classdef MGHState < mlfourd.ImagingState
         function this = MGHState(obj, h)
             if (~isa(obj, 'mlsurfer.MGH'))
                 try
-                    obj = mlsurfer.MGH.load(obj);
+                    obj = mlsurfer.MGH(obj);
                 catch ME
                     handexcept(ME.identifier, 'mlfourd:castingError', ...
                         'mlfourd.MGHState.load does not support objects of type %s', class(obj));

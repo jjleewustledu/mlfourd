@@ -28,7 +28,7 @@ classdef Test_ImageProcessingNIfTId < matlab.unittest.TestCase
  	methods (TestClassSetup)
 		function setupImageProcessingNIfTId(this)
  			import mlfourd.*;
-            this.registry = mlfourd.UnittestRegistry.instance;
+            this.registry = mlfourd.UnittestRegistry.instance('initialize');
  			this.testObj_ = ImageProcessingNIfTId.load(this.registry.smallT1_fqfn);
  		end
 	end

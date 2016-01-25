@@ -114,7 +114,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hist.descrip, 'instance of mlfourd.InnerNIfTId');
             this.verifyEqual(niid.img, []);
             this.verifyEqual(niid.originalType, 'char');
-            this.verifyTrue( niid.untouch);
+            this.verifyFalse(niid.untouch);
         end
         function test_loadFiletypes(this)
             import mlfourd.*;
@@ -179,6 +179,17 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.separator, '--');
             this.verifyFalse(niid.untouch);
         end
+        function test_ctor(this)
+            niid = mlfourd.NIfTId;
+            this.verifyEqual(niid.bitpix, 64);
+            this.verifyEqual(niid.datatype, 64);
+            this.verifyEqual(niid.fileprefix, 'instance_mlfourd_InnerNIfTId');
+            this.verifyEqual(niid.filesuffix, '.nii.gz');
+            this.verifyEqual(niid.filetype, 2);
+            this.verifyEqual(niid.img, []);
+            this.verifyEqual(niid.noclobber, true);
+            this.verifyTrue(niid.untouch);
+        end
         function test_ctorChar(this)
             c = char(this.testObj);
             this.verifyEqual(mlfourd.NIfTId(c), this.testObj);
@@ -196,7 +207,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         end
         function test_ctorNumeric(this)
             niid = mlfourd.NIfTId(this.testObj.img);
-            this.verifyEqual(niid.img, double(this.testObj.img));
+            this.verifyEqual(niid.img, this.testObj.img);
         end        
         function test_ctorNIfTIInterface(this)
             import mlfourd.*;
@@ -396,10 +407,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         end
         function test_matrixsize(this)
             this.verifyEqual(this.testObj.matrixsize, [128 128 63]);
-        end        
-%         function test_numel(this)
-%             this.verifyEqual(this.testObj.numel, numel(this.testObj.img));
-%         end
+        end    
         function test_ones(this)
             this.verifyEqual(this.testObj.ones.img, ones(size(this.testObj.img)));
         end
@@ -432,8 +440,59 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         
         %% test properties
         
+        function test_bitpix(this)
+            this.verifyEqual(this.testObj.bitpix, 32);
+        end
+        function test_creationDate(this)
+            this.verifyTrue(ischar(this.testObj.creationDate) && ...
+                            20 == length(this.testObj.creationDate));
+        end
+        function test_datatype(this)
+            this.verifyEqual(this.testObj.datatype, 16);
+        end
+        function test_descrip(this)
+            niid     = this.testObj;
+            descrip0 = niid.descrip;
+            this.verifyEqual(niid.descrip(1:131), ['NIfTId.load read ' niid.fqfn ' on']);
+            niid = niid.prepend_descrip(    'toPrepend');
+            this.verifyEqual(niid.descrip, ['toPrepend; ' descrip0]);
+            niid = niid.append_descrip(     'toAppend');            
+            this.verifyEqual(niid.descrip, ['toPrepend; ' descrip0 '; toAppend']); 
+            niid.descrip = [niid.descrip    '; 0000......']; 
+            for id = 1:999
+                niid.descrip = [niid.descrip sprintf('%04i......', id)];
+            end
+            this.verifyEqual(niid.descrip(1:180),    ['toPrepend; ' descrip0 '; toAppend; 0000......']);            
+            this.verifyEqual(niid.descrip(end-9:end), '0999......');
+        end
+        function test_entropy(this)
+            this.verifyEqual(this.testObj.entropy, 0.00002075192819, 'RelTol', 1e-8);
+        end
         function test_ext(this)
             this.verifyEqual(this.testObj.ext, []);
+        end
+        function test_filename(this)
+            fqfp = this.testObj.fqfileprefix;
+            niid = mlfourd.NIfTId.load(fqfp);
+            this.verifyEqual(niid.fqfilename, this.testObj.fqfilename);
+        end
+        function test_filepath(this)
+            this.verifyEqual(this.testObj.filepath, this.fslPath);
+            this.testObj.filepath = getenv('MLUNIT_TEST_PATH');
+            this.verifyEqual(this.testObj.filepath, getenv('MLUNIT_TEST_PATH'));
+        end
+        function test_fileprefix(this)
+            niid = this.testObj;
+            this.verifyEqual(niid.fileprefix, this.smallT1_fp);
+            niid =   niid.prepend_fileprefix(  'toPrepend_');
+            this.verifyEqual(niid.fileprefix, ['toPrepend_' this.smallT1_fp]);
+            niid =    niid.append_fileprefix( '_toAppend');            
+            this.verifyEqual(niid.fileprefix, ['toPrepend_' this.smallT1_fp '_toAppend']);
+        end
+        function test_filesuffix(this)
+            this.verifyEqual(this.testObj.filesuffix, '.nii.gz');
+            this.testObj.filesuffix = '.mgz';            
+            this.verifyEqual(this.testObj.filesuffix, '.mgz');
         end
         function test_filetype(this)
             this.verifyEqual(this.testObj.filetype, 2);
@@ -458,59 +517,32 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(this.testObj.hdr.hist.srow_z, [0 0 2.42499995231628 -62698.375],    'RelTol', 1e-6);
             this.verifyEqual(this.testObj.hdr.hist.magic, 'n+1');
         end
-        function test_img(this)
-            this.verifyEqual(this.testObj.img(64,64,32), single(383.98629760), 'RelTol', 1e-8);
-        end
-        function test_originalType(this)
-            this.verifyEqual(this.testObj.originalType, 'struct');
-        end
-        function test_untouch(this)
-            this.verifyTrue(this.testObj.untouch);
-        end
-        function test_bitpix(this)
-            this.verifyEqual(this.testObj.bitpix, 32);
-        end
-        function test_creationDate(this)
-            this.verifyTrue(ischar(this.testObj.creationDate) && ...
-                            20 == length(this.testObj.creationDate));
-        end
-        function test_datatype(this)
-            this.verifyEqual(this.testObj.datatype, 16);
-        end
-        function test_descrip(this)
-            niid = this.testObj;
-            d    = niid.descrip;
-            this.verifyEqual(niid.descrip(1:131), ['NIfTId.load read ' niid.fqfn ' on']);
-            niid = niid.prepend_descrip(    'toPrepend');
-            this.verifyEqual(niid.descrip, ['toPrepend; ' d]);
-            niid = niid.append_descrip(     'toAppend');            
-            this.verifyEqual(niid.descrip, ['toPrepend; ' d '; toAppend']); 
-            niid.descrip = [niid.descrip    '; 0000......']; 
-            for id = 1:999
-                niid.descrip = [niid.descrip sprintf('%04i......', id)];
-            end
-            this.verifyEqual(niid.descrip(1:180),    ['toPrepend; ' d '; toAppend; 0000......']);            
-            this.verifyEqual(niid.descrip(end-9:end), '0999......');
-        end
-        function test_entropy(this)
-            this.verifyEqual(this.testObj.entropy, 0.00002075192819, 'RelTol', 1e-8);
-        end
-        function test_fileprefix(this)
-            niid = this.testObj;
-            this.verifyEqual(niid.fileprefix, this.smallT1_fp);
-            niid =   niid.prepend_fileprefix(  'toPrepend_');
-            this.verifyEqual(niid.fileprefix, ['toPrepend_' this.smallT1_fp]);
-            niid =    niid.append_fileprefix( '_toAppend');            
-            this.verifyEqual(niid.fileprefix, ['toPrepend_' this.smallT1_fp '_toAppend']);
-        end
-        function test_filename(this)
-            fqfp = this.testObj.fqfileprefix;
-            niid = mlfourd.NIfTId.load(fqfp);
-            this.verifyEqual(niid.fqfilename, this.testObj.fqfilename);
-        end
         function test_hdxml(this)
             this.verifyEqual(this.testObj.hdxml(1:12), '<nifti_image');
             this.verifyEqual(this.testObj.hdxml(end-1:end), '/>');
+        end
+        function test_img(this)
+            this.verifyEqual(this.testObj.img(64,64,32), single(383.98629760), 'RelTol', 1e-8);
+            
+            this.testObj.img = [0 eps pi];
+            this.verifyEqual(this.testObj.img, [0 eps pi]);
+            this.verifyEqual(this.testObj.datatype, 64);
+            this.verifyEqual(this.testObj.bitpix, 64);
+            
+            this.testObj.img = single([0 eps pi]);
+            this.verifyEqual(this.testObj.img, single([0 eps pi]));
+            this.verifyEqual(this.testObj.datatype, 16);
+            this.verifyEqual(this.testObj.bitpix, 32);
+            
+            this.testObj.img = uint8([0 eps pi]);
+            this.verifyEqual(this.testObj.img, uint8([0 eps pi]));
+            this.verifyEqual(this.testObj.datatype, 2);
+            this.verifyEqual(this.testObj.bitpix, 8);
+            
+            this.testObj.img = [false true];
+            this.verifyEqual(this.testObj.img, uint8([0 1]));
+            this.verifyEqual(this.testObj.datatype, 2);
+            this.verifyEqual(this.testObj.bitpix, 8);
         end
         function test_label(this)
             this.verifyEqual(this.testObj.label, 't1_default_on_ho_meanvol_default');
@@ -526,14 +558,50 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_negentropy(this)
             this.verifyEqual(this.testObj.negentropy, -0.00002075192819, 'RelTol', 1e-8);
         end
+        function test_noclobber(this)
+            nexist = this.prepare_test_noclobber;
+            
+            nexist.noclobber = true; 
+            this.verifyError(@nexist.save, 'mlfourd:IOError:noclobberPreventedSaving');            
+            fqfn2 = fullfile(nexist.filepath, [nexist.fileprefix '_saveas' nexist.FILETYPE_EXT]);
+            deleteExisting(fqfn2);
+            nexist2 = nexist;
+            nexist2.saveas(fqfn2);
+            this.verifyTrue(lexist(nexist2.fqfilename));
+            deleteExisting(fqfn2);
+            
+            nexist.noclobber = false;
+            nexist.save;
+            this.verifyTrue(lexist(nexist.fqfilename));
+            
+            deleteExisting(nexist.fqfilename);
+        end
+        function niid = prepare_test_noclobber(this)
+            niid = this.testObj;
+            niid.fileprefix = 'Test_NIfTId.test_noclobber';
+            deleteExisting(niid.fqfilename);
+            niid.save;
+        end
         function test_orient(this)
             this.verifyEqual(this.testObj.orient, 'RADIOLOGICAL');
+        end
+        function test_originalType(this)
+            this.verifyEqual(this.testObj.originalType, 'struct');
         end
         function test_pixdim(this)
             this.verifyEqual(this.testObj.pixdim, [2.0033 2.0033 2.4250], 'RelTol', 1e-4);
         end
         function test_seriesNumber(this)
             this.verifyEqual(this.testObj.seriesNumber, nan);
+        end
+        function test_untouch(this)
+            this.verifyTrue(this.testObj.untouch);
+            obj = this.testObj;
+            obj.noclobber = true;
+            this.verifyError(@obj.save, 'mlfourd:IOError:noclobberPreventedSaving');
+            
+            obj.img = magic(2);
+            this.verifyFalse(obj.untouch);
         end
         
         %% test helpers
@@ -564,8 +632,8 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             [s,r] = mlbash('pwd', 'logger', lg);
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyEqual(lg.contents(1:45), 'mlpipeline.Logger from jjlee at innominate on');
-            this.verifyEqual(lg.contents(216:218), 'pwd');
+            this.verifyEqual(lg.contents(22:66), 'mlpipeline.Logger from jjlee at innominate in');
+            this.verifyEqual(lg.contents(214:216), 'pwd');
             this.verifyEqual(lg.contents(end-70:end), this.fslPath);
             
             deleteExisting(fqfn);
@@ -574,7 +642,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
 
  	methods (TestClassSetup) 
  		function setupNIfTId(this)
-            this.registry = mlfourd.UnittestRegistry.instance;
+            this.registry = mlfourd.UnittestRegistry.instance('initialize');
             this.registry.sessionFolder = 'mm01-020_p7377_2009feb5';
  			this.testObj_ = this.smallT1_niid; 
  		end 
@@ -582,6 +650,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
 
  	methods (TestMethodSetup)
 		function setupNIfTIdTest(this)
+            cd(this.fslPath);
  			this.testObj = this.testObj_; 
  		end
     end

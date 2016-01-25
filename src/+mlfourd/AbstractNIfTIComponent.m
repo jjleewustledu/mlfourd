@@ -1,4 +1,4 @@
-classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
 	%% ABSTRACTNIFTICOMPONENT  
     %  yet abstract:  load, save, saveas
 
@@ -51,6 +51,7 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         
         %% New for AbstractNIfTIComponent
         
+        logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
     end
@@ -220,6 +221,9 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         
         %% New for AbstractNIfTIComponent
         
+        function im   = get.logger(this)
+            im = this.innerNIfTI_.logger;
+        end
         function s    = get.separator(this)
             s = this.innerNIfTI_.separator;
         end
@@ -322,14 +326,11 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         function fslview(this, varargin)
             this.innerNIfTI_.fslview(varargin{:});
         end
-        function this = optimizePrecision(this)
-            this.innerNIfTI_ = this.innerNIfTI_.optimizePrecision;
-        end
         
         %% mlpatterns.Composite
         
         function this = add(this, varargin)
-            this = this.innerNIfTI_.add(varargin{:});
+            this.innerNIfTI_ = this.innerNIfTI_.add(varargin{:});
         end        
         function iter = createIterator(this)
             iter = this.innerNIfTI_.createIterator;

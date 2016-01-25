@@ -123,27 +123,22 @@ classdef ImagingContext < handle
             
             a = this.state_.atlas(varargin{:});
         end
-        function a = add(this, varargin)
-            %% ADD
-            %  @param imaging_objects[, ...] are objects supported by ImagingContext.  All alignment
-            %  operations between imaging objects must have been completed.  Time-domains will be summed.
-            %  @return a is the voxel-by-voxel sum of this image and any submitted images.
-            %  @throws MATLAB:dimagree, MATLAB:UndefinedFunction
-            
-            a = this.state_.add(varargin{:});
-        end
-        function     addLog(this, lg)
-        end
         function b = binarized(this)
-        end
-        function     blurred(this, varargin)
-            ip = inputParser;
-            addOptional(ip, 'blur', mlpet.PETRegistry.instance.petPointSpread, @isnumeric);
-            parse(ip, varargin{:});
+            %% BINARIZED
+            %  @return internal image is binary: values are only 0 or 1.
+            %  @warning mlfourd:possibleMaskingError
             
-            niid = mlfourd.BlurringNIfTId(this.niftid_);
-            niid = niid.blurred(ip.Results.blur);
-            this.niftid_ = niid.component;
+            b = this.state_.binarized;
+        end
+        function b = biographMMR(this)
+        end
+        function b = blurred(this, varargin)
+            %% BLURRED
+            %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
+            %  applied to the internally stored image
+            %  @return the blurred image
+            
+            b = this.state_.blurred(varargin{:});
         end 
         function f = char(this)
             f = char(this.state_);
@@ -168,7 +163,21 @@ classdef ImagingContext < handle
             %  @return l is the number of elements of the imaging state
             l = this.state_.length;
         end
-        function m = masked(this, mask)
+        function m = masked(this, varargin)
+            %% MASKED
+            %  @param INIfTId of a mask with values [0 1], not required to be binary.
+            %  @return internal image is masked.
+            %  @warning mflourd:possibleMaskingError
+            
+            m = this.state_.masked(varargin{:});
+        end
+        function m = maskedByZ(this, varargin)
+            %% MASKEDBYZ
+            %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
+            %  @return internal image is cropped by rng.  
+            %  @throws MATLAB:assertion:failed for rng out of bounds.
+            
+            m = this.state_.maskedByZ(varargin{:});
         end
         function     remove(this, varargin)
             %% REMOVE
@@ -189,43 +198,48 @@ classdef ImagingContext < handle
 
             this.state_ = this.state_.saveas(filename);
         end
-        function     summed(this, varargin)
-            %% SUMMED returns the voxel-by-voxel sum of imaging state with 
-            %  all passed images.
-            %  Usage:  voxelwise_summed_image = this.summed(image2[,image3,...]);
-            
-            img  = this.niftid_.img;
-            fp   = this.niftid_.fileprefix;
-            for n = 1:length(varargin)
-                ic  = mlfourd.ImagingContext(varargin{n});
-                img = img + ic.niftid.img;
-                fp  = [fp '+' ic.fileprefix];
-            end
-            this.niftid_.img = img;
-            this.niftid_.fileprefix = fp;
-            [~,d] = strtok(fp, '+');
-            this.niftid_ = this.niftid_.append_descrip(d);
-        end
         function t = thresh(this)
+            %% THRESH
+            %  @param t:  use t to threshold current image (zero anything below the number)
+            
+            t = this.state_.thresh;
         end
         function p = threshp(this)
+            %% THRESHP
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            
+            p = this.state_.threshp;
         end
-        function     timeSummed(this)
-            niid = mlfourd.DynamicNIfTId(this.niftid_);
-            niid = niid.timeSummed;
-            this.niftid_ = niid.component;
+        function t = timeSummed(this)
+            %% TIMESUMMED integrates over imaging dimension 4. 
+            %  @return dynamic image reduced to summed volume.
+            
+            t = this.state_.timeSummed;
         end
         function u = uthresh(this)
+            %% UTHRESH
+            %  @param t:  use t to upper-threshold current image (zero anything above the number)
+            
+            u = this.state_.uthresh;
         end
         function p = uthreshp(this)
+            %% THRESHP
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            
+            p = this.state_.uthreshp;
         end
-        function     volumeSummed(this, varargin)
-            error('mlfourd:notImplemented', 'ImagingState.volumeSummed');
+        function v = volumeSummed(this)
+            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
+            %  @return dynamic image reduced to time series.
+            
+            v = this.state_.timeSummed;
         end
-        function     view(this)
+        function     view(this, varargin)
             %% VIEW
+            %  @param are additional filenames and other arguments to pass to the viewer.
             %  @return new window with a view of the imaging state
-            this.state_.view;
+            
+            this.state_.view(varargin{:});
         end
         
         %% CTOR
@@ -277,7 +291,10 @@ classdef ImagingContext < handle
                 this.state_ = NumericalNIfTIdState(obj, this);
                 return
             end
-            if (isa(obj, 'mlfourd.NIfTId'))
+            if (isa(obj, 'mlfourd.NIfTId') || ...
+                isa(obj, 'mlfourd.BlurringNIfTId') || ...
+                isa(obj, 'mlfourd.MaskingNIfTId') || ...
+                isa(obj, 'mlfourd.DynamicNIfTId'))
                 this.state_ = NIfTIdState(obj, this);
                 return
             end
