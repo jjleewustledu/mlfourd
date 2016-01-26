@@ -113,6 +113,18 @@ classdef ImagingContext < handle
     end
 
     methods
+        function     add(this, varargin)
+            %% ADD
+            %  @param varargin are added to a composite imaging state
+            
+            this.state_ = this.state_.add(varargin{:});
+        end
+        function     addLog(this, varargin)
+            %% ADDLOG
+            %  @param varargin are log entries for the imaging state
+            
+            this.state_.addLog(varargin{:});
+        end
         function a = atlas(this, varargin)
             %% ATLAS
             %  @param imaging_objects[, ...] have typeclasses supported by ImagingContext.  All alignment
@@ -143,6 +155,21 @@ classdef ImagingContext < handle
         function f = char(this)
             f = char(this.state_);
         end
+        function     close(this)
+            this.state_.close;
+        end
+        function c = createIterator(this)
+            %% CREATEITERATOR
+            %  @return c is an iterator for a mlpatterns.Composite instance, if any
+            
+            c = this.state_.createIterator;
+        end
+        function c = csize(this)
+            %% CSIZE
+            %  @return c is the size of the imaging state when it is composite
+            
+            c = this.state_.csize;
+        end
         function     disp(this)
             disp(this.state_);
         end
@@ -151,16 +178,30 @@ classdef ImagingContext < handle
         end
         function e = ecatExactHRPlus(this)
         end
+        function f = find(this, varargin)
+            %% FIND
+            %  @param varargin are objects to find within a composite imaging state
+            %  %return f is the position within the composite of the object
+            
+            f = this.state_.find(varargin{:});
+        end
         function g = get(this, varargin)
             %% GET
-            %  @param varargin are integer locations corresponding to the imaging state
+            %  @param varargin are integer locations within a composite imaging state
             %  @return g is an element of the imaging state
             
             g = this.state_.get(varargin{:});
         end
+        function tf = isempty(this)
+            %% ISEMPTY
+            %  @return tf is boolean for state emptiness
+            
+            tf = this.state_.isempty;
+        end
         function l = length(this)
             %% LENGTH
-            %  @return l is the number of elements of the imaging state
+            %  @return l is the length of a composite imaging state
+            
             l = this.state_.length;
         end
         function m = masked(this, varargin)
@@ -179,12 +220,11 @@ classdef ImagingContext < handle
             
             m = this.state_.maskedByZ(varargin{:});
         end
-        function     remove(this, varargin)
-            %% REMOVE
-            %  @param varargin are integer locations corresponding to the imaging state
-            %  which will be removed .
+        function     rm(this, varargin)
+            %% RM
+            %  @param varargin are integer locations which will be removed from the imaging state.
             
-            this.state_.remove(varargin{:});
+            this.state_ = this.state_.rm(varargin{:});
         end
         function     save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
@@ -232,7 +272,7 @@ classdef ImagingContext < handle
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
             %  @return dynamic image reduced to time series.
             
-            v = this.state_.timeSummed;
+            v = this.state_.volumeSummed;
         end
         function     view(this, varargin)
             %% VIEW

@@ -42,14 +42,11 @@ classdef NIfTIcState < mlfourd.ImagingState
         end         
     end
     
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.NIfTIcState(varargin{:});
+    methods
+        function this = add(this, varargin)
+            this.concreteObj_ = this.concreteObj_.add(varargin{:});
         end
-    end
-    
-    methods 
-        function a = atlas(this, varargin)
+        function a    = atlas(this, varargin)
             %% ATLAS builds an atlas over the composite.
             %  @param [varargin] are any ImagingContext objects.
             %  @return a is an ImagingContext with NIfTIdState.
@@ -69,18 +66,26 @@ classdef NIfTIcState < mlfourd.ImagingState
             a = a.append_descrip('atlas');
             a = ImagingContext(NIfTId(a));
         end
-        function this = accumulateNIfTId(this, varargin)
-            for v = 1:length(varargin)
-                if (isa(varargin{v}, 'mlfourd.INIfTIc'))
-                    for w = 1:length( varargin{v})
-                        this.concreteObj_ = this.concreteObj_.add( ...
-                            mlfourd.NIfTId(varargin{v}.get(w)));
-                    end
-                else
-                    this.concreteObj_ = this.concreteObj_.add( ...
-                        mlfourd.NIfTId(varargin{v}));
-                end
-            end
+        function c    = createIterator(this)
+            c = this.concreteObj_.createIterator;
+        end
+        function s    = csize(this)
+            s = this.concreteObj_.csize;
+        end
+        function f    = find(this, varargin)
+            f = this.concreteObj_.find(varargin{:});
+        end
+        function g    = get(this, varargin)
+            g = mlfourd.ImagingContext(this.concreteObj_.get(varargin{:}));
+        end
+        function tf   = isempty(this)
+            tf = this.concreteObj_.isempty;
+        end
+        function l    = length(this)
+            l = this.concreteObj_.length;
+        end
+        function this = rm(this, varargin)
+            this.concreteObj_ = this.concreteObj_.rm(varargin{:});
         end
         function        view(this, varargin)
             niid1 = this.concreteObj_.get(1);
@@ -129,6 +134,22 @@ classdef NIfTIcState < mlfourd.ImagingState
                 return
             end
             viewArgs = fns;
+        end
+    end
+    
+    methods (Access = private)        
+        function this = accumulateNIfTId(this, varargin)
+            for v = 1:length(varargin)
+                if (isa(varargin{v}, 'mlfourd.INIfTIc'))
+                    for w = 1:length( varargin{v})
+                        this.concreteObj_ = this.concreteObj_.add( ...
+                            mlfourd.NIfTId(varargin{v}.get(w)));
+                    end
+                else
+                    this.concreteObj_ = this.concreteObj_.add( ...
+                        mlfourd.NIfTId(varargin{v}));
+                end
+            end
         end
     end
 

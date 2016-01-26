@@ -14,6 +14,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     properties (Dependent)
         
+        %% NIfTIIO
+        
+        noclobber
+        
         %% JimmyShenInterface to support struct arguments to NIfTId ctor
         
         ext        %   Legacy variable for mlfourd.JimmyShenInterface
@@ -59,12 +63,25 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
+        lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
     end 
 
  	methods %% GET/SET
+        
+        %% NIfTIIO
+        
+        function tf   = get.noclobber(this)
+            tf = this.noclobber_;
+        end
+        function this = set.noclobber(this, nc)
+            nc = logical(nc);
+            this.untouch_ = false;
+            this.noclobber_ = nc;
+            this.logger_.noclobber = nc;
+        end
         
         %% JimmyShenInterface
         
@@ -276,6 +293,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
+        function tf   = get.lexistFile(this)
+            tf = lexist(this.fqfilename, 'file');
+        end
         function s    = get.logger(this)
             s = this.logger_;
         end
@@ -493,6 +513,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         %% New for InnerNIfTId
         
         function        addLog(this, lg)
+            %% ADDLOG
+            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
+            
             if (isempty(this.logger_))
                 return
             end
@@ -645,8 +668,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         orient_ = ''
         originalType_
         separator_ = ';'
-        stack_
-        untouch_ = true        
+        stack_   
+        untouch_ = true     
     end
     
     %% PRIVATE
@@ -739,6 +762,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
         end
         function        save_nii(this)
+            if (this.untouch)
+                this.save_untouch_nii;
+                return
+            end
             this = this.optimizePrecision;
             try
                 if (this.hasJimmyShenExtension) 
@@ -749,6 +776,27 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
                 warning('off', 'MATLAB:structOnObject');
                 mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+                mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+                deleteExisting(this.fqfilenameNiiGz);
+                warning('on', 'MATLAB:structOnObject');
+            catch ME
+                handerror(ME, ...
+                    'mlfourd:IOError', ...
+                    'InnerNIfTId.save_nii failed to save %s', this.fqfilename);
+            end
+        end
+        function        save_untouch_nii(this)
+            assert(this.untouch);
+            this = this.optimizePrecision;
+            try
+                if (this.hasJimmyShenExtension) 
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_untouch_nii(struct(this), this.fqfilename);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
+                warning('off', 'MATLAB:structOnObject');
+                mlniftitools.save_untouch_nii(struct(this), this.fqfilenameNiiGz);            
                 mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
                 deleteExisting(this.fqfilenameNiiGz);
                 warning('on', 'MATLAB:structOnObject');

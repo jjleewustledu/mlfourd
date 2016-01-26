@@ -1,5 +1,6 @@
 classdef NIfTIdIO < mlfourd.NIfTIIO
-	%% NIFTIDIO 
+	%% NIFTIDIO
+    %  yet abstract:  noclobber
     
 	%  $Revision$
  	%  was created $Date$
@@ -18,7 +19,6 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         fqfileprefix
         fqfn
         fqfp
-        noclobber
     end
     
     methods %% Set/Get
@@ -35,6 +35,7 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
                 this.untouch_ = false;
             end
             this.filepath_ = pth;
+            this.addLog(sprintf('NIfTIdIO.set.filepath<-%s', pth));
         end
         function pth  = get.filepath(this)
             if (isempty(this.filepath_))
@@ -48,7 +49,8 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
             if (~isempty(this.fileprefix_))
                 this.untouch_ = false;
             end
-            [~,this.fileprefix_] = myfileparts(fp);
+            this.fileprefix_ = fp;
+            this.addLog(sprintf('NIfTIdIO.set.fileprefix<-%s', fp));
         end
         function fp   = get.fileprefix(this)
             fp = this.fileprefix_;
@@ -62,20 +64,40 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
                 this.untouch_ = false;
             end
             [~,~,this.filesuffix_] = myfileparts(fs);
+            this.addLog(sprintf('NIfTIdIO.set.filesuffix<-%s', fs));
         end
         function fs   = get.filesuffix(this)
+            if (isempty(this.filesuffix_))
+                fs = ''; return; end
+            if (~strcmp('.', this.filesuffix_(1)))
+                this.filesuffix_ = ['.' this.filesuffix_]; end
             fs = this.filesuffix_;
         end
         function this = set.fqfilename(this, fqfn)
             assert(ischar(fqfn));
-            [this.filepath,this.fileprefix,this.filesuffix] = myfileparts(fqfn);           
+            [p,f,e] = myfileparts(fqfn);
+            if (~isempty(p))
+                this.filepath = p;
+            end
+            if (~isempty(f))
+                this.fileprefix = f;
+            end
+            if (~isempty(e))
+                this.filesuffix = e;
+            end
         end
         function fqfn = get.fqfilename(this)
             fqfn = [this.fqfileprefix this.filesuffix];
         end
         function this = set.fqfileprefix(this, fqfp)
             assert(ischar(fqfp));
-            [this.filepath, this.fileprefix] = myfileparts(fqfp);
+            [p,f] = myfileparts(fqfp);            
+            if (~isempty(p))
+                this.filepath = p;
+            end
+            if (~isempty(f))
+                this.fileprefix = f;
+            end
         end
         function fqfp = get.fqfileprefix(this)
             fqfp = fullfile(this.filepath, this.fileprefix);
@@ -92,13 +114,6 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         function f    = get.fqfp(this)
             f = this.fqfileprefix;
         end
-        function this = set.noclobber(this, nc)
-            this.untouch_ = false;
-            this.noclobber_ = logical(nc);
-        end
-        function tf   = get.noclobber(this)
-            tf = this.noclobber_;
-        end
     end
     
     %% HIDDEN
@@ -107,7 +122,11 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         filepath_
         fileprefix_
         filesuffix_
-        noclobber_
+        untouch_
+    end
+    
+    methods (Abstract, Hidden)
+        addLog(this, lg)
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

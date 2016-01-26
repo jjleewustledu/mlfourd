@@ -44,11 +44,9 @@ classdef MGHState < mlfourd.ImagingState
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
-    end 
-
-    %% PROTECTED
+    end
     
-    methods (Access = 'protected')
+    methods
         function this = MGHState(obj, h)
             if (~isa(obj, 'mlsurfer.MGH'))
                 try

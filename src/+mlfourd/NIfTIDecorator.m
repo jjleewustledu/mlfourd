@@ -96,7 +96,12 @@ classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
         function this = zeros(this, varargin)
             this.component = this.component.zeros(varargin{:});
         end        
-                   
+                
+        %% Other ....
+        
+        function        addLog(this, varargin)
+            this.component.addLog(varargin{:});
+        end
         function        freeview(this, varargin)
             this.component.freeview(varargin{:});
         end        

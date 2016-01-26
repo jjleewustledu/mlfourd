@@ -29,7 +29,7 @@ classdef CellCompositeState < mlfourd.ImagingState
         end
         function f = get.niftic(this)  
             this.contexth_.changeState( ...
-                mlfourd.NIfTIState(this.concreteObj_, this.contexth_));
+                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
         function f = get.niftid(this)  

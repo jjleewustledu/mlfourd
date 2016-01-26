@@ -43,7 +43,7 @@ classdef FilenameState < mlfourd.ImagingState
         end
         function g = get.numericalNiftid(this)
             this.contexth_.changeState( ...
-                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+                mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
     end

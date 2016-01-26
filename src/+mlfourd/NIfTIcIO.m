@@ -1,5 +1,6 @@
 classdef NIfTIcIO < mlfourd.NIfTIIO
 	%% NIFTICIO  
+    %  yet abstract:  noclobber
 
 	%  $Revision$
  	%  was created 14-Jan-2016 20:51:08
@@ -17,42 +18,41 @@ classdef NIfTIcIO < mlfourd.NIfTIIO
         fqfileprefix
         fqfn
         fqfp
-        noclobber 
     end
 
     methods %% Set/Get 
         function this = set.filename(this, fn)
-            this = this.innerCellComp_.setter('filename', fn);
+            this.innerCellComp_ = this.innerCellComp_.setter('filename', fn);
         end
         function fn   = get.filename(this)
             fn = this.innerCellComp_.getter('filename');
         end
         function this = set.filepath(this, pth)
-            this = this.innerCellComp_.setter('filepath', pth);
+            this.innerCellComp_ = this.innerCellComp_.setter('filepath', pth);
         end
         function pth  = get.filepath(this)
             pth = this.innerCellComp_.getter('filepath');
         end
         function this = set.fileprefix(this, fp)
-            this = this.innerCellComp_.setter('fileprefix', fp);
+            this.innerCellComp_ = this.innerCellComp_.setter('fileprefix', fp);
         end
         function fp   = get.fileprefix(this)
             fp = this.innerCellComp_.getter('fileprefix');
         end
         function this = set.filesuffix(this, fs)
-            this = this.innerCellComp_.setter('filesuffix', fs);
+            this.innerCellComp_ = this.innerCellComp_.setter('filesuffix', fs);
         end
         function fs   = get.filesuffix(this)
             fs = this.innerCellComp_.getter('filesuffix');
         end        
         function this = set.fqfilename(this, fqfn)
-            this = this.innerCellComp_.setter('fqfilename', fqfn);
+            this.innerCellComp_ = this.innerCellComp_.setter('fqfilename', fqfn);
         end
         function fqfn = get.fqfilename(this)
             fqfn = this.innerCellComp_.getter('fqfilename');
         end
         function this = set.fqfileprefix(this, fqfp)
-            this = this.innerCellComp_.setter('fqfileprefix', fqfp);
+            this.innerCellComp_ = this.innerCellComp_.setter('fqfileprefix', fqfp);
         end
         function fqfp = get.fqfileprefix(this)
             fqfp = this.innerCellComp_.getter('fqfileprefix');
@@ -68,12 +68,6 @@ classdef NIfTIcIO < mlfourd.NIfTIIO
         end
         function f    = get.fqfp(this)
             f = this.fqfileprefix;
-        end
-        function this = set.noclobber(this, nc)
-            this = this.innerCellComp_.setter('noclobber', nc);
-        end
-        function tf   = get.noclobber(this)
-            tf = this.innerCellComp_.getter('noclobber');
         end
     end 
 

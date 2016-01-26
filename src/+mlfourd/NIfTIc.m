@@ -33,10 +33,16 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             niic = niic.append_descrip('made similar');
         end
         function tf = isequal(this, obj)
-            tf = this.innerNIfTI_.innerCellComp_.fevalOut2('isequal', obj);
+            tf = this.isequaln(obj);
         end
         function tf = isequaln(this, obj)
-            tf = this.innerNIfTI_.innerCellComp_.fevalOut2('isequaln', obj);
+            tf = true;
+            titer = this.createIterator;
+            oiter = obj.createIterator;
+            while (titer.hasNext && oiter.hasNext)
+                cached = titer.next;
+                tf = tf && cached.isequaln(oiter.next);
+            end
         end
         function niic = makeSimilar(this, varargin)
             %% MAKESIMILAR 

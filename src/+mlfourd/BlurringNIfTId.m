@@ -124,7 +124,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             obj.blur_      = this.blur_;
             obj.blurCount_ = this.blurCount_;
         end          
-        function this = blurred(this, blur, varargin)
+        function this = blurred(this, varargin)
             %% BLURRED masks, then blurs internal image with a 3D kernel and returns this with changed state. 
             %  Usage:  bn = BlurringNIfTId([NIfTId_object]);
             %          bn = bn.blurred([blur, mask])
@@ -133,13 +133,14 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             %          bn:    BlurringNIfTId updated with blurred voxels
             
             import mlfourd.* mlpet.*;
-            p = inputParser;
-            addRequired(p, 'blur',    @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
-            addOptional(p, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
-            parse(p, blur, varargin{:});
+            ip = inputParser;
+            addOptional(ip, 'blur', mlpet.PETRegistry.instance.petPointSpread, ...
+                                       @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
+            addOptional(ip, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
+            parse(ip, varargin{:});
             
-            this.blur = p.Results.blur;
-            this.mask = p.Results.mask;
+            this.blur = ip.Results.blur;
+            this.mask = ip.Results.mask;
             if (isempty(this.blur)); return; end                
             if (sum(this.blur) < eps); return; end   
             mmppix_ = this.mmppix;

@@ -10,7 +10,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
 
     properties (Constant)
-        ISEQUAL_IGNORES = {'hdr' 'label' 'descrip' 'hdxml' 'creationDate' 'originalType' 'untouch' 'stack'}
+        ISEQUAL_IGNORES = {'hdr' 'label' 'descrip' 'hdxml' 'creationDate' 'logger' 'originalType' 'untouch' 'stack'}
     end
     
     methods (Static) 
@@ -229,13 +229,18 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         function this = load_surfer(fn)
             import mlfourd.*;
             [p,f] = myfileparts(fn);
-            fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]);
+            fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]); % '_' datestr(now,30)
             mlbash(sprintf('mri_convert %s %s', fn, fn2));
             this = NIfTId.load_JimmyShen(fn2);
-            deleteExisting(fn2);
+            %deleteExisting(fn2);
         end
         function this = load_JimmyShen(fn)
             this = mlfourd.NIfTId(mlniftitools.load_untouch_nii(fn));
+            [p,f,e] = myfileparts(fn);
+            this.innerNIfTI_.filepath_ = p;
+            this.innerNIfTI_.fileprefix_ = f;
+            this.innerNIfTI_.filesuffix_ = e;
+            
         end
         function e    = selectExistingExtension(fn)
             [~,~,e] = myfileparts(fn);
@@ -272,7 +277,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
     methods (Access = private)
         function this     = adjustFieldsAfterLoading(this)
             this.innerNIfTI_.orient_ = this.innerNIfTI_.orient; % caches results of fslorient
-            this.innerNIfTI_.hdr_.hist.descrip = sprintf('NIfTId.load read %s on %s', this.fqfilename, datestr(now, 30));
+            lg = sprintf('NIfTId.adjustFieldsAfterLoading read %s', this.fqfilename);
+            this.innerNIfTI_.hdr_.hist.descrip = lg;
+            this.addLog(lg);
         end
         function this     = adjustFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
@@ -339,10 +346,11 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             this.innerNIfTI_.logger_ = Logger(logfn, this);
             if (~lexist(logfn, 'file') && lexist(imgrec, 'file'))
                 c = mlsystem.FilesystemRegistry.textfileToCell(imgrec);
-                this.innerNIfTI_.logger_.add(cell2str(c));
+                c = [sprintf('From %s:', imgrec) c];
+                this.innerNIfTI_.addLog(cell2str(c));
             end
             if (~isempty(this.descrip))
-                this.innerNIfTI_.logger_.add(['Previous descrip:  ' this.descrip]);
+                this.innerNIfTI_.addLog(['Previous descrip:  ' this.descrip]);
             end
         end
     end 

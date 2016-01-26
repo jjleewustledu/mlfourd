@@ -109,10 +109,11 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             %  @return dynamic image reduced to time series.
             
             this.img = sum(sum(sum(this.img, 1), 2), 3);
+            this.img = squeeze(this.img);
             this = this.append_fileprefix('_sumxyz');
         end
         
-        %% DEPRECATED; functionality belongs better in mlfsl.AlignmentFacade
+        %% DEPRECATED; functionality belongs better in mlfsl.RegistrationFacade
         
         function this = mcflirted(this, varargin)
             ip = inputParser;

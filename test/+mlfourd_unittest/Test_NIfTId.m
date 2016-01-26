@@ -28,6 +28,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         smallT1_fqfn  
         smallT1_niid  
         smallT1_struct
+        T1_mgz
     end
     
     methods %% GET/SET
@@ -58,6 +59,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function g = get.smallT1_struct(this)
             g = mlniftitools.load_untouch_nii(this.smallT1_fqfn);
         end
+        function g = get.T1_mgz(this)
+            g = fullfile(this.sessionPath, 'mri', 'T1.mgz');
+        end
     end
     
 	methods (Test)
@@ -81,8 +85,8 @@ classdef Test_NIfTId < matlab.unittest.TestCase
                 'separator', '--'); % parameters are updated in alphabetical order
             this.verifyEqual(niid.bitpix, 64);
             this.verifyEqual(niid.datatype, 64);
-            this.verifyEqual(niid.descrip(1:131), ...
-                'NIfTId.load read /Volumes/InnominateHD3/Local/test/cvl/np755/mm01-020_p7377_2009feb5/fsl/t1_default_on_ho_meanvol_default.nii.gz on');
+            this.verifyEqual(niid.descrip(1:148), ...
+                'NIfTId.adjustFieldsAfterLoading read /Volumes/InnominateHD3/Local/test/cvl/np755/mm01-020_p7377_2009feb5/fsl/t1_default_on_ho_meanvol_default.nii.gz');
             this.verifyEqual(niid.descrip(end-4:end), ...
                 '; new');
             this.verifyEqual(niid.ext, magic(2));
@@ -146,6 +150,13 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             niid = NIfTId.load(this.smallT1_fp);
             this.verifyEqual(niid.filesuffix, '.nii.gz');
             this.verifyEqual(niid.img, this.testObj.img);
+        end
+        function test_load_surfer(this)
+            niid = mlfourd.NIfTId(this.T1_mgz);
+            this.verifyEqual(niid.filepath, myfileparts(this.T1_mgz));
+            this.verifyEqual(niid.fileprefix(1:2), 'T1');
+            this.verifyEqual(niid.filesuffix, '.nii.gz');
+            this.verifyTrue(lexist(niid.fqfilename));
         end
         function test_ctorParametersAdjusted(this)
             niid = mlfourd.NIfTId(this.testObj.img, ...
@@ -453,7 +464,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_descrip(this)
             niid     = this.testObj;
             descrip0 = niid.descrip;
-            this.verifyEqual(niid.descrip(1:131), ['NIfTId.load read ' niid.fqfn ' on']);
+            this.verifyEqual(niid.descrip(1:148), ['NIfTId.adjustFieldsAfterLoading read ' niid.fqfn]);
             niid = niid.prepend_descrip(    'toPrepend');
             this.verifyEqual(niid.descrip, ['toPrepend; ' descrip0]);
             niid = niid.append_descrip(     'toAppend');            
@@ -462,7 +473,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             for id = 1:999
                 niid.descrip = [niid.descrip sprintf('%04i......', id)];
             end
-            this.verifyEqual(niid.descrip(1:180),    ['toPrepend; ' descrip0 '; toAppend; 0000......']);            
+            this.verifyEqual(niid.descrip(1:180),    ['toPrepend; ' descrip0 '; toAppend; 0000.....']);            
             this.verifyEqual(niid.descrip(end-9:end), '0999......');
         end
         function test_entropy(this)
@@ -564,22 +575,27 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             nexist.noclobber = true; 
             this.verifyError(@nexist.save, 'mlfourd:IOError:noclobberPreventedSaving');            
             fqfn2 = fullfile(nexist.filepath, [nexist.fileprefix '_saveas' nexist.FILETYPE_EXT]);
+            fqfn3 = fullfile(nexist.filepath, [nexist.fileprefix '_saveas.log']);
             deleteExisting(fqfn2);
+            deleteExisting(fqfn3);
+            
             nexist2 = nexist;
             nexist2.saveas(fqfn2);
             this.verifyTrue(lexist(nexist2.fqfilename));
             deleteExisting(fqfn2);
+            deleteExisting(fqfn3);
             
             nexist.noclobber = false;
             nexist.save;
-            this.verifyTrue(lexist(nexist.fqfilename));
-            
+            this.verifyTrue(lexist(nexist.fqfilename));            
             deleteExisting(nexist.fqfilename);
+            deleteExisting([nexist.fqfileprefix '.log'])
         end
         function niid = prepare_test_noclobber(this)
             niid = this.testObj;
             niid.fileprefix = 'Test_NIfTId.test_noclobber';
             deleteExisting(niid.fqfilename);
+            deleteExisting([niid.fqfileprefix '.log']);
             niid.save;
         end
         function test_orient(this)
@@ -651,6 +667,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
  	methods (TestMethodSetup)
 		function setupNIfTIdTest(this)
             cd(this.fslPath);
+            mlbash('rm *.log');
  			this.testObj = this.testObj_; 
  		end
     end

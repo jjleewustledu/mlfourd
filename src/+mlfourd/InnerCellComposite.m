@@ -60,11 +60,14 @@ classdef InnerCellComposite < mlpatterns.CellComposite
             args = this.repmat(varargin{:});
             for c = 1:this.length
                 if (isempty(args))
-                    this.cell_{c}.(funname);
+                    tmp = this.cell_{c};
+                    tmp.(funname);
                 elseif (length(varargin) == 1)
-                    this.cell_{c}.(funname)(args{c});
+                    tmp = this.cell_{c};
+                    tmp.(funname)(args{c});
                 else
-                    this.cell_{c}.(funname)(args{c}{:});
+                    tmp = this.cell_{c};
+                    tmp.(funname)(args{c}{:});
                 end
             end
         end

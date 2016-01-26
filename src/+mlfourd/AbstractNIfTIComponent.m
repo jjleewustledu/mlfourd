@@ -51,6 +51,7 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         
         %% New for AbstractNIfTIComponent
         
+        lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -221,6 +222,9 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         
         %% New for AbstractNIfTIComponent
         
+        function tf   = get.lexistFile(this)
+            tf = this.innerNIfTI_.lexistFile;
+        end
         function im   = get.logger(this)
             im = this.innerNIfTI_.logger;
         end
@@ -314,6 +318,9 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         
         %% New for AbstractNIfTIComponent
         
+        function     addLog(this, varargin)
+            this.innerNIfTI_.addLog(varargin{:});
+        end
         function e = fslentropy(this)
             e = this.innerNIfTI_.fslentropy;
         end
@@ -350,8 +357,8 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         function len  = length(this)
             len = this.innerNIfTI_.length;
         end
-        function        rm(this, idx)
-            this.innerNIfTI_.rm(idx);
+        function this = rm(this, idx)
+            this.innerNIfTI_ = this.innerNIfTI_.rm(idx);
         end
         function s    = csize(this)   
             s = this.innerNIfTI_.csize;

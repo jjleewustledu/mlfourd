@@ -16,6 +16,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         registry
  		testObj
         testObjs
+        viewable = false
     end
     
     properties (Dependent)
@@ -89,12 +90,12 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             g = mlfourd.NIfTI(this.smallT1_fqfn);
         end
         function g = get.testthis_fqfn(this)
-            g = fullfile(this.registry.sessionPath, 'fal', 'Test_ImagingContext.nii.gz');
+            g = fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext.nii.gz');
         end
         function g = get.testthis_fqfns(this)
-            g = {fullfile(this.registry.sessionPath, 'fal', 'Test_ImagingContext1.nii.gz') ...
-                 fullfile(this.registry.sessionPath, 'fal', 'Test_ImagingContext2.nii.gz') ...
-                 fullfile(this.registry.sessionPath, 'fal', 'Test_ImagingContext3.nii.gz')};
+            g = {fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext1.nii.gz') ...
+                 fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext2.nii.gz') ...
+                 fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext3.nii.gz')};
         end
     end
 
@@ -106,82 +107,83 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         %% properties
         
         function test_filename(this)
-            [p,f,e] = myfileparts(this.smallT1_fqfn);
+            [~,f,e] = myfileparts(this.smallT1_fqfn);
             this.verifyEqual(this.testObj.filename, [f e]);
-            this.testObj.filename = 'test_filename';
-            this.verifyEqual(this.testObj.filename, fullfile(p, ['test_filename' e]));
+            this.testObj.filename = 'test_filename.mgz';
+            this.verifyEqual(this.testObj.filename, 'test_filename.mgz');
         end
         function test_filepath(this)
             pwd0 = pwd;
             [p,f,e] = myfileparts(this.smallT1_fqfn);
-            this.verifyEqual(this.testObj.fqfn, p);
+            this.verifyEqual(this.testObj.filepath, p);
             this.testObj.filepath = '/tmp';            
             this.verifyEqual(this.testObj.fqfn, fullfile('/tmp', [f e]));
             this.verifyEqual(pwd, pwd0);
         end
         function test_fileprefix(this)
             [p,f,e] = myfileparts(this.smallT1_fqfn);
-            this.verifyEqual(this.testObj.fqfn, f);
+            this.verifyEqual(this.testObj.fileprefix, f);
             this.testObj.fileprefix = 'test_fileprefix';
             this.verifyEqual(this.testObj.fqfn, fullfile(p, ['test_fileprefix' e]));
         end
         function test_filesuffix(this)
-            [p,f] = myfileparts(this.smallT1_fqfn);
-            this.verifyEqual(this.testObj.fqfn, e);
+            [p,f,e] = myfileparts(this.smallT1_fqfn);
+            this.verifyEqual(this.testObj.filesuffix, e);
             this.testObj.filesuffix = '.test';
             this.verifyEqual(this.testObj.fqfn, fullfile(p, [f '.test']));
         end
         function test_fqfilename(this)
             this.verifyEqual(this.testObj.fqfn, this.smallT1_fqfn);
             this.testObj.fqfilename = '/tmp/test_fqfilename.test';            
-            this.verifyEqual(this.testObj.fqfn, fullfile('tmp', 'test_fqfilename.test'));
+            this.verifyEqual(this.testObj.fqfn, '/tmp/test_fqfilename.test');
         end
         function test_stateTypeclass(this)
             this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.NIfTIdState');
             this.testObj.niftic;
-            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.NIfTIc');
+            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.NIfTIcState');
             this.testObj.mgh;
             this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.MGHState');
-            this.testObj.nifti;
-            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.NIfTIState');
+            this.testObj.niftid;
+            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.NIfTIdState');
         end
         
         %% query methods
         
         function test_char(this)
-            this.verifyEqual(char(this.testObj),           this.imagingContext_.fqfilename);
-            this.verifyEqual(char(this.testObj.niftic), this.imagingContext_.fqfilename);
-            this.verifyEqual(char(this.testObj.mgh),       this.imagingContext_.fqfilename);
-            this.verifyEqual(char(this.testObj.nifti),     this.imagingContext_.fqfilename);
+            fqfn = this.imagingContext_.fqfilename;
+            this.verifyEqual(char(this.testObj),        fqfn);
+            this.verifyEqual(char(this.testObj.niftic), fqfn);
+            this.verifyEqual(char(this.testObj.mgh),    fqfn);
+            this.verifyEqual(char(this.testObj.niftid), fqfn);
         end
         function test_double(this)
-            this.verifyEqual(double(this.testObj),           this.imagingContext_.img);
-            this.verifyEqual(double(this.testObj.niftic), this.imagingContext_.img);
-            this.verifyEqual(double(this.testObj.mgh),       this.imagingContext_.img);
-            this.verifyEqual(double(this.testObj.nifti),     this.imagingContext_.img);
-        end
-        function test_get(this)
-            this.verifyEqual(get(this.testObj, 1), this.smallT1_niid);
-        end
-        function test_length(this)
-            this.verifyEqual(length(this.testObj), 1);
+            img = double(this.smallT1_niid.img);
+            this.verifyEqual(double(this.testObj),        img);
+            cached = double(this.testObj.niftic);
+            this.verifyEqual(cached{1},                   img);
+            this.verifyEqual(double(this.testObj.mgh),    img);
+            this.verifyEqual(double(this.testObj.niftid), img);
         end
         function test_view_niftic(this)
             import mlfourd.*;
-            this.testObjs.view;
+            if (this.viewable)
+                this.testObjs.view;
+            end
         end
         function test_view_options(this)
-            mriPth  = fullfile(this.registry.sessionPath, 'mri');
-            surfPth = fullfile(this.registry.sessionPath, 'surf');
-            ic = mlfourd.ImagingContext(fullfile(mriPth, 'T1.mgz'));
-            ic.view({ ...
-                fullfile(mriPth,  'wm.mgz') ...
-                fullfile(mriPth,  'brainmask.mgz') ...
-                fullfile(mriPth,  'aseg.mgz:colormap=lut:opacity=0.2') ...
-         ['-f ' fullfile(surfPth, 'lh.white:edgecolor=blue')] ...
-                fullfile(surfPth, 'lh.pial:edgecolor=red') ...
-                fullfile(surfPth, 'rh.white:edgecolor=blue') ...
-                fullfile(surfPth, 'rh.pial:edgecolor=red')});
+            if (this.viewable)
+                mriPth  = fullfile(this.registry.sessionPath, 'mri');
+                surfPth = fullfile(this.registry.sessionPath, 'surf');
+                ic = mlfourd.ImagingContext(fullfile(mriPth, 'T1.mgz'));
+                ic.view({ ...
+                    fullfile(mriPth,  'wm.mgz') ...
+                    fullfile(mriPth,  'brainmask.mgz') ...
+                    fullfile(mriPth,  'aseg.mgz:colormap=lut:opacity=0.2') ...
+             ['-f ' fullfile(surfPth, 'lh.white:edgecolor=blue')] ...
+                    fullfile(surfPth, 'lh.pial:edgecolor=red') ...
+                    fullfile(surfPth, 'rh.white:edgecolor=blue') ...
+                    fullfile(surfPth, 'rh.pial:edgecolor=red')});
+            end
         end
           
         %% factory methods
@@ -189,67 +191,59 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_ctor_NIfTId(this)
             import mlfourd.*;
             ic = ImagingContext(this.smallT1_niid);
-            this.verifyEqual('mlfourd.NIfTIdState', ic.stateTypeclass);
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
             ic = ImagingContext(this.blurring);
-            this.verifyEqual('mlfourd.NIfTIdState', ic.stateTypeclass);
-            this.verifyEqual(class(ic.niftid), 'mlfourd.BlurringNIfTId');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
             ic = ImagingContext(this.dynamic);
-            this.verifyEqual('mlfourd.NIfTIdState', ic.stateTypeclass);
-            this.verifyEqual(class(ic.niftid), 'mlfourd.DynamicNIfTId');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
             ic = ImagingContext(this.masking);
-            this.verifyEqual('mlfourd.NIfTIdState', ic.stateTypeclass);
-            this.verifyEqual(class(ic.niftid), 'mlfourd.MaskingNIfTId');
-            this.verifyEqual(ic.niftid.component, this.smallT1_niid);
-        end
-        function test_ctor_NIfTI(this)
-            import mlfourd.*;
-            ic = ImagingContext(this.smallT1_nii);
-            this.verifyEqual('mlfourd.NIfTIState', ic.stateTypeclass);  
-            this.verifyEqual(class(ic.nifti), 'mlfourd.NIfTI'); 
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
+            this.verifyEqual(ic.niftid, this.smallT1_niid);
         end
         function test_ctor_MGH(this)
             import mlfourd.*;
-            ic = ImagingContext(MGH.load( ...
+            ic = ImagingContext(mlsurfer.MGH.load( ...
                 fullfile(this.registry.mriPath, 'T1.mgz')));
-            this.verifyEqual('mlfourd.MGHState', ic.stateTypeclass);  
-            this.verifyEqual(class(ic.mgh), 'mlfourd.MGH'); 
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.MGHState');  
+            this.verifyEqual(class(ic.mgh),     'mlsurfer.MGH'); 
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
         end
         function test_ctor_NIfTIc(this)
-            %% TEST_CTOR_NIfTIc tests get, remove, add
             import mlfourd.*;
             ic = this.testObjs;
             niic = ic.niftic;
-            this.verifyEqual('mlfourd.NIfTIcState', ic.stateTypeclass);
+            
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');
             this.verifyEqual(ic.length, niic.length);
-            gotten = ic.get(2);
-            this.verifyEqual(gotten, niic.get(2));            
-            this.assumeTrue(ic.length > 2);
-            ic.remove(1);
-            this.verifyEqual(ic.length, niic.length - 1);
-            this.verifyEqual(ic.get(1), niic.get(2));
-            ic.remove(2);
-            this.verifyEqual(ic.length, niic.length - 2);
-            this.verifyEqual(ic.get(1), niic.get(3));
-            ic.add(gotten);            
-            this.verifyEqual(ic.length, niic.length - 1);
-            this.verifyEqual(ic.get(ic.length), gotten);            
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
+            this.verifyEqual(ic.csize,  niic.csize);  
+            this.verifyEqual(ic.find(niic.get(1)), 1);
+            this.verifyEqual(ic.get(1), ImagingContext(niic.get(1)));            
+            ic.add(this.smallT1_niid);
+            this.verifyEqual(ic.get(ic.length), ImagingContext(this.smallT1_niid));            
+            this.verifyInstanceOf(ic.createIterator, 'mlpatterns.CompositeIterator'); 
+            
+            len = ic.length;
+            for l = len:-1:1
+                ic.rm(l);
+            end
+            this.verifyEqual(ic.isempty, true);
         end
         function test_ctor_char(this)
             import mlfourd.*;
             ic = ImagingContext(this.testthis_fqfn);
-            this.verifyEqual('mlfourd.FilenameState', ic.stateTypeclass);
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
-            this.verifyEqual(ic.niftid.fqfn, this.testthis_fqfn);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
+            this.verifyEqual(ic.niftid.fqfn,    this.testthis_fqfn);
         end
         function test_ctor_double(this)
             import mlfourd.*;
             ic = ImagingContext(magic(3));            
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.DoubleState');
-            this.verifyEqual(class(ic.niftid), 'mlfourd.NIfTId');
+            this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
             this.verifyEqual(ic.niftid.img, magic(3));
         end     
         function test_ctor_ImagingContext(this)
@@ -257,106 +251,81 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic2 = mlfourd.ImagingContext(ic);
             this.verifyNotSameHandle(ic, ic2);
             this.verifyEqual(ic.niftid, ic2.niftid);
-            this.verifyFalse(lexist(ic.fqfn, 'file'));
-            this.verifyFalse(lexist(ic2.fqfn, 'file'));
         end
-        function test_ctor_ImagingContextNIfTId(this)
+        function test_ctor_ImagingContext_NIfTId(this)
             import mlfourd.*;
             ic  = ImagingContext(this.smallT1_niid);
             ic2 = ImagingContext(ic);
             this.verifyNotSameHandle(ic, ic2);
             this.verifyEqual(ic.niftid, ic2.niftid);
-            this.verifyTrue(lexist(ic.fqfn, 'file'));
-            this.verifyTrue(lexist(ic2.fqfn, 'file'));
         end
-        function test_ctor_ImagingContextNIfTI(this)
-            import mlfourd.*;
-            ic  = ImagingContext(this.smallT1_nii);
-            ic2 = ImagingContext(ic);
-            this.verifyNotSameHandle(ic, ic2);
-            this.verifyEqual(ic.nifti, ic2.nifti);
-            this.verifyTrue(lexist(ic.fqfn, 'file'));
-            this.verifyTrue(lexist(ic2.fqfn, 'file'));
-        end
-        function test_ctor_ImagingContextNIfTIc(this)
+        function test_ctor_ImagingContext_NIfTIc(this)
             import mlfourd.*;
             ic  = this.testObjs;
             ic2 = ImagingContext(ic);
             this.verifyNotSameHandle(ic, ic2);
             for c = 1:ic2.length
-                this.verifyEqual(ic.niftic{c}, ic2.niftic{c});
-                this.verifyTrue(lexist(ic.niftic{c}.fqfn, 'file'));
-                this.verifyTrue(lexist(ic2.niftic{c}.fqfn, 'file'));
+                this.verifyEqual(ic.get(c), ic2.get(c));
             end
         end
-        function test_ctor_ImagingContextChar(this)
+        function test_ctor_ImagingContext_char(this)
             import mlfourd.*;
             ic  = ImagingContext(this.testthis_fqfn);
             ic2 = ImagingContext(ic);
             this.verifyNotSameHandle(ic, ic2);
             this.verifyEqual(ic.fqfn, ic2.fqfn);
-            this.verifyFalse(lexist(ic.fqfn, 'file'));
+            this.verifyFalse(lexist(ic.fqfn,  'file'));
             this.verifyFalse(lexist(ic2.fqfn, 'file'));
         end
-        function test_ctor_ImagingContextDouble(this)
+        function test_ctor_ImagingContext_double(this)
             import mlfourd.*;
-            ic  = ImagingContext(magic(3), 'fqfilename', this.testthis_fqfn);
+            ic  = ImagingContext(magic(3));
             ic2 = ImagingContext(ic);
             this.verifyNotSameHandle(ic, ic2);
             this.verifyEqual(ic.double, ic2.double);
-            this.verifyFalse(lexist(ic.fqfn, 'file'));
-            this.verifyFalse(lexist(ic2.fqfn, 'file'));
+            this.verifyEqual(ic.niftid, ic2.niftid);
+            this.verifyFalse(lexist(ic.niftid.fqfn,  'file'));
+            this.verifyFalse(lexist(ic2.niftid.fqfn, 'file'));
         end        
         function test_clone(this)
             import mlfourd.*;            
-            
-            ic00 = ImagingContext(this.ep2dMean_fqfn);
-            
-            ic0 = ImagingContext(ic00);
+                      
+            ic0 = this.testObj;
             ic  = ic0.clone;
             ic.filename = 'anotherFilename.nii.gz';
             this.verifyNotSameHandle(ic, ic0);
-            this.verifyTrue(strcmp(ic0.fqfn, this.ep2dMean_fqfn));
+            this.verifyTrue(strcmp(ic0.fqfn, this.testObj.fqfn));
             
             ic0 = this.testObjs;
             ic  = ic0.clone;
-            ic.filename = 'anotherFilename.nii.gz';
+            ic.filename = {'1.nii.gz' '2.nii.gz' '3.nii.gz' '4.nii.gz'};
             this.verifyNotSameHandle(ic, ic0);
-            this.verifyTrue(strcmp(ic0.fqfn, niic.fqfn));
+            this.verifyTrue(all(strcmp(ic0.fqfn, this.testObjs.fqfn)));
             
-            ic0 = ImagingContext(this.smallT1_niid);
+            ic0 = ImagingContext(this.tr_fqfn);
             ic  = ic0.clone;
             ic.filename = 'anotherFilename.nii.gz';
             this.verifyNotSameHandle(ic, ic0);
-            this.verifyTrue(strcmp(ic0.fqfn, this.smallT1_niid.fqfn));
-            
-            ic0  = ImagingContext(this.smallT1_nii);
-            ic  = ic0.clone;
-            ic.filename = 'anotherFilename.nii.gz';
-            this.verifyNotSameHandle(ic, ic0);
-            this.verifyTrue(strcmp(ic0.fqfn, this.smallT1_nii.fqfn));            
-            
-            ic0 = ImagingContext(this.ep2dMean_fqfn);
-            ic  = ic0.clone;
-            ic.filename = 'anotherFilename.nii.gz';
-            this.verifyNotSameHandle(ic, ic0);
-            this.verifyTrue(strcmp(ic0.fqfn, this.ep2dMean_fqfn));
+            this.verifyTrue(strcmp(ic0.fqfn, this.tr_fqfn));
             
             ic0 = ImagingContext(magic(3));
             ic  = ic0.clone;
-            ic.double = magic(4);
             this.verifyNotSameHandle(ic, ic0);
-            this.verifyEqual(ic0.img, magic(3));
         end           
         function test_load(this)
             import mlfourd.*;            
             ic = ImagingContext.load(this.smallT1_fqfn);
-            this.verifyEqual('mlfourd.FilenameState', ic.stateTypeclass);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');
             this.verifyEqual(ic.niftid, this.smallT1_niid);
             
             ic = ImagingContext.load(this.pet_fqfns);
-            this.verifyEqual('mlfourd.NIfTIcState', ic.stateTypeclass);
-            this.verifyEqual(ic.niftic, this.testObjs.niftic);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.CellCompositeState');
+            this.verifyEqual(ic.niftic, this.niftic);
+            a = ic.niftic;
+            b = this.niftic;
+            for idx = 1:min(a.length, b.length)
+                this.verifyEqual(a.get(idx), b.get(idx));
+            end
         end
         
         %% state changes
@@ -429,6 +398,18 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
                 ic.view;
             end
         end
+        function test_close(this)
+            fqfn = fullfile(this.registry.fslPath, 'Test_ImagingContext.test_close.nii.gz');
+            this.testObj.fqfn = fqfn;
+            cached = this.testObj;
+            
+            this.testObj.save;
+            this.testObj.close;
+            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.FilenameState');
+            this.verifyTrue(lexist(fqfn));
+            ic = mlfourd.ImagingContext.load(fqfn);
+            this.verifyEqual(ic.niftid.fqfn, cached.fqfn);
+        end
         function test_masked(this)
             ic = this.testObj;            
             ic = ic.masked(this.maskT1_niid);
@@ -497,28 +478,28 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');            
-            deleteExisting(this.testthis_fqfn);
+            this.deleteFiles;
             
             ic = this.testObjs;
             ic.saveas(this.testthis_fqfns);
             this.verifyEqual(ic.fqfn, this.testthis_fqfns);
             cellfun(@(x) this.verifyTrue(lexist(x, 'file')), this.testthis_fqfns);  
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');          
-            cellfun(@(x) deleteExisting(x), this.testthis_fqfns);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');  
+            this.deletFiles;
             
             ic = ImagingContext.load(this.smallT1_fqfn);
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');            
-            deleteExisting(this.testthis_fqfn);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');   
+            this.deleteFiles;
             
             ic = ImagingContext(magic(10));
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.DoubleState');            
-            deleteExisting(this.testthis_fqfn);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.DoubleState'); 
+            this.deleteFiles;  
         end
         function test_thresh(this)
             ic  = mlfourd.ImagingContext(this.maskT1_niid);            
@@ -533,31 +514,34 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             n  = ic.numericalNiftid;
             this.verifyEqual(n.rank, 4);
             this.verifyEqual(n.entropy, 0.998338839919038, 'RelTol', 1e-8);
-            this.verifyEqual(max(max(max(max(n.img)))), 9386, 'RelTol', 1e-8);
-            this.verifyEqual(dipmedian(n),  nan, 'RelTol', 1e-8);
+            this.verifyEqual(max(max(max(max(n.img)))), int16(9386), 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(n), 7, 'RelTol', 1e-8);
             
             ic = ic.timeSummed;
             n  = ic.numericalNiftid;
             this.verifyEqual(n.rank, 3);
-            this.verifyEqual(n.entropy, nan, 'RelTol', 1e-8);
-            this.verifyEqual(max(max(max(n.img))), nan, 'RelTol', 1e-8);
-            this.verifyEqual(dipmedian(n),  nan, 'RelTol', 1e-8);
+            this.verifyEqual(n.entropy, 0.944750979221247, 'RelTol', 1e-8);
+            this.verifyEqual(max(max(max(n.img))), single(30620), 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(n),  583, 'RelTol', 1e-8);
             if (getenv('VERBOSE'))
                 n.view(this.testObj);
             end
         end
         function test_volumeSummed(this)
             import mlfourd.*;
-            d = this.dynamic;
+            ic = ImagingContext(this.dynamic);
+            d  = ic.numericalNiftid;
             this.verifyEqual(d.rank, 4);
-            this.verifyEqual(d.entropy, nan, 'RelTol', 1e-8);
-            this.verifyEqual(max(max(max(max(d.img)))), nan, 'RelTol', 1e-8);
-            this.verifyEqual(dipmedian(d),  nan, 'RelTol', 1e-8);
-            d.volumeSummed;
-            this.verifyEqual(d.rank, 1);
-            this.verifyEqual(d.entropy,  nan, 'RelTol', 1e-8);
-            this.verifyEqual(max(d.img), nan, 'RelTol', 1e-8);
-            this.verifyEqual(dipmedian(d),   nan, 'RelTol', 1e-8);
+            this.verifyEqual(d.entropy, 0.998338839919038, 'RelTol', 1e-8);
+            this.verifyEqual(max(max(max(max(d.img)))), int16(9386), 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(d), 7, 'RelTol', 1e-8);
+            
+            ic = ic.volumeSummed;
+            d  = ic.numericalNiftid;
+            this.verifyEqual(d.rank, 2);
+            this.verifyEqual(d.entropy, 0, 'RelTol', 1e-8);
+            this.verifyEqual(max(d.img), single(460087520), 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(d), 24437700, 'RelTol', 1e-8);
             if (getenv('VERBOSE'))
                 d.view(this.testObj);
             end
@@ -576,9 +560,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
 
  	methods (TestMethodSetup)
         function setupTest(this)
+            this.deleteFiles;
             this.testObj  = this.imagingContext_;
-            this.testObjs = this.imagingContexts_;
-            deleteExisting(this.testthis_fqfn);
+            this.testObjs = this.imagingContexts_;            
+            this.addTeardown(@this.deleteFiles);
         end
     end
     
@@ -595,6 +580,9 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(niid.entropy, e, 'RelTol', 1e-6);
             this.verifyEqual(dipmad(niid), m, 'RelTol', 1e-4);
             this.verifyEqual(niid.fileprefix, fp); 
+        end
+        function deleteFiles(this)
+            deleteExisting(fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext*'));
         end
     end
     

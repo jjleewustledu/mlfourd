@@ -10,7 +10,11 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
  	
     properties (Dependent)
         
-        %% Instantiation of mlfourd.JimmyShenInterface to support struct arguments to NIfTId ctor
+        %% NIfTIIO
+        
+        noclobber         
+        
+        %% JimmyShenInterface to support struct arguments to NIfTId ctor
         
         ext        %   Legacy variable for mlfourd.JimmyShenInterface
         filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
@@ -37,7 +41,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         originalType
         untouch
         
-        %% Instantiation of mlfourd.INIfTI
+        %% INIfTI
         
         bitpix
         creationDate
@@ -53,14 +57,24 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         pixdim
         seriesNumber
         
-        %% New for mlfourd.InnerNIfTIc
+        %% New for InnerNIfTIc
         
+        lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
     end 
 
     methods %% GET/SET
+        
+        %% NIfTIIO
+        
+        function tf   = get.noclobber(this)
+            tf = this.innerCellComp_.getter('noclobber');
+        end
+        function this = set.noclobber(this, nc)
+            this = this.innerCellComp_.setter('noclobber', nc);
+        end
         
         %% JimmyShenInterface
         
@@ -149,8 +163,11 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             g = this.innerCellComp_.getter('seriesNumber');
         end
         
-        %% New for AbstractNIfTId
+        %% New for InnerNIfTIc
         
+        function s    = get.lexistFile(this)
+            s = this.innerCellComp_.getter('lexistFile');
+        end
         function s    = get.logger(this)
             s = this.innerCellComp_.getter('logger');
         end
@@ -169,13 +186,23 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% NIfTIIO
         
-        function save(this)
-            this.fevalNone('save');
+        function        save(this)
+            for c = 1:this.innerCellComp_.length
+                cached = this.innerCellComp_{c};
+                cached.save;
+            end
         end
-        function this = saveas(this, fn)
-            this.innerCellComp_ = this.innerCellComp_.fevalThis('saveas', fn);
-        end
-    
+        function this = saveas(this, s)
+            if (ischar(s))
+                warning('mlfourd:ambiguousCompositeRequest', ...
+                        'InnerNIfTIc.saveas received solitary %s; prepending fileprefixes', s);
+                this = this.prepend_fileprefix(s);
+            end
+            if (iscell(s))
+                this.fqfilename = s;
+            end
+            this.save;
+        end    
         
         %% INIfTI  
         
@@ -227,8 +254,22 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTIc
         
-        function addLog(this, varargin)
-            this.fevalNone('addLog', varargin{:});
+        function     addLog(this, lg)
+            if (ischar(lg))
+                for c = 1:this.innerCellComp_.length
+                    cached = this.innerCellComp_{c};
+                    cached.addLog(lg);
+                end
+                return
+            end
+            if (iscell(lg))                
+                for c = 1:this.innerCellComp_.length
+                    cached = this.innerCellComp_{c};
+                    cached.addLog(lg{c});
+                end
+                return
+            end
+            error('mlfourd:unsupportedTypeclass', 'InnerNIfTIc.addLog received lg with class->%s', class(lg));
         end
         function e = fslentropy(this)
             e = this.innerCellComp_.fevalOut('fslentropy');
@@ -239,13 +280,13 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function freeview(this, varargin)
             first = this.innerCellComp_.get(1);
             fqfns = this.innerCellComp_.fevalOut('fqfilename');
-            fqfns = [fqfns{2:end} varargin{:}];
+            fqfns = [fqfns(2:end) varargin{:}];
             first.freeview(fqfns{:});
         end
         function fslview(this, varargin)
             first = this.innerCellComp_.get(1);
             fqfns = this.innerCellComp_.fevalOut('fqfilename');
-            fqfns = [fqfns{2:end} varargin{:}];
+            fqfns = [fqfns(2:end) varargin{:}];
             first.fslview(fqfns{:});
         end
         
@@ -257,11 +298,16 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function iter = createIterator(this)
             iter = this.innerCellComp_.createIterator;
         end
+        function s    = csize(this)   
+            s = this.innerCellComp_.csize;
+        end  
         function        disp(this)
            this.innerCellComp_.disp;
        end
         function idx  = find(this, obj)
+            warning('off', 'mlfourd:isequal:mismatchedField');
             idx = this.innerCellComp_.find(obj);
+            warning('on', 'mlfourd:isequal:mismatchedField');
         end
         function obj  = get(this, idx)
             obj = this.innerCellComp_.get(idx);
@@ -274,10 +320,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         end
         function this = rm(this, idx)
             this.innerCellComp_ = this.innerCellComp_.rm(idx);
-        end
-        function s    = csize(this)   
-            s = this.innerCellComp_.csize;
-        end     
+        end   
         
         %% Ctor
         
