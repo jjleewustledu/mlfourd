@@ -151,10 +151,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         
         function test_char(this)
             fqfn = this.imagingContext_.fqfilename;
-            this.verifyEqual(char(this.testObj),        fqfn);
-            this.verifyEqual(char(this.testObj.niftic), fqfn);
-            this.verifyEqual(char(this.testObj.mgh),    fqfn);
-            this.verifyEqual(char(this.testObj.niftid), fqfn);
+            this.verifyEqual(char(this.testObj),         fqfn);
+            this.verifyEqual(char(this.testObj.niftic), {fqfn});
+            this.verifyEqual(char(this.testObj.mgh),     fqfn);
+            this.verifyEqual(char(this.testObj.niftid),  fqfn);
         end
         function test_double(this)
             img = double(this.smallT1_niid.img);
@@ -386,10 +386,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic = ic.blurred([20 10 5]);
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
             n = ic.niftid;
-            this.verifyEqual(n.bitpix, 64);
-            this.verifyEqual(n.datatype, 64);
+            this.verifyEqual(n.bitpix, 32);
+            this.verifyEqual(n.datatype, 16);
             this.verifyEqual(n.entropy, 2.37397311238268, 'RelTol', 1e-8);
-            this.verifyEqual(dipmedian(n), 2.688815169064907, 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(n), 2.688815116882324, 'RelTol', 1e-8);
             this.verifyEqual(n.orient, 'RADIOLOGICAL');
             this.verifyEqual(n.mmppix, [2.003313064575195   2.003313064575195   2.424999952316284], 'RelTol', 1e-8);
             this.verifyEqual(n.rank, 3);
@@ -456,17 +456,17 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_remove(this)
             import mlfourd.*;
             niic = this.testObjs.niftic;
-            niicc = niic.clone;
+            ic   = this.testObj.clone;
             for r = niic.length:-1:2
-                removed = niicc.remove(r);
-                this.verifyTrue(niicc.stateTypeclass, 'mlfourd.NIfTIcState');
+                removed = ic.remove(r);
+                this.verifyTrue(ic.stateTypeclass, 'mlfourd.NIfTIcState');
                 this.verifyEqual(removed, niic.get(r));          
             end
-            this.verifyTrue(niicc.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(niicc.niftid, niic.get(1));
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.niftid, niic.get(1));
         end
         function test_save(this)
-            ic = NIfTId('fqfilename', this.testthis_fqfn);
+            ic = mlfourd.NIfTId('fqfilename', this.testthis_fqfn);
             ic.save;
             this.verifyEqual(ic.fqfilename, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
@@ -477,7 +477,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');            
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');            
             this.deleteFiles;
             
             ic = this.testObjs;
@@ -551,7 +551,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
  	methods (TestClassSetup)
  		function setupImagingContext(this)
             import mlfourd.*;
-            this.registry = UnittestRegistry.instance;
+            this.registry = UnittestRegistry.instance('initialize');
             this.registry.sessionFolder = 'mm01-007_p7686_2010aug20';
             this.imagingContext_  = ImagingContext(this.smallT1_niid);
             this.imagingContexts_ = ImagingContext(this.niftic);
