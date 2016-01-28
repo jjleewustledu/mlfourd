@@ -47,7 +47,7 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_mlfourd
             dniid = this.testObj;
             this.verifyEqual(dniid.component,           niid);
             this.verifyEqual(dniid.img,                 niid.img);
-            this.verifyEqual(dniid.entropy,             0.999451341616353, 'RelTol', 1e-10);
+            this.verifyEqual(dniid.entropy,             0.999451341616353, 'RelTol', 1e-8);
             this.verifyEqual(dniid.fileprefix,          'cs01-999-ho1');
             this.verifyEqual(dniid.descrip(end-27:end), '; decorated by DynamicNIfTId');
             this.verifyEqual(dniid.pixdim,              niid.pixdim);
@@ -61,15 +61,15 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_mlfourd
         function test_timeSummed(this)
             ts = this.testObj.timeSummed;
             this.verifyEqual(ts.size, [128 128 63]);
-            this.verifyEqual(ts.entropy, 0.962499036230927, 'RelTol', 1e-10);
+            this.verifyEqual(ts.entropy, 0.962499036230927, 'RelTol', 1e-8);
             if (mlpipeline.PipelineRegistry.instance.verbose)
                 ts.freeview
             end
         end
         function test_volumeSummed(this)
             vs = this.testObj.volumeSummed;
-            this.verifyEqual(vs.size, [1 1 1 60]);
-            this.verifyEqual(vs.entropy, 0, 'RelTol', 1e-10);
+            this.verifyEqual(vs.size, [60 1]);
+            this.verifyEqual(vs.entropy, 0, 'RelTol', 1e-8);
             if (mlpipeline.PipelineRegistry.instance.verbose)
                 plot(vs.img);s
             end
@@ -77,13 +77,13 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_mlfourd
         function test_blurred(this)
             import mlfourd.*;
             to = this.testObj.blurred([4 4 4]);
-            this.verifyEqual(to.descrip(142:end), ...
+            this.verifyEqual(to.descrip(143:end), ...
                 'decorated by DynamicNIfTId; decorated by BlurringNIfTId; blurred to [4 4 4]');
             this.verifyEqual(to.size, [128 128 63 60]);
-            this.verifyEqual(to.entropy, 0.995192754170223, 'RelTol', 1e-10);
-            this.verifyEqual(dipmax( to), 939.000000000000000, 'RelTol', 1e-10);
-            this.verifyEqual(dipmean(to), 10.1645085894872, 'RelTol', 1e-10);
-            this.verifyEqual(dipstd( to), 0.387581383407035, 'RelTol', 1e-10);
+            this.verifyEqual(to.entropy, 1.185942655041996, 'RelTol', 1e-8);
+            this.verifyEqual(dipmax( to), 939.327758789062, 'RelTol', 1e-8);
+            this.verifyEqual(dipmean(to), 10.164494152465943, 'RelTol', 1e-8);
+            this.verifyEqual(dipstd( to), 53.4597643887697, 'RelTol', 1e-8);
             if (mlpipeline.PipelineRegistry.instance.verbose)
                 to.freeview
             end
@@ -100,12 +100,15 @@ classdef Test_DynamicNIfTId < mlfourd_unittest.Test_mlfourd
             to = this.testObj;
             to = to.masked(mask);
             this.verifyEqual(to.descrip, ...
-                ['made similar to clone of ' this.testObj.descrip '; DynamicNIfTI.masked(cs01-999-ho1_161616fwhh_thresh250)']);
+                ['NIfTId.adjustFieldsAfterLoading read ' ...
+                '/Volumes/InnominateHD3/Local/test/cvl/np755/mm01-020_p7377_2009feb5/ECAT_EXACT/coss/cs01-999-ho1.nii.gz; ' ...
+                'decorated by DynamicNIfTId; ' ...
+                'DynamicNIfTI.masked(cs01-999-ho1_161616fwhh_thresh250); made similar']);
             this.verifyEqual(to.fileprefix, 'cs01-999-ho1_masked');
             this.verifyEqual(to.size, [128 128 63 60]);
-            this.verifyEqual(to.entropy, 0.698268544789383, 'RelTol', 1e-10);
-            this.verifyEqual(dipmean(to), 13.6110725200996, 'RelTol', 1e-10);
-            this.verifyEqual(dipstd( to), 1.68102967422769, 'RelTol', 1e-10);
+            this.verifyEqual(to.entropy, 0.698268544789383, 'RelTol', 1e-8);
+            this.verifyEqual(dipmean(to), 13.6110725200996, 'RelTol', 1e-8);
+            this.verifyEqual(dipstd( to), 119.214993730422, 'RelTol', 1e-8);
             if (mlpipeline.PipelineRegistry.instance.verbose)
                 to.freeview;
             end

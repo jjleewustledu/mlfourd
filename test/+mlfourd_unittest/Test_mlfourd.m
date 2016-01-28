@@ -187,7 +187,7 @@ classdef (Abstract) Test_mlfourd < matlab.unittest.TestCase
             fp = 'test';
         end    
         function fn  = get.test_fqfn(this)
-            fn = this.fqfilenameInFsl('test');
+            fn = this.fqfilenameInFsl('test_mlfourd');
         end
         function ic  = get.testCntxt(this)
             ic = mlfourd.ImagingContext.load(this.test_fqfn);

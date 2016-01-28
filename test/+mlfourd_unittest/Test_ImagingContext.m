@@ -93,9 +93,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             g = fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext.nii.gz');
         end
         function g = get.testthis_fqfns(this)
-            g = {fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext1.nii.gz') ...
-                 fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext2.nii.gz') ...
-                 fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext3.nii.gz')};
+            g = {fullfile(this.registry.petPath, 'p7686ho1_frames', 'Test_ImagingContext_p7686ho1.nii.gz') ...
+                 fullfile(this.registry.petPath, 'p7686oo1_frames', 'Test_ImagingContext_p7686oo1.nii.gz') ...
+                 fullfile(this.registry.petPath, 'p7686oc1_frames', 'Test_ImagingContext_p7686oc1_03.nii.gz') ...
+                 fullfile(this.registry.petPath, 'p7686tr1_frames', 'Test_ImagingContext_p7686tr1_01.nii.gz')};
         end
     end
 
@@ -446,13 +447,6 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
                 ic.view;
             end
         end
-        function test_threshp(this)
-            ic = mlfourd.ImagingContext(this.maskT1_niid);            
-            ic.threshp(50);
-            ic.binarized;
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(ic.niftid, this.maskT1_niid);
-        end
         function test_remove(this)
             import mlfourd.*;
             niic = this.testObjs.niftic;
@@ -466,45 +460,70 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.niftid, niic.get(1));
         end
         function test_save(this)
-            ic = mlfourd.NIfTId('fqfilename', this.testthis_fqfn);
-            ic.save;
+            import mlfourd.*;
+            ic = ImagingContext(NIfTId(this.testthis_fqfn));
             this.verifyEqual(ic.fqfilename, this.testthis_fqfn);
+            this.verifyError(@ic.save, 'mlfourd:saveError');
+            this.verifyFalse(lexist(this.testthis_fqfn, 'file'));
+            
+            ic = ImagingContext(NIfTId(magic(2), 'fqfilename', this.testthis_fqfn));
+            this.verifyEqual(ic.fqfilename, this.testthis_fqfn);
+            ic.save;
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
         end
-        function test_saveas(this)
+        function test_saveasThenClose(this)
             import mlfourd.*;            
             ic = this.testObj;
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');            
+            ic.close;
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');            
             this.deleteFiles;
-            
+        end
+        function test_saveasNIfTIcState(this)            
+            ic = this.testObjs;
+            this.verifyWarning(@() ic.saveas('Test_ImagingContext_'), 'mlfourd:ambiguousCompositeRequest');
+            this.verifyEqual(ic.fqfn, this.testthis_fqfns);
+            cellfun(@(x) this.verifyTrue(lexist(x, 'file')), this.testthis_fqfns);  
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');  
+            this.deleteFiles;
+        end
+        function test_saveasManyNIfTIcState(this)            
             ic = this.testObjs;
             ic.saveas(this.testthis_fqfns);
             this.verifyEqual(ic.fqfn, this.testthis_fqfns);
             cellfun(@(x) this.verifyTrue(lexist(x, 'file')), this.testthis_fqfns);  
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');  
-            this.deletFiles;
-            
-            ic = ImagingContext.load(this.smallT1_fqfn);
+            this.deleteFiles;
+        end
+        function test_saveasFilenameState(this)            
+            ic = mlfourd.ImagingContext.load(this.smallT1_fqfn);
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');   
             this.deleteFiles;
-            
-            ic = ImagingContext(magic(10));
+        end
+        function test_saveasDoubleState(this)            
+            ic = mlfourd.ImagingContext(magic(10));
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
             this.verifyTrue(lexist(this.testthis_fqfn, 'file'));
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.DoubleState'); 
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState'); 
             this.deleteFiles;  
         end
         function test_thresh(this)
             ic  = mlfourd.ImagingContext(this.maskT1_niid);            
-            ic.thresh(0.5);
-            ic.binarized;
+            ic  = ic.thresh(0.5);
+            ic  = ic.binarized;
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.niftid.img, double(this.maskT1_niid.img));
+        end
+        function test_threshp(this)
+            ic = mlfourd.ImagingContext(this.maskT1_niid);            
+            ic = ic.threshp(50);
+            ic = ic.binarized;
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
             this.verifyEqual(ic.niftid, this.maskT1_niid);
         end
@@ -536,12 +555,17 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(max(max(max(max(d.img)))), int16(9386), 'RelTol', 1e-8);
             this.verifyEqual(dipmedian(d), 7, 'RelTol', 1e-8);
             
-            ic = ic.volumeSummed;
-            d  = ic.numericalNiftid;
+            ic2 = ic.volumeSummed;
+            d   = ic2.numericalNiftid;
             this.verifyEqual(d.rank, 2);
             this.verifyEqual(d.entropy, 0, 'RelTol', 1e-8);
             this.verifyEqual(max(d.img), single(460087520), 'RelTol', 1e-8);
             this.verifyEqual(dipmedian(d), 24437700, 'RelTol', 1e-8);
+            e   = ic.numericalNiftid;
+            this.verifyEqual(e.rank, 4);
+            this.verifyEqual(e.entropy, 0.998338839919038, 'RelTol', 1e-8);
+            this.verifyEqual(max(max(max(max(e.img)))), int16(9386), 'RelTol', 1e-8);
+            this.verifyEqual(dipmedian(e), 7, 'RelTol', 1e-8);
             if (getenv('VERBOSE'))
                 d.view(this.testObj);
             end
@@ -555,14 +579,15 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.registry.sessionFolder = 'mm01-007_p7686_2010aug20';
             this.imagingContext_  = ImagingContext(this.smallT1_niid);
             this.imagingContexts_ = ImagingContext(this.niftic);
+            cd(fullfile(this.registry.sessionPath, 'fsl', ''));
  		end
  	end
 
  	methods (TestMethodSetup)
         function setupTest(this)
             this.deleteFiles;
-            this.testObj  = this.imagingContext_;
-            this.testObjs = this.imagingContexts_;            
+            this.testObj  = this.imagingContext_.clone;
+            this.testObjs = this.imagingContexts_.clone;            
             this.addTeardown(@this.deleteFiles);
         end
     end
@@ -582,7 +607,11 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(niid.fileprefix, fp); 
         end
         function deleteFiles(this)
-            deleteExisting(fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, 'p7686ho1_frames', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, 'p7686oo1_frames', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, 'p7686oc1_frames', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, 'p7686tr1_frames', 'Test_ImagingContext*'));
         end
     end
     

@@ -129,7 +129,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                     % as described by mlniftitools.load_untouch_nii
                     this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
                     this.innerNIfTI_.filetype_    = ip.Results.obj.filetype;
-                    this.innerNIfTI_.fileprefix   = ip.Results.obj.fileprefix;
+                    this.innerNIfTI_.fqfileprefix = ip.Results.obj.fileprefix; % Jimmy Shen's fileprefix includes filepath
                     this.innerNIfTI_.ext_         = ip.Results.obj.ext;
                     this.innerNIfTI_.img_         = ip.Results.obj.img;
                     this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;
@@ -283,7 +283,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         end
         function this     = adjustFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
-                if (~lstrfind(ip.Parameters{p}, ip.UsingDefaults))
+                if (~lstrfind(ip.UsingDefaults, ip.Parameters{p}))
                     switch (ip.Parameters{p})
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);

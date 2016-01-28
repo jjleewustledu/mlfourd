@@ -118,7 +118,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             end
         end   
         function obj  = clone(this)
-            obj            = mlfourd.BlurringNIfTId(this.component_.clone);
+            obj            = mlfourd.BlurringNIfTId(this.component.clone);
             obj.metric     = this.metric;
             obj.mask_      = this.mask_;
             obj.blur_      = this.blur_;
@@ -181,7 +181,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
                         if (tf)
                             tf = isequaln(this.mask_, bnii.mask);
                             if (tf)
-                                tf = isequaln@mlfourd.NIfTIdecorator2(this, bnii);
+                                tf = isequaln@mlfourd.NIfTIdecoratorProperties(this, bnii);
                             end
                         end
                     end

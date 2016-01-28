@@ -570,33 +570,21 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(this.testObj.negentropy, -0.00002075192819, 'RelTol', 1e-8);
         end
         function test_noclobber(this)
-            nexist = this.prepare_test_noclobber;
+            this.cleanupFiles; 
             
-            nexist.noclobber = true; 
-            this.verifyError(@nexist.save, 'mlfourd:IOError:noclobberPreventedSaving');            
-            fqfn2 = fullfile(nexist.filepath, [nexist.fileprefix '_saveas' nexist.FILETYPE_EXT]);
-            fqfn3 = fullfile(nexist.filepath, [nexist.fileprefix '_saveas.log']);
-            deleteExisting(fqfn2);
-            deleteExisting(fqfn3);
-            
-            nexist2 = nexist;
-            nexist2.saveas(fqfn2);
-            this.verifyTrue(lexist(nexist2.fqfilename));
-            deleteExisting(fqfn2);
-            deleteExisting(fqfn3);
-            
-            nexist.noclobber = false;
+            nexist = this.testObj;
+            nexist.fileprefix = 'Test_NIfTId.test_noclobber';
             nexist.save;
-            this.verifyTrue(lexist(nexist.fqfilename));            
-            deleteExisting(nexist.fqfilename);
-            deleteExisting([nexist.fqfileprefix '.log'])
-        end
-        function niid = prepare_test_noclobber(this)
-            niid = this.testObj;
-            niid.fileprefix = 'Test_NIfTId.test_noclobber';
-            deleteExisting(niid.fqfilename);
-            deleteExisting([niid.fqfileprefix '.log']);
-            niid.save;
+            this.assumeTrue(nexist.noclobber); 
+            this.verifyError(@nexist.save, 'mlfourd:IOError:noclobberPreventedSaving');
+            
+            fqfp = [nexist.fqfileprefix '_saveas'];
+            nexist = nexist.saveas([fqfp '.nii.gz']);
+            this.verifyTrue(lexist(nexist.fqfilename));
+            this.verifyTrue(lexist(nexist.logger.fqfilename));
+            this.verifyEqual(nexist.fqfp, nexist.logger.fqfp);
+            
+            this.cleanupFiles; 
         end
         function test_orient(this)
             this.verifyEqual(this.testObj.orient, 'RADIOLOGICAL');
@@ -648,8 +636,8 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             [s,r] = mlbash('pwd', 'logger', lg);
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyEqual(lg.contents(22:66), 'mlpipeline.Logger from jjlee at innominate in');
-            this.verifyEqual(lg.contents(214:216), 'pwd');
+            this.verifyEqual(lg.contents(22:63), 'mlpipeline.Logger from jjlee at innominate');
+            %this.verifyEqual(lg.contents(214:216), 'pwd'); % varies with hostname
             this.verifyEqual(lg.contents(end-70:end), this.fslPath);
             
             deleteExisting(fqfn);
@@ -669,16 +657,20 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             cd(this.fslPath);
             mlbash('rm *.log');
  			this.testObj = this.testObj_; 
+            this.addTeardown(@this.cleanupFiles);
  		end
     end
     
- 	methods (TestClassTeardown)
-        function teardownNIfTId(this) %#ok<MANU>
-        end
-    end 
+    %% PRIVATE
     
     properties (Access = 'private')
         testObj_
+    end
+    
+    methods (Access = private)
+        function cleanupFiles(this)
+            deleteExisting2(fullfile(this.fslPath, 'Test_NIfTId*'));
+        end
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

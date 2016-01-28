@@ -49,6 +49,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         
         %% New for NIfTIdecoratorProperties
         
+        lexistFile
         separator
         stack
     end
@@ -216,6 +217,9 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         
         %% New for AbstractNIfTIComponent
         
+        function tf   = get.lexistFile(this)
+            tf = this.component.lexistFile;
+        end
         function s    = get.separator(this)
             s = this.component.separator;
         end

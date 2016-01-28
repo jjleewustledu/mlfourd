@@ -762,6 +762,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
         end
         function        save_nii(this)
+           if (isempty(this.img))
+              error('mlfourd:saveError', ...
+                  'InnerNIfTId.save_nii:  mlnifittools.save_[untouch]_nii will throw MATLAB:badsubscript');
+           end
             if (this.untouch)
                 this.save_untouch_nii;
                 return
@@ -803,7 +807,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             catch ME
                 handerror(ME, ...
                     'mlfourd:IOError', ...
-                    'InnerNIfTId.save_nii failed to save %s', this.fqfilename);
+                    'InnerNIfTId.save_untouch_nii failed to save %s', this.fqfilename);
             end
         end
         function im   = scrub1D(this, im)

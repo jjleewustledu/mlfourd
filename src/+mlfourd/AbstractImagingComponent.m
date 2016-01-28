@@ -1,4 +1,4 @@
-classdef AbstractImagingComponent < mlio.AbstractComponentIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI 
+classdef AbstractImagingComponent < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI 
 	%% ABSTRACTNIFTICOMPONENT is a parallel hierarchy of AbstractNIfTId, intended for composite design patterns. 
 
 	%  $Revision: 2618 $ 
@@ -187,7 +187,7 @@ classdef AbstractImagingComponent < mlio.AbstractComponentIO & mlfourd.JimmyShen
     
     methods (Access = 'protected')
         function this = AbstractImagingComponent(varargin)
-            this = this@mlio.AbstractComponentIO(varargin{:});
+            this = this@mlio.AbstractCompositeIO(varargin{:});
             this.componentCreationDate_ = datestr(now);
         end % ctor
     end 
