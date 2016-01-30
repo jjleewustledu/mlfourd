@@ -85,6 +85,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                     'MaskingNIfTId.binarized mask spans the image space');
             end
             this.assertVolumeFraction;
+            this.addLog('MaskingNIfTId.binarized');
         end
         function N    = count(this)
             %% COUNT 
@@ -92,40 +93,49 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
             
             N   = dipsum(this.img ~= 0);
         end
-        function this = masked(this, niidMask)
+        function this = masked(this, msk)
             %% MASKED
-            %  @param INIfTId of a mask with values [0 1], not required to be binary.
-            %  @return internal image is masked.
+            %  @param msk is an INIfTId mask with values [0 1]; it need not be binary.  It must have a volume size 
+            %  equal to the volume of this.
+            %  @return this internal image is masked in 3D or 4D with repeated masking as needed.
             %  @warning mflourd:possibleMaskingError
             
-            assert(isa(niidMask, 'mlfourd.INIfTI'));
-            assert(all(this.size == niidMask.size));
-            if (~this.isZeroToOne(niidMask))
+            assert(isa(msk, 'mlfourd.INIfTI'));
+            msk = this.resizeMaskToFit(msk);
+            assert(all(this.size == msk.size));
+            if (~this.isZeroToOne(msk))
                  warning('mlfourd:possibleMaskingError', ...
                          'MaskingNIfTId.masked received a mask with values outside of [0 1]');
             end
             this = this.makeSimilar( ...
-                   'img', double(this.img) .* double(niidMask.img), ...
-                   'descrip',    sprintf('MaskedNIfTI.masked(%s)', niidMask.fileprefix), ...
+                   'img', double(this.img) .* double(msk.img), ...
+                   'descrip',    sprintf('MaskedNIfTI.masked(%s)', msk.fileprefix), ...
                    'fileprefix', sprintf('%s_masked', this.fileprefix));
             this.assertVolumeFraction;
+            this.addLog('MaskingNIfTId.masked(%s)', char(msk));
         end
         function this = maskedByZ(this, rng)
             %% MASKEDBYZ
             %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
+            %  masks each frame of 4D images.
             %  @return internal image is cropped by rng.  
             %  @throws MATLAB:assertion:failed for rng out of bounds.
             
             assert(isnumeric(rng) && all(size(rng) == [1 2]));
             assert(0 < rng(1) && rng(1) < rng(2) && rng(2) < this.size(3));
-            sz = this.size;
-            ze = zeros(sz(1:2));
+            sz     = this.size;
+            zimg   = ones( sz(1:3));
+            zslice = zeros(sz(1:2));
             for z = 1:sz(3)
                 if (z < rng(1) || rng(2) < z)
-                    this.img(:,:,z) = ze;
+                    zimg(:,:,z) = zslice;
                 end
             end
-        end            
+            warning('off', 'mlfourd:possibleMaskingError');
+            this = this.masked(mlfourd.NIfTId(zimg, 'fileprefix', sprintf('mask_z%i-%i', ceil(rng(1)), floor(rng(2)))));
+            warning('on',  'mlfourd:possibleMaskingError');
+            this.addLog('MaskingNIfTId.maskedByZ(%s)', mat2str(rng));
+        end
         function this = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
@@ -136,6 +146,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin, ...
                    'fileprefix', sprintf('%s_thr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskedNIfTI.thresh(%g)', t));
+            this.addLog('MaskingNIfTId.thresh(%g)', t);
         end
         function this = threshp(this, p)
             %% THRESHP
@@ -146,6 +157,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin, ...
                    'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
+            this.addLog('MaskingNIfTId.threshp(%g)', p);
         end          
         function this = threshPZ(this, p)
             %% THRESHPZ
@@ -158,6 +170,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin, ...
                    'fileprefix', sprintf('%s_thrPZ%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.threshPZ(%g)', p));
+            this.addLog('MaskingNIfTId.threshPZ(%g)', p);
         end
         function this = uthresh(this, t)
             %% UTHRESH
@@ -169,6 +182,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin, ...
                    'fileprefix', sprintf('%s_uthr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskedNIfTI.uthresh(%g)', t));
+            this.addLog('MaskingNIfTId.uthresh(%g)', t);
         end
         function this = uthreshp(this, p)
             %% UTHRESHP
@@ -179,6 +193,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin, ...
                    'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
+            this.addLog('MaskingNIfTId.uthreshp(%g)', p);
         end          
         function this = uthreshPZ(this, p)
             %% UTHRESHPZ
@@ -190,6 +205,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', this.img .* bin0 .* bin, ...
                    'fileprefix', sprintf('%s_uthrPZ%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.uthreshPZ(%g)', p));
+            this.addLog('MaskingNIfTId.uthreshPZ(%g)', p);
         end
         
         %% Convenience methods 
@@ -267,6 +283,24 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                         volFrac);
             end
         end
+        function msk = resizeMaskToFit(this, msk)
+            thisRank = length(this.size);
+            mskRank  = length(msk.size);
+            if (thisRank == mskRank)
+                return
+            end
+            if (thisRank < mskRank)
+                assert(3 == this.Rank);
+                msk = msk(:,:,:,1);
+                return
+            end
+            if (thisRank > mskRank)
+                assert(3 == mskRank);
+                msk = this.repmask(msk, this.size(4));
+                return
+            end
+            error('mlfourd:unsupportedImageSize', 'size(MaskingNIfTId.resizeMaskToFit.msk)->%s', mat2str(size(msk)));
+        end
     end
     
     methods (Static, Access = private)
@@ -278,6 +312,13 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                 p = 100*p;
             end
             s = num2str(round(p));
+        end
+        function msk = repmask(msk, ntimes)
+            img = zeros([size(msk) ntimes]);
+            for t = 1:ntimes
+                img(:,:,:,t) = msk.img;
+            end
+            msk.img = img;
         end
     end
     

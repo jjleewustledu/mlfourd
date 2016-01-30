@@ -46,6 +46,9 @@ classdef NIfTIcState < mlfourd.ImagingState
         function this = add(this, varargin)
             this.concreteObj_ = this.concreteObj_.add(varargin{:});
         end
+        function        addLog(this, varargin)
+            this.concreteObj_.addLog(varargin{:});
+        end
         function a    = atlas(this, varargin)
             %% ATLAS builds an atlas over the composite.
             %  @param [varargin] are any ImagingContext objects.

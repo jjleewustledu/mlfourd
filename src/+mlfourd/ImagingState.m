@@ -131,7 +131,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             a = this.contexth_.binarized(varargin{:});
         end
-        function a = blurred(this, varargin)
+        function a    = blurred(this, varargin)
             %% BLURRED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -140,44 +140,44 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             a = this.contexth_.blurred(varargin{:});
         end
-        function c = char(this)
+        function c    = char(this)
             c = char(this.concreteObj_);
         end
-        function     close(this)
+        function        close(this)
             if (~lexist(this.fqfilename, 'file'))
                 this.save;
             end
             this.contexth_.changeState( ...
                 mlfourd.FilenameState(this.concreteObj_, this.contexth_));
         end
-        function     createIterator(~)
+        function        createIterator(~)
             error('mlfourd:notImplemented', 'ImagingState.createIterator');
         end
-        function s = csize(~)
+        function s    = csize(~)
             s = 1;
         end
-        function     disp(this)
+        function        disp(this)
             disp(this.concreteObj_);
         end
-        function d = double(this)
+        function d    = double(this)
             d = double(this.concreteObj_);
         end
-        function f = find(this)
+        function f    = find(this)
             f = this.concreteObj_;
         end
-        function g = get(this)
+        function g    = get(this)
             g = this.concreteObj_;
         end
-        function tf = isempty(this)
+        function tf   = isempty(this)
             tf = isempty(this.concreteObj_);
         end
-        function l = length(~)
+        function l    = length(~)
             l = 1;
         end
-        function     rm(~)
+        function        rm(~)
             error('mlfourd:notImplemented', 'ImagingState.rm');            
         end
-        function m = masked(this, varargin)
+        function m    = masked(this, varargin)
             %% MASKED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -186,7 +186,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             m = this.contexth_.masked(varargin{:});
         end
-        function m = maskedByZ(this, varargin)
+        function m    = maskedByZ(this, varargin)
             %% MASKEDBYZ
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -195,13 +195,13 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             m = this.contexth_.maskedByZ(varargin{:});
         end
-        function     save(this)
+        function        save(this)
             this.concreteObj_.save;
         end
         function this = saveas(this, f)
             this.concreteObj_ = this.concreteObj_.saveas(f);
         end
-        function t = thresh(this, varargin)
+        function t =    thresh(this, varargin)
             %% THRESH
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -210,7 +210,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             t = this.contexth_.thresh(varargin{:});
         end
-        function p = threshp(this, varargin)
+        function p =     threshp(this, varargin)
             %% THRESHP
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -219,7 +219,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             p = this.contexth_.threshp(varargin{:});
         end
-        function s = timeSummed(this, varargin)
+        function s    = timeSummed(this, varargin)
             %% TIMESUMMED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -228,16 +228,16 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.timeSummed(varargin{:});
         end
-        function t = uthresh(this, varargin)
+        function u    = uthresh(this, varargin)
             %% UTHRESH
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
-            t = this.contexth_.uthresh(varargin{:});
+            u = this.contexth_.uthresh(varargin{:});
         end
-        function p = uthreshp(this, varargin)
+        function p   = uthreshp(this, varargin)
             %% UTHRESHP
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -246,7 +246,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             p = this.contexth_.uthreshp(varargin{:});
         end
-        function s = volumeSummed(this, varargin)
+        function s    = volumeSummed(this, varargin)
             %% VOLUMESUMMED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -255,7 +255,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.volumeSummed(varargin{:});
         end
-        function     view(this, varargin)
+        function        view(this, varargin)
             %% VIEW
             %  @param [varargin] are passed to NIfTIdState after a state-change
             

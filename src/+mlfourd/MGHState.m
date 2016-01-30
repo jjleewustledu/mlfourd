@@ -47,6 +47,13 @@ classdef MGHState < mlfourd.ImagingState
     end
     
     methods
+        function     addLog(this, varargin)
+            this.concreteObj_.addLog(varargin{:});
+        end
+        function     view(this, varargin)
+            this.concreteObj_.freeview(varargin{:});
+        end
+        
         function this = MGHState(obj, h)
             if (~isa(obj, 'mlsurfer.MGH'))
                 try

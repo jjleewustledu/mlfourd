@@ -16,7 +16,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         registry
  		testObj
         testObjs
-        viewable = false
+        view = false
     end
     
     properties (Dependent)
@@ -28,6 +28,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         maskT1_fp
         maskT1_fqfn
         maskT1_niid
+        numerical
         oc_fqfn
         oo_fqfn
         pet_fqfns
@@ -74,6 +75,9 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function g = get.maskT1_niid(this)
             g = mlfourd.NIfTId(this.maskT1_fqfn);
         end
+        function g = get.numerical(this)
+            g = mlfourd.NumericalNIfTId(this.smallT1_niid);
+        end   
         function g = get.pet_fqfns(this)
             g = {this.ho_fqfn this.oo_fqfn this.oc_fqfn  this.tr_fqfn};
         end
@@ -165,14 +169,20 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(double(this.testObj.mgh),    img);
             this.verifyEqual(double(this.testObj.niftid), img);
         end
+        function test_view_niftid(this)
+            import mlfourd.*;
+            if (this.view)
+                this.testObj.view;
+            end
+        end
         function test_view_niftic(this)
             import mlfourd.*;
-            if (this.viewable)
+            if (this.view)
                 this.testObjs.view;
             end
         end
         function test_view_options(this)
-            if (this.viewable)
+            if (this.view)
                 mriPth  = fullfile(this.registry.sessionPath, 'mri');
                 surfPth = fullfile(this.registry.sessionPath, 'surf');
                 ic = mlfourd.ImagingContext(fullfile(mriPth, 'T1.mgz'));
@@ -185,6 +195,28 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
                     fullfile(surfPth, 'rh.white:edgecolor=blue') ...
                     fullfile(surfPth, 'rh.pial:edgecolor=red')});
             end
+        end
+        function test_view_plusImagingContext(this)
+            import mlfourd.*;
+            if (this.view)
+%                 this.testObj.view(this.testObjs);
+%                 this.testObj.view(ImagingContext(this.testObj));
+%                 this.testObj.view(ImagingContext(this.numerical));
+%                 this.testObj.view(ImagingContext(this.smallT1_fqfn));
+%                this.testObj.view(ImagingContext(this.smallT1_niid.img));
+            end
+        end
+        function test_view_moreImagingContexts(this)
+%             moreIC = cell(1, length(this.testObjs));
+%             iter = this.testOb.createIterator;
+%             m = 1;
+%             while (iter.hasNext)
+%                 moreIC{m} = iter.next;
+%                 m = m + 1;
+%             end
+%             if (this.view)
+%                 this.testObj.view(moreIC{:});
+%             end
         end
           
         %% factory methods
@@ -243,7 +275,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_ctor_double(this)
             import mlfourd.*;
             ic = ImagingContext(magic(3));            
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.DoubleState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
             this.verifyEqual(class(ic.niftid),  'mlfourd.NIfTId');
             this.verifyEqual(ic.niftid.img, magic(3));
         end     
@@ -331,6 +363,14 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         
         %% state changes
         
+        function test_addLog(this)
+            this.testObj.fileprefix = 'Test_ImagingContext.test_addLog';
+            this.testObj.addLog('test_addLog called this.testObj.addLog');
+            this.verifyEqual(this.testObj.niftid.logger.contents(end-37:end), 'test_addLog called this.testObj.addLog');
+            this.testObj.save;
+            tc = mlio.TextIO.textfileToCell(this.testObj.niftid.logger.fqfilename);
+            this.verifyEqual(tc{end}(end-37:end), 'test_addLog called this.testObj.addLog');
+        end
         function test_atlas_niftid(this)
             import mlfourd.*;
             ho = ImagingContext(NumericalNIfTId.load(this.ho_fqfn));
@@ -344,7 +384,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(atl.stateTypeclass, 'mlfourd.NIfTIdState');
             this.verifyEqual(atl.niftid.size, [128 128 63]);
             this.verifyNiftid(atl.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_sumt_atlas');            
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end          
         end
@@ -357,7 +397,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
             this.verifyEqual(ic.niftid.size, [128 128 63]);
             this.verifyNiftid(ic.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_zeros_sumt_atlas');            
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end
         end
@@ -378,7 +418,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(n.mmppix, [2.003313064575195   2.003313064575195   2.424999952316284], 'RelTol', 1e-8);
             this.verifyEqual(n.rank, 3);
             this.verifyEqual(n.size, [128 128 63]);
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end
         end
@@ -395,7 +435,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(n.mmppix, [2.003313064575195   2.003313064575195   2.424999952316284], 'RelTol', 1e-8);
             this.verifyEqual(n.rank, 3);
             this.verifyEqual(n.size, [128 128 63]);            
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end
         end
@@ -425,7 +465,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(n.mmppix, [2.003313064575195   2.003313064575195   2.424999952316284], 'RelTol', 1e-8);
             this.verifyEqual(n.rank, 3);
             this.verifyEqual(n.size, [128 128 63]);
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end
         end
@@ -434,30 +474,30 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic = ic.maskedByZ([30 60]);
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
             n = ic.niftid;
-            this.verifyEqual(n.bitpix, 16);
-            this.verifyEqual(n.datatype, 4);
+            this.verifyEqual(n.bitpix, 64);
+            this.verifyEqual(n.datatype, 64);
             this.verifyEqual(n.entropy, 0.93319705894137, 'RelTol', 1e-8);
-            this.verifyEqual(max(max(max(n.img))), int16(524), 'RelTol', 1e-8);
+            this.verifyEqual(max(max(max(n.img))), 524, 'RelTol', 1e-8);
             this.verifyEqual(dipmedian(n),  0, 'RelTol', 1e-8);
             this.verifyEqual(n.orient, 'RADIOLOGICAL');
             this.verifyEqual(n.mmppix, [2.003313064575195   2.003313064575195   2.424999952316284], 'RelTol', 1e-8);
             this.verifyEqual(n.rank, 3);
             this.verifyEqual(n.size, [128 128 63]);
-            if (getenv('VERBOSE'))
+            if (this.view)
                 ic.view;
             end
         end
-        function test_remove(this)
+        function test_rm(this)
             import mlfourd.*;
-            niic = this.testObjs.niftic;
-            ic   = this.testObj.clone;
-            for r = niic.length:-1:2
-                removed = ic.remove(r);
-                this.verifyTrue(ic.stateTypeclass, 'mlfourd.NIfTIcState');
-                this.verifyEqual(removed, niic.get(r));          
+            niid1 = this.testObjs.get(1);
+            for r = this.testObjs.length:-1:2
+                this.testObjs.rm(r);
+                stc = this.testObjs.stateTypeclass;
+                this.verifyEqual(stc, 'mlfourd.NIfTIcState');
             end
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(ic.niftid, niic.get(1));
+            stc = this.testObjs.stateTypeclass;
+            this.verifyEqual(stc, 'mlfourd.NIfTIcState');
+            this.verifyEqual(this.testObjs.niftid, niid1.niftid);
         end
         function test_save(this)
             import mlfourd.*;
@@ -525,7 +565,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic = ic.threshp(50);
             ic = ic.binarized;
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(ic.niftid, this.maskT1_niid);
+            this.verifyEqual(ic.niftid.img, this.maskT1_niid.img);
         end
         function test_timeSummed(this)
             import mlfourd.*;
@@ -542,7 +582,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(n.entropy, 0.944750979221247, 'RelTol', 1e-8);
             this.verifyEqual(max(max(max(n.img))), single(30620), 'RelTol', 1e-8);
             this.verifyEqual(dipmedian(n),  583, 'RelTol', 1e-8);
-            if (getenv('VERBOSE'))
+            if (this.view)
                 n.view(this.testObj);
             end
         end
@@ -566,7 +606,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(e.entropy, 0.998338839919038, 'RelTol', 1e-8);
             this.verifyEqual(max(max(max(max(e.img)))), int16(9386), 'RelTol', 1e-8);
             this.verifyEqual(dipmedian(e), 7, 'RelTol', 1e-8);
-            if (getenv('VERBOSE'))
+            if (this.view)
                 d.view(this.testObj);
             end
         end

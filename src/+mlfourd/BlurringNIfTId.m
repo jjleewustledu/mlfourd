@@ -159,7 +159,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             end            
             this.blurCount_ = this.blurCount_ + 1;
             this.fileprefix = this.blurredFileprefix;
-            this = this.append_descrip(['blurred to ' mat2str(this.blur)]);
+            this = this.append_descrip('blurred to %s', mat2str(this.blur));
         end
         function fp   = blurredFileprefix(this)
             twoDigits = cell(1,3);

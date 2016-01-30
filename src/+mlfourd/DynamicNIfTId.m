@@ -9,6 +9,11 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
  	%  developed on Matlab 8.4.0.150421 (R2014b) 
  	%  $Id$  	 
 
+    properties (Constant)
+        SUMT_SUFFIX = '_sumt'
+        SUMXYZ_SUFFIX = '_sumxyz'
+    end
+    
 	properties (Dependent)
  		 blur
          mask
@@ -102,7 +107,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             %  @return dynamic image reduced to summed volume.
             
             this.img = sum(this.img, 4);
-            this = this.append_fileprefix('_sumt');
+            this = this.append_fileprefix(this.SUMT_SUFFIX);
         end        
         function this = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
@@ -110,7 +115,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             
             this.img = sum(sum(sum(this.img, 1), 2), 3);
             this.img = squeeze(this.img);
-            this = this.append_fileprefix('_sumxyz');
+            this = this.append_fileprefix(this.SUMXYZ_SUFFIX);
         end
         
         %% DEPRECATED; functionality belongs better in mlfsl.RegistrationFacade

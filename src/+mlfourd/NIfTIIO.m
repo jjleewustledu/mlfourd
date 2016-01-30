@@ -1,4 +1,4 @@
-classdef NIfTIIO 
+classdef NIfTIIO < mlio.IOInterface
 	%% NIFTIIO  
 
 	%  $Revision$
@@ -9,15 +9,7 @@ classdef NIfTIIO
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
  	
 
-	properties (Abstract) 		
-        filename
-        filepath
-        fileprefix 
-        filesuffix
-        fqfilename
-        fqfileprefix
-        fqfn
-        fqfp
+	properties (Abstract)
         noclobber
     end
 

@@ -35,7 +35,7 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
                 this.untouch_ = false;
             end
             this.filepath_ = pth;
-            this.addLog(sprintf('NIfTIdIO.set.filepath<-%s', pth));
+            this.addLog('NIfTIdIO.set.filepath<-%s', pth);
         end
         function pth  = get.filepath(this)
             if (isempty(this.filepath_))
@@ -50,7 +50,7 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
                 this.untouch_ = false;
             end
             this.fileprefix_ = fp;
-            this.addLog(sprintf('NIfTIdIO.set.fileprefix<-%s', fp));
+            this.addLog('NIfTIdIO.set.fileprefix<-%s', fp);
         end
         function fp   = get.fileprefix(this)
             fp = this.fileprefix_;
@@ -64,7 +64,7 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
                 this.untouch_ = false;
             end
             [~,~,this.filesuffix_] = myfileparts(fs);
-            this.addLog(sprintf('NIfTIdIO.set.filesuffix<-%s', fs));
+            this.addLog('NIfTIdIO.set.filesuffix<-%s', fs);
         end
         function fs   = get.filesuffix(this)
             if (isempty(this.filesuffix_))
@@ -113,6 +113,12 @@ classdef NIfTIdIO < mlfourd.NIfTIIO
         end
         function f    = get.fqfp(this)
             f = this.fqfileprefix;
+        end
+    end
+    
+    methods
+        function c = char(this)
+            c = this.fqfilename;
         end
     end
     

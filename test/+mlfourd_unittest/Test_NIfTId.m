@@ -194,7 +194,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             niid = mlfourd.NIfTId;
             this.verifyEqual(niid.bitpix, 64);
             this.verifyEqual(niid.datatype, 64);
-            this.verifyEqual(niid.fileprefix, 'instance_mlfourd_InnerNIfTId');
+            this.verifyEqual(niid.fileprefix(1:29), 'instance_mlfourd_InnerNIfTId_');
             this.verifyEqual(niid.filesuffix, '.nii.gz');
             this.verifyEqual(niid.filetype, 2);
             this.verifyEqual(niid.img, []);

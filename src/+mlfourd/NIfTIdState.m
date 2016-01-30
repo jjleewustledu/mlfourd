@@ -45,6 +45,9 @@ classdef NIfTIdState < mlfourd.ImagingState
     end
 
     methods
+        function        addLog(this, varargin)
+            this.concreteObj_.addLog(varargin{:});
+        end
         function        view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
         end

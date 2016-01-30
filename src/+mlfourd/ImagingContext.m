@@ -76,7 +76,7 @@ classdef ImagingContext < handle
         end        
         function c = get.stateTypeclass(this)
             c = class(this.state_);
-        end       
+        end
         
         function set.filename(this, f)
             this.state_.filename = f;
@@ -238,17 +238,17 @@ classdef ImagingContext < handle
 
             this.state_ = this.state_.saveas(filename);
         end
-        function t = thresh(this)
+        function t = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
             
-            t = this.state_.thresh;
+            t = this.state_.thresh(t);
         end
-        function p = threshp(this)
+        function p = threshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             
-            p = this.state_.threshp;
+            p = this.state_.threshp(p);
         end
         function t = timeSummed(this)
             %% TIMESUMMED integrates over imaging dimension 4. 
@@ -256,17 +256,17 @@ classdef ImagingContext < handle
             
             t = this.state_.timeSummed;
         end
-        function u = uthresh(this)
+        function u = uthresh(this, u)
             %% UTHRESH
             %  @param t:  use t to upper-threshold current image (zero anything above the number)
             
-            u = this.state_.uthresh;
+            u = this.state_.uthresh(u);
         end
-        function p = uthreshp(this)
+        function p = uthreshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             
-            p = this.state_.uthreshp;
+            p = this.state_.uthreshp(p);
         end
         function v = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
@@ -278,7 +278,9 @@ classdef ImagingContext < handle
             %% VIEW
             %  @param are additional filenames and other arguments to pass to the viewer.
             %  @return new window with a view of the imaging state
+            %  @throws mlfourd:IOError
             
+            this.ensureSaved(varargin{:});
             this.state_.view(varargin{:});
         end
         
@@ -334,16 +336,13 @@ classdef ImagingContext < handle
             if (isa(obj, 'mlfourd.NIfTId') || ...
                 isa(obj, 'mlfourd.BlurringNIfTId') || ...
                 isa(obj, 'mlfourd.MaskingNIfTId') || ...
-                isa(obj, 'mlfourd.DynamicNIfTId'))
+                isa(obj, 'mlfourd.DynamicNIfTId') || ...
+                isnumeric(obj))
                 this.state_ = NIfTIdState(obj, this);
                 return
             end
             if (ischar(obj)) % filename need not yet exist 
                 this.state_ = FilenameState(obj, this);
-                return
-            end
-            if (isnumeric(obj)) % includes []
-                this.state_ = DoubleState(obj, this);
                 return
             end
             error('mlfourd:unsupportedTypeclass', ...
@@ -371,6 +370,36 @@ classdef ImagingContext < handle
     
     properties (Access = protected)
         state_
+    end
+    
+    methods (Static, Access = protected)
+        function ensureSaved(varargin)            
+            for v = 1:length(varargin)
+                vobj = varargin{v};
+                if (isa(vobj, 'mlfourd.ImagingContext'))
+                    import mlfourd.*;
+                    if (strcmp(vobj.stateTypeclass, 'mlfourd.NIfTIcState'))
+                        ImagingContext.ensureSaved(vobj.niftic);
+                    else                        
+                        ImagingContext.ensureSaved(vobj.niftid);
+                    end
+                end
+                if (isa(vobj, 'mlfourd.INIfTIc'))
+                    iter = vobj.createIterator;
+                    while (iter.hasNext)
+                        cached = iter.next;
+                        if (~lexist(cached.fqfilename, 'file'))
+                            cached.save;
+                        end
+                    end
+                end
+                if (isa(vobj, 'mlfourd.INIfTId'))
+                    if (~lexist(vobj.fqfilename, 'file'))
+                        vobj.save;
+                    end
+                end
+            end
+        end
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

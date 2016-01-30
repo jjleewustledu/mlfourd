@@ -368,9 +368,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% INIfTI
         
-        function ch   = char(this)
-            ch = this.fqfilename;
-        end 
         function this = append_descrip(this, varargin) 
             %% APPEND_DESCRIP
             %  @param [varargin] may be a single string or args to sprintf.
@@ -427,7 +424,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 astring = varargin{:};
             end
             this.fileprefix = sprintf('%s%s', this.fileprefix, astring);
-            this.addLog(['append_fileprefix:  ' astring]);
+            this.addLog('append_fileprefix:  %s', astring);
             this.untouch_ = false;
         end   
         function this = prepend_fileprefix(this, varargin)
@@ -442,7 +439,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 astring = varargin{:};
             end
             this.fileprefix = sprintf('%s%s', astring, this.fileprefix);
-            this.addLog(['prepend_fileprefix:  ' astring]);
+            this.addLog('prepend_fileprefix:  %s', astring);
             this.untouch_ = false;
         end             
         function f3d  = fov(this)
@@ -512,15 +509,14 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTId
         
-        function        addLog(this, lg)
+        function        addLog(this, varargin)
             %% ADDLOG
             %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
             
             if (isempty(this.logger_))
                 return
             end
-            assert(ischar(lg));
-            this.logger_.add(lg);
+            this.logger_.add(varargin{:});
         end
         function e    = fslentropy(this)
             if (~lexist(this.fqfilename, 'file'))
@@ -592,7 +588,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
             
-            this.fileprefix = ['instance_' strrep(class(this), '.', '_')];
+            this.fileprefix = sprintf('instance_%s_%s', strrep(class(this), '.', '_'), datestr(now, 30));
             this.filesuffix = this.FILETYPE_EXT;
             hk   = struct( ...
                 'sizeof_hdr', 348, ...
@@ -725,18 +721,19 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end
         function        launchExternalViewer(this, app, varargin)
             assert(ischar(app));
+            fqfn = this.tempFqfilename;
+            if (isempty(varargin))
+                cmdline = sprintf('%s %s',    app, fqfn);
+            else
+                cmdline = sprintf('%s %s %s', app, fqfn, imaging2str(varargin{:}));
+            end            
             try
-                fqfn = this.tempFqfilename;
                 this.saveas(fqfn);
-                s = 0; r = '';
-                if (~isempty(varargin))
-                    [s,r] = mlbash(sprintf('%s %s %s', app, fqfn, cell2str(varargin, 'AsRow', true)));
-                else
-                    [s,r] = mlbash(sprintf('%s %s',    app, fqfn));
-                end
+                [s,r] = mlbash(cmdline);
                 deleteExisting(fqfn);
             catch ME
-                handexcept(ME, 'mlfourd:viewerError', 'InnerNIfTId.launchExternalViewer:  s->%i, r->%s', s, r);
+                handexcept(ME, 'mlfourd:viewerError', ...
+                    'InnerNIfTId.launchExternalViewer called mlbash with %s; \nit returned s->%i, r->%s', cmdline, s, r);
             end
         end
         function this = optimizePrecision(this)
@@ -751,6 +748,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
                 if (isa(this.img_, 'double'))
                     this = this.ensureDouble; % ensures bitpix, datatype
+                    if (isempty(this.img_(this.img_ ~= 0)))
+                        return
+                    end
                     if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
                         (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
                         this = this.ensureSingle;

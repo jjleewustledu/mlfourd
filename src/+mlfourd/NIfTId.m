@@ -163,6 +163,8 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                         this                          = this.populateLogger;
                     elseif (isa(ip.Results.obj, 'mlfourd.INIfTIc'))
                         this = NIfTId(ip.Results.obj.get(1));
+                    elseif (isa(ip.Results.obj, 'mlio.IOInterface'))
+                        this = NIfTId(ip.Results.obj.fqfilename);
                     else
                         NIfTId.assertCtorObj(ip.Results.obj);
                     end
@@ -267,7 +269,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                       'NIfTId.assertCtorObj received an mlpatterns.Composite; consider using mlfourd.NIfTIc');
             end
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
-                    isa(obj, 'mlfourd.INIfTId') || isa(obj, 'mlfourd.NIfTIInterface')))
+                    isa(obj, 'mlio.IOInterface') || isa(obj, 'mlfourd.INIfTId') || isa(obj, 'mlfourd.NIfTIInterface')))
                 error('mlfourd:invalidCtorObj', ...
                       'NIfTId.assertCtorObj does not support class(obj)->%s', class(obj));
             end
@@ -283,7 +285,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         end
         function this     = adjustFieldsFromInputParser(this, ip)
             for p = 1:length(ip.Parameters)
-                if (~lstrfind(ip.UsingDefaults, ip.Parameters{p}))
+                if (~ismember(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
@@ -350,7 +352,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 this.innerNIfTI_.addLog(cell2str(c));
             end
             if (~isempty(this.descrip))
-                this.innerNIfTI_.addLog(['Previous descrip:  ' this.descrip]);
+                this.innerNIfTI_.addLog('Previous descrip:  %s', this.descrip);
             end
         end
     end 

@@ -21,12 +21,24 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
     end
     
     properties (Dependent)
+        maskT1_fp
+        maskT1_fqfn
+        maskT1_niid
         smallT1_fp
         smallT1_fqfn  
         smallT1_niid
     end
     
     methods %% GET/SET
+        function g = get.maskT1_fp(this)
+            g = this.registry.maskT1_fp;
+        end
+        function g = get.maskT1_fqfn(this)
+            g = this.registry.maskT1_fqfn;
+        end
+        function g = get.maskT1_niid(this)
+            g = mlfourd.NIfTId(this.maskT1_fqfn);
+        end
         function g = get.smallT1_fp(this)
             g = this.registry.smallT1_fp;
         end
@@ -92,13 +104,52 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
         function test_count(this)
             this.verifyEqual(this.thr300.count, 125089);
         end
-        function test_masked(this)
+        function test_masked3D(this)
             this.verifyWarning( ...
-                @() this.testObj.masked(this.thr300), ...
-                'mlfourd:possibleMaskingError');  
+                @() this.testObj.masked(this.thr300), 'mlfourd:possibleMaskingError');  
             
-            %this.verifyObj(m, 0.532765334419431, 19999911339.7188, [this.smallT1_fp '_masked']);
-            %if (this.viewManually); m.freeview; end
+            m = this.testObj.masked(this.maskT1_niid);
+            this.verifyObj(m, 0.567605718841869, 47585080.4438686, [this.smallT1_fp '_masked']);
+            if (this.viewManually)
+                this.thr300.save;
+                m.freeview(this.testObj.fqfn, this.maskT1_fqfn, this.thr300.fqfn); 
+            end
+        end
+        function test_masked4D(this)
+            import mlfourd.*;
+            m4d = MaskingNIfTId(NIfTId(this.registry.dyn_fqfn));            
+            
+            this.verifyWarning( ...
+                @() m4d.masked(this.thr300), 'mlfourd:possibleMaskingError');  
+            
+            m = m4d.masked(this.maskT1_niid);
+            this.verifyObj(m, 0.411728868613467, 602335458, 'p7377ho1_masked');
+            if (this.viewManually)
+                m.freeview;
+                this.testObj.freeview; 
+                this.maskT1_niid.freeview;
+                this.thr300.save;
+                this.thr300.fqfn; 
+            end
+        end
+        function test_maskedByZ(this)
+            m = this.testObj.maskedByZ([11 53]);
+            this.verifyEqual(m.img(:,:,1:10),  zeros(128,128,10));
+            this.verifyEqual(m.img(:,:,54:63), zeros(128,128,10));
+            this.verifyEqual(dipsum(m.img(:,:,11:53)), 68616603.2058744, 'RelTol', 1e-10);
+            if (this.viewManually); m.freeview; end
+        end
+        function test_maskedByZ4D(this)
+            import mlfourd.*;
+            m4d = MaskingNIfTId(NIfTId(this.registry.dyn_fqfn));             
+            
+            m = m4d.maskedByZ([11 53]);
+            for t = 1:size(m4d,4)
+                this.verifyEqual(m.img(:,:,1:10,  t),  zeros(128,128,10));
+                this.verifyEqual(m.img(:,:,54:63, t), zeros(128,128,10));
+            end
+            this.verifyEqual(dipsum(m.img(:,:,11:53, :)), 704037557, 'RelTol', 1e-6);
+            if (this.viewManually); m.freeview; end
         end
         function test_thresh(this)
             t = this.thr300.thresh(400);
@@ -191,6 +242,7 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
             import mlfourd.*;
  			this.testObj = this.MaskingNIfTId_;
             this.thr300  = this.thr300_;
+            this.addTeardown(@this.cleanupFiles);
  		end
     end
     
@@ -207,6 +259,9 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
             this.verifyEqual(obj.entropy,    e, 'RelTol', 1e-6);
             this.verifyEqual(dipsum(obj),    s, 'RelTol', 1e-4);
             this.verifyEqual(obj.fileprefix, fp); 
+        end
+        function cleanupFiles(this)
+            deleteExisting(this.thr300.fqfn);
         end
     end
 

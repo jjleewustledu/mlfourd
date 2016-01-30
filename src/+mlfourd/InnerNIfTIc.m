@@ -254,22 +254,11 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         
         %% New for InnerNIfTIc
         
-        function     addLog(this, lg)
-            if (ischar(lg))
-                for c = 1:this.innerCellComp_.length
-                    cached = this.innerCellComp_{c};
-                    cached.addLog(lg);
-                end
-                return
+        function     addLog(this, varargin)
+            for c = 1:this.innerCellComp_.length
+                cached = this.innerCellComp_{c};
+                cached.addLog(varargin{:});
             end
-            if (iscell(lg))                
-                for c = 1:this.innerCellComp_.length
-                    cached = this.innerCellComp_{c};
-                    cached.addLog(lg{c});
-                end
-                return
-            end
-            error('mlfourd:unsupportedTypeclass', 'InnerNIfTIc.addLog received lg with class->%s', class(lg));
         end
         function e = fslentropy(this)
             e = this.innerCellComp_.fevalOut('fslentropy');

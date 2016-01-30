@@ -42,6 +42,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
     end
 
 	methods
+        function     addLog(this, varargin)
+            this.concreteObj_.addLog(varargin{:});
+        end
         function a = atlas(this, varargin)
             %% ATLAS recursively adds images into an atlas.
             %  @param [varargin] are any ImagingContext objects.
@@ -116,7 +119,8 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
  		function this = NumericalNIfTIdState(obj, h) 			
             if (~isa(obj, 'mlfourd.NumericalNIfTId'))
                 try
-                    obj = mlfourd.NumericalNIfTId(this.dedecorateNIfTId(obj));
+                    import mlfourd.*;
+                    obj = NumericalNIfTId(NIfTId(obj));
                 catch ME
                     handexcept(ME, 'mlfourd:castingError', ...
                         'NIfTIdState.ctor does not support objects of type %s', class(obj));
