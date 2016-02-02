@@ -220,6 +220,12 @@ classdef ImagingContext < handle
             
             m = this.state_.maskedByZ(varargin{:});
         end
+        function o = ones(this, varargin)
+            o = this.state_.ones(varargin{:});
+        end
+        function r = rank(this)
+            r = this.state_.rank;
+        end
         function     rm(this, varargin)
             %% RM
             %  @param varargin are integer locations which will be removed from the imaging state.
@@ -237,6 +243,27 @@ classdef ImagingContext < handle
             %  it replaces internal filename & filesystem information.
 
             this.state_ = this.state_.saveas(filename);
+        end
+        function tf = sizeEq(this, ic)
+            %% SIZEEQ 
+            %  @param ImagingContext to compare to this for size
+            %  @returns tf logical for equal size
+
+            tf = this.state_.sizeEq(ic);
+        end
+        function tf = sizeGt(this, ic)
+            %% SIZEEQ 
+            %  @param ImagingContext to compare to this for size
+            %  @returns tf logical for > size
+
+            tf = this.state_.sizeGt(ic);
+        end
+        function tf = sizeLt(this, ic)
+            %% SIZEEQ 
+            %  @param ImagingContext to compare to this for size
+            %  @returns tf logical for < size
+
+            tf = this.state_.sizeLt(ic);
         end
         function t = thresh(this, t)
             %% THRESH
@@ -283,6 +310,9 @@ classdef ImagingContext < handle
             this.ensureSaved(varargin{:});
             this.state_.view(varargin{:});
         end
+        function z = zeros(this, varargin)
+            z = this.state_.zeros(varargin{:});
+        end
         
         %% CTOR
         
@@ -294,7 +324,10 @@ classdef ImagingContext < handle
             %  @throws mlfourd:switchCaseError, mlfourd:unsupportedTypeclass.
             
             import mlfourd.*;
-            if (nargin == 1 && isa(obj, 'mlfourd.ImagingContext'))
+            if (~exist('obj', 'var'))
+                return
+            end
+            if (isa(obj, 'mlfourd.ImagingContext'))
                 switch (obj.stateTypeclass)
                     case 'mlfourd.CellCompositeState'
                         this = ImagingContext(obj.cellComposite);
@@ -315,8 +348,7 @@ classdef ImagingContext < handle
                               'ImagingContext.ctor.obj.stateTypeclass -> %s', obj.stateTypeclass);
                 end
                 return
-            end
-            
+            end            
             if (isa(obj, 'mlpatterns.CellComposite') || iscell(obj))
                 this.state_ = CellCompositeState(obj, this);
                 return

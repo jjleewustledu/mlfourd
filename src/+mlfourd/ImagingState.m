@@ -174,6 +174,12 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function l    = length(~)
             l = 1;
         end
+        function r    = rank(this)            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            r = this.contexth_.rank;
+        end
         function        rm(~)
             error('mlfourd:notImplemented', 'ImagingState.rm');            
         end
@@ -195,11 +201,35 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             m = this.contexth_.maskedByZ(varargin{:});
         end
+        function o    = ones(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            o = this.contexth_.ones(varargin{:});
+        end
         function        save(this)
             this.concreteObj_.save;
         end
         function this = saveas(this, f)
             this.concreteObj_ = this.concreteObj_.saveas(f);
+        end
+        function tf =   sizeEq(this, varargin)            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            tf = this.contexth_.sizeEq(varargin{:});
+        end
+        function tf =   sizeGt(this, varargin)            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            tf = this.contexth_.sizeGt(varargin{:});
+        end
+        function tf =   sizeLt(this, varargin)            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            tf = this.contexth_.sizeLt(varargin{:});
         end
         function t =    thresh(this, varargin)
             %% THRESH
@@ -264,6 +294,12 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 FilenameState(this.concreteObj_, this.contexth_));
             fqfns = cellfun(@(x) x.fqfilename, varargin);
             this.contexth_.view(fqfns{:});
+        end
+        function z    = zeros(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            z = this.contexth_.zeros(varargin{:});
         end
     end
     

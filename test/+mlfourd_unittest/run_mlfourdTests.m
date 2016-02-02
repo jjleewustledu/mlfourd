@@ -1,4 +1,7 @@
 setenv('NO_INTERNAL_LOGGER', '1')
+
+run(mlpipeline_unittest.Test_StudyDataSingleton)
+
 run(mlfourd_unittest.Test_NIfTIc)
 run(mlfourd_unittest.Test_NIfTId)
 run(mlfourd_unittest.Test_NumericalNIfTId)

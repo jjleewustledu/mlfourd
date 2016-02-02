@@ -2,6 +2,10 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% MASKINGNIFTID is a NIfTIdecorator that composes an internal INIfTI object
     %  according to the decorator design pattern
         
+    properties (Constant)
+        MASKEDBY = '_maskedby'
+    end
+    
     methods (Static)
         function this = load(varargin)
             import mlfourd.*;            
@@ -110,7 +114,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
             this = this.makeSimilar( ...
                    'img', double(this.img) .* double(msk.img), ...
                    'descrip',    sprintf('MaskedNIfTI.masked(%s)', msk.fileprefix), ...
-                   'fileprefix', sprintf('%s_masked', this.fileprefix));
+                   'fileprefix', sprintf('%s%s_%s', this.fileprefix, this.MASKEDBY, msk.fileprefix));
             this.assertVolumeFraction;
             this.addLog('MaskingNIfTId.masked(%s)', char(msk));
         end
@@ -132,7 +136,8 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                 end
             end
             warning('off', 'mlfourd:possibleMaskingError');
-            this = this.masked(mlfourd.NIfTId(zimg, 'fileprefix', sprintf('mask_z%i-%i', ceil(rng(1)), floor(rng(2)))));
+            this = this.masked( ...
+                mlfourd.NIfTId(zimg, 'fileprefix', sprintf('maskz%i-%i', ceil(rng(1)), floor(rng(2)))));
             warning('on',  'mlfourd:possibleMaskingError');
             this.addLog('MaskingNIfTId.maskedByZ(%s)', mat2str(rng));
         end
