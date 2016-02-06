@@ -220,11 +220,11 @@ classdef ImagingParser
             obj = this.h15o_;
         end
         function this = set.imageObjType(this, typ)
-            assert(lstrfind(mlchoosers.ImagingChoosers.SUPPORTED_IMAGE_TYPES, typ)); 
+            assert(mlfourd.FourdRegistry.isSupportedImageType(typ)); 
             this.imageObjType_ = typ;
         end
         function typ  = get.imageObjType(this)
-            assert(lstrfind(mlchoosers.ImagingChoosers.SUPPORTED_IMAGE_TYPES, this.imageObjType_)); % paranoia
+            assert(mlfourd.FourdRegistry.isSupportedImageType(this.imageObjType_)); % paranoia
             typ = this.imageObjType_;
         end
         function this = set.o15o(this, obj)

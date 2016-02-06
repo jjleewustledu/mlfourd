@@ -276,7 +276,6 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             import mlfourd.*;
             d = DynamicNIfTId(this.component);
             d = d.timeSummed;
-            %d.img = squeeze(d.img);
             this = NumericalNIfTId(d.component);
         end
         function this = uthresh(this, varargin)
@@ -295,7 +294,6 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             import mlfourd.*;
             d = DynamicNIfTId(this.component);
             d = d.volumeSummed;
-            %d.img = squeeze(d.img);
             this = NumericalNIfTId(d.component);
         end
                 

@@ -330,18 +330,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  If this.untouch   == false, it may saving imaging data with modified state.
             %  @return saves this NIfTId to this.fqfilename.  
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
-            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed,
+            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
-            this = this.ensureExtension;
-            if (this.noclobber && lexist(this.fqfilename, 'file'))
-                error('mlfourd:IOError:noclobberPreventedSaving', ...
-                      'NIfTId.save.noclobber->%i and fqfilename->%s already exists; data not saved', this.noclobber, this.fqfilename);
-            end
-            if (this.untouch && lexist(this.fqfilename, 'file'))
-                error('mlfourd:IOError:untouchPreventedSaving', ...
-                      'NIfTId.save.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
-            end            
-            deleteExisting(this.fqfilename);
             this.save_nii;
             this.saveLogger;
         end 
@@ -533,7 +523,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
             E = str2double(E);
-        end        
+        end 
+        function        view(this, varargin)
+            this.freeview(varargin{:});
+        end
         function        freeview(this, varargin)
             %% FREEVIEW
             %  @param [filename[, ...]]
@@ -762,10 +755,15 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
         end
         function        save_nii(this)
-           if (isempty(this.img))
-              error('mlfourd:saveError', ...
-                  'InnerNIfTId.save_nii:  mlnifittools.save_[untouch]_nii will throw MATLAB:badsubscript');
-           end
+            if (isempty(this.img))
+                error('mlfourd:saveError', ...
+                    'InnerNIfTId.save_nii:  mlnifittools.save_[untouch]_nii will throw MATLAB:badsubscript');
+            end
+            this = this.ensureExtension;
+            if (this.noclobber && lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:noclobberPreventedSaving', ...
+                      'NIfTId.save_nii.noclobber->%i and fqfilename->%s already exists; data not saved', this.noclobber, this.fqfilename);
+            end
             if (this.untouch)
                 this.save_untouch_nii;
                 return
@@ -790,7 +788,11 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
         end
         function        save_untouch_nii(this)
-            assert(this.untouch);
+            assert(this.untouch);            
+            if (lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:untouchPreventedSaving', ...
+                      'NIfTId.save_untouch_nii.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
+            end             
             this = this.optimizePrecision;
             try
                 if (this.hasJimmyShenExtension) 

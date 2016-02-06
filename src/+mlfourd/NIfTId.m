@@ -124,6 +124,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                     else
                         [p,f] = myfileparts(ip.Results.obj);
                         this.fqfilename = fullfile(p, [f this.FILETYPE_EXT]);
+                        this = this.populateLogger;
                     end
                 case 'struct' 
                     % as described by mlniftitools.load_untouch_nii
@@ -234,7 +235,8 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]); % '_' datestr(now,30)
             mlbash(sprintf('mri_convert %s %s', fn, fn2));
             this = NIfTId.load_JimmyShen(fn2);
-            %deleteExisting(fn2);
+            this.fileprefix = f;
+            deleteExisting(fn2);
         end
         function this = load_JimmyShen(fn)
             this = mlfourd.NIfTId(mlniftitools.load_untouch_nii(fn));

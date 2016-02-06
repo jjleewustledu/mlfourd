@@ -154,9 +154,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_load_surfer(this)
             niid = mlfourd.NIfTId(this.T1_mgz);
             this.verifyEqual(niid.filepath, myfileparts(this.T1_mgz));
-            this.verifyEqual(niid.fileprefix(1:2), 'T1');
+            this.verifyEqual(niid.fileprefix, 'T1');
             this.verifyEqual(niid.filesuffix, '.nii.gz');
-            this.verifyTrue(lexist(niid.fqfilename));
+            this.verifyTrue(~lexist(niid.fqfilename));
         end
         function test_ctorParametersAdjusted(this)
             niid = mlfourd.NIfTId(this.testObj.img, ...

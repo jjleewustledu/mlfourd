@@ -48,11 +48,17 @@ classdef NIfTIdState < mlfourd.ImagingState
         function        addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end
+        function lg =   getLog(this)
+            lg = this.concreteObj_.logger;
+        end
         function o =    ones(this, varargin)
             o = this.concreteObj_.ones(varargin{:});
         end
         function r =    rank(this)
             r = this.concreteObj_.rank;
+        end
+        function this = setNoclobber(this, s)
+            this.concreteObj_.noclobber = logical(s);
         end
         function tf =   sizeEq(this, varargin)
             inSize = varargin{:}.niftid.size;

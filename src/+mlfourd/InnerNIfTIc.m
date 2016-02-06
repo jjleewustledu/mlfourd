@@ -266,6 +266,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function E = fslEntropy(this)
             E = this.innerCellComp_.fevalOut('fslEntropy');
         end
+        function view(this, varargin)
+            this.freeview(varargin{:});
+        end
         function freeview(this, varargin)
             first = this.innerCellComp_.get(1);
             fqfns = this.innerCellComp_.fevalOut('fqfilename');

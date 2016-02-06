@@ -133,16 +133,14 @@ classdef ImagingContext < handle
             %  each image is weighted by its median value.
             %  @throws MATLAB:dimagree, MATLAB:UndefinedFunction
             
-            a = this.state_.atlas(varargin{:});
+            a = mlfourd.ImagingContext(this.state_.atlas(varargin{:}));
         end
         function b = binarized(this)
             %% BINARIZED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            b = this.state_.binarized;
-        end
-        function b = biographMMR(this)
+            b = mlfourd.ImagingContext(this.state_.binarized);
         end
         function b = blurred(this, varargin)
             %% BLURRED
@@ -150,7 +148,7 @@ classdef ImagingContext < handle
             %  applied to the internally stored image
             %  @return the blurred image
             
-            b = this.state_.blurred(varargin{:});
+            b =  mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
         function f = char(this)
             f = char(this.state_);
@@ -176,7 +174,12 @@ classdef ImagingContext < handle
         function d = double(this)
             d = double(this.state_);
         end
-        function e = ecatExactHRPlus(this)
+        function     ensureSaved(this)
+            %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
+            
+            if (~lexist(this.fqfilename))
+                this.state_.save;
+            end
         end
         function f = find(this, varargin)
             %% FIND
@@ -190,7 +193,13 @@ classdef ImagingContext < handle
             %  @param varargin are integer locations within a composite imaging state
             %  @return g is an element of the imaging state
             
-            g = this.state_.get(varargin{:});
+            g =  mlfourd.ImagingContext(this.state_.get(varargin{:}));
+        end
+        function g = getLog(this)
+            %% GETLOG
+            %  @return g is the internal logger (handle) for the imaging state
+            
+            g =  this.state_.getLog;
         end
         function tf = isempty(this)
             %% ISEMPTY
@@ -210,7 +219,7 @@ classdef ImagingContext < handle
             %  @return internal image is masked.
             %  @warning mflourd:possibleMaskingError
             
-            m = this.state_.masked(varargin{:});
+            m =  mlfourd.ImagingContext(this.state_.masked(varargin{:}));
         end
         function m = maskedByZ(this, varargin)
             %% MASKEDBYZ
@@ -218,10 +227,10 @@ classdef ImagingContext < handle
             %  @return internal image is cropped by rng.  
             %  @throws MATLAB:assertion:failed for rng out of bounds.
             
-            m = this.state_.maskedByZ(varargin{:});
+            m =  mlfourd.ImagingContext(this.state_.maskedByZ(varargin{:}));
         end
         function o = ones(this, varargin)
-            o = this.state_.ones(varargin{:});
+            o =  mlfourd.ImagingContext(this.state_.ones(varargin{:}));
         end
         function r = rank(this)
             r = this.state_.rank;
@@ -243,6 +252,9 @@ classdef ImagingContext < handle
             %  it replaces internal filename & filesystem information.
 
             this.state_ = this.state_.saveas(filename);
+        end
+        function      setNoclobber(this, s)
+            this.state_ = this.state_.setNoclobber(s);
         end
         function tf = sizeEq(this, ic)
             %% SIZEEQ 
@@ -268,38 +280,44 @@ classdef ImagingContext < handle
         function t = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
+            %  @returns t, the modified imaging context
             
-            t = this.state_.thresh(t);
+            t = mlfourd.ImagingContext(this.state_.thresh(t));
         end
         function p = threshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            %  @returns p, the modified imaging context
             
-            p = this.state_.threshp(p);
+            p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
         function t = timeSummed(this)
             %% TIMESUMMED integrates over imaging dimension 4. 
             %  @return dynamic image reduced to summed volume.
+            %  @returns t, the modified imaging context
             
-            t = this.state_.timeSummed;
+            t =  mlfourd.ImagingContext(this.state_.timeSummed);
         end
         function u = uthresh(this, u)
             %% UTHRESH
-            %  @param t:  use t to upper-threshold current image (zero anything above the number)
+            %  @param u:  use t to upper-threshold current image (zero anything above the number)
+            %  @returns u, the modified imaging context
             
-            u = this.state_.uthresh(u);
+            u =  mlfourd.ImagingContext(this.state_.uthresh(u));
         end
         function p = uthreshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            %  @returns p, the modified imaging context
             
-            p = this.state_.uthreshp(p);
+            p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
         function v = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
             %  @return dynamic image reduced to time series.
+            %  @returns v, the modified imaging context
             
-            v = this.state_.volumeSummed;
+            v =  mlfourd.ImagingContext(this.state_.volumeSummed);
         end
         function     view(this, varargin)
             %% VIEW
@@ -307,11 +325,11 @@ classdef ImagingContext < handle
             %  @return new window with a view of the imaging state
             %  @throws mlfourd:IOError
             
-            this.ensureSaved(varargin{:});
+            this.ensureAnyFormsSaved(varargin{:});
             this.state_.view(varargin{:});
         end
         function z = zeros(this, varargin)
-            z = this.state_.zeros(varargin{:});
+            z =  mlfourd.ImagingContext(this.state_.zeros(varargin{:}));
         end
         
         %% CTOR
@@ -330,19 +348,19 @@ classdef ImagingContext < handle
             if (isa(obj, 'mlfourd.ImagingContext'))
                 switch (obj.stateTypeclass)
                     case 'mlfourd.CellCompositeState'
-                        this = ImagingContext(obj.cellComposite);
+                        this.state_ = CellCompositeState(obj.cellComposite, this);
                     case 'mlfourd.NIfTIcState'
-                        this = ImagingContext(obj.niftic);
+                        this.state_ = NIfTIcState(obj.niftic, this);
                     case 'mlfourd.MGHState'
-                        this = ImagingContext(obj.mgh);
+                        this.state_ = MGHState(obj.mgh, this);
                     case 'mlfourd.NumericalNIfTIdState'
-                        this = ImagingContext(obj.numericalNiftid);
+                        this.state_ = NumericalNIfTIdState(obj.numericalNiftid, this);
                     case 'mlfourd.NIfTIdState'
-                        this = ImagingContext(obj.niftid);
+                        this.state_ = NIfTIdState(obj.niftid, this);
                     case 'mlfourd.FilenameState'
-                        this = ImagingContext(obj.fqfilename);
+                        this.state_ = FilenameState(obj.fqfilename, this);
                     case 'mlfourd.DoubleState'
-                        this = ImagingContext(obj.double);
+                        this.state_ = DoubleState(obj.double, this);
                     otherwise
                         error('mlfourd:switchCaseError', ...
                               'ImagingContext.ctor.obj.stateTypeclass -> %s', obj.stateTypeclass);
@@ -405,15 +423,15 @@ classdef ImagingContext < handle
     end
     
     methods (Static, Access = protected)
-        function ensureSaved(varargin)            
+        function ensureAnyFormsSaved(varargin)
             for v = 1:length(varargin)
                 vobj = varargin{v};
                 if (isa(vobj, 'mlfourd.ImagingContext'))
                     import mlfourd.*;
                     if (strcmp(vobj.stateTypeclass, 'mlfourd.NIfTIcState'))
-                        ImagingContext.ensureSaved(vobj.niftic);
+                        ImagingContext.ensureAnyFormsSaved(vobj.niftic);
                     else                        
-                        ImagingContext.ensureSaved(vobj.niftid);
+                        ImagingContext.ensureAnyFormsSaved(vobj.niftid);
                     end
                 end
                 if (isa(vobj, 'mlfourd.INIfTIc'))

@@ -101,10 +101,10 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
     end
     
     methods
-        function     add(~)
+        function        add(~)
             error('mlfourd:notImplemented', 'ImagingState.add'); 
         end
-        function     addLog(this, varargin)
+        function        addLog(this, varargin)
             %% ADDLOG
             %  @param [varargin] are passed to NIfTIdState after a state-change
             
@@ -113,7 +113,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NIfTIdState(this.concreteObj_, this.contexth_));
             this.contexth_.addLog(varargin{:});            
         end
-        function a = atlas(this, varargin)
+        function a    = atlas(this, varargin)
             %% ATLAS
             %  @param [varargin] are passed to NIfTIcState after a state-change
             
@@ -122,23 +122,23 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NIfTIcState(this.concreteObj_, this.contexth_));
             a = this.contexth_.atlas(varargin{:});
         end
-        function a = binarized(this, varargin)
+        function b    = binarized(this, varargin)
             %% BINARIZED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
-            a = this.contexth_.binarized(varargin{:});
+            b = this.contexth_.binarized(varargin{:});
         end
-        function a    = blurred(this, varargin)
+        function b    = blurred(this, varargin)
             %% BLURRED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
-            a = this.contexth_.blurred(varargin{:});
+            b = this.contexth_.blurred(varargin{:});
         end
         function c    = char(this)
             c = char(this.concreteObj_);
@@ -168,13 +168,19 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function g    = get(this)
             g = this.concreteObj_;
         end
+        function g    = getLog(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.getLog(varargin{:});            
+        end
         function tf   = isempty(this)
             tf = isempty(this.concreteObj_);
         end
         function l    = length(~)
             l = 1;
         end
-        function r    = rank(this)            
+        function r    = rank(this)
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
@@ -213,25 +219,31 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function this = saveas(this, f)
             this.concreteObj_ = this.concreteObj_.saveas(f);
         end
-        function tf =   sizeEq(this, varargin)            
+        function        setNoclobber(this, s)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            this.contexth_.setNoclobber(s);
+        end
+        function tf   = sizeEq(this, varargin)            
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeEq(varargin{:});
         end
-        function tf =   sizeGt(this, varargin)            
+        function tf   = sizeGt(this, varargin)            
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeGt(varargin{:});
         end
-        function tf =   sizeLt(this, varargin)            
+        function tf   = sizeLt(this, varargin)            
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeLt(varargin{:});
         end
-        function t =    thresh(this, varargin)
+        function t    = thresh(this, varargin)
             %% THRESH
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -240,7 +252,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             t = this.contexth_.thresh(varargin{:});
         end
-        function p =     threshp(this, varargin)
+        function p    = threshp(this, varargin)
             %% THRESHP
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -267,7 +279,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             u = this.contexth_.uthresh(varargin{:});
         end
-        function p   = uthreshp(this, varargin)
+        function p    = uthreshp(this, varargin)
             %% UTHRESHP
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
@@ -317,7 +329,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
     end
     
     methods (Access = protected)
-        function this = ImagingState % prevents direct instantiation
+        function this = ImagingState
         end
     end
     

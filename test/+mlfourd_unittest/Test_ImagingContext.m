@@ -381,7 +381,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             atl = ho.atlas(oc, oo, tr);
             
             this.verifyInstanceOf(atl, 'mlfourd.ImagingContext');
-            this.verifyEqual(atl.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(atl.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             this.verifyEqual(atl.niftid.size, [128 128 63]);
             this.verifyNiftid(atl.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_sumt_atlas');            
             if (this.view)
@@ -394,7 +394,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic = ic.atlas;
             
             this.verifyInstanceOf(ic, 'mlfourd.ImagingContext');
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             this.verifyEqual(ic.niftid.size, [128 128 63]);
             this.verifyNiftid(ic.niftid, 1.59063853530086, 21.402881131310050, 'p7686ho1_zeros_sumt_atlas');            
             if (this.view)
@@ -406,7 +406,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             warning('off', 'mlfourd:possibleMaskingError')
             ic = ic.binarized;
             warning('on', 'mlfourd:possibleMaskingError');
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             n = ic.niftid;
             this.verifyEqual(n.bitpix, 64);
             this.verifyEqual(n.datatype, 64);
@@ -425,7 +425,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_blurred(this)
             ic = this.testObj;
             ic = ic.blurred([20 10 5]);
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             n = ic.niftid;
             this.verifyEqual(n.bitpix, 32);
             this.verifyEqual(n.datatype, 16);
@@ -454,7 +454,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_masked(this)
             ic = this.testObj;            
             ic = ic.masked(this.maskT1_niid);
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             n = ic.niftid;
             this.verifyEqual(n.bitpix, 64);
             this.verifyEqual(n.datatype, 64);
@@ -472,7 +472,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         function test_maskedByZ(this)
             ic = this.testObj;            
             ic = ic.maskedByZ([30 60]);
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             n = ic.niftid;
             this.verifyEqual(n.bitpix, 64);
             this.verifyEqual(n.datatype, 64);
@@ -557,15 +557,15 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             ic  = mlfourd.ImagingContext(this.maskT1_niid);            
             ic  = ic.thresh(0.5);
             ic  = ic.binarized;
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
             this.verifyEqual(ic.niftid.img, double(this.maskT1_niid.img));
         end
         function test_threshp(this)
             ic = mlfourd.ImagingContext(this.maskT1_niid);            
             ic = ic.threshp(50);
             ic = ic.binarized;
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIdState');
-            this.verifyEqual(ic.niftid.img, this.maskT1_niid.img);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NumericalNIfTIdState');
+            this.verifyEqual(ic.niftid.img, double(this.maskT1_niid.img));
         end
         function test_timeSummed(this)
             import mlfourd.*;
@@ -640,6 +640,12 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
     end
     
     methods (Access = 'private')
+        function verifyIC(this, ic, e, m, fp)
+            this.assumeInstanceOf(ic, 'mlfourd.ImagingContext');
+            this.verifyEqual(ic.niftid.entropy, e, 'RelTol', 1e-6);
+            this.verifyEqual(dipmad(ic.niftid.img), m, 'RelTol', 1e-4);
+            this.verifyEqual(ic.fileprefix, fp); 
+        end
         function verifyNiftid(this, niid, e, m, fp)
             this.assumeInstanceOf(niid, 'mlfourd.INIfTI');
             this.verifyEqual(niid.entropy, e, 'RelTol', 1e-6);

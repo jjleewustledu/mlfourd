@@ -327,6 +327,9 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         function E = fslEntropy(this)
             E = this.innerNIfTI_.fslEntropy;
         end
+        function view(this, varargin)
+            this.innerNIfTI_.view(varargin{:});
+        end
         function freeview(this, varargin)
             this.innerNIfTI_.freeview(varargin{:});
         end

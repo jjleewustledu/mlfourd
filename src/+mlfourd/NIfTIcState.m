@@ -67,7 +67,6 @@ classdef NIfTIcState < mlfourd.ImagingState
             end
             a = a.append_fileprefix('_atlas');
             a = a.append_descrip('atlas');
-            a = ImagingContext(NIfTId(a));
         end
         function c    = createIterator(this)
             c = this.concreteObj_.createIterator;
@@ -79,7 +78,7 @@ classdef NIfTIcState < mlfourd.ImagingState
             f = this.concreteObj_.find(varargin{:});
         end
         function g    = get(this, varargin)
-            g = mlfourd.ImagingContext(this.concreteObj_.get(varargin{:}));
+            g = this.concreteObj_.get(varargin{:});
         end
         function tf   = isempty(this)
             tf = this.concreteObj_.isempty;
@@ -101,7 +100,7 @@ classdef NIfTIcState < mlfourd.ImagingState
                 fns = [fns niid.fqfilename];
             end
             viewArgin = this.segregateForView(fns, varargin{:});
-            niid1.freeview(viewArgin{:});
+            niid1.view(viewArgin{:});
         end
         
         function this = NIfTIcState(obj, h)
