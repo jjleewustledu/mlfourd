@@ -108,6 +108,9 @@ classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
         function        fslview(this, varargin)
             this.component.fslview(varargin{:});
         end
+        function        view(this, varargin)
+            this.component.view(varargin{:});
+        end        
     end 
     
     methods (Access = protected)
