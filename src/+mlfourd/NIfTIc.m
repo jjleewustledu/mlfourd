@@ -103,7 +103,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             switch (this.originalType) % no returns within switch!  must reach this.adjustFieldsFromInputParser.
                 case 'char'
                     this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
-                case 'struct' 
+                case 'struct'
                     % as described by mlniftitools.load_untouch_nii
                     this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
                 otherwise
@@ -117,12 +117,18 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                         this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
                     elseif (iscell(ip.Results.obj)) %% dedecorates
                         for idx = 1:length(ip.Results.obj)
-                            this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj{idx}));
+                            this.innerNIfTI_.innerCellComp_ = ...
+                                this.innerNIfTI_.innerCellComp_.add( ...
+                                    NIfTId( ...
+                                        this.reduceImagingContexts(ip.Results.obj{idx})));
                         end
                     elseif (isa(ip.Results.obj, 'mlpatterns.Composite')) %% dedecorates
                         iter = ip.Results.obj.createIterator;
-                        while (iter.hasNext)                            
-                            this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(iter.next));
+                        while (iter.hasNext)   
+                            this.innerNIfTI_.innerCellComp_ = ...
+                                this.innerNIfTI_.innerCellComp_.add( ...
+                                    NIfTId( ...
+                                        this.reduceImagingContexts(iter.next)));
                         end
                     else
                         NIfTIc.assertCtorObj(ip.Results.obj);
@@ -135,12 +141,33 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
     %% PRIVATE
     
     methods (Static, Access = private)
-        function      assertCtorObj(obj)
+        function     assertCtorObj(obj)
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
                     isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface') || ...
                     isa(obj, 'mlpatterns.Composite') || iscell(obj)))
                 error('mlfourd:invalidCtorObj', ...
                       'NIfTIc.assertCtorObj does not support class(obj)->%s', class(obj));
+            end
+        end
+        function ic = reduceImagingContexts(ic)
+            if (isa(ic, 'mlfourd.ImagingContext'))
+                switch (ic.stateTypeclass)
+                    case 'mlfourd.NIfTIdState'
+                        ic = ic.niftid;
+                    case 'mlfourd.NumericalNIfTIdState'
+                        ic = ic.numericalNiftid;
+                    case 'mlfourd.MGHState'
+                        ic = ic.niftid;
+                    case 'mlfourd.FilenameState'
+                        ic = ic.fqfilename;
+                    case 'mlfourd.DoubleState'
+                        ic = ic.double;
+                    otherwise
+                        % not yet suppporting mlfourd.NIfTIcState, mlfourd.CellCompositeState
+                        % which would be needed for recursions
+                        error('mlfourd:switchCaseNotSupported', ...
+                              'class(NIfTIc.reduceImagingContexts.ic) -> %s', class(ic));
+                end
             end
         end
     end

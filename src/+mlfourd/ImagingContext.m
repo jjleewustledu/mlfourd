@@ -366,12 +366,8 @@ classdef ImagingContext < handle
                               'ImagingContext.ctor.obj.stateTypeclass -> %s', obj.stateTypeclass);
                 end
                 return
-            end            
-            if (isa(obj, 'mlpatterns.CellComposite') || iscell(obj))
-                this.state_ = CellCompositeState(obj, this);
-                return
             end
-            if (isa(obj, 'mlfourd.NIfTIc'))
+            if (isa(obj, 'mlfourd.NIfTIc') || isa(obj, 'mlpatterns.CellComposite') || iscell(obj))
                 this.state_ = NIfTIcState(obj, this);
                 return
             end

@@ -1,5 +1,6 @@
 setenv('NO_INTERNAL_LOGGER', '1')
 
+run(mlpipeline_unittest.Test_StudyDataSingletons)
 run(mlpipeline_unittest.Test_StudyDataSingleton)
 run(mlpipeline_unittest.Test_SessionData)
 
