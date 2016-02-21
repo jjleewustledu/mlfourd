@@ -94,7 +94,7 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
             import mlfourd.*;
             b = MaskingNIfTId(this.thr300.component, 'binarize', true);
             c = MaskingNIfTId(this.smallT1_niid, 'masked', b, 'thresh', 400, 'threshp', 95, 'binarized', true);
-            this.verifyObj(c, 0.286398603290942, 51610, [this.smallT1_fp '_masked_thr400_thrp95_binarized']);             
+            this.verifyObj(c, 0.286398603290942, 51610, [this.smallT1_fp '_maskedby_t1_default_on_ho_meanvol_default_thr300_binarized_thr400_thrp95_binarized']);             
             if (this.viewManually); c.freeview; end      
         end        
         function test_binarized(this)
@@ -109,7 +109,7 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
                 @() this.testObj.masked(this.thr300), 'mlfourd:possibleMaskingError');  
             
             m = this.testObj.masked(this.maskT1_niid);
-            this.verifyObj(m, 0.567605718841869, 47585080.4438686, [this.smallT1_fp '_masked']);
+            this.verifyObj(m, 0.567605718841869, 47585080.4438686, [this.smallT1_fp '_maskedby_bt1_default_mask_on_ho_meanvol_default']);
             if (this.viewManually)
                 this.thr300.save;
                 m.freeview(this.testObj.fqfn, this.maskT1_fqfn, this.thr300.fqfn); 
@@ -123,7 +123,7 @@ classdef Test_MaskingNIfTId < matlab.unittest.TestCase
                 @() m4d.masked(this.thr300), 'mlfourd:possibleMaskingError');  
             
             m = m4d.masked(this.maskT1_niid);
-            this.verifyObj(m, 0.411728868613467, 602335458, 'p7377ho1_masked');
+            this.verifyObj(m, 0.411728868613467, 602335458, 'p7377ho1_maskedby_bt1_default_mask_on_ho_meanvol_default');
             if (this.viewManually)
                 m.freeview;
                 this.testObj.freeview; 
