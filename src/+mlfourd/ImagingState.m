@@ -150,8 +150,10 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             this.contexth_.changeState( ...
                 mlfourd.FilenameState(this.concreteObj_, this.contexth_));
         end
-        function        createIterator(~)
-            error('mlfourd:notImplemented', 'ImagingState.createIterator');
+        function c    = createIterator(~)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
+            c = this.contexth_.createIterator;
         end
         function s    = csize(~)
             s = 1;
@@ -210,7 +212,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function o    = ones(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
-                NIfTIdState(this.concreteObj_, this.contexth_));
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             o = this.contexth_.ones(varargin{:});
         end
         function        save(this)
@@ -310,7 +312,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function z    = zeros(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
-                NIfTIdState(this.concreteObj_, this.contexth_));
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             z = this.contexth_.zeros(varargin{:});
         end
     end

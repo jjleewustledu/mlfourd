@@ -352,7 +352,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.niftid, this.smallT1_niid);
             
             ic = ImagingContext.load(this.pet_fqfns);
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.CellCompositeState');
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');
             this.verifyEqual(ic.niftic, this.niftic);
             a = ic.niftic;
             b = this.niftic;

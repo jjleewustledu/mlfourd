@@ -51,9 +51,6 @@ classdef NIfTIdState < mlfourd.ImagingState
         function lg =   getLog(this)
             lg = this.concreteObj_.logger;
         end
-        function o =    ones(this, varargin)
-            o = this.concreteObj_.ones(varargin{:});
-        end
         function r =    rank(this)
             r = this.concreteObj_.rank;
         end
@@ -77,9 +74,6 @@ classdef NIfTIdState < mlfourd.ImagingState
         end
         function        view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
-        end
-        function z =    zeros(this, varargin)
-            z = this.concreteObj_.zeros(varargin{:});
         end
         
         function this = NIfTIdState(obj, h)

@@ -719,7 +719,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 cmdline = sprintf('%s %s',    app, fqfn);
             else
                 cmdline = sprintf('%s %s %s', app, fqfn, imaging2str(varargin{:}));
-            end            
+            end    
+            s = 0; r = '';
             try
                 this.saveas(fqfn);
                 [s,r] = mlbash(cmdline);

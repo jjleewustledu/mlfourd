@@ -72,6 +72,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = maskedByZ(this, varargin)  
             b = this.numericalNiftid.maskedByZ(varargin{:});
         end
+        function o =    ones(this, varargin)
+            o = this.numericalNiftid.ones(varargin{:});
+        end
         function b = thresh(this, varargin)  
             b = this.numericalNiftid.thresh(varargin{:});
         end
@@ -92,6 +95,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         end
         function     view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
+        end
+        function z =    zeros(this, varargin)
+            z = this.numericalNiftid.zeros(varargin{:});
         end
         
  		function this = NumericalNIfTIdState(obj, h) 			
