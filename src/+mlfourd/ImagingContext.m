@@ -23,6 +23,7 @@ classdef ImagingContext < handle
         fqfileprefix
         fqfn
         fqfp
+        noclobber
         
         cellComposite
         mgh
@@ -57,6 +58,9 @@ classdef ImagingContext < handle
         end
         function f = get.fqfp(this)
             f = this.state_.fqfp;
+        end
+        function f = get.noclobber(this)
+            f = this.state_.noclobber;
         end
         
         function f = get.cellComposite(this)
@@ -101,6 +105,9 @@ classdef ImagingContext < handle
         end        
         function set.fqfp(this, f)
             this.state_.fqfp = f;
+        end
+        function set.noclobber(this, f)
+            this.state_.noclobber = f;
         end
     end 
     
