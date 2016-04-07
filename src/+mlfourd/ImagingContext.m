@@ -120,19 +120,19 @@ classdef ImagingContext < handle
     end
 
     methods
-        function     add(this, varargin)
+        function      add(this, varargin)
             %% ADD
             %  @param varargin are added to a composite imaging state
             
             this.state_ = this.state_.add(varargin{:});
         end
-        function     addLog(this, varargin)
+        function      addLog(this, varargin)
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
             this.state_.addLog(varargin{:});
         end
-        function a = atlas(this, varargin)
+        function a  = atlas(this, varargin)
             %% ATLAS
             %  @param imaging_objects[, ...] have typeclasses supported by ImagingContext.  All alignment
             %  operations between imaging objects must have been completed.  Time-domains will be summed.
@@ -142,14 +142,14 @@ classdef ImagingContext < handle
             
             a = mlfourd.ImagingContext(this.state_.atlas(varargin{:}));
         end
-        function b = binarized(this)
+        function b  = binarized(this)
             %% BINARIZED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
             b = mlfourd.ImagingContext(this.state_.binarized);
         end
-        function b = blurred(this, varargin)
+        function b  = blurred(this, varargin)
             %% BLURRED
             %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
             %  applied to the internally stored image
@@ -157,52 +157,52 @@ classdef ImagingContext < handle
             
             b =  mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
-        function f = char(this)
+        function f  = char(this)
             f = char(this.state_);
         end
-        function     close(this)
+        function      close(this)
             this.state_.close;
         end
-        function c = createIterator(this)
+        function c  = createIterator(this)
             %% CREATEITERATOR
             %  @return c is an iterator for a mlpatterns.Composite instance, if any
             
             c = this.state_.createIterator;
         end
-        function c = csize(this)
+        function c  = csize(this)
             %% CSIZE
             %  @return c is the size of the imaging state when it is composite
             
             c = this.state_.csize;
         end
-        function     disp(this)
+        function      disp(this)
             disp(this.state_);
         end
-        function d = double(this)
+        function d  = double(this)
             d = double(this.state_);
         end
-        function     ensureSaved(this)
+        function      ensureSaved(this)
             %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
             
             if (~lexist(this.fqfilename))
                 this.state_.save;
             end
         end
-        function f = find(this, varargin)
+        function f  = find(this, varargin)
             %% FIND
             %  @param varargin are objects to find within a composite imaging state
             %  %return f is the position within the composite of the object
             
             f = this.state_.find(varargin{:});
         end
-        function g = get(this, varargin)
+        function g  = get(this, varargin)
             %% GET
             %  @param varargin are integer locations within a composite imaging state
             %  @return g is an element of the imaging state
             
             g =  mlfourd.ImagingContext(this.state_.get(varargin{:}));
         end
-        function g = getLog(this)
+        function g  = getLog(this)
             %% GETLOG
             %  @return g is the internal logger (handle) for the imaging state
             
@@ -214,13 +214,13 @@ classdef ImagingContext < handle
             
             tf = this.state_.isempty;
         end
-        function l = length(this)
+        function l  = length(this)
             %% LENGTH
             %  @return l is the length of a composite imaging state
             
             l = this.state_.length;
         end
-        function m = masked(this, varargin)
+        function m  = masked(this, varargin)
             %% MASKED
             %  @param INIfTId of a mask with values [0 1], not required to be binary.
             %  @return internal image is masked.
@@ -228,7 +228,7 @@ classdef ImagingContext < handle
             
             m =  mlfourd.ImagingContext(this.state_.masked(varargin{:}));
         end
-        function m = maskedByZ(this, varargin)
+        function m  = maskedByZ(this, varargin)
             %% MASKEDBYZ
             %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
             %  @return internal image is cropped by rng.  
@@ -236,24 +236,24 @@ classdef ImagingContext < handle
             
             m =  mlfourd.ImagingContext(this.state_.maskedByZ(varargin{:}));
         end
-        function o = ones(this, varargin)
+        function o  = ones(this, varargin)
             o =  mlfourd.ImagingContext(this.state_.ones(varargin{:}));
         end
-        function r = rank(this)
+        function r  = rank(this)
             r = this.state_.rank;
         end
-        function     rm(this, varargin)
+        function      rm(this, varargin)
             %% RM
             %  @param varargin are integer locations which will be removed from the imaging state.
             
             this.state_ = this.state_.rm(varargin{:});
         end
-        function     save(this)
+        function      save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
             this.state_.save;
         end
-        function     saveas(this, filename)
+        function      saveas(this, filename)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
             %  @param filename is a string that is compatible with requirements of the filesystem;
             %  it replaces internal filename & filesystem information.
@@ -284,49 +284,49 @@ classdef ImagingContext < handle
 
             tf = this.state_.sizeLt(ic);
         end
-        function t = thresh(this, t)
+        function t  = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
             %  @returns t, the modified imaging context
             
             t = mlfourd.ImagingContext(this.state_.thresh(t));
         end
-        function p = threshp(this, p)
+        function p  = threshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             %  @returns p, the modified imaging context
             
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
-        function t = timeSummed(this)
+        function t  = timeSummed(this)
             %% TIMESUMMED integrates over imaging dimension 4. 
             %  @return dynamic image reduced to summed volume.
             %  @returns t, the modified imaging context
             
             t =  mlfourd.ImagingContext(this.state_.timeSummed);
         end
-        function u = uthresh(this, u)
+        function u  = uthresh(this, u)
             %% UTHRESH
             %  @param u:  use t to upper-threshold current image (zero anything above the number)
             %  @returns u, the modified imaging context
             
             u =  mlfourd.ImagingContext(this.state_.uthresh(u));
         end
-        function p = uthreshp(this, p)
+        function p  = uthreshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             %  @returns p, the modified imaging context
             
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
-        function v = volumeSummed(this)
+        function v  = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
             %  @return dynamic image reduced to time series.
             %  @returns v, the modified imaging context
             
             v =  mlfourd.ImagingContext(this.state_.volumeSummed);
         end
-        function     view(this, varargin)
+        function      view(this, varargin)
             %% VIEW
             %  @param are additional filenames and other arguments to pass to the viewer.
             %  @return new window with a view of the imaging state
@@ -335,7 +335,7 @@ classdef ImagingContext < handle
             this.ensureAnyFormsSaved(varargin{:});
             this.state_.view(varargin{:});
         end
-        function z = zeros(this, varargin)
+        function z  = zeros(this, varargin)
             z =  mlfourd.ImagingContext(this.state_.zeros(varargin{:}));
         end
         
@@ -409,7 +409,7 @@ classdef ImagingContext < handle
         end
     end
     
-	methods (Hidden)     
+	methods (Hidden)
         function changeState(this, s)
             %% CHANGESTATE
             %  @param s must be an ImagingState; it replaces the current internal state.
