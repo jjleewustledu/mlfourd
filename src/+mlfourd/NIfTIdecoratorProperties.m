@@ -107,7 +107,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             f = this.fqfileprefix;
         end
         function this = set.noclobber(this, nc)
-            this.component.noclobber_ = nc;
+            this.component.noclobber = nc;
         end
         function tf   = get.noclobber(this)
             tf = this.component.noclobber;
