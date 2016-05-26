@@ -111,6 +111,10 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end
         function h    = get.hdr(this)
             h = this.hdr_;
+            if (~isfield(h.hist, 'originator') || ...
+                 isempty(h.hist.originator))                
+                h.hist.originator = zeros(1,3); % KLUDGE for mlniftitools.save_nii_hdr line28
+            end
         end 
         function im   = get.img(this)
             im = this.img_;
