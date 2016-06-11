@@ -366,6 +366,8 @@ classdef ImagingContext < handle
                         this.state_ = NIfTIdState(obj.niftid, this);
                     case 'mlfourd.FilenameState'
                         this.state_ = FilenameState(obj.fqfilename, this);
+                    case 'mlfourd.FourdfpState'
+                        this.state_ = FourdfpState(obj.fqfilename, this);
                     case 'mlfourd.DoubleState'
                         this.state_ = DoubleState(obj.double, this);
                     otherwise
@@ -394,7 +396,12 @@ classdef ImagingContext < handle
                 this.state_ = NIfTIdState(obj, this);
                 return
             end
-            if (ischar(obj)) % filename need not yet exist 
+            if (ischar(obj)) 
+                % filename need not yet exist 
+                if (FourdfpState.isFourdfp(obj))
+                    this.state_ = FourdfpState(obj, this);
+                    return
+                end
                 this.state_ = FilenameState(obj, this);
                 return
             end

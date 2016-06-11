@@ -58,14 +58,13 @@ classdef FilenameState < mlfourd.ImagingState
         function        view(this, varargin)
             mlbash(sprintf( ...
                 'freeview %s %s', this.concreteObj_.fqfilename, imaging2str(varargin{:})));
-        end
-        
+        end        
         function this = FilenameState(obj, h)
             try
                 obj = mlio.ConcreteIO(obj);
             catch ME
                 handexcept(ME, 'mlfourd:castingError', ...
-                    'FilenameState.load does not support objects of type %s', class(obj));
+                    'FilenameState does not support objects of type %s', class(obj));
             end
             this.concreteObj_ = obj;
             this.contexth_ = h;

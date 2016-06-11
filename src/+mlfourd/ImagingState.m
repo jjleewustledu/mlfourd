@@ -31,7 +31,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         noclobber
     end
     
-    methods %% GET
+    methods %% GET, SET
         function f = get.filename(this)
             f = this.concreteObj_.filename;
         end
@@ -227,19 +227,19 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NIfTIdState(this.concreteObj_, this.contexth_));
             this.contexth_.setNoclobber(s);
         end
-        function tf   = sizeEq(this, varargin)            
+        function tf   = sizeEq(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeEq(varargin{:});
         end
-        function tf   = sizeGt(this, varargin)            
+        function tf   = sizeGt(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeGt(varargin{:});
         end
-        function tf   = sizeLt(this, varargin)            
+        function tf   = sizeLt(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
