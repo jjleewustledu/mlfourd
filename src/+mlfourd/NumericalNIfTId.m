@@ -8,7 +8,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
         
-    methods (Static)        
+    methods (Static)
         function this = load(varargin)
             import mlfourd.*;
             this = NumericalNIfTId(NIfTId.load(varargin{:}));
