@@ -163,6 +163,14 @@ classdef ImagingContext < handle
         function      close(this)
             this.state_.close;
         end
+        function b  = coulombBlurred(this, varargin)
+            %% COULOMBBLURRED
+            %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
+            %  applied to the internally stored image
+            %  @return the blurred image
+            
+            b =  mlfourd.ImagingContext(this.state_.coulombBlurred(varargin{:}));
+        end 
         function c  = createIterator(this)
             %% CREATEITERATOR
             %  @return c is an iterator for a mlpatterns.Composite instance, if any

@@ -248,6 +248,12 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             b = b.blurred(varargin{:});
             this = NumericalNIfTId(b.component);
         end
+        function this = coulombBlurred(this, varargin)
+            import mlfourd.*;
+            b = CoulombBlurringNIfTId(this.component);
+            b = b.blurred(varargin{:});
+            this = NumericalNIfTId(b.component);
+        end
         function this = masked(this, varargin)
             import mlfourd.*;
             m = MaskingNIfTId(this.component);

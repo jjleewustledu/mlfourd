@@ -66,6 +66,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = blurred(this, varargin)  
             b = this.numericalNiftid.blurred(varargin{:});
         end
+        function b = coulombBlurred(this, varargin)  
+            b = this.numericalNiftid.coulombBlurred(varargin{:});
+        end
         function b = masked(this, varargin)  
             b = this.numericalNiftid.masked(varargin{:});
         end
