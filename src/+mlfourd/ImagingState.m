@@ -150,14 +150,14 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             this.contexth_.changeState( ...
                 mlfourd.FilenameState(this.concreteObj_, this.contexth_));
         end
-        function b    = coulombBlurred(this, varargin)
-            %% COULOMBBLURRED
+        function b    = coulombPotential(this, varargin)
+            %% COULOMBPOTENTIAL
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
-            b = this.contexth_.coulombBlurred(varargin{:});
+            b = this.contexth_.coulombPotential(varargin{:});
         end
         function c    = createIterator(~)
             this.contexth_.changeState( ...

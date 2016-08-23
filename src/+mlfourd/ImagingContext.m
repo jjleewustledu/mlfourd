@@ -163,13 +163,12 @@ classdef ImagingContext < handle
         function      close(this)
             this.state_.close;
         end
-        function b  = coulombBlurred(this, varargin)
-            %% COULOMBBLURRED
-            %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
-            %  applied to the internally stored image
+        function b  = coulombPotential(this, varargin)
+            %% COULOMBPOTENTIAL
+            %  @param 'mask' is numeric or is an mlfourd.INIfTI
             %  @return the blurred image
             
-            b =  mlfourd.ImagingContext(this.state_.coulombBlurred(varargin{:}));
+            b =  mlfourd.ImagingContext(this.state_.coulombPotential(varargin{:}));
         end 
         function c  = createIterator(this)
             %% CREATEITERATOR

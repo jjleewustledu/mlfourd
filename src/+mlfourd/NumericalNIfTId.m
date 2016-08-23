@@ -76,7 +76,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         function this = mpower(this, b)
             this = this.bsxfun(@mpower, b);
         end
-        function this = mldivide(this, b)            
+        function this = mldivide(this, b)
             if (isa(b, 'mlfourd.INIfTI'))
                 this = this.makeSimilar('img', mldivide(this.component.img, b.img), ...
                                         'descrip', sprintf('NumericalNIfTId.mldivide %s %s', ...
@@ -87,7 +87,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
                                                            this.fileprefix, mat2str(b)));
             end
         end
-        function this = mrdivide(this, b)     
+        function this = mrdivide(this, b)
             if (isa(b, 'mlfourd.INIfTI'))
                 this = this.makeSimilar('img', mrdivide(this.component.img, b.img), ...
                                         'descrip', sprintf('NumericalNIfTId.mrdivide %s %s', ...
@@ -248,10 +248,9 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             b = b.blurred(varargin{:});
             this = NumericalNIfTId(b.component);
         end
-        function this = coulombBlurred(this, varargin)
+        function this = coulombPotential(this, varargin)
             import mlfourd.*;
-            b = CoulombBlurringNIfTId(this.component);
-            b = b.blurred(varargin{:});
+            b = CoulombPotentialNIfTId(this.component);
             this = NumericalNIfTId(b.component);
         end
         function this = masked(this, varargin)

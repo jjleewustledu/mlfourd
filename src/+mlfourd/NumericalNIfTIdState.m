@@ -60,50 +60,50 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
             a = a.append_fileprefix('_atlas');
             a = a.append_descrip('atlas');
         end
-        function b = binarized(this, varargin)  
+        function b = binarized(this, varargin)
             b = this.numericalNiftid.binarized(varargin{:});
         end
-        function b = blurred(this, varargin)  
+        function b = blurred(this, varargin)
             b = this.numericalNiftid.blurred(varargin{:});
         end
-        function b = coulombBlurred(this, varargin)  
-            b = this.numericalNiftid.coulombBlurred(varargin{:});
+        function b = coulombPotential(this, varargin)
+            b = this.numericalNiftid.coulombPotential(varargin{:});
         end
-        function b = masked(this, varargin)  
+        function b = masked(this, varargin)
             b = this.numericalNiftid.masked(varargin{:});
         end
-        function b = maskedByZ(this, varargin)  
+        function b = maskedByZ(this, varargin)
             b = this.numericalNiftid.maskedByZ(varargin{:});
         end
-        function o =    ones(this, varargin)
+        function o = ones(this, varargin)
             o = this.numericalNiftid.ones(varargin{:});
         end
-        function b = thresh(this, varargin)  
+        function b = thresh(this, varargin)
             b = this.numericalNiftid.thresh(varargin{:});
         end
-        function b = threshp(this, varargin)  
+        function b = threshp(this, varargin)
             b = this.numericalNiftid.threshp(varargin{:});
         end
-        function b = timeSummed(this, varargin)  
+        function b = timeSummed(this, varargin)
             b = this.numericalNiftid.timeSummed(varargin{:});
         end
-        function b = uthresh(this, varargin)  
+        function b = uthresh(this, varargin)
             b = this.numericalNiftid.uthresh(varargin{:});
         end
-        function b = uthreshp(this, varargin)  
+        function b = uthreshp(this, varargin)
             b = this.numericalNiftid.uthreshp(varargin{:});
         end
-        function b = volumeSummed(this, varargin)  
+        function b = volumeSummed(this, varargin)
             b = this.numericalNiftid.volumeSummed(varargin{:});
         end
         function     view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
         end
-        function z =    zeros(this, varargin)
+        function z = zeros(this, varargin)
             z = this.numericalNiftid.zeros(varargin{:});
         end
         
- 		function this = NumericalNIfTIdState(obj, h) 			
+ 		function this = NumericalNIfTIdState(obj, h)
             if (~isa(obj, 'mlfourd.NumericalNIfTId'))
                 try
                     import mlfourd.*;
