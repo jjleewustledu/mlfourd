@@ -10,12 +10,11 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
  	
 
     properties
-        blur % mm $\in \mathbb{R} or \in \mathbb{R}^3$
+        precision
     end
     
     properties (Dependent)
         mask
-        blurCount
     end
     
     methods %% SET/GET
@@ -27,9 +26,6 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
         end
         function m    = get.mask(this)
             m = this.mask_;
-        end
-        function bc   = get.blurCount(this)
-            bc = this.blurCount_;
         end
     end
 
@@ -47,19 +43,18 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
  			%% CoulombPotentialNIfTId
  			%  Usage:  this = CoulombPotentialNIfTId(INIfTI_object[,parameterName, parameterValue]) 
             %  @param 'mask' is numeric or INIfTI value, default this.ones.
-            %  @param 'blur' is numeric in mm.
 
             this = this@mlfourd.NIfTIdecoratorProperties(cmp);
             
             ip = inputParser;
             addParameter(ip, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
-            addParameter(ip, 'blur', 8, @isnumeric);
+            addParameter(ip, 'precision', 0.125, @isnumeric);
             parse(ip, varargin{:});
             
-            this.mask = double(ip.Results.mask);
-            this.blur = ip.Results.blur;
-            this.img  = double(this.img);
-            this      = this.transform;
+            this.mask         = double(ip.Results.mask);
+            this.precision    = ip.Results.precision;
+            this.img          = double(this.img);
+            this              = this.transform;
  		end
         function obj  = clone(this)
             obj            = mlfourd.CoulombPotentialNIfTId(this.component.clone);
@@ -71,9 +66,9 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
             if (tf)
                 tf = isa(bnii, 'mlfourd.CoulombPotentialNIfTId');
                 if (tf)
-                    tf = isequaln(this.blurCount_, bnii.blurCount);
+                    tf = isequaln(this.blurCount_, bnii.blurCount_);
                     if (tf)
-                        tf = isequaln(this.mask_, bnii.mask);
+                        tf = isequaln(this.mask_, bnii.mask_);
                         if (tf)
                             tf = isequaln@mlfourd.NIfTIdecoratorProperties(this, bnii);
                         end
@@ -81,14 +76,14 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
                 end
             end
             
-            if (~isequaln(this.mask_, bnii.mask))
+            if (~isequaln(this.mask_, bnii.mask_))
                 tf  = false;
-                warning('mlfourd:notIsequaln', 'CoulombPotentialNIfTId.isequaln:  found mismatch at this.mask.');
+                warning('mlfourd:notIsequaln', 'CoulombPotentialNIfTId.isequaln:  found mismatch at this.mask_.');
                 return
             end
-            if (~isequaln(this.blurCount_, bnii.blurCount))
+            if (~isequaln(this.blurCount_, bnii.blurCount_))
                 tf  = false;
-                warning('mlfourd:notIsequaln', 'CoulombPotentialNIfTId.isequaln:  found mismatch at this.blurCount.');
+                warning('mlfourd:notIsequaln', 'CoulombPotentialNIfTId.isequaln:  found mismatch at this.blurCount_.');
                 return
             end
         end
@@ -109,7 +104,7 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
                 for j = 1:krnlLens(2) 
                     for i = 1:krnlLens(1)
                         p = p + 1;
-                        h0(p,:) = [i-krnlLens(1)/2 j-krnlLens(2)/2 k-krnlLens(3)/2]; 
+                        h0(p,:) = [i-krnlLens(1)/2 j-krnlLens(2)/2 k-krnlLens(3)/2];
                     end
                 end
             end
@@ -151,7 +146,7 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
             imgRank = length(size(img));
             
             % Assemble filter kernel & call imfilter    
-            krnlLens = ceil(this.blur ./ this.mmppix);
+            krnlLens = this.kernelLength;
             h0  = CoulombPotentialNIfTId.h3d(krnlLens, imgRank);
             h1  = reshape(this.GreenFunc(h0, zeros(1,imgRank)), krnlLens);
             phi = imfilter(img, h1);            
@@ -170,19 +165,32 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
             if [1 2]         ~= size(size(X)), error(help('GreenFunc')); end %#ok<*BDSCA>
             if [1 size(X,2)] ~= size(x0),      error(help('GreenFunc')); end
             
-            G           = 1 ./ mlfourd.CoulombPotentialNIfTId.metricDistance(X, x0, this.mmppix);
+            import mlfourd.*;
+            G           = 1 ./ CoulombPotentialNIfTId.metricDistance(X, x0, this.mmppix(1:3));
             Gmax        = max(max(G .* isfinite(G)));
             G(isinf(G)) = Gmax;
-            G           = G / sum(sum(G));
+            G           = G / sum(sum(G)); % removes all permittivities
         end   
+        function kl   = kernelLength(this)
+            %% KERNELLENGTH
+            %  For $dr \equiv \sup$ non-singular $1/r$ field, choose $k_l$ s.t.
+            %  $\frac{1}{k_l dr} \sim \frac{\text{this.precision}}{dr}$.
+            
+            kl = ones(1,3)*ceil(1/this.precision);
+        end
         function this = transform(this)
             import mlfourd.* mlpet.*;
-            assert(this.blurCount_ == 0);
+            if (this.blurCount_ > 0)
+                return
+            end
+            if (this.precision < eps)
+                return
+            end
             if (this.rank < 4)  
-                this.img = this.chargesToScalarPotentials(this.img, this.mask);
+                this.img = this.chargesToScalarPotentials(this.img, this.mask_);
             elseif (4 == this.rank)
                 for t = 1:size(this,4)
-                    this.img(:,:,:,t) = this.chargesToScalarPotentials(squeeze(this.img(:,:,:,t)), this.mask);
+                    this.img(:,:,:,t) = this.chargesToScalarPotentials(squeeze(this.img(:,:,:,t)), this.mask_);
                 end
             else
                 error('mlfourd:paramOutOfBounds', 'CoulombPotentialNIfTId.transform.rank->%i', this.rank);
@@ -192,13 +200,11 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
             this = this.append_descrip('transformed to CoulombPotential');
         end
         function fp   = transformedFileprefix(this)
-            twoDigits = cell(1,3);
-            for d = 1:length(this.blur)
-                [x,x2] = strtok(num2str(this.blur(d)), '.');
-                xfused = [x x2(2:end)]; % remove decimal point
-                twoDigits{d} = xfused(1:min(2,end)); % retain only two digits
-            end
-            fp = [this.fileprefix '_CoulombRegion' twoDigits{1} twoDigits{2} twoDigits{3} 'mm'];
+            meanPrec = mean(this.precision);
+            [x,x2]   = strtok(num2str(meanPrec), '.');
+            xfused   = [x x2(2:end)]; % remove decimal point
+            meanPrec = xfused(1:min(4,end)); % retain only four digits
+            fp       = [this.fileprefix '_C' meanPrec];
         end
     end
 

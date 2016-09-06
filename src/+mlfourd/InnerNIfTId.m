@@ -688,7 +688,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 this.filesuffix = this.FILETYPE_EXT;
             end
             assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
-                   lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT));
+                   lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT) || ...
+                   lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT));
         end
         function this = ensureSingle(this)
             this.hdr_.dime.datatype = 16;
@@ -706,6 +707,20 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             this.img_ = uint8(this.img_);
         end
+        function fqfn = fqfilename4dfp(this)
+            if (~lstrfind(this.filesuffix, '.4dfp'))
+                fqfn = [this.fqfileprefix '.4dfp.img'];
+                return
+            end
+            fqfn = this.fqfilename;
+        end
+        function fqfn = fqfilenameNii(this)
+            if (~strcmp(this.filesuffix, '.nii'))
+                fqfn = [this.fqfileprefix '.nii'];
+                return
+            end
+            fqfn = this.fqfilename;
+        end
         function fqfn = fqfilenameNiiGz(this)
             if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
                 fqfn = [this.fqfileprefix this.FILETYPE_EXT];
@@ -715,6 +730,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT);
+        end
+        function tf   = hasSurferExtension(this)
+            tf = lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT);
+        end
+        function tf   = has4dfpExtension(this)            
+            tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
         end
         function        launchExternalViewer(this, app, varargin)
             assert(ischar(app));
@@ -775,17 +796,32 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             this = this.optimizePrecision;
             try
+                if (this.has4dfpExtension)
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
+                    visitor = mlfourdfp.FourdfpVisitor;
+                    visitor.nifti_4dfp_4(this.fqfileprefix);
+                    deleteExisting(this.fqfilenameNii);
+                    deleteExisting(this.fqfilenameNiiGz);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
                 if (this.hasJimmyShenExtension) 
                     warning('off', 'MATLAB:structOnObject');
                     mlniftitools.save_nii(struct(this), this.fqfilename);
                     warning('on', 'MATLAB:structOnObject');
                     return
                 end
-                warning('off', 'MATLAB:structOnObject');
-                mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
-                mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-                deleteExisting(this.fqfilenameNiiGz);
-                warning('on', 'MATLAB:structOnObject');
+                if (this.hasSurferExtension)
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+                    mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+                    deleteExisting(this.fqfilenameNiiGz);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
+                error('mlfourd:unexpectedFileExtension', ...
+                      'InnerNIfTId.save_nii could not recognize %s', this.fqfilename);
             catch ME
                 handerror(ME, ...
                     'mlfourd:IOError', ...

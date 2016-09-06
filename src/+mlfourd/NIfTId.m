@@ -214,8 +214,12 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         end
         function this = load_existing(fn)
             try
-                import mlfourd.*;
+                import mlfourd.* mlfourdfp.*;
                 e = NIfTId.selectExistingExtension(fn);
+                if (lstrfind(e, IFourdfp.SUPPORTED_EXT))
+                    this = NIfTId.load_4dfp(fn);
+                    return
+                end
                 if (lstrfind(e, JimmyShenInterface.SUPPORTED_EXT))
                     this = NIfTId.load_JimmyShen(fn);
                     return
@@ -229,10 +233,21 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                     'mlfourd:fileNotFound', 'NIfTId.load_existing could not open fn->%s', fn);
             end
         end
+        function this = load_4dfp(fn)
+            import mlfourd.* mlfourdfp.*;
+            [pth,fp] = myfileparts(fn);
+            fp2 = [fp '_' datestr(now,30)];
+            fn2 = fullfile(pth, [fp2 NIfTId.FILETYPE_EXT]); 
+            visitor = FourdfpVisitor;
+            visitor.nifti_4dfp_ng(fullfile(pth,fp), fullfile(pth, fp2));
+            this = NIfTId.load_JimmyShen(fn2);
+            this.fileprefix = fp;
+            deleteExisting(fn2);
+        end
         function this = load_surfer(fn)
             import mlfourd.*;
             [p,f] = myfileparts(fn);
-            fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]); % '_' datestr(now,30)
+            fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]); 
             mlbash(sprintf('mri_convert %s %s', fn, fn2));
             this = NIfTId.load_JimmyShen(fn2);
             this.fileprefix = f;
@@ -256,7 +271,8 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 files = mlsystem.DirTool([fn '.*']);
                 for f = 1:length(files)
                     if (lstrfind(files{f}, mlfourd.JimmyShenInterface.SUPPORTED_EXT) || ...
-                        lstrfind(files{f}, mlsurfer.SurferRegistry.SUPPORTED_EXT))
+                        lstrfind(files{f}, mlsurfer.SurferRegistry.SUPPORTED_EXT) || ...
+                        lstrfind(files{f}, mlfourdfp.Fourdfp.SUPPORTED_EXT))
                         [~,~,e] = myfileparts(files{f});
                         return
                     end
