@@ -250,7 +250,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         end
         function this = coulombPotential(this, varargin)
             import mlfourd.*;
-            b = CoulombPotentialNIfTId(this.component);
+            b = CoulombPotentialNIfTId(this.component, varargin{:});
             this = NumericalNIfTId(b.component);
         end
         function this = masked(this, varargin)

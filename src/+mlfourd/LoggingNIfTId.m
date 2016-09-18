@@ -108,8 +108,8 @@ classdef LoggingNIfTId < mlfourd.NIfTIdecorator
             f = this.fqfileprefix;
         end
         function this = set.noclobber(this, nc)
-            this.component.noclobber_ = nc;
-            this.logger_.noclobber_ = nc;
+            this.component.noclobber = nc;
+            this.logger_.noclobber = nc;
         end
         function tf   = get.noclobber(this)
             tf = this.component.noclobber;
@@ -189,7 +189,7 @@ classdef LoggingNIfTId < mlfourd.NIfTIdecorator
         end  
     end
     
-    methods (Static)        
+    methods (Static)
         function this = load(varargin)
             import mlfourd.*;
             this = LoggingNIfTId(NIfTId.load(varargin{:}));

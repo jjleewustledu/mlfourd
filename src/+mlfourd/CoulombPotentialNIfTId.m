@@ -45,6 +45,7 @@ classdef CoulombPotentialNIfTId < mlfourd.NIfTIdecoratorProperties
             %  @param 'mask' is numeric or INIfTI value, default this.ones.
 
             this = this@mlfourd.NIfTIdecoratorProperties(cmp);
+            this.noclobber = false;
             
             ip = inputParser;
             addParameter(ip, 'mask', 1,  @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));

@@ -74,12 +74,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         %% NIfTIIO
         
         function tf   = get.noclobber(this)
-            tf = this.noclobber_;
+            tf = this.filesystemRegistry_.noclobber;
         end
         function this = set.noclobber(this, nc)
             nc = logical(nc);
             this.untouch_ = false;
-            this.noclobber_ = nc;
+            this.filesystemRegistry_.noclobber = nc;
             this.logger_.noclobber = nc;
         end
         
@@ -585,6 +585,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
             
+            this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;
+            
             this.fileprefix = sprintf('instance_%s_%s', strrep(class(this), '.', '_'), datestr(now, 30));
             this.filesuffix = this.FILETYPE_EXT;
             hk   = struct( ...
@@ -645,11 +647,11 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     %% HIDDEN
     
-    properties %(Hidden)
-        filepath_   = '';
-        fileprefix_ = '';
-        filesuffix_ = '';
-        noclobber_  = true;
+    properties (Hidden)
+        filepath_   = ''
+        fileprefix_ = ''
+        filesuffix_ = ''
+        filesystemRegistry_
         
         creationDate_
         ext_ = []
@@ -831,8 +833,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function        save_untouch_nii(this)
             assert(this.untouch);            
             if (lexist(this.fqfilename, 'file'))
-                error('mlfourd:IOError:untouchPreventedSaving', ...
-                      'NIfTId.save_untouch_nii.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
+                warning('mlfourd:IOError:untouchPreventedSaving', ...
+                        'NIfTId.save_untouch_nii.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
+                return
             end             
             this = this.optimizePrecision;
             try
