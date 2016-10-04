@@ -11,8 +11,8 @@ classdef Fourdfp < mlfourd.NIfTI
 
     properties (Constant)
         FILETYPE = '4DFP';
-        FILETYPE_EXT = '.4dfp.hdr';
-        SUPPORTED_EXTENSIONS = {'.4dfp.hdr'};
+        FILETYPE_EXT = '.4dfp.ifh';
+        SUPPORTED_EXTENSIONS = {'.4dfp.ifh'};
     end
     
     properties

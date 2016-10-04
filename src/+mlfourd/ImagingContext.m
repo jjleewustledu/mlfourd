@@ -117,6 +117,19 @@ classdef ImagingContext < handle
             
             this = mlfourd.ImagingContext(obj);
         end
+        function ic   = repackageImagingContext(obj, oriClass)
+            switch (oriClass)
+                case 'mlfourd.ImagingContext'
+                    ic = mlfourd.ImagingContext(obj);
+                case 'mlmr.MRImagingContext'
+                    ic = mlmr.MRImagingContext(obj);
+                case 'mlpet.PETImagingContext'
+                    ic = mlpet.PETImagingContext(obj);
+                otherwise
+                    error('mlfourd:unsupportedSwitchCase', ....
+                          'ImagingContext.repackageImagingContext.oriClass->%s is not supported', oriClass);
+            end
+        end
     end
 
     methods

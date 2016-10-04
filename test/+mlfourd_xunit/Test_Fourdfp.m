@@ -26,19 +26,19 @@ classdef Test_Fourdfp < mlfourd_xunit.Test_mlfourd
             assertEqual('4DFP', this.aFourdfp.FILETYPE);
         end
         function test_FILETYPE_EXT(this)
-            assertEqual('.4dfp.hdr', this.aFourdfp.FILETYPE_EXT);
+            assertEqual('.4dfp.ifh', this.aFourdfp.FILETYPE_EXT);
         end
         function test_SUPPORTED_EXTENSIONS(this)            
-            assertEqual({'.4dfp.hdr'}, this.aFourdfp.SUPPORTED_EXTENSIONS);
+            assertEqual({'.4dfp.ifh'}, this.aFourdfp.SUPPORTED_EXTENSIONS);
         end
         function test_filetype(this)
             assertEqual(0, this.aFourdfp.filetype);
         end
         function test_filename(this)
-            assertEqual([this.t1_fp '.4dfp.hdr'], this.aFourdfp.filename);
+            assertEqual([this.t1_fp '.4dfp.ifh'], this.aFourdfp.filename);
         end
         function test_fqfilename(this)
-            assertEqual(fullfile(this.fslPath, [this.t1_fp '.4dfp.hdr']), this.aFourdfp.fqfilename);
+            assertEqual(fullfile(this.fslPath, [this.t1_fp '.4dfp.ifh']), this.aFourdfp.fqfilename);
         end
  		function test_load(this) 
  			import mlfourd.*; 
@@ -47,7 +47,7 @@ classdef Test_Fourdfp < mlfourd_xunit.Test_mlfourd
  		function test_save(this) 
  			import mlfourd.*; 
             tmp = this.aFourdfp;
-            tmp.fqfilename = fullfile(this.fslPath, 'Test_fourdfp_test_save.4dfp.hdr');
+            tmp.fqfilename = fullfile(this.fslPath, 'Test_fourdfp_test_save.4dfp.ifh');
             tmp.save;
             assertEqual(this.aFourdfp, mlfourd.Fourdfp.load(tmp.fqfilename));
             delete(tmp.fqfilename);
@@ -55,7 +55,7 @@ classdef Test_Fourdfp < mlfourd_xunit.Test_mlfourd
  		function test_saveas(this) 
  			import mlfourd.*; 
             tmp = this.aFourdfp;
-            tmp = tmp.saveas(fullfile(this.fslPath, 'Test_fourdfp_test_saveas.4dfp.hdr'));
+            tmp = tmp.saveas(fullfile(this.fslPath, 'Test_fourdfp_test_saveas.4dfp.ifh'));
             assertEqual(this.aFourdfp, mlfourd.Fourdfp.load(tmp.fqfilename));
             delete(tmp.fqfilename);
  		end 
