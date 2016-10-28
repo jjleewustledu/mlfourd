@@ -353,6 +353,9 @@ classdef ImagingContext < handle
             %  @throws mlfourd:IOError
             
             this.ensureAnyFormsSaved(varargin{:});
+            if (strcmp(this.filesuffix, '.4dfp.ifh'))
+                this.filesuffix = '.4dfp.img';
+            end
             this.state_.view(varargin{:});
         end
         function z  = zeros(this, varargin)
