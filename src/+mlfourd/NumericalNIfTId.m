@@ -301,6 +301,12 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             d = d.volumeSummed;
             this = NumericalNIfTId(d.component);
         end
+        function this = zoomed(this, varargin)
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            m = m.zoomed(varargin{:});
+            this = NumericalNIfTId(m.component);
+        end
                 
         %% Ctor
         

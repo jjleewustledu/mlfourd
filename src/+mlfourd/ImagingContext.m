@@ -5,6 +5,9 @@ classdef ImagingContext < handle
     %  See also:  mlfourd.ImagingState, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState,
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, 
     %             mlio.IOInterface, mlfourd.DoubleState.
+    %  When adding methods, see also:  mlfourd.ImagingState, mlfourd.NumericalNIfTIdState, mlfourd.NumericalNIfTId,
+    %                                  mlfourd.MaskingNIfTId, mlfourd.PETImagingContext, mlfourd.MRImagingContext;
+    %                                  or comparable mlfourd.*State, mlfourd.*NIfTId.
     
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -360,6 +363,13 @@ classdef ImagingContext < handle
         end
         function z  = zeros(this, varargin)
             z =  mlfourd.ImagingContext(this.state_.zeros(varargin{:}));
+        end
+        function z  = zoomed(this, varargin)
+            %% ZOOMED 
+            %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
+            %  @return internal image is zoomed.
+            
+            z =  mlfourd.ImagingContext(this.state_.zoomed(varargin{:}));
         end
         
         %% CTOR

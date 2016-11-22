@@ -102,6 +102,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function z = zeros(this, varargin)
             z = this.numericalNiftid.zeros(varargin{:});
         end
+        function z = zoomed(this, varargin)
+            z = this.numericalNiftid.zoomed(varargin{:});
+        end
         
  		function this = NumericalNIfTIdState(obj, h)
             if (~isa(obj, 'mlfourd.NumericalNIfTId'))

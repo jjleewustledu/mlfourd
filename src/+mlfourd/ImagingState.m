@@ -324,6 +324,15 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             z = this.contexth_.zeros(varargin{:});
         end
+        function z    = zoomed(this, varargin)
+            %% ZOOMED
+            %  @param [varargin] are passed to MaskedNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            z = this.contexth_.zoomed(varargin{:});
+        end
     end
     
     methods (Hidden)
