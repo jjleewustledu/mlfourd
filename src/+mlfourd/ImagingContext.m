@@ -337,7 +337,7 @@ classdef ImagingContext < handle
         end
         function p  = uthreshp(this, p)
             %% THRESHP
-            %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
+            %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
             %  @returns p, the modified imaging context
             
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
