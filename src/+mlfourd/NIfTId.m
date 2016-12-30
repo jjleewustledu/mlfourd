@@ -154,13 +154,13 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                         this.innerNIfTI_.ext_         = ip.Results.obj.ext;
                         this.innerNIfTI_.fqfileprefix = ip.Results.obj.fqfileprefix;
                         this.innerNIfTI_.filetype_    = ip.Results.obj.filetype;
-                        this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
                         this.innerNIfTI_.img_         = ip.Results.obj.img;
                         this.innerNIfTI_.label        = ip.Results.obj.label;
                         this.innerNIfTI_.noclobber    = ip.Results.obj.noclobber;
                         this.innerNIfTI_.orient_      = ip.Results.obj.orient;
                         this.innerNIfTI_.separator    = ip.Results.obj.separator;
                         this.innerNIfTI_.untouch_     = ip.Results.obj.untouch;  
+                        this.innerNIfTI_.hdr_         = ip.Results.obj.hdr;
                         this                          = this.populateLogger;
                     elseif (isa(ip.Results.obj, 'mlfourd.INIfTIc'))
                         this = NIfTId(ip.Results.obj.get(1));
