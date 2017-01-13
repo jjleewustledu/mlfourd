@@ -17,6 +17,17 @@ classdef ImagingContext < handle
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id: ImagingContext.m 2627 2013-09-16 06:18:10Z jjlee $ 
     
+    properties (Constant)
+        LOCATION_TYPES = {'folder' 'path'}
+        IMAGING_TYPES  = { ...
+            'ext' ...
+            'filename' 'fn' 'fqfilename' 'fqfn' 'fileprefix' 'fp' 'fqfileprefix' 'fqfp' ...
+            'imagingContext' 'mlfourd.ImagingContext' 'mgh' 'mgz' 'mhdr' 'mrImagingContext' 'mlmr.MRImagingContext' ...
+            'nii' 'nii.gz' 'petImagingContext' 'mlpet.PETImagingContext' 'v' 'v.hdr' 'v.mhdr' ...
+            '4dfp.hdr' '.4dfp.hdr' '4dfp.ifh' '.4dfp.ifh' '4dfp.img' '.4dfp.img' '4dfp.img.rec' '.4dfp.img.rec' ...
+            'folder' 'path'}
+    end
+    
 	properties (Dependent)
         filename
         filepath
@@ -114,11 +125,99 @@ classdef ImagingContext < handle
         end
     end 
     
-    methods (Static)
+    methods (Static)        
+        function im   = imagingType(typ, obj)
+            %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
+            %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
+            %  'fqfileprefix', 'fqfp', 'folder', 'path', 'ext', 'imagingContext', 
+            %  '4dfp.hdr', '4dfp.ifh', '4dfp.img', '4dfp.img.rec', 'v', 'v.hdr', 'v.mhdr'. 
+            %  @param obj is the representation of imaging data provided by the client.  
+            %  @returns im is the imaging data obj cast as the requested representation.
+            %  See also mlfourd.ImagingContext
+            
+            import mlfourd.*;
+            if (ischar(obj) && isdir(obj))
+                im = ImagingContext.locationType(typ, obj);
+                return
+            end
+            obj = ImagingContext(obj);
+            switch (typ)
+                case  'ext'
+                    [~,~,im] = myfileparts(obj.filename);
+                case {'filename' 'fn'}
+                    im = obj.filename;
+                case {'fqfilename' 'fqfn'}
+                    im = obj.fqfilename;
+                case {'fileprefix' 'fp'}
+                    im = obj.fileprefix;
+                case {'fqfileprefix' 'fqfp' 'fdfp'}
+                    im = obj.fqfileprefix;
+                case  'folder'
+                    [~,im] = fileparts(obj.filepath);
+                case {'imagingContext' 'mlfourd.ImagingContext'}
+                    im = mlfourd.ImagingContext(obj);
+                case  'mgh'
+                    im = [obj.fqfileprefix '.mgh'];
+                case  'mgz'
+                    im = [obj.fqfileprefix '.mgz'];
+                case  'mhdr'                    
+                    im = [obj.fqfileprefix '.mhdr'];
+                case {'mrImagingContext', 'mlmr.MRImagingContext'}
+                    im = mlmr.MRImagingContext(obj);                    
+                case  'nii'
+                    im = [obj.fqfileprefix '.nii'];
+                case  'nii.gz'
+                    im = [obj.fqfileprefix '.nii.gz'];
+                case  'path'
+                    im = obj.filepath;
+                case {'petImagingContext', 'mlpet.PETImagingContext'}
+                    im = mlpet.PETImagingContext(obj);  
+                case  'v'
+                    im = [obj.fqfileprefix '.v'];
+                case  'v.hdr'
+                    im = [obj.fqfileprefix '.v.hdr'];
+                case  'v.mhdr'
+                    im = [obj.fqfileprefix '.v.mhdr'];
+                case {'4dfp.hdr' '.4dfp.hdr'}
+                    im = [obj.fqfileprefix '.4dfp.hdr'];
+                case {'4dfp.ifh' '.4dfp.ifh'}
+                    im = [obj.fqfileprefix '.4dfp.ifh'];
+                case {'4dfp.img' '.4dfp.img'}
+                    im = [obj.fqfileprefix '.4dfp.img'];
+                case {'4dfp.img.rec' '.4dfp.img.rec'}
+                    im = [obj.fqfileprefix '.4dfp.img.rec'];
+                otherwise
+                    error('mlfourd:insufficientSwitchCases', ...
+                          'ImagingContext.imagingType.obj->%s not recognized', obj);
+            end
+        end
+        function tf   = isImagingType(t)
+            tf = lstrcmp(t, mlfourd.ImagingContext.IMAGING_TYPES);
+        end
+        function tf   = isLocationType(t)
+            tf = lstrcmp(t, mlfourd.ImagingContext.LOCATION_TYPES);
+        end
         function this = load(obj)
             %% LOAD:  cf. ctor
             
             this = mlfourd.ImagingContext(obj);
+        end
+        function loc  = locationType(typ, loc0)
+            %% LOCATIONTYPE returns location data cast as a requested representative type detailed below.
+            %  @param typ is the requested representation:  'folder', 'path'.
+            %  @param loc0 is the representation of location data provided by the client.  
+            %  @returns loc is the location data loc0 cast as the requested representation.
+            
+            assert(ischar(loc0));
+            switch (typ)
+                case 'folder'
+                    [~,loc] = fileparts(loc0);
+                case 'path'
+                    loc = loc0;
+                otherwise
+                    error('mlfourd:insufficientSwitchCases', ...
+                          'ImagingContext.locationType.loc0->%s not recognized', loc0);
+            end
         end
         function ic   = repackageImagingContext(obj, oriClass)
             switch (oriClass)

@@ -90,6 +90,7 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
         function test_save(this)
             import mlfourd.*;
             fullt1 = this.aLoader(this.t1_fqfn);
+            movefile(this.t1_fqfn, [this.t1_fqfn '.bak'], 'f');
             fullt1.save;
             saved  = this.aLoader(fullt1.fqfn);
             this.assertTrue(isequal(fullt1.img, saved.img));

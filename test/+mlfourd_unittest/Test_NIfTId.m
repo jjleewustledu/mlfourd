@@ -156,7 +156,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.filepath, myfileparts(this.T1_mgz));
             this.verifyEqual(niid.fileprefix, 'T1');
             this.verifyEqual(niid.filesuffix, '.nii.gz');
-            this.verifyTrue(~lexist(niid.fqfilename));
+            %this.verifyTrue(~lexist(niid.fqfilename));
         end
         function test_ctorParametersAdjusted(this)
             niid = mlfourd.NIfTId(this.testObj.img, ...
@@ -511,12 +511,12 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_hdr(this)
             this.verifyEqual(this.testObj.hdr.hk.sizeof_hdr, 348);
             this.verifyEqual(this.testObj.hdr.dime.dim,    [3 128 128 63 1 1 1 1]);
-            this.verifyEqual(this.testObj.hdr.dime.pixdim, [-1 2.0033 2.0033 2.4250 1.5000 0 0 0], 'RelTol', 1e-4);
+            this.verifyEqual(this.testObj.hdr.dime.pixdim, [-1 2.003313 2.003313 2.424999 1.5 1 1 1], 'RelTol', 1e-4);
             this.verifyEqual(this.testObj.hdr.dime.vox_offset, 352);
             this.verifyEqual(this.testObj.hdr.dime.glmax, 821.72595214, 'RelTol', 1e-8);
             this.verifyEqual(this.testObj.hdr.dime.glmin, 0.9186493158, 'RelTol', 1e-8);
-            this.verifyEqual(this.testObj.hdr.hist.qform_code, 2);
-            this.verifyEqual(this.testObj.hdr.hist.sform_code, 2);
+            this.verifyEqual(this.testObj.hdr.hist.qform_code, 1);
+            this.verifyEqual(this.testObj.hdr.hist.sform_code, 1);
             this.verifyEqual(this.testObj.hdr.hist.quatern_b, 0);
             this.verifyEqual(this.testObj.hdr.hist.quatern_c, 1);
             this.verifyEqual(this.testObj.hdr.hist.quatern_d, 0);
@@ -636,7 +636,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             [s,r] = mlbash('pwd', 'logger', lg);
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyEqual(lg.contents(22:63), 'mlpipeline.Logger from jjlee at innominate');
+            this.verifyEqual(lg.contents(27:68), 'mlpipeline.Logger from jjlee at innominate');
             %this.verifyEqual(lg.contents(214:216), 'pwd'); % varies with hostname
             this.verifyEqual(lg.contents(end-70:end), this.fslPath);
             
@@ -655,7 +655,10 @@ classdef Test_NIfTId < matlab.unittest.TestCase
  	methods (TestMethodSetup)
 		function setupNIfTIdTest(this)
             cd(this.fslPath);
-            mlbash('rm *.log');
+            dt = mlsystem.DirTool('*.log');
+            if (dt.length > 0)
+                delete('*.log');
+            end
  			this.testObj = this.testObj_; 
             this.addTeardown(@this.cleanupFiles);
  		end

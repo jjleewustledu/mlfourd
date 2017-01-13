@@ -96,8 +96,8 @@ classdef UnittestRegistry < mlpatterns.Singleton
         end
     end
     
-	methods (Access = private)	 
- 		function this = UnittestRegistry(varargin) 			
+	methods (Access = private)
+ 		function this = UnittestRegistry(varargin)
  			this = this@mlpatterns.Singleton(varargin{:}); 			
  		end
  	end 

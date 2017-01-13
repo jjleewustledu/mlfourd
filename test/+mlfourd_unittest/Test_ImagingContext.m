@@ -97,10 +97,11 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             g = fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext.nii.gz');
         end
         function g = get.testthis_fqfns(this)
-            g = {fullfile(this.registry.petPath, 'p7686ho1_frames', 'Test_ImagingContext_p7686ho1.nii.gz') ...
-                 fullfile(this.registry.petPath, 'p7686oo1_frames', 'Test_ImagingContext_p7686oo1.nii.gz') ...
-                 fullfile(this.registry.petPath, 'p7686oc1_frames', 'Test_ImagingContext_p7686oc1_03.nii.gz') ...
-                 fullfile(this.registry.petPath, 'p7686tr1_frames', 'Test_ImagingContext_p7686tr1_01.nii.gz')};
+            p = this.registry.pnum;
+            g = {fullfile(this.registry.petPath, [p 'ho1_frames'], ['Test_ImagingContext_' p 'ho1.nii.gz']) ...
+                 fullfile(this.registry.petPath, [p 'oo1_frames'], ['Test_ImagingContext_' p 'oo1.nii.gz']) ...
+                 fullfile(this.registry.petPath, [p 'oc1_frames'], ['Test_ImagingContext_' p 'oc1_03.nii.gz']) ...
+                 fullfile(this.registry.petPath, [p 'tr1_frames'], ['Test_ImagingContext_' p 'tr1_01.nii.gz'])};
         end
     end
 
@@ -206,7 +207,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
 %                this.testObj.view(ImagingContext(this.smallT1_niid.img));
             end
         end
-        function test_view_moreImagingContexts(this)
+        function test_view_moreImagingContexts(this) %% TODO:  pass test
 %             moreIC = cell(1, length(this.testObjs));
 %             iter = this.testOb.createIterator;
 %             m = 1;
@@ -521,7 +522,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');            
             this.deleteFiles;
         end
-        function test_saveasNIfTIcState(this)            
+        function test_saveasNIfTIcState(this)
             ic = this.testObjs;
             this.verifyWarning(@() ic.saveas('Test_ImagingContext_'), 'mlfourd:ambiguousCompositeRequest');
             this.verifyEqual(ic.fqfn, this.testthis_fqfns);
@@ -529,7 +530,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');  
             this.deleteFiles;
         end
-        function test_saveasManyNIfTIcState(this)            
+        function test_saveasManyNIfTIcState(this)
             ic = this.testObjs;
             ic.saveas(this.testthis_fqfns);
             this.verifyEqual(ic.fqfn, this.testthis_fqfns);
@@ -537,7 +538,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.NIfTIcState');  
             this.deleteFiles;
         end
-        function test_saveasFilenameState(this)            
+        function test_saveasFilenameState(this)
             ic = mlfourd.ImagingContext.load(this.smallT1_fqfn);
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
@@ -545,7 +546,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilenameState');   
             this.deleteFiles;
         end
-        function test_saveasDoubleState(this)            
+        function test_saveasDoubleState(this)
             ic = mlfourd.ImagingContext(magic(10));
             ic.saveas(this.testthis_fqfn);
             this.verifyEqual(ic.fqfn, this.testthis_fqfn);
@@ -653,11 +654,12 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(niid.fileprefix, fp); 
         end
         function deleteFiles(this)
+            p = this.registry.pnum;
             deleteExisting2(fullfile(this.registry.sessionPath, 'fsl', 'Test_ImagingContext*'));
-            deleteExisting2(fullfile(this.registry.petPath, 'p7686ho1_frames', 'Test_ImagingContext*'));
-            deleteExisting2(fullfile(this.registry.petPath, 'p7686oo1_frames', 'Test_ImagingContext*'));
-            deleteExisting2(fullfile(this.registry.petPath, 'p7686oc1_frames', 'Test_ImagingContext*'));
-            deleteExisting2(fullfile(this.registry.petPath, 'p7686tr1_frames', 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, [p 'ho1_frames'], 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, [p 'oo1_frames'], 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, [p 'oc1_frames'], 'Test_ImagingContext*'));
+            deleteExisting2(fullfile(this.registry.petPath, [p 'tr1_frames'], 'Test_ImagingContext*'));
         end
     end
     
