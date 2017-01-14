@@ -68,8 +68,7 @@ classdef FourdfpState < mlfourd.ImagingState
                 this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
             end
             try
-                [~,r] = this.fourdfpVisitor_.nifti_4dfp_n(this.fqfp);
-                fprintf(r);
+                this.fourdfpVisitor_.nifti_4dfp_n(this.fqfp);
                 this.filesuffix = '.nii';
                 fqfn0 = this.fqfn;
                 fqfn1 = gzip(fqfn0);
@@ -87,8 +86,7 @@ classdef FourdfpState < mlfourd.ImagingState
                 if (lstrfind('.gz', this.filesuffix))
                     this.fqfn = gunzip(this.fqfn);
                 end
-                [~,r] = this.fourdfpVisitor_.nifti_4dfp_4(this.fqfp);
-                fprintf(r);
+                this.fourdfpVisitor_.nifti_4dfp_4(this.fqfp);
                 this.filesuffix = '.4dfp.img';
             catch ME
                 handexcept(ME);
