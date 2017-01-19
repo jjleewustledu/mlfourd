@@ -108,6 +108,24 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
 	methods (Test)
         function test_setup(this)
             this.verifyInstanceOf(this.testObj, 'mlfourd.ImagingContext');
+        end        
+        function test_imagingType(this)
+            import mlraichle.*;
+            obj = fullfile(getenv('PPG'), 'jjlee', 'HYGLY24', 'V1', 'mpr.4dfp.img');
+            this.verifyEqual(imagingType('fn', obj),             basename(obj));
+            this.verifyEqual(imagingType('fqfn', obj),           obj);
+            this.verifyEqual(imagingType('fp', obj),             'mpr');
+            this.verifyEqual(imagingType('fqfp', obj),           myfileprefix(obj));
+            this.verifyEqual(imagingType('folder', obj),         'V1');
+            this.verifyEqual(imagingType('path', obj),           myfileparts(obj));
+            this.verifyEqual(imagingType('ext', obj),            '.4dfp.img');
+            this.verifyClass(imagingType('imagingContext', obj), 'mlfourd.ImagingContext');
+        end
+        function test_locationType(this)
+            import mlraichle.*;
+            loc = fullfile(getenv('PPG'), 'jjlee', 'HYGLY24', 'V1', '');
+            this.verifyEqual(locationType('path', loc), loc);
+            this.verifyEqual(locationType('folder', loc), 'V1');
         end
         
         %% properties
