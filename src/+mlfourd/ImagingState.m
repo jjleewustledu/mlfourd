@@ -19,6 +19,10 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         numericalNiftid
     end
     
+    properties 
+        viewer = 'fslview'
+    end
+    
     properties (Dependent)
         filename
         filepath

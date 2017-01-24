@@ -125,7 +125,7 @@ classdef ImagingContext < handle
         end
     end 
     
-    methods (Static)        
+    methods (Static)
         function im   = imagingType(typ, obj)
             %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
             %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',

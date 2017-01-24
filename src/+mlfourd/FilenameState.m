@@ -57,7 +57,7 @@ classdef FilenameState < mlfourd.ImagingState
     methods
         function        view(this, varargin)
             mlbash(sprintf( ...
-                'freeview %s %s', this.concreteObj_.fqfilename, imaging2str(varargin{:})));
+                '%s %s %s', this.viewer, this.concreteObj_.fqfilename, imaging2str(varargin{:})));
         end        
         function this = FilenameState(obj, h)
             try

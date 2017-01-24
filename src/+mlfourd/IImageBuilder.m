@@ -9,11 +9,11 @@ classdef (Abstract) IImageBuilder < mlpipeline.IImageBuilder
  	%% It was developed on Matlab 9.1.0.441655 (R2016b) for MACI64.
  	
 
-	properties
+	properties (Abstract)
  		
  	end
 
-	methods 
+	methods (Abstract)
 		  
  	end 
 
