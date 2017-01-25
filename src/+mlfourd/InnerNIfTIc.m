@@ -63,6 +63,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
+        viewer
     end 
 
     methods %% GET/SET
@@ -180,9 +181,15 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function g    = get.stack(this)
             g = this.innerCellComp_.getter('stack');
         end
+        function v    = get.viewer(this)
+            v = this.viewer_;
+        end
+        function this = set.viewer(this, v)
+            this.viewer_ = v;
+        end
     end
     
-	methods        
+	methods
         
         %% NIfTIIO
         
@@ -332,9 +339,10 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     %% HIDDEN
     
-    properties %(Hidden)
+    properties (Hidden)
         innerCellComp_
         originalType_
+        viewer_ = 'freeview'
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

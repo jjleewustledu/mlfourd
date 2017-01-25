@@ -9,7 +9,7 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
  	
-
+    
 	properties (Dependent) 
         
         %% NIfTIIO
@@ -55,6 +55,7 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
+        viewer
     end
     
     methods %% SET/GET
@@ -240,6 +241,12 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
             
             s = this.innerNIfTI_.stack;
         end
+        function v    = get.viewer(this)
+            v = this.innerNIfTI_.viewer;
+        end
+        function this = set.viewer(this, v)
+            this.innerNIfTI_.viewer = v;
+        end
     end
     
 	methods
@@ -328,6 +335,7 @@ classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface &
             E = this.innerNIfTI_.fslEntropy;
         end
         function view(this, varargin)
+            this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
         function freeview(this, varargin)

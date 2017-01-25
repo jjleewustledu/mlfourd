@@ -189,53 +189,33 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
             this.verifyEqual(double(this.testObj.niftid), img);
         end
         function test_view_niftid(this)
-            import mlfourd.*;
-            if (this.view)
-                this.testObj.view;
-            end
+            this.testObj.view;
         end
         function test_view_niftic(this)
-            import mlfourd.*;
-            if (this.view)
-                this.testObjs.view;
-            end
+            this.testObjs.view;
         end
         function test_view_options(this)
-            if (this.view)
-                mriPth  = fullfile(this.registry.sessionPath, 'mri');
-                surfPth = fullfile(this.registry.sessionPath, 'surf');
-                ic = mlfourd.ImagingContext(fullfile(mriPth, 'T1.mgz'));
-                ic.view({ ...
-                    fullfile(mriPth,  'wm.mgz') ...
-                    fullfile(mriPth,  'brainmask.mgz') ...
-                    fullfile(mriPth,  'aseg.mgz:colormap=lut:opacity=0.2') ...
-             ['-f ' fullfile(surfPth, 'lh.white:edgecolor=blue')] ...
-                    fullfile(surfPth, 'lh.pial:edgecolor=red') ...
-                    fullfile(surfPth, 'rh.white:edgecolor=blue') ...
-                    fullfile(surfPth, 'rh.pial:edgecolor=red')});
-            end
+            mriPth  = fullfile(this.registry.sessionPath, 'mri');
+            surfPth = fullfile(this.registry.sessionPath, 'surf');
+            ic = mlfourd.ImagingContext(fullfile(mriPth, 'T1.mgz'));
+            ic.view({ ...
+                fullfile(mriPth,  'wm.mgz') ...
+                fullfile(mriPth,  'brainmask.mgz') ...
+                fullfile(mriPth,  'aseg.mgz:colormap=lut:opacity=0.2') ...
+         ['-f ' fullfile(surfPth, 'lh.white:edgecolor=blue')] ...
+                fullfile(surfPth, 'lh.pial:edgecolor=red') ...
+                fullfile(surfPth, 'rh.white:edgecolor=blue') ...
+                fullfile(surfPth, 'rh.pial:edgecolor=red')});
         end
-        function test_view_plusImagingContext(this)
-            import mlfourd.*;
-            if (this.view)
-%                 this.testObj.view(this.testObjs);
-%                 this.testObj.view(ImagingContext(this.testObj));
-%                 this.testObj.view(ImagingContext(this.numerical));
-%                 this.testObj.view(ImagingContext(this.smallT1_fqfn));
-%                this.testObj.view(ImagingContext(this.smallT1_niid.img));
-            end
+        function test_view_additionalImagingContext(this)
+            this.testObj.view(this.testObj);
         end
-        function test_view_moreImagingContexts(this) %% TODO:  pass test
-%             moreIC = cell(1, length(this.testObjs));
-%             iter = this.testOb.createIterator;
-%             m = 1;
-%             while (iter.hasNext)
-%                 moreIC{m} = iter.next;
-%                 m = m + 1;
-%             end
-%             if (this.view)
-%                 this.testObj.view(moreIC{:});
-%             end
+        function test_view_additionalImagingContexts(this)
+            this.testObj.view(this.testObj, this.testObj);
+        end
+        function test_view_ensureAnyFormsSaved(this)
+            this.testObj = this.testObj.binarized;
+            this.testObj.view;
         end
           
         %% factory methods

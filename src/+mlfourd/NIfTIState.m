@@ -13,6 +13,7 @@ classdef NIfTIState < mlfourd.ImagingState
 
 	properties (Dependent)
         cellComposite
+        fourdfp
         mgh
         niftic
         niftid
@@ -20,10 +21,15 @@ classdef NIfTIState < mlfourd.ImagingState
     end
 
 	methods %% GET
-        function f = get.cellComposite(this)            
+        function f = get.cellComposite(this)
             this.contexth_.changeState( ...
                 mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
             f = this.contexth_.cellComposite;
+        end
+        function f = get.fourdfp(this)
+            this.contexth_.changeState( ...
+                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.fourdfp;
         end
         function f = get.mgh(this)
             this.contexth_.changeState( ...
@@ -35,7 +41,7 @@ classdef NIfTIState < mlfourd.ImagingState
                 mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftic;
         end
-        function f = get.niftid(this)            
+        function f = get.niftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftid;

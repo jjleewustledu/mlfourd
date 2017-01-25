@@ -14,6 +14,7 @@ classdef FilenameState < mlfourd.ImagingState
  	
 	properties (Dependent)
         cellComposite
+        fourdfp
         mgh
         niftic
         niftid
@@ -25,6 +26,11 @@ classdef FilenameState < mlfourd.ImagingState
             this.contexth_.changeState( ...
                 mlfourd.CellCompositeState(this.fqfilename, this.contexth_));
             f = this.contexth_.cellComposite;
+        end
+        function f  = get.fourdfp(this)
+            this.contexth_.changeState( ...
+                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.fourdfp;
         end
         function f  = get.mgh(this)
             this.contexth_.changeState( ...
@@ -41,23 +47,17 @@ classdef FilenameState < mlfourd.ImagingState
                 mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftid;
         end
-        function g = get.numericalNiftid(this)
+        function f  = get.numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
-            g = this.contexth_.numericalNiftid;
-        end
-    end
-    
-    methods (Static)
-        function this = load(varargin)
-            this = mlfourd.FilenameState(varargin{:});
+            f = this.contexth_.numericalNiftid;
         end
     end
     
     methods
         function        view(this, varargin)
-            mlbash(sprintf( ...
-                '%s %s %s', this.viewer, this.concreteObj_.fqfilename, imaging2str(varargin{:})));
+            this.concreteObj_.viewer = this.viewer;
+            this.concreteObj_.view(varargin{:});
         end        
         function this = FilenameState(obj, h)
             try

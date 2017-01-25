@@ -52,6 +52,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         lexistFile
         separator
         stack
+        viewer
     end
   
     methods %% SET/GET
@@ -228,6 +229,12 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         end
         function s    = get.stack(this)
             s = this.component.stack;
+        end
+        function s    = get.viewer(this)
+            s = this.component.viewer;
+        end
+        function this = set.viewer(this, s)
+            this.component.viewer = s;
         end
     end
     

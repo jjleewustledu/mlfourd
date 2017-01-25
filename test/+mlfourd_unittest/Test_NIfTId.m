@@ -245,6 +245,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             adelta.img = [];
             this.verifyTrue(isequal(a0, a));
         end
+        function test_view(this)
+            this.testObj.view;
+        end
         function test_makeSimilar(this)
             a = this.testObj;
             b = a.makeSimilar;

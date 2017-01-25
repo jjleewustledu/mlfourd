@@ -310,9 +310,9 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
                 
         %% Ctor
         
-        function this = NumericalNIfTId(varargin)
-            this = this@mlfourd.NIfTIdecoratorProperties(varargin{:});
-            if (nargin == 1 && isa(varargin{1}, 'mlfourd.NumericalNIfTId'))
+        function this = NumericalNIfTId(cmp, varargin)
+            this = this@mlfourd.NIfTIdecoratorProperties(cmp, varargin{:});
+            if (nargin == 1 && isa(cmp, 'mlfourd.NumericalNIfTId'))
                 this = this.component;
                 return
             end

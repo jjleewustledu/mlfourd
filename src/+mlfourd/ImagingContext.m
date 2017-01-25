@@ -40,12 +40,13 @@ classdef ImagingContext < handle
         noclobber
         
         cellComposite
+        fourdfp
         mgh
         niftic
         niftid
-        numericalNiftid
-        
+        numericalNiftid        
         stateTypeclass
+        viewer
     end
     
 	methods %% GET/SET
@@ -80,6 +81,9 @@ classdef ImagingContext < handle
         function f = get.cellComposite(this)
             f = this.state_.cellComposite;
         end
+        function f = get.fourdfp(this)
+            f = this.state_.fourdfp;
+        end
         function f = get.mgh(this)
             f = this.state_.mgh;
         end
@@ -94,6 +98,9 @@ classdef ImagingContext < handle
         end        
         function c = get.stateTypeclass(this)
             c = class(this.state_);
+        end
+        function v = get.viewer(this)
+            v = this.state_.viewer;
         end
         
         function set.filename(this, f)
@@ -122,6 +129,11 @@ classdef ImagingContext < handle
         end
         function set.noclobber(this, f)
             this.state_.noclobber = f;
+        end
+        
+        function set.viewer(this, v)
+            assert(ischar(v));
+            this.state_.viewer = v;
         end
     end 
     
@@ -450,14 +462,12 @@ classdef ImagingContext < handle
         end
         function      view(this, varargin)
             %% VIEW
-            %  @param are additional filenames and other arguments to pass to the viewer.
+            %  @param are additional filenames and other arguments to pass to the viewer, 
+            %  which will be saved to the filesystem as needed.
             %  @return new window with a view of the imaging state
             %  @throws mlfourd:IOError
             
             this.ensureAnyFormsSaved(varargin{:});
-            if (strcmp(this.filesuffix, '.4dfp.ifh'))
-                this.filesuffix = '.4dfp.img';
-            end
             this.state_.view(varargin{:});
         end
         function z  = zeros(this, varargin)
@@ -531,7 +541,7 @@ classdef ImagingContext < handle
             if (ischar(obj)) 
                 % filename need not yet exist 
                 if (FourdfpState.isFourdfp(obj))
-                    this.state_ = FourdfpState(obj, this);
+                    this.state_ = FourdfpState(mlfourdfp.Fourdfp.load(obj), this);
                     return
                 end
                 this.state_ = FilenameState(obj, this);
@@ -562,10 +572,14 @@ classdef ImagingContext < handle
     
     properties (Access = protected)
         state_
-    end
+    end    
     
     methods (Static, Access = protected)
         function ensureAnyFormsSaved(varargin)
+            %% ENSUREANYFORMSSAVED saves all INIfTIc, INIfTId to the filesystem.
+            %  @param varargin of imaging objects (ImagingContext, NIfTIcState, INIfTIc, INIfTId)
+            %  TODO:  consider moving ensureAnyFormsSaved to mlfourd.ImagingState.
+            
             for v = 1:length(varargin)
                 vobj = varargin{v};
                 if (isa(vobj, 'mlfourd.ImagingContext'))

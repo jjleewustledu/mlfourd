@@ -13,14 +13,11 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
  	 
 	properties (Abstract)
         cellComposite
+        fourdfp
         mgh
         niftic
         niftid
         numericalNiftid
-    end
-    
-    properties 
-        viewer = 'fslview'
     end
     
     properties (Dependent)
@@ -33,6 +30,8 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         fqfn
         fqfp
         noclobber
+        
+        viewer
     end
     
     methods %% GET, SET
@@ -64,6 +63,14 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             f = this.concreteObj_.noclobber;
         end
         
+        function f = get.viewer(this)
+            if (isprop(this.concreteObj_, 'viewer'))
+                f = this.concreteObj_.viewer;
+                return
+            end
+            f = 'freeview';
+        end
+        
         function this = set.filename(this, f)
             this.concreteObj_.filename = f;
         end  
@@ -90,6 +97,13 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         end     
         function this = set.noclobber(this, f)
             this.concreteObj_.noclobber = f;
+        end
+        
+        function this = set.viewer(this, f)
+            if (isprop(this.concreteObj_, 'viewer'))
+                assert(ischar(f));
+                this.concreteObj_.viewer = f;
+            end
         end
     end    
         
@@ -313,8 +327,9 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             s = this.contexth_.volumeSummed(varargin{:});
         end
         function        view(this, varargin)
-            %% VIEW
-            %  @param [varargin] are passed to NIfTIdState after a state-change
+            %% VIEW is a default implementation that view images directly from the filesystem.
+            %  Override so as to view images in hardware memmory.  
+            %  @param [varargin] are passed to FilenameState after a state-change
             
             import mlfourd.*;
             this.contexth_.changeState( ...

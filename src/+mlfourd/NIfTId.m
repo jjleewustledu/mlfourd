@@ -311,7 +311,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                             this.innerNIfTI_.ext_ = ip.Results.ext;
                         case 'hdr'
                             this.innerNIfTI_.hdr_ = ip.Results.hdr;
-                        case 'img'                            
+                        case 'img'
                             this.innerNIfTI_.img_ = ip.Results.img;
                         case 'obj'
                         otherwise

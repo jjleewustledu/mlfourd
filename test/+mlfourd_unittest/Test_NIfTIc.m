@@ -68,7 +68,7 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
         function test_setup(this)
             this.verifyInstanceOf(this.testObj, 'mlfourd.NIfTIc');
         end
-		function test_ctor(this)            
+		function test_ctor(this)
             this.verifyEqual(this.testObj.fileprefix, ...
                 {[this.pnum 'ho1'] [this.pnum 'oo1'] [this.pnum 'oc1_03'] [this.pnum 'tr1_01']});
             this.verifyEqual(this.testObj.entropy, ...
@@ -101,6 +101,9 @@ classdef Test_NIfTIc < matlab.unittest.TestCase
             this.verifyEqual(acc.dipmedian, 4.29219835940292, 'RelTol', 1e-6);
             this.verifyEqual(acc.entropy,   1.59063853530086, 'RelTol', 1e-6);
             %acc.freeview;
+        end
+        function test_view(this)
+            this.testObj.view;
         end
 	end
 

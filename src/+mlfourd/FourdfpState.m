@@ -11,10 +11,11 @@ classdef FourdfpState < mlfourd.ImagingState
 
 	properties (Dependent)
         cellComposite
+        fourdfp
         mgh
         niftic
         niftid
-        numericalNiftid
+        numericalNiftid        
     end
     
     methods %% GET
@@ -23,6 +24,9 @@ classdef FourdfpState < mlfourd.ImagingState
             this.contexth_.changeState( ...
                 mlfourd.CellCompositeState(this.fqfilename, this.contexth_));
             f = this.contexth_.cellComposite;
+        end
+        function f  = get.fourdfp(this)
+            f = this.concreteObj_;
         end
         function f  = get.mgh(this)
             this = this.nifti_4dfp_n;
@@ -42,7 +46,7 @@ classdef FourdfpState < mlfourd.ImagingState
                 mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftid;
         end
-        function g = get.numericalNiftid(this)
+        function g  = get.numericalNiftid(this)
             this = this.nifti_4dfp_n;
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
@@ -63,6 +67,9 @@ classdef FourdfpState < mlfourd.ImagingState
     end
     
 	methods
+        function        addLog(this, varargin)
+            this.concreteObj_.addLog(varargin{:});
+        end
         function this = nifti_4dfp_n(this)
             if (isempty(this.fourdfpVisitor_))
                 this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
@@ -93,15 +100,17 @@ classdef FourdfpState < mlfourd.ImagingState
             end
         end
         function        view(this, varargin)
-            mlbash(sprintf( ...
-                'freeview %s %s', this.concreteObj_.fqfilename, imaging2str(varargin{:})));
+            this.concreteObj_.viewer = this.viewer;
+            this.concreteObj_.view(varargin{:});
         end 
  		function this = FourdfpState(obj, h)
-            try
-                obj = mlio.ConcreteIO(obj);
-            catch ME
-                handexcept(ME, 'mlfourd:castingError', ...
-                    'FourdfpState does not support objects of type %s', class(obj));
+            if (~isa(obj, 'mlfourdfp.Fourdfp'))
+                try
+                    obj = mlfourdfp.Fourdfp(obj);
+                catch ME
+                    handexcept(ME, 'mlfourdfp:castingError', ...
+                        'FourdfpState does not support objects of type %s', class(obj));
+                end
             end
             this.concreteObj_ = obj;
             this.contexth_ = h;

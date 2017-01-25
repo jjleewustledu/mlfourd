@@ -10,7 +10,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     
     properties (Constant)
         DESC_LEN_LIM = 1024*1024; % limit to #char of desc; accumulate extended descriptions with LoggingNIfTId
-    end
+    end    
     
     properties (Dependent)
         
@@ -67,6 +67,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
+        viewer
     end 
 
  	methods %% GET/SET
@@ -318,6 +319,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             s = this.stack_;
         end
+        function v    = get.viewer(this)
+            v = this.viewer_;
+        end
+        function this = set.viewer(this, v)
+            this.viewer_ = v;
+        end
     end
        
     methods
@@ -529,7 +536,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             E = str2double(E);
         end 
         function        view(this, varargin)
-            this.freeview(varargin{:});
+            this.launchExternalViewer(this.viewer, varargin{:});
         end
         function        freeview(this, varargin)
             %% FREEVIEW
@@ -664,7 +671,8 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         originalType_
         separator_ = ';'
         stack_   
-        untouch_ = true     
+        untouch_ = true
+        viewer_ = 'freeview'
     end
     
     %% PRIVATE
@@ -736,7 +744,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function tf   = hasSurferExtension(this)
             tf = lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT);
         end
-        function tf   = has4dfpExtension(this)            
+        function tf   = has4dfpExtension(this)
             tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
         end
         function        launchExternalViewer(this, app, varargin)
