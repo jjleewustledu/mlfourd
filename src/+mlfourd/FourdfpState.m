@@ -15,7 +15,8 @@ classdef FourdfpState < mlfourd.ImagingState
         mgh
         niftic
         niftid
-        numericalNiftid        
+        numericalNiftid
+        petNiftid
     end
     
     methods %% GET
@@ -52,6 +53,12 @@ classdef FourdfpState < mlfourd.ImagingState
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
+        function f = get.petNiftid(this)
+            this = this.nifti_4dfp_n;
+            this.contexth_.changeState( ...
+                mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.petNiftid;
+        end  
     end
     
     methods (Static)

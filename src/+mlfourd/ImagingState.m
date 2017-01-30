@@ -18,6 +18,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         niftic
         niftid
         numericalNiftid
+        %petNiftid
     end
     
     properties (Dependent)

@@ -17,20 +17,21 @@ classdef CellCompositeState < mlfourd.ImagingState
         niftic
         niftid
         numericalNiftid
+        petNiftid
     end
 
-	methods %% GET  
+	methods %% GET 
         function f = get.cellComposite(this)
             f = this.concreteObj_;
         end
         function f = get.fourdfp(this)
             this.contexth_.changeState( ...
-                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+                mlfourd.FourdfpState(this.concreteObj_.get(1), this.contexth_));
             f = this.contexth_.fourdfp;
         end
         function f = get.mgh(this)
             this.contexth_.changeState( ...
-                mlfourd.MGHState(this.concreteObj_, this.contexth_));
+                mlfourd.MGHState(this.concreteObj_.get(1), this.contexth_));
             f = this.contexth_.mgh;
         end
         function f = get.niftic(this)  
@@ -46,9 +47,14 @@ classdef CellCompositeState < mlfourd.ImagingState
         end
         function g = get.numericalNiftid(this)
             this.contexth_.changeState( ...
-                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+                mlfourd.NumericalNIfTIdState(this.concreteObj_.get(1), this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
+        function f = get.petNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.PETNIfTIdState(this.concreteObj_.get(1), this.contexth_));
+            f = this.contexth_.petNiftid;
+        end  
     end 
     
     methods 

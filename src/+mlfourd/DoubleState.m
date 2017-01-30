@@ -18,6 +18,7 @@ classdef DoubleState < mlfourd.ImagingState
         niftic
         niftid
         numericalNiftid
+        petNiftid
  	end
 
     methods %% GET
@@ -50,6 +51,11 @@ classdef DoubleState < mlfourd.ImagingState
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
+        end
+        function f = get.petNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.petNiftid;
         end
     end 
      

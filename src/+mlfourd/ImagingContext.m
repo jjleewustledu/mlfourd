@@ -44,7 +44,8 @@ classdef ImagingContext < handle
         mgh
         niftic
         niftid
-        numericalNiftid        
+        numericalNiftid
+        petNiftid
         stateTypeclass
         viewer
     end
@@ -95,6 +96,9 @@ classdef ImagingContext < handle
         end
         function f = get.numericalNiftid(this)
             f = this.state_.numericalNiftid;
+        end     
+        function f = get.petNiftid(this)
+            f = this.state_.petNiftid;
         end        
         function c = get.stateTypeclass(this)
             c = class(this.state_);
@@ -540,10 +544,6 @@ classdef ImagingContext < handle
             end
             if (ischar(obj)) 
                 % filename need not yet exist 
-                if (FourdfpState.isFourdfp(obj))
-                    this.state_ = FourdfpState(mlfourdfp.Fourdfp.load(obj), this);
-                    return
-                end
                 this.state_ = FilenameState(obj, this);
                 return
             end
