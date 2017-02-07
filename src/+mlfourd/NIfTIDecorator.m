@@ -120,6 +120,7 @@ classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
             %  Usage:  obj = NIfTIdecorator(INIfTI_object);
 
             ip = inputParser;
+            ip.KeepUnmatched = true;
             addOptional(ip, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.INIfTI'));
             parse(ip, varargin{:});
             this.component = ip.Results.cmp;

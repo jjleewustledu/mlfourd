@@ -170,29 +170,27 @@ classdef ImagingContext < handle
                     im = obj.fqfileprefix;
                 case  'folder'
                     [~,im] = fileparts(obj.filepath);
-                case {'imagingContext' 'mlfourd.ImagingContext'}
+                case {'imagingContext' 'ImagingContext' 'mlfourd.ImagingContext'}
                     im = mlfourd.ImagingContext(obj);
-                case  'mgh'
-                    im = [obj.fqfileprefix '.mgh'];
-                case  'mgz'
+                case {'mgz' '.mgz'}
                     im = [obj.fqfileprefix '.mgz'];
-                case  'mhdr'                    
+                case {'mhdr' '.mhdr'}
                     im = [obj.fqfileprefix '.mhdr'];
-                case {'mrImagingContext', 'mlmr.MRImagingContext'}
+                case {'mrImagingContext' 'MRImagingContext' 'mlmr.MRImagingContext'}
                     im = mlmr.MRImagingContext(obj);                    
-                case  'nii'
+                case {'nii' '.nii'}
                     im = [obj.fqfileprefix '.nii'];
-                case  'nii.gz'
+                case {'nii.gz' '.nii.gz'}
                     im = [obj.fqfileprefix '.nii.gz'];
                 case  'path'
                     im = obj.filepath;
-                case {'petImagingContext', 'mlpet.PETImagingContext'}
+                case {'petImagingContext' 'PETImagingContext' 'mlpet.PETImagingContext'}
                     im = mlpet.PETImagingContext(obj);  
-                case  'v'
+                case {'v' '.v'}
                     im = [obj.fqfileprefix '.v'];
-                case  'v.hdr'
+                case {'v.hdr' '.v.hdr'}
                     im = [obj.fqfileprefix '.v.hdr'];
-                case  'v.mhdr'
+                case {'v.mhdr' '.v.mhdr'}
                     im = [obj.fqfileprefix '.v.mhdr'];
                 case {'4dfp.hdr' '.4dfp.hdr'}
                     im = [obj.fqfileprefix '.4dfp.hdr'];
@@ -202,6 +200,20 @@ classdef ImagingContext < handle
                     im = [obj.fqfileprefix '.4dfp.img'];
                 case {'4dfp.img.rec' '.4dfp.img.rec'}
                     im = [obj.fqfileprefix '.4dfp.img.rec'];
+                case 'cellComposite'
+                    im = obj.cellComposite;
+                case 'fourdfp'
+                    im = obj.fourdfp;
+                case  'mgh'
+                    im = obj.mgh;
+                case  'niftic'
+                    im = obj.niftic;
+                case  'niftid'
+                    im = obj.niftid;
+                case  'numericalNiftid'
+                    im = obj.numericalNiftid;
+                case  'petNiftid'
+                    im = obj.petNiftid;
                 otherwise
                     error('mlfourd:insufficientSwitchCases', ...
                           'ImagingContext.imagingType.obj->%s not recognized', obj);
@@ -357,6 +369,9 @@ classdef ImagingContext < handle
             %  @return l is the length of a composite imaging state
             
             l = this.state_.length;
+        end        
+        function l  = logical(this)
+            l = this.double > 0;
         end
         function m  = masked(this, varargin)
             %% MASKED
@@ -400,6 +415,9 @@ classdef ImagingContext < handle
         end
         function      setNoclobber(this, s)
             this.state_ = this.state_.setNoclobber(s);
+        end        
+        function s  = single(this)
+            s = single(this.double);
         end
         function tf = sizeEq(this, ic)
             %% SIZEEQ 
