@@ -113,7 +113,7 @@ classdef FourdfpState < mlfourd.ImagingState
  		function this = FourdfpState(obj, h)
             if (~isa(obj, 'mlfourdfp.Fourdfp'))
                 try
-                    obj = mlfourdfp.Fourdfp(obj);
+                    obj = mlfourdfp.Fourdfp(mlfourd.NIfTId(obj));
                 catch ME
                     handexcept(ME, 'mlfourdfp:castingError', ...
                         'FourdfpState does not support objects of type %s', class(obj));

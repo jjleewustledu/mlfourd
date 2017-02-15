@@ -548,6 +548,10 @@ classdef ImagingContext < handle
                 this.state_ = MGHState(obj, this);
                 return
             end
+            if (isa(obj, 'mlfourdfp.Fourdfp'))
+                this.state_ = FourdfpState(obj, this);
+                return
+            end
             if (isa(obj, 'mlfourd.NumericalNIfTId'))
                 this.state_ = NumericalNIfTIdState(obj, this);
                 return
