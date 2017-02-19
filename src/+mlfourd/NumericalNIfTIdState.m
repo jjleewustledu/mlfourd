@@ -75,11 +75,17 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = binarized(this, varargin)
             b = this.numericalNiftid.binarized(varargin{:});
         end
+        function b = binarizeBlended(this, varargin)
+            b = this.numericalNiftid.binarizeBlended(varargin{:});
+        end
         function b = blurred(this, varargin)
             b = this.numericalNiftid.blurred(varargin{:});
         end
         function b = coulombPotential(this, varargin)
             b = this.numericalNiftid.coulombPotential(varargin{:});
+        end
+        function b = maskBlended(this, varargin)
+            b = this.numericalNiftid.maskBlended(varargin{:});
         end
         function b = masked(this, varargin)
             b = this.numericalNiftid.masked(varargin{:});

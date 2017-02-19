@@ -292,6 +292,13 @@ classdef ImagingContext < handle
             
             b = mlfourd.ImagingContext(this.state_.binarized);
         end
+        function b  = binarizeBlended(this)
+            %% BINARIZED
+            %  @return internal image is binary: values are only 0 or 1.
+            %  @warning mlfourd:possibleMaskingError
+            
+            b = mlfourd.ImagingContext(this.state_.binarizeBlended);
+        end
         function b  = blurred(this, varargin)
             %% BLURRED
             %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
@@ -372,6 +379,10 @@ classdef ImagingContext < handle
         end        
         function l  = logical(this)
             l = this.double > 0;
+        end
+        function m  = maskBlended(this, varargin)
+            this = this.numericalNiftid;
+            m = mlfourd.ImagingContext(this.state_maskBlended(varargin{:}));
         end
         function m  = masked(this, varargin)
             %% MASKED

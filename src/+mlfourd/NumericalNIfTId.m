@@ -242,6 +242,19 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             m = m.binarized(varargin{:});
             this = NumericalNIfTId(m.component);
         end
+        function this = binarizeBlended(this, varargin)
+            ip = inputParser;
+            addOptional(ip, 'threshold', 0.2, @isnumeric);
+            parse(ip, varargin{:});
+            
+            import mlfourd.*;
+            this = this.threshp(100*ip.Results.threshold);
+            this = this.binarized;
+            b = BlurringNIfTId(this.component);
+            b = b.blurred([5.5 5.5 5.5]);         
+            this = NumericalNIfTId(b.component);
+            this = this/this.dipmax;
+        end
         function this = blurred(this, varargin)
             import mlfourd.*;
             b = BlurringNIfTId(this.component);
@@ -252,6 +265,20 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             import mlfourd.*;
             b = CoulombPotentialNIfTId(this.component, varargin{:});
             this = NumericalNIfTId(b.component);
+        end
+        function this = maskBlended(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'mask', @(x) isa(x, 'mlfourd.INIfTI'));
+            addOptional(ip, 'blur', [5.5 5.5 5.5], @isnumeric);
+            parse(ip, varargin{:});
+            
+            import mlfourd.*;
+            m = MaskingNIfTId(this.component);
+            b = BlurringNIfTId(ip.Results.mask);
+            b = b.blurred(ip.Results.blur);
+            m = m.masked(b);
+            this = NumericalNIfTId(m.component);
+            this = this/this.dipmax;
         end
         function this = masked(this, varargin)
             import mlfourd.*;

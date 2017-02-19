@@ -343,7 +343,7 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
                 return
             end
             if (thisRank < mskRank)
-                assert(3 == this.Rank);
+                assert(3 == this.rank);
                 msk = msk(:,:,:,1);
                 return
             end
