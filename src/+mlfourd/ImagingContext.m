@@ -14,7 +14,7 @@ classdef ImagingContext < handle
  	%  by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
  	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext.m $,  
- 	%  developed on Matlab 8.1.0.604 (R2013a) 
+ 	%  developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John Joowon Lee.
  	%  $Id: ImagingContext.m 2627 2013-09-16 06:18:10Z jjlee $ 
     
     properties (Constant)
@@ -292,12 +292,12 @@ classdef ImagingContext < handle
             
             b = mlfourd.ImagingContext(this.state_.binarized);
         end
-        function b  = binarizeBlended(this)
+        function b  = binarizeBlended(this, varargin)
             %% BINARIZED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            b = mlfourd.ImagingContext(this.state_.binarizeBlended);
+            b = mlfourd.ImagingContext(this.state_.binarizeBlended(varargin{:}));
         end
         function b  = blurred(this, varargin)
             %% BLURRED
