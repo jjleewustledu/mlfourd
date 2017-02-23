@@ -1,6 +1,7 @@
 classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
 	%% MASKINGNIFTID is a NIfTIdecorator that composes an internal INIfTI object
-    %  according to the decorator design pattern
+    %  according to the decorator design pattern.  
+    %  Copyright 2017 John Joowon Lee.
         
     properties (Constant)
         MASKEDBY = '_maskedby'

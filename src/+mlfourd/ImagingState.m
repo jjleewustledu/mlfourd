@@ -8,7 +8,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
  	%  by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
  	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingState.m $,  
- 	%  developed on Matlab 8.1.0.604 (R2013a) 
+ 	%  developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John Joowon Lee.
  	%  $Id: ImagingState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	 
 	properties (Abstract)
