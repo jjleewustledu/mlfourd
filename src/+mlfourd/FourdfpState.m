@@ -78,16 +78,15 @@ classdef FourdfpState < mlfourd.ImagingState
             this.concreteObj_.addLog(varargin{:});
         end
         function this = nifti_4dfp_n(this)
+            this = this.nifti_4dfp_ng;
+        end
+        function this = nifti_4dfp_ng(this)
             if (isempty(this.fourdfpVisitor_))
                 this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
             end
             try
-                this.fourdfpVisitor_.nifti_4dfp_n(this.fqfp);
-                this.filesuffix = '.nii';
-                fqfn0 = this.fqfn;
-                fqfn1 = gzip(fqfn0);
-                this.fqfn = fqfn1{1};
-                delete(fqfn0);
+                this.fourdfpVisitor_.nifti_4dfp_ng(this.fqfp);
+                this.filesuffix = '.nii.gz';
             catch ME
                 handexcept(ME);
             end
@@ -97,11 +96,8 @@ classdef FourdfpState < mlfourd.ImagingState
                 this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
             end
             try
-                if (lstrfind('.gz', this.filesuffix))
-                    this.fqfn = gunzip(this.fqfn);
-                end
                 this.fourdfpVisitor_.nifti_4dfp_4(this.fqfp);
-                this.filesuffix = '.4dfp.img';
+                this.filesuffix = '.4dfp.ifh';
             catch ME
                 handexcept(ME);
             end
