@@ -231,7 +231,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             if (isempty(this.img_))
                 E = nan;
             else
-                E = entropy(double(this.img_));
+                E = entropy(double(this.img_)); %#ok<CPROP>
             end
         end
         function x    = get.hdxml(this)
@@ -277,7 +277,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 o = this.orient_;
                 return
             end
-            if (lexist(this.fqfilename, 'file'))
+            if (lexist(this.fqfilename, 'file') && lstrfind(this.filesuffix, '.nii'))
                 [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
                 o = strtrim(o);
                 return

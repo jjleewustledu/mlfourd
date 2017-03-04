@@ -345,6 +345,9 @@ classdef ImagingContext < handle
                 this.state_.save;
             end
         end
+        function f  = false(this, varargin)
+            f =  mlfourd.ImagingContext(this.state_.false(varargin{:}));
+        end
         function f  = find(this, varargin)
             %% FIND
             %  @param varargin are objects to find within a composite imaging state
@@ -399,6 +402,12 @@ classdef ImagingContext < handle
             %  @throws MATLAB:assertion:failed for rng out of bounds.
             
             m =  mlfourd.ImagingContext(this.state_.maskedByZ(varargin{:}));
+        end
+        function n  = nan(this, varargin)
+            n =  mlfourd.ImagingContext(this.state_.nan(varargin{:}));
+        end
+        function n  = not(this, varargin)
+            n =  mlfourd.ImagingContext(this.state_.not(varargin{:}));
         end
         function o  = ones(this, varargin)
             o =  mlfourd.ImagingContext(this.state_.ones(varargin{:}));
@@ -471,6 +480,9 @@ classdef ImagingContext < handle
             %  @returns t, the modified imaging context
             
             t =  mlfourd.ImagingContext(this.state_.timeSummed);
+        end
+        function t  = true(this, varargin)
+            t =  mlfourd.ImagingContext(this.state_.true(varargin{:}));
         end
         function u  = uthresh(this, u)
             %% UTHRESH

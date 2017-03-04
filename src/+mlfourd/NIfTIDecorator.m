@@ -72,11 +72,17 @@ classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
         function this = prepend_fileprefix(this, varargin)
             this.component = this.component.prepend_fileprefix(varargin{:});
         end
+        function this = false(this, varargin)
+            this.component = this.component.false(varargin{:});
+        end
         function f    = fov(this) 
             f = this.component.fov;     
         end
         function m    = matrixsize(this)
             m = this.component.matrixsize;
+        end
+        function this = nan(this, varargin)
+            this.component = this.component.nan(varargin{:});
         end
         function this = ones(this, varargin)
             this.component = this.component.ones(varargin{:});
@@ -92,6 +98,9 @@ classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
         end
         function x    = size(this, varargin)
             x = this.component.size(varargin{:});
+        end
+        function this = true(this, varargin)
+            this.component = this.component.true(varargin{:});
         end
         function this = zeros(this, varargin)
             this.component = this.component.zeros(varargin{:});

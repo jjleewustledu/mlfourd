@@ -1,4 +1,4 @@
-classdef Rec < mlio.LogParser 
+classdef Rec < mlio.LogParser
 	%% REC supports *.img.rec files from the 4dfp framework.
 
 	%  $Revision$ 

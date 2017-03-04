@@ -84,6 +84,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = coulombPotential(this, varargin)
             b = this.numericalNiftid.coulombPotential(varargin{:});
         end
+        function f = false(this, varargin)
+            f = this.numericalNiftid.false(varargin{:});
+        end
         function b = maskBlended(this, varargin)
             b = this.numericalNiftid.maskBlended(varargin{:});
         end
@@ -92,6 +95,12 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         end
         function b = maskedByZ(this, varargin)
             b = this.numericalNiftid.maskedByZ(varargin{:});
+        end
+        function n = nan(this, varargin)
+            n = this.numericalNiftid.nan(varargin{:});
+        end
+        function n = not(this, varargin)
+            n = this.numericalNiftid.not(varargin{:});
         end
         function o = ones(this, varargin)
             o = this.numericalNiftid.ones(varargin{:});
@@ -104,6 +113,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         end
         function b = timeSummed(this, varargin)
             b = this.numericalNiftid.timeSummed(varargin{:});
+        end
+        function t = true(this, varargin)
+            t = this.numericalNiftid.true(varargin{:});
         end
         function b = uthresh(this, varargin)
             b = this.numericalNiftid.uthresh(varargin{:});

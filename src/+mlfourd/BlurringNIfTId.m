@@ -133,18 +133,21 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             %          bn:    BlurringNIfTId updated with blurred voxels
             
             import mlfourd.* mlpet.*;
+            rankEuclid = min(this.rank, 3);
             ip = inputParser;
-            addOptional(ip, 'blur', mlpet.PETRegistry.instance.petPointSpread, ...
-                                       @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
+            addOptional(ip, 'blur', PETRegistry.instance.petPointSpread, ...
+                                       @(x) isnumeric(x) && length(x) <= rankEuclid);
             addOptional(ip, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
-            parse(ip, varargin{:});
-            
+            parse(ip, varargin{:});            
             this.blur = ip.Results.blur;
-            this.mask = ip.Results.mask;
-            if (isempty(this.blur)); return; end                
-            if (sum(this.blur) < eps); return; end   
+            if (length(this.blur) < rankEuclid)
+                this.blur = mean(this.blur)*ones(1, rankEuclid);
+            end
+            if (isempty(this.blur) || sum(this.blur) < eps); return; end
+            this.mask = ip.Results.mask; 
+            
             mmppix_ = this.mmppix;
-            if (sum(this.blur  < mmppix_(1:length(this.blur))) > 1)
+            if (sum(this.blur < mmppix_(1:length(this.blur))) > 1)
                 warning('mlfourd:discretizationErrors', ...
                         'BlurringNIfTI.blurred:  blur->%s, mmppix->%s', mat2str(this.blur), mat2str(mmppix_));
             end

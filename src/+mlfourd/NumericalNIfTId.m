@@ -157,7 +157,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         end
         function this = not(this)
             this = this.usxfun(@not);
-        end       
+        end        
                 
         %% Overloaded DipNumerical
         

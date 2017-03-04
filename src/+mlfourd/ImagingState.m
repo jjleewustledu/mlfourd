@@ -192,6 +192,12 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function d    = double(this)
             d = double(this.concreteObj_);
         end
+        function f    = false(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.false(varargin{:});
+        end
         function f    = find(this)
             f = this.concreteObj_;
         end
@@ -236,6 +242,18 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             m = this.contexth_.maskedByZ(varargin{:});
+        end
+        function n    = nan(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            n = this.contexth_.nan(varargin{:});
+        end
+        function n    = not(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            n = this.contexth_.not(varargin{:});
         end
         function o    = ones(this, varargin)
             import mlfourd.*;
@@ -299,6 +317,12 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.timeSummed(varargin{:});
+        end
+        function t    = true(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            t = this.contexth_.true(varargin{:});
         end
         function u    = uthresh(this, varargin)
             %% UTHRESH

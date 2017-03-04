@@ -40,6 +40,13 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('cloned');
         end
+        function f    = false(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'false', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_false'], @ischar);
+            parse(p, varargin{:});
+            f = this.makeSimilar('img', false(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
         function tf   = isequal(this, obj)
             tf = this.isequaln(obj);
         end
@@ -61,12 +68,26 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             niid = mlfourd.NIfTId(this, varargin{:});
             niid = niid.append_descrip('made similar');
         end
+        function o    = nan(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'nan', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_nan'], @ischar);
+            parse(p, varargin{:});
+            o = this.makeSimilar('img', nan(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
         function o    = ones(this, varargin)
             p = inputParser;
             addOptional(p, 'desc', 'ones', @ischar);
             addOptional(p, 'fp',   [this.fileprefix '_ones'], @ischar);
             parse(p, varargin{:});
             o = this.makeSimilar('img', ones(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function t    = true(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'true', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_true'], @ischar);
+            parse(p, varargin{:});
+            t = this.makeSimilar('img', true(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
         end
         function z    = zeros(this, varargin)
             p = inputParser;
