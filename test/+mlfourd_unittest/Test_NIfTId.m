@@ -639,7 +639,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             [s,r] = mlbash('pwd', 'logger', lg);
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyEqual(lg.contents(27:68), 'mlpipeline.Logger from jjlee at innominate');
+            this.verifyEqual(lg.contents(27:68), 'mlpipeline.Logger from jjlee at ophthalmic');
             %this.verifyEqual(lg.contents(214:216), 'pwd'); % varies with hostname
             this.verifyEqual(lg.contents(end-70:end), this.fslPath);
             

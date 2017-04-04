@@ -97,7 +97,7 @@ classdef Test_LoggingNIfTId < matlab.unittest.TestCase
  			this.verifyEqual(this.testObj.logger.length, 3);
  			this.verifyFalse(this.testObj.logger.isempty);
             gotten = this.testObj.logger.get(1);
- 			this.verifyEqual(gotten(22:70), 'mlfourd.LoggingNIfTId from jjlee at innominate in');
+ 			this.verifyEqual(gotten(22:70), 'mlfourd.LoggingNIfTId from jjlee at ophthalmic in');
             c = this.testObj.logger.char;
  			this.verifyEqual(c(end-33:end), 'decorated by mlfourd.LoggingNIfTId');
         end
@@ -146,8 +146,8 @@ classdef Test_LoggingNIfTId < matlab.unittest.TestCase
         function test_logger(this)
             lg = this.testObj.logger;
             this.verifyEqual(lg.callerid, 'mlfourd_LoggingNIfTId');
-            this.verifyEqual(lg.contents(22:70), 'mlfourd.LoggingNIfTId from jjlee at innominate in');
-            this.verifyEqual(lg.hostname, 'innominate');
+            this.verifyEqual(lg.contents(22:70), 'mlfourd.LoggingNIfTId from jjlee at ophthalmic in');
+            this.verifyEqual(lg.hostname, 'ophthalmic');
             this.verifyEqual(lg.id, 'jjlee');
             this.verifyEqual(lg.fqfilename, [this.smallT1_niid.fqfileprefix '.log']);
         end

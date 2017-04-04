@@ -23,7 +23,7 @@ classdef Test_ImgRecorder < matlab.unittest.TestCase
 
 	methods (Test)
  		function test_ctor(this) 			
-            this.verifyEqual(this.testObj.contents(103:144), 'mlfourd.ImgRecorder by jjlee at innominate');
+            this.verifyEqual(this.testObj.contents(103:144), 'mlfourd.ImgRecorder by jjlee at ophthalmic');
  			this.verifyEqual(this.testObj.fileprefix, this.niid.fileprefix);
             this.verifyEqual(this.testObj.filesuffix, '.img.rec');
         end
