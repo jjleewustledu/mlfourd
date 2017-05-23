@@ -23,32 +23,32 @@ classdef FilenameState < mlfourd.ImagingState
     end
     
     methods %% GET
-        function f  = get.cellComposite(this)
+        function f = get.cellComposite(this)
             this.contexth_.changeState( ...
                 mlfourd.CellCompositeState(this.fqfilename, this.contexth_));
             f = this.contexth_.cellComposite;
         end
-        function f  = get.fourdfp(this)
+        function f = get.fourdfp(this)
             this.contexth_.changeState( ...
                 mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
             f = this.contexth_.fourdfp;
         end
-        function f  = get.mgh(this)
+        function f = get.mgh(this)
             this.contexth_.changeState( ...
                 mlfourd.MGHState(this.fqfilename, this.contexth_));
             f = this.contexth_.mgh;
         end
-        function f  = get.niftic(this)
+        function f = get.niftic(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIcState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftic;
         end
-        function f  = get.niftid(this)
+        function f = get.niftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftid;
         end
-        function f  = get.numericalNiftid(this)
+        function f = get.numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.numericalNiftid;
@@ -62,8 +62,9 @@ classdef FilenameState < mlfourd.ImagingState
     
     methods
         function        view(this, varargin)
-            this.concreteObj_.viewer = this.viewer;
-            this.concreteObj_.view(varargin{:});
+            that = this.niftid;
+            that.viewer = this.viewer;
+            that.view(varargin{:});
         end        
         function this = FilenameState(obj, h)
             try
