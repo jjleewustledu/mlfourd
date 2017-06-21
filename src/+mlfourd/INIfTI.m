@@ -4,9 +4,9 @@ classdef INIfTI
 	%  $Revision$
  	%  was created 20-Oct-2015 19:28:49
  	%  by jjlee,
- 	%  last modified $LastChangedDate$
+ 	%  last modified 31-May-2017 16:23:00
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
- 	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.
+ 	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.  Copyright 2015, 2017 John J. Lee.
  	
     properties (Constant) 
         FILETYPE     = 'NIFTI_GZ'
@@ -32,16 +32,6 @@ classdef INIfTI
     end 
     
 	methods (Abstract) 
-        
-        %% for NIfTId and other concrete imaging classes
-        
-        %this = clone(this)
-        %[tf,msg] = isequal(this, n)
-        %[tf,msg] = isequaln(this, n)
-        %this = makeSimilar(this)
-        
-        %% for AbstractNIfTId and other abstract imaging classes
-        
         char(this)
         append_descrip(this, s)
         prepend_descrip(this, s)
@@ -51,12 +41,10 @@ classdef INIfTI
         prepend_fileprefix(this, s)
         fov(this)
         matrixsize(this)
-        %ones(this)
         rank(this)
         scrubNanInf(this)
         single(this)
         size(this)
-        %zeros(this)
     end 
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

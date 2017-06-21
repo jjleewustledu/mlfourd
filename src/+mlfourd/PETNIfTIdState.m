@@ -43,7 +43,7 @@ classdef PETNIfTIdState < mlfourd.ImagingState
         function g = get.niftid(this)
             g = this.dedecorateNIfTId(this.concreteObj_);
         end   
-        function g = get.numericalNiftid(this)            
+        function g = get.numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;

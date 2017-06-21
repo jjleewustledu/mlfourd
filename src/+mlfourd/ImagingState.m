@@ -33,9 +33,23 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         noclobber
         
         viewer
+    end 
+        
+    methods (Static)
+        function obj = dedecorateNIfTId(obj)
+            if (isa(obj, 'mlfourd.INIfTId'))
+                while (isa(obj, 'mlfourd.INIfTIdecorator'))
+                    obj = obj.component;
+                end
+                return
+            end
+        end
     end
     
-    methods %% GET, SET
+    methods 
+        
+        %% GET, SET
+        
         function f = get.filename(this)
             f = this.concreteObj_.filename;
         end
@@ -62,8 +76,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         end
         function f = get.noclobber(this)
             f = this.concreteObj_.noclobber;
-        end
-        
+        end        
         function f = get.viewer(this)
             if (isprop(this.concreteObj_, 'viewer'))
                 f = this.concreteObj_.viewer;
@@ -98,28 +111,16 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         end     
         function this = set.noclobber(this, f)
             this.concreteObj_.noclobber = f;
-        end
-        
+        end        
         function this = set.viewer(this, f)
             if (isprop(this.concreteObj_, 'viewer'))
                 assert(ischar(f));
                 this.concreteObj_.viewer = f;
             end
         end
-    end    
         
-    methods (Static)
-        function obj = dedecorateNIfTId(obj)
-            if (isa(obj, 'mlfourd.INIfTId'))
-                while (isa(obj, 'mlfourd.INIfTIdecorator'))
-                    obj = obj.component;
-                end
-                return
-            end
-        end
-    end
-    
-    methods
+        %%
+        
         function        add(~)
             error('mlfourd:notImplemented', 'ImagingState.add'); 
         end

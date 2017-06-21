@@ -50,7 +50,153 @@ classdef ImagingContext < handle
         viewer
     end
     
-	methods %% GET/SET
+    methods (Static)
+        function im   = imagingType(typ, obj)
+            %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
+            %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
+            %  'fqfileprefix', 'fqfp', 'folder', 'path', 'ext', 'imagingContext', 
+            %  '4dfp.hdr', '4dfp.ifh', '4dfp.img', '4dfp.img.rec', 'v', 'v.hdr', 'v.mhdr'. 
+            %  @param obj is the representation of imaging data provided by the client.  
+            %  @returns im is the imaging data obj cast as the requested representation.
+            %  See also mlfourd.ImagingContext
+            
+            import mlfourd.*;
+            if (ischar(obj) && isdir(obj))
+                im = ImagingContext.locationType(typ, obj);
+                return
+            end
+            obj = ImagingContext(obj);
+            switch (typ)
+                case  'ext'
+                    [~,~,im] = myfileparts(obj.filename);
+                case {'filename' 'fn'}
+                    im = obj.filename;
+                case {'fqfilename' 'fqfn'}
+                    im = obj.fqfilename;
+                case {'fileprefix' 'fp'}
+                    im = obj.fileprefix;
+                case {'fqfileprefix' 'fqfp' 'fdfp'}
+                    im = obj.fqfileprefix;
+                case  'folder'
+                    [~,im] = fileparts(obj.filepath);
+                case {'imagingContext' 'ImagingContext' 'mlfourd.ImagingContext'}
+                    im = mlfourd.ImagingContext(obj);
+                case {'mgz' '.mgz'}
+                    im = [obj.fqfileprefix '.mgz'];
+                case {'mhdr' '.mhdr'}
+                    im = [obj.fqfileprefix '.mhdr'];
+                case {'mrImagingContext' 'MRImagingContext' 'mlmr.MRImagingContext'}
+                    im = mlmr.MRImagingContext(obj);                    
+                case {'nii' '.nii'}
+                    im = [obj.fqfileprefix '.nii'];
+                case {'nii.gz' '.nii.gz'}
+                    im = [obj.fqfileprefix '.nii.gz'];
+                case  'path'
+                    im = obj.filepath;
+                case {'petImagingContext' 'PETImagingContext' 'mlpet.PETImagingContext'}
+                    im = mlpet.PETImagingContext(obj);  
+                case {'v' '.v'}
+                    im = [obj.fqfileprefix '.v'];
+                case {'v.hdr' '.v.hdr'}
+                    im = [obj.fqfileprefix '.v.hdr'];
+                case {'v.mhdr' '.v.mhdr'}
+                    im = [obj.fqfileprefix '.v.mhdr'];
+                case {'4dfp.hdr' '.4dfp.hdr'}
+                    im = [obj.fqfileprefix '.4dfp.hdr'];
+                case {'4dfp.ifh' '.4dfp.ifh'}
+                    im = [obj.fqfileprefix '.4dfp.ifh'];
+                case {'4dfp.img' '.4dfp.img'}
+                    im = [obj.fqfileprefix '.4dfp.img'];
+                case {'4dfp.img.rec' '.4dfp.img.rec'}
+                    im = [obj.fqfileprefix '.4dfp.img.rec'];
+                case {'fn.4dfp.hdr'}
+                    im = [obj.fileprefix '.4dfp.hdr'];
+                case {'fn.4dfp.ifh'}
+                    im = [obj.fileprefix '.4dfp.ifh'];
+                case {'fn.4dfp.img'}
+                    im = [obj.fileprefix '.4dfp.img'];
+                case {'fn.4dfp.img.rec'}
+                    im = [obj.fileprefix '.4dfp.img.rec'];
+                case {'fn.mgz'}
+                    im = [obj.fileprefix '.mgz'];
+                case {'fn.mhdr'}
+                    im = [obj.fileprefix '.mhdr'];
+                case {'fn.nii'}
+                    im = [obj.fileprefix '.nii'];
+                case {'fn.nii.gz'}
+                    im = [obj.fileprefix '.nii.gz'];
+                case {'fn.v'}
+                    im = [obj.fileprefix '.v'];
+                case {'fn.v.hdr'}
+                    im = [obj.fileprefix '.v.hdr'];
+                case {'fn.v.mhdr'}
+                    im = [obj.fileprefix '.v.mhdr'];
+                case 'cellComposite'
+                    im = obj.cellComposite;
+                case 'fourdfp'
+                    im = obj.fourdfp;
+                case  'mgh'
+                    im = obj.mgh;
+                case  'niftic'
+                    im = obj.niftic;
+                case  'niftid'
+                    im = obj.niftid;
+                case  'numericalNiftid'
+                    im = obj.numericalNiftid;
+                case  'petNiftid'
+                    im = obj.petNiftid;
+                otherwise
+                    error('mlfourd:insufficientSwitchCases', ...
+                          'ImagingContext.imagingType.obj->%s not recognized', obj);
+            end
+        end
+        function tf   = isImagingType(t)
+            tf = lstrcmp(t, mlfourd.ImagingContext.IMAGING_TYPES);
+        end
+        function tf   = isLocationType(t)
+            tf = lstrcmp(t, mlfourd.ImagingContext.LOCATION_TYPES);
+        end
+        function this = load(obj)
+            %% LOAD:  cf. ctor
+            
+            this = mlfourd.ImagingContext(obj);
+        end
+        function loc  = locationType(typ, loc0)
+            %% LOCATIONTYPE returns location data cast as a requested representative type detailed below.
+            %  @param typ is the requested representation:  'folder', 'path'.
+            %  @param loc0 is the representation of location data provided by the client.  
+            %  @returns loc is the location data loc0 cast as the requested representation.
+            
+            assert(ischar(loc0));
+            switch (typ)
+                case 'folder'
+                    [~,loc] = fileparts(loc0);
+                case 'path'
+                    loc = loc0;
+                otherwise
+                    error('mlfourd:insufficientSwitchCases', ...
+                          'ImagingContext.locationType.loc0->%s not recognized', loc0);
+            end
+        end
+        function ic   = repackageImagingContext(obj, oriClass)
+            switch (oriClass)
+                case 'mlfourd.ImagingContext'
+                    ic = mlfourd.ImagingContext(obj);
+                case 'mlmr.MRImagingContext'
+                    ic = mlmr.MRImagingContext(obj);
+                case 'mlpet.PETImagingContext'
+                    ic = mlpet.PETImagingContext(obj);
+                otherwise
+                    error('mlfourd:unsupportedSwitchCase', ....
+                          'ImagingContext.repackageImagingContext.oriClass->%s is not supported', oriClass);
+            end
+        end
+    end
+    
+	methods
+        
+        %% GET/SET
+        
         function f = get.filename(this)
             f = this.state_.filename;
         end
@@ -133,136 +279,14 @@ classdef ImagingContext < handle
         end
         function set.noclobber(this, f)
             this.state_.noclobber = f;
-        end
-        
+        end        
         function set.viewer(this, v)
             assert(ischar(v));
             this.state_.viewer = v;
         end
-    end 
     
-    methods (Static)
-        function im   = imagingType(typ, obj)
-            %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
-            %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
-            %  'fqfileprefix', 'fqfp', 'folder', 'path', 'ext', 'imagingContext', 
-            %  '4dfp.hdr', '4dfp.ifh', '4dfp.img', '4dfp.img.rec', 'v', 'v.hdr', 'v.mhdr'. 
-            %  @param obj is the representation of imaging data provided by the client.  
-            %  @returns im is the imaging data obj cast as the requested representation.
-            %  See also mlfourd.ImagingContext
-            
-            import mlfourd.*;
-            if (ischar(obj) && isdir(obj))
-                im = ImagingContext.locationType(typ, obj);
-                return
-            end
-            obj = ImagingContext(obj);
-            switch (typ)
-                case  'ext'
-                    [~,~,im] = myfileparts(obj.filename);
-                case {'filename' 'fn'}
-                    im = obj.filename;
-                case {'fqfilename' 'fqfn'}
-                    im = obj.fqfilename;
-                case {'fileprefix' 'fp'}
-                    im = obj.fileprefix;
-                case {'fqfileprefix' 'fqfp' 'fdfp'}
-                    im = obj.fqfileprefix;
-                case  'folder'
-                    [~,im] = fileparts(obj.filepath);
-                case {'imagingContext' 'ImagingContext' 'mlfourd.ImagingContext'}
-                    im = mlfourd.ImagingContext(obj);
-                case {'mgz' '.mgz'}
-                    im = [obj.fqfileprefix '.mgz'];
-                case {'mhdr' '.mhdr'}
-                    im = [obj.fqfileprefix '.mhdr'];
-                case {'mrImagingContext' 'MRImagingContext' 'mlmr.MRImagingContext'}
-                    im = mlmr.MRImagingContext(obj);                    
-                case {'nii' '.nii'}
-                    im = [obj.fqfileprefix '.nii'];
-                case {'nii.gz' '.nii.gz'}
-                    im = [obj.fqfileprefix '.nii.gz'];
-                case  'path'
-                    im = obj.filepath;
-                case {'petImagingContext' 'PETImagingContext' 'mlpet.PETImagingContext'}
-                    im = mlpet.PETImagingContext(obj);  
-                case {'v' '.v'}
-                    im = [obj.fqfileprefix '.v'];
-                case {'v.hdr' '.v.hdr'}
-                    im = [obj.fqfileprefix '.v.hdr'];
-                case {'v.mhdr' '.v.mhdr'}
-                    im = [obj.fqfileprefix '.v.mhdr'];
-                case {'4dfp.hdr' '.4dfp.hdr'}
-                    im = [obj.fqfileprefix '.4dfp.hdr'];
-                case {'4dfp.ifh' '.4dfp.ifh'}
-                    im = [obj.fqfileprefix '.4dfp.ifh'];
-                case {'4dfp.img' '.4dfp.img'}
-                    im = [obj.fqfileprefix '.4dfp.img'];
-                case {'4dfp.img.rec' '.4dfp.img.rec'}
-                    im = [obj.fqfileprefix '.4dfp.img.rec'];
-                case 'cellComposite'
-                    im = obj.cellComposite;
-                case 'fourdfp'
-                    im = obj.fourdfp;
-                case  'mgh'
-                    im = obj.mgh;
-                case  'niftic'
-                    im = obj.niftic;
-                case  'niftid'
-                    im = obj.niftid;
-                case  'numericalNiftid'
-                    im = obj.numericalNiftid;
-                case  'petNiftid'
-                    im = obj.petNiftid;
-                otherwise
-                    error('mlfourd:insufficientSwitchCases', ...
-                          'ImagingContext.imagingType.obj->%s not recognized', obj);
-            end
-        end
-        function tf   = isImagingType(t)
-            tf = lstrcmp(t, mlfourd.ImagingContext.IMAGING_TYPES);
-        end
-        function tf   = isLocationType(t)
-            tf = lstrcmp(t, mlfourd.ImagingContext.LOCATION_TYPES);
-        end
-        function this = load(obj)
-            %% LOAD:  cf. ctor
-            
-            this = mlfourd.ImagingContext(obj);
-        end
-        function loc  = locationType(typ, loc0)
-            %% LOCATIONTYPE returns location data cast as a requested representative type detailed below.
-            %  @param typ is the requested representation:  'folder', 'path'.
-            %  @param loc0 is the representation of location data provided by the client.  
-            %  @returns loc is the location data loc0 cast as the requested representation.
-            
-            assert(ischar(loc0));
-            switch (typ)
-                case 'folder'
-                    [~,loc] = fileparts(loc0);
-                case 'path'
-                    loc = loc0;
-                otherwise
-                    error('mlfourd:insufficientSwitchCases', ...
-                          'ImagingContext.locationType.loc0->%s not recognized', loc0);
-            end
-        end
-        function ic   = repackageImagingContext(obj, oriClass)
-            switch (oriClass)
-                case 'mlfourd.ImagingContext'
-                    ic = mlfourd.ImagingContext(obj);
-                case 'mlmr.MRImagingContext'
-                    ic = mlmr.MRImagingContext(obj);
-                case 'mlpet.PETImagingContext'
-                    ic = mlpet.PETImagingContext(obj);
-                otherwise
-                    error('mlfourd:unsupportedSwitchCase', ....
-                          'ImagingContext.repackageImagingContext.oriClass->%s is not supported', oriClass);
-            end
-        end
-    end
-
-    methods
+        %%
+        
         function      add(this, varargin)
             %% ADD
             %  @param varargin are added to a composite imaging state
@@ -526,8 +550,6 @@ classdef ImagingContext < handle
             z =  mlfourd.ImagingContext(this.state_.zoomed(varargin{:}));
         end
         
-        %% CTOR
-        
         function this = ImagingContext(obj)
             %% IMAGINGCONTEXT 
             %  @param obj is imaging data:  filename, INIfTI, MGH, ImagingComponent, double, [] or 
@@ -595,23 +617,13 @@ classdef ImagingContext < handle
             error('mlfourd:unsupportedTypeclass', ...
                   'class(ctor.obj)->%s\nchar(ctor.obj)->%s', class(obj), char(obj));
         end
-        function c = clone(this)
+        function c    = clone(this)
             %% CLONE simplifies calling the copy constructor.
             %  @return deep copy on new handle
             
             c = mlfourd.ImagingContext(this);
         end
-    end
-    
-	methods (Hidden)
-        function changeState(this, s)
-            %% CHANGESTATE
-            %  @param s must be an ImagingState; it replaces the current internal state.
-            
-            assert(isa(s, 'mlfourd.ImagingState'));
-            this.state_ = s;
-        end
-    end    
+    end  
     
     %% PROTECTED
     
@@ -652,6 +664,18 @@ classdef ImagingContext < handle
             end
         end
     end
+    
+    %% HIDDEN
+    
+	methods (Hidden)
+        function changeState(this, s)
+            %% CHANGESTATE
+            %  @param s must be an ImagingState; it replaces the current internal state.
+            
+            assert(isa(s, 'mlfourd.ImagingState'));
+            this.state_ = s;
+        end
+    end  
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end
