@@ -286,7 +286,8 @@ classdef PETConverter < mlfourd.AbstractConverter
             this.orientRepair(fns, this.orients2fix);
         end
         function          copyUnpacked(this, varargin)
-            %% COPYUNPACKED also assigns this.allFqFilenames; is DEPRECATED
+            %% COPYUNPACKED also assigns this.allFqFilenames.
+            %  @deprecated
             %  Usage:   obj.copyUnpacked(source_path, target_path)
             %           obj.copyUnpacked('ECAT_EXACT/962_4dfp', 'fsl')
 

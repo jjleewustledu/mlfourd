@@ -118,7 +118,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             this = this.append_fileprefix(this.SUMXYZ_SUFFIX);
         end
         
-        %% DEPRECATED; functionality belongs better in mlfsl.RegistrationFacade
+        %  @deprecated functionality belongs better in mlfsl.RegistrationFacade
         
         function this = mcflirted(this, varargin)
             ip = inputParser;

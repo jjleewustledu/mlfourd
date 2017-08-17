@@ -3,8 +3,8 @@ classdef (Abstract) NIfTIInterface < ...
         mlio.IOInterface & ...
         mlanalysis.NumericalInterface & ...
         mlanalysis.DipInterface
-	%% NIFTIINTERFACE provide a rich set of voxel, i/o, numerical-array methods; it is DEPRECATED.
-    %  Prefer using INIfTI, INIfTId.
+	%% NIFTIINTERFACE provide a rich set of voxel, i/o, numerical-array methods.
+    %  @deprecated prefer using INIfTI, INIfTId.
     
 	%  $Revision: 2608 $
  	%  was created $Date: 2013-09-07 19:14:08 -0500 (Sat, 07 Sep 2013) $

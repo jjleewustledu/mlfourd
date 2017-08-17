@@ -3,7 +3,7 @@ classdef ImageBuilder
     %  to allow concrete subclasses to implement building tasks as needed.  The concrete subclasses determine
     %  the details of representing the product objects, but the algorithms for construction are listed 
     %  in FslDirector subclasses.   Cf. GoF, builder pattern.   
-    %  IMAGEBUILDER is DEPRECATED; prefer mlpipeline.PipelineVisitor
+    %  @deprecated prefer mlpipeline.PipelineVisitor
     
     %  Version $Revision: 2627 $ was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ and checked into svn repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImageBuilder.m $ 

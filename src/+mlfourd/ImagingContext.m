@@ -6,7 +6,7 @@ classdef ImagingContext < handle
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, 
     %             mlio.IOInterface, mlfourd.DoubleState.
     %  When adding methods, see also:  mlfourd.ImagingState, mlfourd.NumericalNIfTIdState, mlfourd.NumericalNIfTId,
-    %                                  mlfourd.MaskingNIfTId, mlfourd.PETImagingContext, mlfourd.MRImagingContext;
+    %                                  mlfourd.MaskingNIfTId, mlpet.PETImagingContext, mlmr.MRImagingContext;
     %                                  or comparable mlfourd.*State, mlfourd.*NIfTId.
     
 	%  $Revision: 2627 $ 

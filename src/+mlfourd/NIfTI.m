@@ -9,7 +9,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
     properties (Constant)
         ISEQUAL_IGNORES      = {'untouch' 'noclobber' 'debugging' 'filesuffix'   'label' ...
                                 'descrip' 'machine'   'hdxml'     'creationDate' 'originalType' 'seriesNumber' 'hdr' 'ext'}; 
-        NIFTI_SUBCLASS       = {'mlfourd.NIfTI' 'mlfourd.BlurringNIfTId' 'mlfourd.NiiBrowser' 'mlfourd.NIfTI_mask' 'mlfourd.NIfTId'} % DEPRECATED
+        NIFTI_SUBCLASS       = {'mlfourd.NIfTI' 'mlfourd.BlurringNIfTId' 'mlfourd.NiiBrowser' 'mlfourd.NIfTI_mask' 'mlfourd.NIfTId'} % @deprecated
     end
     
     properties (Dependent)
