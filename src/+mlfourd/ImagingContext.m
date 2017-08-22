@@ -67,18 +67,20 @@ classdef ImagingContext < handle
             end
             obj = ImagingContext(obj);
             switch (typ)
+                case  'folder'
+                    [~,im] = fileparts(obj.filepath);
+                case {'filepath' 'path'}
+                    im = obj.filepath;
+                case {'fileprefix' 'fp'}
+                    im = obj.fileprefix;
                 case  'ext'
                     [~,~,im] = myfileparts(obj.filename);
                 case {'filename' 'fn'}
                     im = obj.filename;
                 case {'fqfilename' 'fqfn'}
                     im = obj.fqfilename;
-                case {'fileprefix' 'fp'}
-                    im = obj.fileprefix;
                 case {'fqfileprefix' 'fqfp' 'fdfp'}
                     im = obj.fqfileprefix;
-                case  'folder'
-                    [~,im] = fileparts(obj.filepath);
                 case {'imagingContext' 'ImagingContext' 'mlfourd.ImagingContext'}
                     im = mlfourd.ImagingContext(obj);
                 case {'mgz' '.mgz'}
@@ -91,8 +93,6 @@ classdef ImagingContext < handle
                     im = [obj.fqfileprefix '.nii'];
                 case {'nii.gz' '.nii.gz'}
                     im = [obj.fqfileprefix '.nii.gz'];
-                case  'path'
-                    im = obj.filepath;
                 case {'petImagingContext' 'PETImagingContext' 'mlpet.PETImagingContext'}
                     im = mlpet.PETImagingContext(obj);  
                 case {'v' '.v'}
