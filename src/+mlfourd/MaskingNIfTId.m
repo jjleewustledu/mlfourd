@@ -231,25 +231,31 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
             if (all(zoom >= 1))
                
                 % zoom > 1, offset > 0, injective or 1-to-1
-                for x3 = 1:size0(3)
-                    for x2 = 1:size0(2)
-                        for x1 = 1:size0(1)
-                            img1(x1+offset(1), x2+offset(2), x3+offset(3)) = img0(x1, x2, x3);
+                if (3 == length(size0))
+                    for x3 = 1:size0(3)
+                        for x2 = 1:size0(2)
+                            for x1 = 1:size0(1)
+                                img1(x1+offset(1), x2+offset(2), x3+offset(3)) = img0(x1, x2, x3);
+                            end
                         end
                     end
+                else
+                    error('mlfourd:unsupportedSize', 'MaskingNIfTId.zoom.size0->%s', num2str(size0));
                 end
-
             elseif (all(zoom <= 1))
 
                 % zoom < 1, offset < 0, surjective or onto
-                for x3 = 1:size1(3)
-                    for x2 = 1:size1(2)
-                        for x1 = 1:size1(1)
-                            img1(x1, x2, x3) = img0(x1-offset(1), x2-offset(2), x3-offset(3));
+                if (3 == length(size1))
+                    for x3 = 1:size1(3)
+                        for x2 = 1:size1(2)
+                            for x1 = 1:size1(1)
+                                img1(x1, x2, x3) = img0(x1-offset(1), x2-offset(2), x3-offset(3));
+                            end
                         end
                     end
-                end
-            
+                else
+                    error('mlfourd:unsupportedSize', 'MaskingNIfTId.zoom.size0->%s', num2str(size0));
+                end            
             else
                 error('mlfourdfp:unexpectedConditionalBranch', 'MaskingNIfTId.zoomed');
             end
