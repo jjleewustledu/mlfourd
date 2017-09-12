@@ -1,4 +1,4 @@
-classdef AbstractNIfTIComponent < mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
+classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
 	%% ABSTRACTNIFTICOMPONENT  
     %  yet abstract:  load, save, saveas
 

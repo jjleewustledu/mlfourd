@@ -1,4 +1,4 @@
-classdef NIfTIdecorator < mlfourd.INIfTIdecorator & mlio.IOInterface
+classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator & mlio.IOInterface
 	%% NIFTIDECORATOR maintains an internal component object by composition, 
     %  forwarding most requests to the component.  It retains an interface consistent with the component's interface.
     %  Subclasses may optionally perform additional operations before/after forwarding requests.
