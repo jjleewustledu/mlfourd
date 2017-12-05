@@ -319,6 +319,15 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.timeSummed(varargin{:});
         end
+        function s    = timeContracted(this, varargin)
+            %% TIMECONTRACTED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            s = this.contexth_.timeContracted(varargin{:});
+        end
         function t    = true(this, varargin)
             import mlfourd.*;
             this.contexth_.changeState( ...
@@ -351,6 +360,15 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.volumeSummed(varargin{:});
+        end
+        function s    = volumeContracted(this, varargin)
+            %% VOLUMECONTRACTED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            s = this.contexth_.volumeContracted(varargin{:});
         end
         function        view(this, varargin)
             %% VIEW is a default implementation that view images directly from the filesystem.

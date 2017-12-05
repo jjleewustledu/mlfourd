@@ -498,12 +498,18 @@ classdef ImagingContext < handle
             
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
-        function t  = timeSummed(this)
+        function ic = timeSummed(this)
             %% TIMESUMMED integrates over imaging dimension 4. 
-            %  @return dynamic image reduced to summed volume.
-            %  @returns t, the modified imaging context
+            %  @return ic, the modified imaging context, a dynamic image reduced to summed volume.
             
-            t =  mlfourd.ImagingContext(this.state_.timeSummed);
+            ic = mlfourd.ImagingContext(this.state_.timeSummed);
+        end
+        function ic = timeContracted(this, varargin)
+            %% TIMECONTRACTED
+            %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
+            %  @return ic := \int_T dt this.state_(\vec{r}, t).
+            
+            ic = mlfourd.ImagingContext(this.state_.timeContracted(varargin{:}));
         end
         function t  = true(this, varargin)
             t =  mlfourd.ImagingContext(this.state_.true(varargin{:}));
@@ -522,12 +528,18 @@ classdef ImagingContext < handle
             
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
-        function v  = volumeSummed(this)
+        function ic = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
-            %  @return dynamic image reduced to time series.
-            %  @returns v, the modified imaging context
+            %  @return ic, the modified imaging context, a dynamic image reduced to time series
             
-            v =  mlfourd.ImagingContext(this.state_.volumeSummed);
+            ic = mlfourd.ImagingContext(this.state_.volumeSummed);
+        end
+        function ic = volumeContracted(this, varargin)
+            %% VOLUMECONTRACTED
+            %  @param mask as ImagingContext specifying \Omega \in {\Bbb R}^3.
+            %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
+            
+            ic = mlfourd.ImagingContext(this.state_.volumeContracted(varargin{:}));
         end
         function      view(this, varargin)
             %% VIEW

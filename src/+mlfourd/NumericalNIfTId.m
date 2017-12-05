@@ -310,6 +310,15 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             d = d.timeSummed;
             this = NumericalNIfTId(d.component);
         end
+        function this = timeContracted(this, varargin)
+            ip = inputParser;
+            addOptional(ip, 'T', 1:size(this,4), @isnumeric);
+            parse(ip, varargin{:});
+            T = ip.Results.T;
+            
+            this.component.img = this.component.img(:,:,:,T(1):T(2));
+            this = this.timeSummed;
+        end
         function this = uthresh(this, varargin)
             import mlfourd.*;
             m = MaskingNIfTId(this.component);
@@ -327,6 +336,26 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             d = DynamicNIfTId(this.component);
             d = d.volumeSummed;
             this = NumericalNIfTId(d.component);
+        end
+        function this = volumeContracted(this, varargin)
+            sz = size(this);
+            trivial = mlfourd.ImagingContext(ones(sz(1:3)));
+            
+            ip = inputParser;
+            addOptional(ip, 'IC', trivial, @(x) isa(x, 'mlfourd.ImagingContext'));
+            parse(ip, varargin{:});
+            
+            msk = ip.Results.IC;
+            msk = msk.numericalNiftid;
+            msk = msk.binarized;
+            msk = msk.img;
+            T = size(this, 4);
+            imgs = nan(T, 1);
+            for t = 1:T
+                img = this.component.img(:,:,:,t);
+                imgs(t) =  sum(img(logical(msk)));
+            end
+            this.component.img = imgs;
         end
         function this = zoomed(this, varargin)
             import mlfourd.*;

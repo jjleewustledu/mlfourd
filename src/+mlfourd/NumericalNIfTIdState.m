@@ -114,6 +114,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = timeSummed(this, varargin)
             b = this.numericalNiftid.timeSummed(varargin{:});
         end
+        function b = timeContracted(this, varargin)
+            b = this.numericalNiftid.timeContracted(varargin{:});
+        end
         function t = true(this, varargin)
             t = this.numericalNiftid.true(varargin{:});
         end
@@ -125,6 +128,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         end
         function b = volumeSummed(this, varargin)
             b = this.numericalNiftid.volumeSummed(varargin{:});
+        end
+        function b = volumeContracted(this, varargin)
+            b = this.numericalNiftid.volumeContracted(varargin{:});
         end
         function     view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
