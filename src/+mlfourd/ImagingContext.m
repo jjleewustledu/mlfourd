@@ -392,6 +392,9 @@ classdef ImagingContext < handle
             
             g =  this.state_.getLog;
         end
+        function      hist(this)
+            hist(this.niftid);
+        end
         function tf = isempty(this)
             %% ISEMPTY
             %  @return tf is boolean for state emptiness

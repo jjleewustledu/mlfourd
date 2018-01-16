@@ -311,13 +311,18 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             this = NumericalNIfTId(d.component);
         end
         function this = timeContracted(this, varargin)
+            %% TIMECONTRACTED
+            %  @param T is numeric bound for contracting times,[t0 tF]; defaults to all times.
+            %  @return this contracted in time.
+            
             ip = inputParser;
             addOptional(ip, 'T', 1:size(this,4), @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
-            
+            fp = this.fileprefrix;
             this.component.img = this.component.img(:,:,:,T(1):T(2));
             this = this.timeSummed;
+            this.fileprefix = sprintf('%s_times%gto%g', fp, T(1), T(2));
         end
         function this = uthresh(this, varargin)
             import mlfourd.*;
@@ -335,27 +340,34 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             import mlfourd.*;
             d = DynamicNIfTId(this.component);
             d = d.volumeSummed;
+            d.img = ensureRowVector(d.img);
             this = NumericalNIfTId(d.component);
         end
         function this = volumeContracted(this, varargin)
+            %% VOLUMECONTRACTED
+            %  @param mask is a maks for contracting volumes, mlfourd.ImagingContext or mlfourd.INIfTI; defaults to all volumes.
+            %  @return this contracted in volumes.
+            
             sz = size(this);
-            trivial = mlfourd.ImagingContext(ones(sz(1:3)));
-            
+            trivial = mlfourd.ImagingContext(ones(sz(1:3)));            
             ip = inputParser;
-            addOptional(ip, 'IC', trivial, @(x) isa(x, 'mlfourd.ImagingContext'));
-            parse(ip, varargin{:});
-            
-            msk = ip.Results.IC;
-            msk = msk.numericalNiftid;
-            msk = msk.binarized;
-            msk = msk.img;
-            T = size(this, 4);
-            imgs = nan(T, 1);
-            for t = 1:T
-                img = this.component.img(:,:,:,t);
-                imgs(t) =  sum(img(logical(msk)));
+            addOptional(ip, 'M', trivial, @(x) isa(x, 'mlfourd.ImagingContext') || isa(x, 'mlfourd.INIfTI'));
+            parse(ip, varargin{:});            
+            if (isa(ip.Results.M, 'mlfourd.ImagingContext'))
+                msk = ip.Results.M;
+                msk = msk.numericalNiftid;
+            elseif (isa(ip.Results.M, 'mlfourd.INIfTId'))
+                msk = mlfourd.NumericalNIfTId(ip.Results.M);
+            else
+                error('mlfourd:unsupportedTypeclass', ...
+                    'NumericalNIfTId.volumeContracted.ip.Results.M is %s', class(ip.Results.M));
             end
-            this.component.img = imgs;
+            
+            fp = this.fileprefix;
+            this = this.masked(msk);
+            this = this.volumeSummed;
+            this.img = ensureRowVector(this.img);
+            this.fileprefix = sprintf('%s_volumesBy%s%s', fp, upper(msk.fileprefix), msk.fileprefix(2:end));
         end
         function this = zoomed(this, varargin)
             import mlfourd.*;

@@ -55,10 +55,11 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         viewer
     end
   
-    methods %% SET/GET
+    methods 
         
-        %% NIfTIIO
+        %% SET/GET
         
+        % NIfTIIO        
         function this = set.filename(this, fn)
             this.component.filename = fn;
         end
@@ -114,8 +115,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             tf = this.component.noclobber;
         end
         
-        %% JimmyShenInterface
-        
+        % JimmyShenInterface        
         function e    = get.ext(this)
             e = this.component.ext;
         end
@@ -141,8 +141,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             u = this.component.untouch;
         end        
         
-        %% INIfTI
-         
+        % INIfTI         
         function this = set.bitpix(this, x)
             this.component.bitpix = x;
         end
@@ -216,8 +215,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             num = this.component.seriesNumber;
         end
         
-        %% New for AbstractNIfTIComponent
-        
+        % New for AbstractNIfTIComponent        
         function tf   = get.lexistFile(this)
             tf = this.component.lexistFile;
         end

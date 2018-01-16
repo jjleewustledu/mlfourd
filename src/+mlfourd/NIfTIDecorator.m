@@ -111,9 +111,15 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
         function        addLog(this, varargin)
             this.component.addLog(varargin{:});
         end
+        function        hist(this, varargin)
+            this.component.hist(varargin{:});
+        end        
         function        freeview(this, varargin)
             this.component.freeview(varargin{:});
         end        
+        function        fsleyes(this, varargin)
+            this.component.fsleyes(varargin{:});
+        end
         function        fslview(this, varargin)
             this.component.fslview(varargin{:});
         end

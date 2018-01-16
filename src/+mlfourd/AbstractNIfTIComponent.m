@@ -334,12 +334,18 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function E = fslEntropy(this)
             E = this.innerNIfTI_.fslEntropy;
         end
+        function hist(this, varargin)
+            this.innerNIfTI_.hist(varargin{:});
+        end
         function view(this, varargin)
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
         function freeview(this, varargin)
             this.innerNIfTI_.freeview(varargin{:});
+        end
+        function fsleyes(this, varargin)
+            this.innerNIfTI_.fsleyes(varargin{:});
         end
         function fslview(this, varargin)
             this.innerNIfTI_.fslview(varargin{:});

@@ -535,6 +535,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
             E = str2double(E);
         end 
+        function        hist(this, varargin)
+            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
+        end
         function        view(this, varargin)
             this.launchExternalViewer(this.viewer, varargin{:});
         end
@@ -544,11 +547,27 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             this.launchExternalViewer('freeview', varargin{:});
         end
+        function        fsleyes(this, varargin)
+            %% FSLVIEW
+            %  @param [filename[, ...]]
+            
+            try
+                this.launchExternalViewer('fsleyes', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.fslview(varargin{:});
+            end
+        end 
         function        fslview(this, varargin)
             %% FSLVIEW
             %  @param [filename[, ...]]
             
-            this.launchExternalViewer('fslview', varargin{:});
+            try
+                this.launchExternalViewer('fslview', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.launchExternalViewer('fslview_deprecated', varargin{:});
+            end
         end   
 
         %% mlpatterns.Composite
@@ -649,6 +668,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.creationDate_ = datestr(now);
             this.originalType_ = class(this);
             this.stack_ = {this.descrip};
+            this.viewer_ = fullfile(getenv('FREESURFER_HOME'), 'bin', 'freeview');
         end        
     end
     
@@ -672,7 +692,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         separator_ = ';'
         stack_   
         untouch_ = true
-        viewer_ = 'freeview'
+        viewer_
     end
     
     %% PRIVATE
