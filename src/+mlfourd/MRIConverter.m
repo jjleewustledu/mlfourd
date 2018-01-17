@@ -116,7 +116,7 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             if (isempty(p))
                 this.mcverterDout = fullfile(pwd, dout, '');
             end
-            this.mcverterDout = ensureFolderExists(dout);
+            this.mcverterDout = ensuredir(dout);
         end % set.mcverterDout
     end
     
@@ -144,7 +144,7 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             %% RENAME
             
             unpacked = mlsystem.DirTool(fullfile(unpackPth, '*.nii'));
-            fslPth = ensureFolderExists(fslPth);
+            fslPth = ensuredir(fslPth);
             for f = 1:length(unpacked.fns) %#ok<FORFLG>
                 names  = regexp(unpacked.fns{f}, this.INFO_EXPRESSION, 'names'); 
                 fslnam = fileprefix(this.namingRegistry_.fslName(names.seq_type), '.nii');
@@ -170,7 +170,7 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             elseif (isempty(this.mcverterDout))
                 this.mcverterDout = fullfile(this.mrPath, this.MRICONVERT_FOLDER, '');
             end
-            this.mcverterDout = ensureFolderExists(this.mcverterDout);
+            this.mcverterDout = ensuredir(this.mcverterDout);
             
             [s,r] = mlbash([this.mcverterBin ' --output=' this.mcverterDout ' ' this.mcverterArgs ' ' this.mcverterDin]);
             if (~isempty(r))

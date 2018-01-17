@@ -54,7 +54,7 @@ classdef AbstractDicomConverter < mlfourd.AbstractConverter
             import mlfourd.*;
             if (lstrfind(dcmPth, 'CDR_OFFLINE'))
                 try
-                    paxPth = ensureFolderExists( ...
+                    paxPth = ensuredir( ...
                                  fullfile(dcmPth, '..', AbstractDicomConverter.paxFolder, ''));
                         r = ''; [~,r] = movefiles(fullfile(dcmPth, '*'), paxPth, 'f');
                     for n = 1:length(AbstractDicomConverter.imaNames) %#ok<FORFLG>
@@ -72,7 +72,7 @@ classdef AbstractDicomConverter < mlfourd.AbstractConverter
                 try
                     r = '';
                     reportsPth = fullfile(dcmPth, '..', AbstractDicomConverter.reportsFolder, '');
-                    reportsPth = ensureFolderExists(reportsPth);
+                    reportsPth = ensuredir(reportsPth);
                     for n = 1:length(AbstractDicomConverter.reportNames) %#ok<FORFLG>
                         [~,r] = movefiles( ...
                             fullfilename(dcmPth, AbstractDicomConverter.reportNames{n}), reportsPth, 'f'); 

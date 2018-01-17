@@ -296,7 +296,7 @@ classdef PETConverter < mlfourd.AbstractConverter
             addOptional(p, 'targpth', this.path962, @ischar);
             parse(p, varargin{:});
             
-            targpth = ensureFolderExists(p.Results.targpth);
+            targpth = ensuredir(p.Results.targpth);
             this.allFqFilenames = {'dummyfile'};            
             dircoss = mlsystem.DirTool(fullfile(p.Results.srcpth, 'cs01-999-*'));
             fqfns   = this.renameTracers(dircoss, this.cossexp, 'c');

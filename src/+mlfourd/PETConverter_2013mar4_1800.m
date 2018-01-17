@@ -233,7 +233,7 @@ classdef PETConverter_2013mar4_1800 < mlfourd.AbstractConverter
             
             import mlfourd.*;
             assert(lexist(srcpth, 'dir'));
-            targpth = ensureFolderExists(targpth);
+            targpth = ensuredir(targpth);
             this.allFqFilenames = {'dummyfile'};
             
             dircoss = mlsystem.DirTool(fullfile(srcpth, 'cs01-999-*'));

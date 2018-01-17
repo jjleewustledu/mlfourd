@@ -84,7 +84,7 @@ classdef DicomComposite < mlfourd.DicomComponent
             mrs      = mlfourd.AbstractDicomConverter.modalityFolders;
             
             for s = 1:length(sessions) %#ok<FORFLG>
-                fslpth = ensureFolderExists( ...
+                fslpth = ensuredir( ...
                          fullfile(sessions{s}, mlfsl.FslRegistry.instance.fslFolder, '')); 
                 for m = 1:length(mrs)                    
                     for f = 1:length(this.unpackFolders)

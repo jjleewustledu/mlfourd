@@ -214,7 +214,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             [~,fld] = filepartsx(this.modalityPath, mlfourd.AbstractImage.FILETYPE_EXT);
         end % get.modalityFolder
         function this = set.unpackPath(this, pth)
-            this.unpackPath_ = ensureFolderExists(pth);
+            this.unpackPath_ = ensuredir(pth);
         end % set.unpackPath
         function pth  = get.unpackPath(this)
             if (isempty(this.unpackPath_))
@@ -312,7 +312,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             import mlfourd.*;
             if (~exist('pth', 'var')); pth = pwd; end
             toclean = cellfun(@(x) fullfile(pth, x), this.analyzeFiles2Clean_, 'UniformOutput', false);
-            bakpth  = ensureFolderExists(fullfile(pth, this.namingRegistry_.backupFolder));
+            bakpth  = ensuredir(fullfile(pth, this.namingRegistry_.backupFolder));
             for f = 1:length(toclean) 
                 dirclean = DirTool(toclean{f});
                 for d = 1:length(dirclean.fqfns)

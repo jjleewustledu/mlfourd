@@ -245,7 +245,7 @@ classdef PETConverter2013aug18 < mlfourd.AbstractConverter
             addOptional(p, 'srcpth', this.path962, @(x) lexist(x,'dir'));
             addOptional(p, 'targpth', this.fslPath, @ischar);
             parse(p, varargin{:});
-            targpth = ensureFolderExists(p.Results.targpth);
+            targpth = ensuredir(p.Results.targpth);
             this.allFqFilenames = {'dummyfile'};
             
             import mlfourd.*;

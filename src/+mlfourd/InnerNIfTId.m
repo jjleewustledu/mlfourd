@@ -768,21 +768,29 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
         end
         function        launchExternalViewer(this, app, varargin)
-            assert(ischar(app));
-            fqfn = this.tempFqfilename;
-            if (isempty(varargin))
-                cmdline = sprintf('%s %s',    app, fqfn);
-            else
-                cmdline = sprintf('%s %s %s', app, fqfn, imaging2str(varargin{:}));
-            end    
-            s = 0; r = '';
+            s = []; r = '';
             try
-                this.saveas(fqfn);
+                assert(0 == mlbash(sprintf('which %s', app))); % assert app exists on filesystem
+                tfqfns_ = {this.tempFqfilename};
+                this.saveas(tfqfns_{1});
+                cmdline = sprintf('%s %s', app, tfqfns_{1});
+                
+                for v = 1:length(varargin)
+                    vic_ = mlfourd.ImagingContext(varargin{v});
+                    vic_.niftid;
+                    tfqfns_  = [tfqfns_  this.tempFqfilename(vic_.fqfileprefix)]; %#ok<AGROW>
+                    vic_.saveas(tfqfns_{end});
+                    cmdline = [cmdline ' ' tfqfns_{end}]; %#ok<AGROW>
+                end 
+                
                 [s,r] = mlbash(cmdline);
-                deleteExisting(fqfn);
+                for f = 1:length(tfqfns_)
+                    deleteExisting(tfqfns_{f});
+                end
             catch ME
                 handexcept(ME, 'mlfourd:viewerError', ...
-                    'InnerNIfTId.launchExternalViewer called mlbash with %s; \nit returned s->%i, r->%s', cmdline, s, r);
+                    'InnerNIfTId.launchExternalViewer called mlbash with %s; \nit returned s->%i, r->%s', ...
+                    cmdline, s, r);
             end
         end
         function this = optimizePrecision(this)
@@ -924,8 +932,11 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 end
             end
         end 
-        function fn   = tempFqfilename(this)
-            fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
+        function fn   = tempFqfilename(this, varargin)
+            ip = inputParser;
+            addOptional(ip, 'fqfp', this.fqfileprefix, @ischar);
+            parse(ip, varargin{:});
+            fn = sprintf('%s_%s_rand%g%s', ip.Results.fqfp, datestr(now, 30), floor(rand*1e6), this.FILETYPE_EXT);
         end
     end
     

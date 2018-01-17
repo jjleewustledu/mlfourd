@@ -721,7 +721,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
     methods (Static, Access = 'protected')
         function fns = gunzip(fqfn)
             gdir = fullfile(fileparts(fqfn), mlfourd.NIfTI.GUNZIP_FOLDER);
-            ensureFolderExists(gdir);
+            ensuredir(gdir);
             fns = gunzip(fqfn, gdir); 
             if (iscell(fns))
                 if (length(fns) > 1)

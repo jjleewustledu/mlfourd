@@ -212,7 +212,8 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             g = this.contexth_.getLog(varargin{:});            
         end
         function tf   = isempty(this)
-            tf = isempty(this.concreteObj_);
+            niid = this.niftid;
+            tf   = isempty(niid.img);
         end
         function l    = length(~)
             l = 1;
