@@ -1,4 +1,4 @@
-classdef ImagingContext < handle
+classdef ImagingContext < handle & mlio.HandleIOInterface
 	%% IMAGINGCONTEXT provides the context for a state design pattern for imaging data.  It also 
     %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
     %  is to improve the fluent expressivity of behaviors involving imaging data.
@@ -525,7 +525,7 @@ classdef ImagingContext < handle
             u =  mlfourd.ImagingContext(this.state_.uthresh(u));
         end
         function p  = uthreshp(this, p)
-            %% THRESHP
+            %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
             %  @returns p, the modified imaging context
             

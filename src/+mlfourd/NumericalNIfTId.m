@@ -1,4 +1,4 @@
-classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numerical & mlpatterns.DipNumerical 
+classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numerical & mlpatterns.DipNumerical & mlfourd.INumerical
 	%% NUMERICALNIFTID extends NIfTId implementations with bsxfun and other numerical functionality.
     
 	%  $Revision$

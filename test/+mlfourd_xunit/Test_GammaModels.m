@@ -5,7 +5,7 @@ classdef Test_GammaModels < TestCase
     %
     %  _Usage:_  runtests('mlfourd_xunit.Test_GammaModels')
     %
-    %  _See also:_  web('/Users/jjlee/Local/src/mlcvl/matlab_xunit/doc/xunit_product_page.html', ...
+    %  _See also:_  web('/Users/jjlee/MATLAB-Drive/matlab_xunit/doc/xunit_product_page.html', ...
     %                   '-helpbrowser')
     %
     %  _Revision no._ $Revision: 2643 $ committed on $Date: 2013-09-21 17:58:37 -0500 (Sat, 21 Sep 2013) $ by $Author: jjlee $
@@ -18,7 +18,7 @@ classdef Test_GammaModels < TestCase
     %  _Copyright_ (c) 2010 $Author: jjlee $.  All rights reserved.
     %
     properties (Constant)
-        TEST_HOME = '/Users/jjlee/Local/src/mlcvl/mlfourd/test/+mlfourd_xunit';
+        TEST_HOME = '/Users/jjlee/MATLAB-Drive/mlfourd/test/+mlfourd_xunit';
         WORK_HOME = '/Volumes/ParietalHD2/cvl/MROMI/ForBayes/046/tp1_raw/images_2010apr12';
         shortt      = 0:1.5:9;
         longt       = 0:10:60;
