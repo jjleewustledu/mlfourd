@@ -59,6 +59,12 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 end
             end
         end 
+        function tf   = isscalar(this)
+            tf = isscalar(this.img);
+        end
+        function tf   = isvector(this)
+            tf = isvector(this.img);
+        end
         function niid = makeSimilar(this, varargin)
             %% MAKESIMILAR 
             %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.

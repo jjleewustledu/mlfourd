@@ -106,7 +106,7 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
             this.component = this.component.zeros(varargin{:});
         end        
                 
-        %% Other ....
+        %% Other ...
         
         function        addLog(this, varargin)
             this.component.addLog(varargin{:});
@@ -114,6 +114,12 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
         function        hist(this, varargin)
             this.component.hist(varargin{:});
         end        
+        function tf   = isscalar(this)
+            tf = this.component.isscalar;
+        end
+        function tf   = isvector(this)
+            tf = this.component.isvector;
+        end
         function        freeview(this, varargin)
             this.component.freeview(varargin{:});
         end        

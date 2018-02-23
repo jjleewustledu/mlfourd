@@ -340,13 +340,25 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             import mlfourd.*;
             d = DynamicNIfTId(this.component);
             d = d.volumeSummed;
-            d.img = ensureRowVector(d.img);
             this = NumericalNIfTId(d.component);
+            this.img = ensureRowVector(this.img);
+        end        
+        function [this,msk] = volumeAveraged(this, varargin)   
+            %% VOLUMEAVERAGED calls this.volumeContracted, then divides the data by the number of masked inclusions.
+            %  @param per this.volumeContracted.
+            %  @return this contracted and averaged by masked inclusions.
+            
+            [this,msk] = this.volumeContracted(varargin{:});
+            numelMasked = double(sum(sum(sum(msk.img))));
+            this.img = this.img / numelMasked;
+            this.img = ensureRowVector(this.img);
+            this.fileprefix = sprintf('%s_meanMasked', this.fileprefix);
         end
-        function this = volumeContracted(this, varargin)
+        function [this,msk] = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED
             %  @param mask is a maks for contracting volumes, mlfourd.ImagingContext or mlfourd.INIfTI; defaults to all volumes.
             %  @return this contracted in volumes.
+            %  @return mask as mlfourd.NumericalNIfTId.
             
             sz = size(this);
             trivial = mlfourd.ImagingContext(ones(sz(1:3)));            
@@ -363,11 +375,10 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
                     'NumericalNIfTId.volumeContracted.ip.Results.M is %s', class(ip.Results.M));
             end
             
-            fp = this.fileprefix;
             this = this.masked(msk);
             this = this.volumeSummed;
             this.img = ensureRowVector(this.img);
-            this.fileprefix = sprintf('%s_volumesBy%s%s', fp, upper(msk.fileprefix), msk.fileprefix(2:end));
+            this.fileprefix = sprintf('%s_X_%s', this.fileprefix, msk.fileprefix);
         end
         function this = zoomed(this, varargin)
             import mlfourd.*;
