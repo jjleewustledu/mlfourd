@@ -133,15 +133,15 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                     im = [obj.fileprefix '.v.mhdr'];
                 case 'cellComposite'
                     im = obj.cellComposite;
-                case 'fourdfp'
+                case {'fourdfp' 'Fourdfp' 'mlfourd.Fourdfp'}
                     im = obj.fourdfp;
-                case  'mgh'
+                case {'mgh' 'MGH' 'mlsurfer.MGH'}
                     im = obj.mgh;
                 case  'niftic'
                     im = obj.niftic;
-                case  'niftid'
+                case  {'niftid' 'NIfTId' 'mlfourd.NIfTId'}
                     im = obj.niftid;
-                case  'numericalNiftid'
+                case  {'numericalNiftid' 'NumericalNIfTId' 'mlfourd.NumericalNIfTId'}
                     im = obj.numericalNiftid;
                 case  'petNiftid'
                     im = obj.petNiftid;
