@@ -251,7 +251,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             this = this.threshp(100*ip.Results.threshold);
             this = this.binarized;
             b = BlurringNIfTId(this.component);
-            b = b.blurred([5.5 5.5 5.5]);         
+            b = b.blurred([1 1 1] * min(this.mmppix));         
             this = NumericalNIfTId(b.component);
             this = this/this.dipmax;
         end
