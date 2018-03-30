@@ -312,11 +312,11 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         end
         function this = timeContracted(this, varargin)
             %% TIMECONTRACTED
-            %  @param T is numeric bound for contracting times,[t0 tF]; defaults to all times.
+            %  @param T is a closed interval for contracting times, [t0 tF]; defaults to all times.
             %  @return this contracted in time.
             
             ip = inputParser;
-            addOptional(ip, 'T', 1:size(this,4), @isnumeric);
+            addOptional(ip, 'T', [1 size(this,4)], @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
             fp = this.fileprefrix;
