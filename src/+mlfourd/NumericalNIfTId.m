@@ -319,7 +319,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             addOptional(ip, 'T', [1 size(this,4)], @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
-            fp = this.fileprefrix;
+            fp = this.fileprefix;
             this.component.img = this.component.img(:,:,:,T(1):T(2));
             this = this.timeSummed;
             this.fileprefix = sprintf('%s_times%gto%g', fp, T(1), T(2));
