@@ -49,7 +49,7 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         pixdim
         seriesNumber
         
-        %% New for AbstractNIfTIComponent
+        %% 
         
         lexistFile
         logger
@@ -221,7 +221,7 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
             num = this.innerNIfTI_.seriesNumber;
         end
         
-        %% New for AbstractNIfTIComponent
+        %% 
         
         function tf   = get.lexistFile(this)
             tf = this.innerNIfTI_.lexistFile;
@@ -289,12 +289,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function f = fov(this)
             f = this.innerNIfTI_.fov;
         end
-%         function [tf,msg] = isequal(this, obj)
-%             [tf,msg] = this.innerNIfTI_.isequal(obj);
-%         end
-%         function [tf,msg] = isequaln(this, obj)            
-%             [tf,msg] = this.innerNIfTI_.isequaln(obj);
-%         end
         function m = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
         end
@@ -323,7 +317,7 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
             z = this.innerNIfTI_.zeros;
         end
         
-        %% New for AbstractNIfTIComponent
+        %% 
         
         function     addLog(this, varargin)
             this.innerNIfTI_.addLog(varargin{:});
@@ -359,9 +353,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function iter = createIterator(this)
             iter = this.innerNIfTI_.createIterator;
         end
-%         function        disp(this)
-%             this.innerNIfTI_.disp;
-%         end
         function idx  = find(this, obj)
             idx = this.innerNIfTI_.find(obj);
         end

@@ -328,8 +328,13 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
             %  applied to the internally stored image
             %  @return the blurred image
+            %  @return this if varargin|varargin{1} are empty
+            %  @return this if varargin{1} == 0
             
-            b =  mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
+            if (isempty(varargin));    b = this; return; end
+            if (isempty(varargin{1})); b = this; return; end
+            if (0 ==    varargin{1});  b = this; return; end
+            b = mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
         function f  = char(this)
             f = char(this.state_);
@@ -490,15 +495,21 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         function t  = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
-            %  @returns t, the modified imaging context
+            %  @return t, the modified imaging context
+            %  @return this if t == 0 or t is empty
             
+            if (isempty(t)); t = this; return; end
+            if (0 ==    t ); t = this; return; end
             t = mlfourd.ImagingContext(this.state_.thresh(t));
         end
         function p  = threshp(this, p)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             %  @returns p, the modified imaging context
+            %  @return this if p == 0 or p is empty
             
+            if (isempty(p)); p = this; return; end
+            if (0 ==    p ); p = this; return; end            
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
         function ic = timeSummed(this)
@@ -521,14 +532,20 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %% UTHRESH
             %  @param u:  use t to upper-threshold current image (zero anything above the number)
             %  @returns u, the modified imaging context
+            %  @return this if u == 0 or u is empty
             
+            if (isempty(u)); u = this; return; end
+            if (0 ==    u ); u = this; return; end            
             u =  mlfourd.ImagingContext(this.state_.uthresh(u));
         end
         function p  = uthreshp(this, p)
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
             %  @returns p, the modified imaging context
+            %  @return this if u == 0 or u is empty
             
+            if (isempty(p)); p = this; return; end
+            if (0 ==    p ); p = this; return; end              
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
         function ic = volumeSummed(this)
@@ -561,7 +578,11 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %% ZOOMED 
             %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
             %  @return internal image is zoomed.
+            %  @return this if varargin is empty
+            %  @return this if prod(varargin{...}) == 1
             
+            if (isempty(varargin));             z = this; return; end
+            if (1 == prod(cell2mat(varargin))); z = this; return; end            
             z =  mlfourd.ImagingContext(this.state_.zoomed(varargin{:}));
         end
         
@@ -573,7 +594,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @throws mlfourd:switchCaseError, mlfourd:unsupportedTypeclass.
             
             import mlfourd.*;
-            if (~exist('obj', 'var'))
+            if (~exist('obj', 'var') || isempty(obj))                
+                this.state_ = NIfTIdState(obj, this);
                 return
             end
             if (isa(obj, 'mlfourd.ImagingContext'))
@@ -604,12 +626,12 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                 this.state_ = NIfTIcState(obj, this);
                 return
             end
-            if (isa(obj, 'mlsurfer.MGH'))
-                this.state_ = MGHState(obj, this);
-                return
-            end
             if (isa(obj, 'mlfourdfp.Fourdfp'))
                 this.state_ = FourdfpState(obj, this);
+                return
+            end
+            if (isa(obj, 'mlsurfer.MGH'))
+                this.state_ = MGHState(obj, this);
                 return
             end
             if (isa(obj, 'mlfourd.NumericalNIfTId'))

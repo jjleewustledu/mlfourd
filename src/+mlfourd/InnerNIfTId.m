@@ -61,7 +61,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         pixdim
         seriesNumber
         
-        %% New for InnerNIfTId
+        %% 
         
         lexistFile
         logger
@@ -296,7 +296,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             num = mlchoosers.FilenameFilters.getSeriesNumber(this.fileprefix);
         end
         
-        %% New for InnerNIfTId
+        %% 
         
         function tf   = get.lexistFile(this)
             tf = lexist(this.fqfilename, 'file');
@@ -508,7 +508,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.img = sum(this.img_, varargin{:});
         end    
         
-        %% New for InnerNIfTId
+        %% 
         
         function        addLog(this, varargin)
             %% ADDLOG
