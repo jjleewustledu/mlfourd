@@ -91,7 +91,14 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
             b = this.numericalNiftid.maskBlended(varargin{:});
         end
         function b = masked(this, varargin)
-            b = this.numericalNiftid.masked(varargin{:});
+            args = varargin;
+            for a = 1:length(args)
+                if (~isa(args{a}, 'mlfourd.ImagingContext'))
+                    args{a} = mlfourd.ImagingContext(args{a});
+                end
+                args{a} = args{a}.niftid;
+            end
+            b = this.numericalNiftid.masked(args{:});
         end
         function b = maskedByZ(this, varargin)
             b = this.numericalNiftid.maskedByZ(varargin{:});
