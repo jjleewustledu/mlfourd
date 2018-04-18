@@ -594,7 +594,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @throws mlfourd:switchCaseError, mlfourd:unsupportedTypeclass.
             
             import mlfourd.*;
-            if (~exist('obj', 'var') || isempty(obj))                
+            if (~exist('obj', 'var')) % || isempty(obj))                
                 this.state_ = NIfTIdState(obj, this);
                 return
             end

@@ -76,7 +76,7 @@ classdef UnittestRegistry < mlpatterns.Singleton
             g = mlfourd.ImagingContext.load(this.smallT1_fqfn);
         end
         function g = get.subjectsDir(~)
-            g = fullfile('/Volumes/SeagateBP4', 'cvl', 'np755', '');
+            g = fullfile('/data', 'cvl', 'np755', '');
         end
     end
     

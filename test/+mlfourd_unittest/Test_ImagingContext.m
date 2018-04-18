@@ -41,7 +41,10 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         tr_fqfn
     end
     
-    methods %% GET
+    methods 
+        
+        %% GET
+        
         function g = get.dynamic(this)
             g = mlfourd.DynamicNIfTId.load(this.ho_fqfn);
         end
