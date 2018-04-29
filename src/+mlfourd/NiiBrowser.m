@@ -8,14 +8,18 @@ classdef NiiBrowser < mlfourd.NIfTI
     % Copyright (c) 2008 Washington University School of Medicine.  All rights reserved.
     % Report bugs to bug.jjlee.wustl.edu@gmail.com.
     
-    properties 
-        blur            = [];
-        blurCount       = 0;
-        block           = [];
-        blockCount      = 0;
-        scaling         = 'NONE';
-        inclusion_frac  = 0.5; % min. fraction of voxels required to create a blocked voxel
-        resamplerInterpolant = 'nearest'; % 'cubic', 'linear' or 'nearest' for tformresampler
+    properties (Constant)
+        KERNEL_MULTIPLE = 2
+    end
+    
+    properties
+        blur            = []
+        blurCount       = 0
+        block           = []
+        blockCount      = 0
+        scaling         = 'NONE'
+        inclusion_frac  = 0.5 % min. fraction of voxels required to create a blocked voxel
+        resamplerInterpolant = 'nearest' % 'cubic', 'linear' or 'nearest' for tformresampler
     end
     
     methods
@@ -699,7 +703,6 @@ classdef NiiBrowser < mlfourd.NIfTI
             %  See also:  NiiBrowser.gaussFullwidth
             %
             import mlfourd.*;
-            KERNEL_MULTIPLE = 3;
             switch (nargin)
                 case 2
                     metric  = 'voxel';
@@ -733,7 +736,7 @@ classdef NiiBrowser < mlfourd.NIfTI
             if (norm(sigma) < eps); return; end % Trivial case
             
             % Assemble filter kernel & call imfilter              
-            krnlLens = KERNEL_MULTIPLE * ceil(sigma);
+            krnlLens = mlfourd.NiiBrowser.KERNEL_MULTIPLE * ceil(sigma);
             for q = 1:length(krnlLens) %#ok<FORPF>
                 if (krnlLens(q) < 1); krnlLens(q) = 1; end
             end             

@@ -9,9 +9,13 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$  	 
 
-    properties 
-        blur      = [];
-        blurCount = 0;
+    properties (Constant)
+        KERNEL_MULTIPLE = 2
+    end
+    
+    properties
+        blur      = []
+        blurCount = 0
     end
     
     methods (Static)
@@ -168,7 +172,6 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
             %  See also:  gaussFullwidth
             
             import mlfourd.*;
-            KERNEL_MULTIPLE = 3;
             switch (nargin)
                 case 2
                     metric  = 'voxel';
@@ -202,7 +205,7 @@ classdef BlurredNIfTI < mlfourd.NIfTIDecorator
             if (norm(sigma) < eps); return; end % Trivial case
             
             % Assemble filter kernel & call imfilter              
-            krnlLens = KERNEL_MULTIPLE * ceil(sigma);
+            krnlLens = mlfourd.BlurredNIfTI.KERNEL_MULTIPLE * ceil(sigma);
             for q = 1:length(krnlLens) %#ok<FORPF>
                 if (krnlLens(q) < 1); krnlLens(q) = 1; end
             end             
