@@ -358,6 +358,8 @@ classdef MaskingNIfTId < mlfourd.NIfTIdecoratorProperties
     
     methods (Access = private)
         function assertVolumeFraction(this)
+            return
+            
             volFrac = this.count/numel(this.img);
             if (volFrac > 0.5)
                 warning('mlfourd:possibleMaskingError', ...
