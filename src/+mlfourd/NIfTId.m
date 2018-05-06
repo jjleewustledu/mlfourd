@@ -264,9 +264,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             import mlfourd.* mlfourdfp.*;
             [pth,fp] = myfileparts(fn);
             fp2 = [fp '_' datestr(now,30)];
-            fn2 = fullfile(pth, [fp2 NIfTId.FILETYPE_EXT]); 
+            fn2 = fullfile(pth, [fp2 '.nii']); 
             visitor = FourdfpVisitor;
-            visitor.nifti_4dfp_ng(fullfile(pth,fp), fullfile(pth, fp2));
+            visitor.nifti_4dfp_n(fullfile(pth,fp), fullfile(pth, fp2));
             this = NIfTId.load_JimmyShen(fn2);
             this.fileprefix = fp;
             deleteExisting(fn2);
