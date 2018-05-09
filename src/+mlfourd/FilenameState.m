@@ -30,7 +30,7 @@ classdef FilenameState < mlfourd.ImagingState
         end
         function f = get.fourdfp(this)
             this.contexth_.changeState( ...
-                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+                mlfourd.FourdfpState(this.fqfilename, this.contexth_));
             f = this.contexth_.fourdfp;
         end
         function f = get.mgh(this)
