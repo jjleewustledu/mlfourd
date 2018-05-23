@@ -306,6 +306,10 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         end
         function this = timeSummed(this)
             import mlfourd.*;
+            if (this.component.rank < 4)                
+                this = NumericalNIfTId(this.component);
+                return
+            end
             d = DynamicNIfTId(this.component);
             d = d.timeSummed;
             this = NumericalNIfTId(d.component);
@@ -317,7 +321,8 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             
             ip = inputParser;
             addOptional(ip, 'T', [1 size(this,4)], @isnumeric);
-            parse(ip, varargin{:});
+            parse(ip, varargin{:});            
+            
             T = ip.Results.T;
             fp = this.fileprefix;
             this.component.img = this.component.img(:,:,:,T(1):T(2));
@@ -365,6 +370,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             ip = inputParser;
             addOptional(ip, 'M', trivial, @(x) isa(x, 'mlfourd.ImagingContext') || isa(x, 'mlfourd.INIfTI'));
             parse(ip, varargin{:});            
+            
             if (isa(ip.Results.M, 'mlfourd.ImagingContext'))
                 msk = ip.Results.M;
                 msk = msk.numericalNiftid;
