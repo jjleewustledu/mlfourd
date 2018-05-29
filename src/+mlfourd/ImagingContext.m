@@ -178,7 +178,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                           'ImagingContext.locationType.loc0->%s not recognized', loc0);
             end
         end
-        function ic   = repackageImagingContext(obj, oriClass)
+        function ic   = recastImagingContext(obj, oriClass)
             switch (oriClass)
                 case 'mlfourd.ImagingContext'
                     ic = mlfourd.ImagingContext(obj);
@@ -188,7 +188,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                     ic = mlpet.PETImagingContext(obj);
                 otherwise
                     error('mlfourd:unsupportedSwitchCase', ....
-                          'ImagingContext.repackageImagingContext.oriClass->%s is not supported', oriClass);
+                          'ImagingContext.recastImagingContext.oriClass->%s is not supported', oriClass);
             end
         end
     end
@@ -512,18 +512,18 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             if (0 ==    p ); p = this; return; end            
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
-        function ic = timeSummed(this)
-            %% TIMESUMMED integrates over imaging dimension 4. 
-            %  @return ic, the modified imaging context, a dynamic image reduced to summed volume.
-            
-            ic = mlfourd.ImagingContext(this.state_.timeSummed);
-        end
         function ic = timeContracted(this, varargin)
             %% TIMECONTRACTED
             %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
             %  @return ic := \int_T dt this.state_(\vec{r}, t).
             
             ic = mlfourd.ImagingContext(this.state_.timeContracted(varargin{:}));
+        end
+        function ic = timeSummed(this)
+            %% TIMESUMMED integrates over imaging dimension 4. 
+            %  @return ic, the modified imaging context, a dynamic image reduced to summed volume.
+            
+            ic = mlfourd.ImagingContext(this.state_.timeSummed);
         end
         function t  = true(this, varargin)
             t =  mlfourd.ImagingContext(this.state_.true(varargin{:}));
@@ -548,18 +548,18 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             if (0 ==    p ); p = this; return; end              
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
-        function ic = volumeSummed(this)
-            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
-            %  @return ic, the modified imaging context, a dynamic image reduced to time series
-            
-            ic = mlfourd.ImagingContext(this.state_.volumeSummed);
-        end
         function ic = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED
             %  @param mask as ImagingContext specifying \Omega \in {\Bbb R}^3.
             %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
             
             ic = mlfourd.ImagingContext(this.state_.volumeContracted(varargin{:}));
+        end
+        function ic = volumeSummed(this)
+            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
+            %  @return ic, the modified imaging context, a dynamic image reduced to time series
+            
+            ic = mlfourd.ImagingContext(this.state_.volumeSummed);
         end
         function      view(this, varargin)
             %% VIEW
@@ -586,6 +586,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             z =  mlfourd.ImagingContext(this.state_.zoomed(varargin{:}));
         end
         
+        %% CTOR
+        
         function this = ImagingContext(obj)
             %% IMAGINGCONTEXT 
             %  @param obj is imaging data:  filename, INIfTI, MGH, ImagingComponent, double, [] or 
@@ -594,11 +596,11 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @throws mlfourd:switchCaseError, mlfourd:unsupportedTypeclass.
             
             import mlfourd.*;
-            if (~exist('obj', 'var')) % || isempty(obj))                
+            if (~exist('obj', 'var'))          
                 this.state_ = NIfTIdState(obj, this);
                 return
             end
-            if (isa(obj, 'mlfourd.ImagingContext'))
+            if (isa(obj, 'mlfourd.ImagingContext')) % copy ctor
                 switch (obj.stateTypeclass)
                     case 'mlfourd.CellCompositeState'
                         this.state_ = CellCompositeState(obj.cellComposite, this);
