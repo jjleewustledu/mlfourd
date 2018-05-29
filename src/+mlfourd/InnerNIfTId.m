@@ -836,11 +836,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             try
                 if (this.has4dfpExtension)
                     warning('off', 'MATLAB:structOnObject');
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
+                    %mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
                     visitor = mlfourdfp.FourdfpVisitor;
                     visitor.nifti_4dfp_4(this.fqfileprefix);
                     deleteExisting(this.fqfilenameNii);
-                    deleteExisting(this.fqfilenameNiiGz);
+                    %deleteExisting(this.fqfilenameNiiGz);
                     warning('on', 'MATLAB:structOnObject');
                     return
                 end
