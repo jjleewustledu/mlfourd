@@ -53,7 +53,7 @@ classdef FourdfpState < mlfourd.ImagingState
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
-        function f = get.petNiftid(this)
+        function f  = get.petNiftid(this)
             this = this.nifti_4dfp_n;
             this.contexth_.changeState( ...
                 mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
@@ -77,26 +77,28 @@ classdef FourdfpState < mlfourd.ImagingState
         function        addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end
-        function this = nifti_4dfp_n(this)
-            this = this.nifti_4dfp_ng;
-        end
-        function this = nifti_4dfp_ng(this)
-            if (isempty(this.fourdfpVisitor_))
-                this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
-            end
+        function this = nifti_4dfp_n(this, varargin)
             try
-                this.fourdfpVisitor_.nifti_4dfp_ng(this.fqfp);
+                fv = mlfourdfp.FourdfpVisitor;
+                fv.nifti_4dfp_n(varargin{:});
+                this.filesuffix = '.nii';
+            catch ME
+                handexcept(ME);
+            end
+        end
+        function this = nifti_4dfp_ng(this, varargin)
+            try
+                fv = mlfourdfp.FourdfpVisitor;
+                fv.nifti_4dfp_ng(varargin{:});
                 this.filesuffix = '.nii.gz';
             catch ME
                 handexcept(ME);
             end
         end
-        function this = nifti_4dfp_4(this)
-            if (isempty(this.fourdfpVisitor_))
-                this.fourdfpVisitor_ = mlfourdfp.FourdfpVisitor;
-            end
+        function this = nifti_4dfp_4(this, varargin)
             try
-                this.fourdfpVisitor_.nifti_4dfp_4(this.fqfp);
+                fv = mlfourdfp.FourdfpVisitor;
+                fv.nifti_4dfp_4(varargin{:});
                 this.filesuffix = '.4dfp.ifh';
             catch ME
                 handexcept(ME);
@@ -106,25 +108,28 @@ classdef FourdfpState < mlfourd.ImagingState
             this.concreteObj_.viewer = this.viewer;
             this.concreteObj_.view(varargin{:});
         end 
+        
  		function this = FourdfpState(obj, h)
             if (~isa(obj, 'mlfourdfp.Fourdfp'))
                 try
-                    obj = mlfourdfp.Fourdfp(mlfourd.NIfTId(obj));
+                    import mlfourdfp.*;
+                    if (ischar(obj))
+                        [pth,fp,x] = myfileparts(obj);
+                        assert(strcmp(x, '.4dfp.ifh'));
+                        fqfp = fullfile(pth, fp);
+                        this.nifti_4dfp_n(fqfp);
+                        obj = mlfourd.NIfTId(fqfp);
+                    end
+                    obj = Fourdfp(obj);
                 catch ME
                     handexcept(ME, 'mlfourdfp:castingError', ...
-                        'FourdfpState does not support objects of type %s', class(obj));
+                        'mlfourd.FourdfpState does not support objects of type %s', class(obj));
                 end
             end
             this.concreteObj_ = obj;
             this.contexth_ = h;
  		end
     end 
-    
-    %% PRIVATE
-    
-    properties (Access = private)
-        fourdfpVisitor_
-    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

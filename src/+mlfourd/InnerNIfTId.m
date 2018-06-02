@@ -761,12 +761,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT);
         end
-        function tf   = hasSurferExtension(this)
-            tf = lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT);
-        end
-        function tf   = has4dfpExtension(this)
-            tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
-        end
+%         function tf   = hasSurferExtension(this)
+%             tf = lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT);
+%         end
+%         function tf   = has4dfpExtension(this)
+%             tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
+%         end
         function        launchExternalViewer(this, app, varargin)
             s = []; r = '';
             try
@@ -834,33 +834,32 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             this = this.optimizePrecision;
             try
-                if (this.has4dfpExtension)
-                    warning('off', 'MATLAB:structOnObject');
-                    %mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
-                    visitor = mlfourdfp.FourdfpVisitor;
-                    visitor.nifti_4dfp_4(this.fqfileprefix);
-                    deleteExisting(this.fqfilenameNii);
-                    %deleteExisting(this.fqfilenameNiiGz);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
-                end
+%                 if (this.has4dfpExtension)
+%                     warning('off', 'MATLAB:structOnObject');
+%                     %mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
+%                     mlniftitools.save_nii(struct(this), this.fqfilenameNii);
+%                     visitor = mlfourdfp.FourdfpVisitor;
+%                     visitor.nifti_4dfp_4(this.fqfileprefix);
+%                     deleteExisting(this.fqfilenameNii);
+%                     %deleteExisting(this.fqfilenameNiiGz);
+%                     warning('on', 'MATLAB:structOnObject');
+%                     return
+%                 end
+                warning('off', 'MATLAB:structOnObject');
                 if (this.hasJimmyShenExtension) 
-                    warning('off', 'MATLAB:structOnObject');
                     mlniftitools.save_nii(struct(this), this.fqfilename);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
+                else
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
                 end
-                if (this.hasSurferExtension)
-                    warning('off', 'MATLAB:structOnObject');
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
-                    mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-                    deleteExisting(this.fqfilenameNiiGz);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
-                end
-                error('mlfourd:unexpectedFileExtension', ...
-                      'InnerNIfTId.save_nii could not recognize %s', this.fqfilename);
+                warning('on', 'MATLAB:structOnObject');
+%                 if (this.hasSurferExtension)
+%                     warning('off', 'MATLAB:structOnObject');
+%                     mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+%                     mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+%                     deleteExisting(this.fqfilenameNiiGz);
+%                     warning('on', 'MATLAB:structOnObject');
+%                     return
+%                 end
             catch ME
                 handerror(ME, ...
                     'mlfourd:IOError', ...

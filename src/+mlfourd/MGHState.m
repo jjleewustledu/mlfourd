@@ -58,18 +58,54 @@ classdef MGHState < mlfourd.ImagingState
         end
     end
     
+    methods (Static)
+        function niifn = mgh2nii(mghfn)
+            fqfp  = mghfn(1:end-length(mlsurfer.MGH.MGH_EXT));
+            niifn = [fqfp '.nii'];
+            assert(lexist(mghfn, 'file'));
+            mlfourd.MGHState.mri_convert(mghfn, niifn);
+        end
+        function f2 = mri_convert(f1, f2)
+            assert(lexist(f1, 'file'), sprintf('MGH.mri_convert:  file not found:  %s', f1));
+            if (~exist('f2', 'var'))
+                [~,~,fsuffix] = myfileparts(f1);
+                if (strcmp('.nii.gz', fsuffix) || strcmp('.nii', fsuffix))
+                    f2 = filename( ...
+                         fileprefix(f1, fsuffix), mlsurfer.MGH.MGH_EXT); 
+                end
+                if (strcmp('.mgz', fsuffix)    || strcmp('.mgh', fsuffix))
+                    f2 = filename( ...
+                         fileprefix(f1, fsuffix), mlfourd.NIfTI.FILETYPE_EXT); 
+                end
+            end
+            mlbash(sprintf('mri_convert %s %s', f1, f2));
+        end
+        function mghfn = nii2mgh(niifn)
+            fqfp  = niifn(1:end-length('.nii'));
+            mghfn = [fqfp mlsurfer.MGH.MGH_EXT];
+            assert(lexist(niifn, 'file'));
+            mlfourd.MGHState.mri_convert(niifn, mghfn);
+        end
+    end
+    
     methods
-        function     addLog(this, varargin)
+        function       addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end
-        function     view(this, varargin)
+        function       view(this, varargin)
             this.concreteObj_.freeview(varargin{:});
         end
         
         function this = MGHState(obj, h)
             if (~isa(obj, 'mlsurfer.MGH'))
                 try
-                    obj = mlsurfer.MGH(obj);
+                    import mlsurfer.* mlfourd.*;
+                    if (ischar(obj))
+                        [~,~,x] = fileparts(obj);
+                        assert(strcmp(x, '.mgz') || strcmp(x, '.mgh'));
+                        obj = NIfTId(MGHState.mgh2nii(obj));
+                    end
+                    obj = MGH(obj);
                 catch ME
                     handexcept(ME.identifier, 'mlfourd:castingError', ...
                         'mlfourd.MGHState.load does not support objects of type %s', class(obj));

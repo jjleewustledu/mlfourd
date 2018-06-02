@@ -11,9 +11,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
  	
     
 	properties (Dependent) 
-        
-        %% NIfTIIO
-        
         filename
         filepath
         fileprefix 
@@ -24,16 +21,12 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         fqfp  
         noclobber
         
-        %% JimmyShenInterface
-        
         ext
         filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
         hdr
         img
         originalType
         untouch
-        
-        %% INIfTI
         
         bitpix
         creationDate
@@ -49,8 +42,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         pixdim
         seriesNumber
         
-        %% 
-        
         lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
@@ -58,9 +49,9 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         viewer
     end
     
-    methods %% SET/GET
+    methods 
         
-        %% NIfTIIO
+        %% SET/GET
         
         function this = set.filename(this, fn)
             this.innerNIfTI_.filename = fn;
@@ -118,8 +109,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
             nc = this.innerNIfTI_.noclobber;
         end    
         
-        %% JimmyShenInterface
-        
         function e    = get.ext(this)
             e = this.innerNIfTI_.ext;
         end
@@ -147,8 +136,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function u    = get.untouch(this)
             u = this.innerNIfTI_.untouch;
         end
-        
-        %% INIfTI  
         
         function bp   = get.bitpix(this) 
             %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
@@ -221,8 +208,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
             num = this.innerNIfTI_.seriesNumber;
         end
         
-        %% 
-        
         function tf   = get.lexistFile(this)
             tf = this.innerNIfTI_.lexistFile;
         end
@@ -247,9 +232,6 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function this = set.viewer(this, v)
             this.innerNIfTI_.viewer = v;
         end
-    end
-    
-	methods
         
         %% NIfTIIO
         
