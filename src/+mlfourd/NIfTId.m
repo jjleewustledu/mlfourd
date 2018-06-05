@@ -239,6 +239,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             end
             ff = '';
         end
+        
+        %% KLUDGE
+        
         function this = load_existing(fn)
             try
                 import mlfourd.* mlfourdfp.*;
@@ -285,8 +288,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             [p,f,e] = myfileparts(fn);
             this.innerNIfTI_.filepath_ = p;
             this.innerNIfTI_.fileprefix_ = f;
-            this.innerNIfTI_.filesuffix_ = e;
-            
+            this.innerNIfTI_.filesuffix_ = e;            
         end
         function e    = selectExistingExtension(fn)
             [~,~,e] = myfileparts(fn);
@@ -306,8 +308,11 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 end
             end
             error('mlfourd:IOError:fileNotFound', ...
-                  'NIfTId.load_existing could not find %s', fn);
+                  'NIfTId.selectExistingExtension could not find %s', fn);
         end
+        
+        %% end KLUDGE
+        
         function        assertCtorObj(obj)
             if (isa(obj, 'mlpatterns.Composite'))
                 error('mlfourd:invalidCtorObj', ...

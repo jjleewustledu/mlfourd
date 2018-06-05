@@ -38,14 +38,6 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         fqfn
         fqfp
         noclobber
-        
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        petNiftid
         stateTypeclass
         viewer
     end
@@ -224,28 +216,6 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         function f = get.noclobber(this)
             f = this.state_.noclobber;
         end
-        
-        function f = get.cellComposite(this)
-            f = this.state_.cellComposite;
-        end
-        function f = get.fourdfp(this)
-            f = this.state_.fourdfp;
-        end
-        function f = get.mgh(this)
-            f = this.state_.mgh;
-        end
-        function f = get.niftic(this)
-            f = this.state_.niftic;
-        end
-        function f = get.niftid(this)
-            f = this.state_.niftid;
-        end
-        function f = get.numericalNiftid(this)
-            f = this.state_.numericalNiftid;
-        end     
-        function f = get.petNiftid(this)
-            f = this.state_.petNiftid;
-        end        
         function c = get.stateTypeclass(this)
             c = class(this.state_);
         end
@@ -285,6 +255,21 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             this.state_.viewer = v;
         end
     
+        %% state changes        
+        
+        function f = fourdfp(this)
+            f = this.state_.fourdfp;
+        end
+        function f = mgh(this)
+            f = this.state_.mgh;
+        end
+        function f = niftid(this)
+            f = this.state_.niftid;
+        end
+        function f = numericalNiftid(this)
+            f = this.state_.numericalNiftid;
+        end            
+        
         %%
         
         function      add(this, varargin)
@@ -622,10 +607,6 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                         error('mlfourd:switchCaseError', ...
                               'ImagingContext.ctor.obj.stateTypeclass -> %s', obj.stateTypeclass);
                 end
-                return
-            end
-            if (isa(obj, 'mlfourd.NIfTIc') || isa(obj, 'mlpatterns.CellComposite') || iscell(obj))
-                this.state_ = NIfTIcState(obj, this);
                 return
             end
             if (isa(obj, 'mlfourdfp.Fourdfp'))

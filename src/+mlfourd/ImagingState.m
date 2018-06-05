@@ -11,16 +11,6 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
  	%  developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John Joowon Lee.
  	%  $Id: ImagingState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	 
-	properties (Abstract)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        %petNiftid
-    end
-    
     properties (Dependent)
         filename
         filepath
@@ -30,8 +20,7 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         fqfileprefix
         fqfn
         fqfp
-        noclobber
-        
+        noclobber        
         viewer
     end 
         
@@ -117,7 +106,22 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
                 assert(ischar(f));
                 this.concreteObj_.viewer = f;
             end
+        end        
+    
+        %% state changes
+        
+        function f = fourdfp(~)
+            f = [];
         end
+        function f = mgh(~)
+            f = [];
+        end
+        function f = niftid(~)
+            f = [];
+        end
+        function f = numericalNiftid(~)
+            f = [];
+        end        
         
         %%
         

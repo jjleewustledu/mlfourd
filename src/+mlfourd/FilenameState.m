@@ -12,60 +12,39 @@ classdef FilenameState < mlfourd.ImagingState
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id: FilenameState.m 2627 2013-09-16 06:18:10Z jjlee $ 
  	
-	properties (Dependent)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        petNiftid
-    end
-    
-    methods %% GET
-        function f = get.cellComposite(this)
-            this.contexth_.changeState( ...
-                mlfourd.CellCompositeState(this.fqfilename, this.contexth_));
-            f = this.contexth_.cellComposite;
-        end
-        function f = get.fourdfp(this)
+    methods
+        
+        %% state changes
+        
+        function f = fourdfp(this)
             this.contexth_.changeState( ...
                 mlfourd.FourdfpState(this.fqfilename, this.contexth_));
             f = this.contexth_.fourdfp;
         end
-        function f = get.mgh(this)
+        function f = mgh(this)
             this.contexth_.changeState( ...
                 mlfourd.MGHState(this.fqfilename, this.contexth_));
             f = this.contexth_.mgh;
         end
-        function f = get.niftic(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIcState(this.fqfilename, this.contexth_));
-            f = this.contexth_.niftic;
-        end
-        function f = get.niftid(this)
+        function f = niftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.niftid;
         end
-        function f = get.numericalNiftid(this)
+        function f = numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.fqfilename, this.contexth_));
             f = this.contexth_.numericalNiftid;
         end
-        function f = get.petNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.petNiftid;
-        end
-    end
-    
-    methods
-        function        view(this, varargin)
+        
+        %%
+        
+        function     view(this, varargin)
             that = this.niftid;
             that.viewer = this.viewer;
             that.view(varargin{:});
-        end        
+        end
+        
         function this = FilenameState(obj, h)
             try
                 obj = mlio.ConcreteIO(obj);

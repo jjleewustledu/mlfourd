@@ -11,51 +11,26 @@ classdef DoubleState < mlfourd.ImagingState
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64. 	
 
-	properties (Dependent)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        petNiftid
- 	end
-
-    methods %% GET
-        function f = get.cellComposite(this)
-            this.contexth_.changeState( ...
-                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.composite;
-        end
-        function f = get.fourdfp(this)
+    methods
+        function f = fourdfp(this)
             this.contexth_.changeState( ...
                 mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
             f = this.contexth_.fourdfp;
         end
-        function f = get.mgh(this)
+        function f = mgh(this)
             this.contexth_.changeState( ...
                 mlfourd.MGHState(this.concreteObj_, this.contexth_));
             f = this.contexth_.mgh;
         end
-        function f = get.niftic(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.niftic;
-        end
-        function g = get.niftid(this)
+        function g = niftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.niftid;
         end
-        function g = get.numericalNiftid(this)
+        function g = numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
-        end
-        function f = get.petNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.petNiftid;
         end
     end 
      

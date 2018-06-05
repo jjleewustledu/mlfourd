@@ -12,7 +12,7 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$ 
     
-    properties %(SetAccess = protected)
+    properties
         component
     end
     

@@ -13,12 +13,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
     end    
     
     properties (Dependent)
-        
-        %% NIfTIIO
-        
         noclobber
-        
-        %% JimmyShenInterface to support struct arguments to NIfTId ctor
         
         ext        %   Legacy variable for mlfourd.JimmyShenInterface
         filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
@@ -45,8 +40,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         originalType
         untouch
         
-        %% INIfTI
-        
         bitpix
         creationDate
         datatype
@@ -61,8 +54,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         pixdim
         seriesNumber
         
-        %% 
-        
         lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
@@ -70,9 +61,9 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         viewer
     end 
 
- 	methods %% GET/SET
+ 	methods 
         
-        %% NIfTIIO
+        %% GET/SET
         
         function tf   = get.noclobber(this)
             tf = this.filesystemRegistry_.noclobber;
@@ -83,8 +74,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.filesystemRegistry_.noclobber = nc;
             this.logger_.noclobber = nc;
         end
-        
-        %% JimmyShenInterface
         
         function e    = get.ext(this)
             e = this.ext_;
@@ -140,8 +129,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function u    = get.untouch(this)
             u = logical(this.untouch_);
         end
-        
-        %% INIfTI
         
         function bp   = get.bitpix(this) 
             %% BITPIX returns a datatype code as described by the INIfTI specifications
@@ -296,8 +283,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             num = mlchoosers.FilenameFilters.getSeriesNumber(this.fileprefix);
         end
         
-        %% 
-        
         function tf   = get.lexistFile(this)
             tf = lexist(this.fqfilename, 'file');
         end
@@ -325,9 +310,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.viewer(this, v)
             this.viewer_ = v;
         end
-    end
-       
-    methods
         
         %% NIfTIIO
         
@@ -761,12 +743,12 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT);
         end
-%         function tf   = hasSurferExtension(this)
-%             tf = lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT);
-%         end
-%         function tf   = has4dfpExtension(this)
-%             tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
-%         end
+        function tf   = hasSurferExtension(this)
+            tf = lstrfind(this.filesuffix, {'.mgz' '.mgh'});
+        end
+        function tf   = has4dfpExtension(this)
+            tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
+        end
         function        launchExternalViewer(this, app, varargin)
             s = []; r = '';
             try
@@ -834,17 +816,27 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             this = this.optimizePrecision;
             try
-%                 if (this.has4dfpExtension)
-%                     warning('off', 'MATLAB:structOnObject');
-%                     %mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);
-%                     mlniftitools.save_nii(struct(this), this.fqfilenameNii);
-%                     visitor = mlfourdfp.FourdfpVisitor;
-%                     visitor.nifti_4dfp_4(this.fqfileprefix);
-%                     deleteExisting(this.fqfilenameNii);
-%                     %deleteExisting(this.fqfilenameNiiGz);
-%                     warning('on', 'MATLAB:structOnObject');
-%                     return
-%                 end
+                
+                %% KLUDGE
+                
+                if (this.has4dfpExtension)
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
+                    visitor = mlfourdfp.FourdfpVisitor;
+                    visitor.nifti_4dfp_4(this.fqfileprefix);
+                    deleteExisting(this.fqfilenameNii);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
+                if (this.hasSurferExtension)
+                    warning('off', 'MATLAB:structOnObject');
+                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+                    mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+                    deleteExisting(this.fqfilenameNiiGz);
+                    warning('on', 'MATLAB:structOnObject');
+                    return
+                end
+                
                 warning('off', 'MATLAB:structOnObject');
                 if (this.hasJimmyShenExtension) 
                     mlniftitools.save_nii(struct(this), this.fqfilename);
@@ -852,14 +844,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                     mlniftitools.save_nii(struct(this), this.fqfilenameNii);
                 end
                 warning('on', 'MATLAB:structOnObject');
-%                 if (this.hasSurferExtension)
-%                     warning('off', 'MATLAB:structOnObject');
-%                     mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
-%                     mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-%                     deleteExisting(this.fqfilenameNiiGz);
-%                     warning('on', 'MATLAB:structOnObject');
-%                     return
-%                 end
+                
             catch ME
                 handerror(ME, ...
                     'mlfourd:IOError', ...
@@ -936,7 +921,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             ip = inputParser;
             addOptional(ip, 'fqfp', this.fqfileprefix, @ischar);
             parse(ip, varargin{:});
-            fn = sprintf('%s_%s_rand%g%s', ip.Results.fqfp, datestr(now, 30), floor(rand*1e6), this.FILETYPE_EXT);
+            fn = sprintf('%s_%s_rand%g%s', ip.Results.fqfp, datestr(now, 30), floor(rand*1e6), '.nii');
         end
     end
     

@@ -12,52 +12,6 @@ classdef MGHState < mlfourd.ImagingState
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$ 
     
-	properties (Dependent)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        petNiftid
-    end 
-    
-	methods %% GET
-        function f = get.cellComposite(this)
-            this.contexth_.changeState( ...
-                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.cellComposite;
-        end
-        function f = get.fourdfp(this)
-            this.contexth_.changeState( ...
-                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.fourdfp;
-        end
-        function f = get.mgh(this)
-            f = this.concreteObj_;
-        end
-        function f = get.niftic(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.niftic;
-        end
-        function f = get.niftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.niftid;
-        end
-        function g = get.numericalNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
-            g = this.contexth_.numericalNiftid;
-        end
-        function f = get.petNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.PETNIfTIdState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.petNiftid;
-        end
-    end
-    
     methods (Static)
         function niifn = mgh2nii(mghfn)
             fqfp  = mghfn(1:end-length(mlsurfer.MGH.MGH_EXT));
@@ -89,6 +43,30 @@ classdef MGHState < mlfourd.ImagingState
     end
     
     methods
+        
+        %% state changes
+        
+        function f = fourdfp(this)
+            this.contexth_.changeState( ...
+                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.fourdfp;
+        end
+        function f = mgh(this)
+            f = this.concreteObj_;
+        end
+        function f = niftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.niftid;
+        end
+        function g = numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
+        end
+        
+        %%
+        
         function       addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end

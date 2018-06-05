@@ -8,52 +8,34 @@ classdef PETNIfTIdState < mlfourd.ImagingState
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.1.0.441655 (R2016b) for MACI64.
  	
-
-	properties (Dependent)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-        petNiftid
- 	end 
-
-	methods %% GET
-        function g = get.cellComposite(this)
-            this.contexth_.changeState( ...
-                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
-            g = this.contexth_.cellComposite;
-        end
-        function f = get.fourdfp(this)
+	methods 
+        
+        %% state changes
+        
+        function f = fourdfp(this)
             this.contexth_.changeState( ...
                 mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
             f = this.contexth_.fourdfp;
         end
-        function g = get.mgh(this)
+        function g = mgh(this)
             this.contexth_.changeState( ...
                 mlfourd.MGHState(this.concreteObj_, this.contexth_));
             g = this.contexth_.mgh;
         end
-        function g = get.niftic(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
-            g = this.contexth_.niftic;
-        end   
-        function g = get.niftid(this)
+        function g = niftid(this)
             g = this.dedecorateNIfTId(this.concreteObj_);
         end   
-        function g = get.numericalNiftid(this)
+        function g = numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
-        function g = get.petNiftid(this)
+        function g = petNiftid(this)
             g = this.concreteObj_;
         end     
-    end
-
-	methods 
+    
+        %%
+        
         function     addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end

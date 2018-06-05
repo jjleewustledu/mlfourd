@@ -11,42 +11,26 @@ classdef NIfTIState < mlfourd.ImagingState
     %  developed on Matlab 8.1.0.604 (R2013a)
     %  $Id: NIfTIState.m 2627 2013-09-16 06:18:10Z jjlee $
 
-	properties (Dependent)
-        cellComposite
-        fourdfp
-        mgh
-        niftic
-        niftid
-        numericalNiftid
-    end
-
-	methods %% GET
-        function f = get.cellComposite(this)
-            this.contexth_.changeState( ...
-                mlfourd.CellCompositeState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.cellComposite;
-        end
-        function f = get.fourdfp(this)
+	methods 
+        
+        %% state changes
+        
+        function f = fourdfp(this)
             this.contexth_.changeState( ...
                 mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
             f = this.contexth_.fourdfp;
         end
-        function f = get.mgh(this)
+        function f = mgh(this)
             this.contexth_.changeState( ...
                 mlfourd.MGHState(this.concreteObj_, this.contexth_));
             f = this.contexth_.mgh;
         end
-        function f = get.niftic(this)
-            this.contexth_.changeState( ...
-                mlfourd.NIfTIcState(this.concreteObj_, this.contexth_));
-            f = this.contexth_.niftic;
-        end
-        function f = get.niftid(this)
+        function f = niftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.concreteObj_, this.contexth_));
             f = this.contexth_.niftid;
         end
-        function g = get.numericalNiftid(this)
+        function g = numericalNiftid(this)
             this.contexth_.changeState( ...
                 mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             g = this.contexth_.numericalNiftid;
