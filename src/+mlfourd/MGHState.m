@@ -77,11 +77,11 @@ classdef MGHState < mlfourd.ImagingState
         function this = MGHState(obj, h)
             if (~isa(obj, 'mlsurfer.MGH'))
                 try
-                    import mlsurfer.* mlfourd.*;
+                    import mlsurfer.*;
                     if (ischar(obj))
-                        [~,~,x] = fileparts(obj);
+                        [~,~,x] = myfileparts(obj);
                         assert(strcmp(x, '.mgz') || strcmp(x, '.mgh'));
-                        obj = NIfTId(MGHState.mgh2nii(obj));
+                        obj = mlfourd.NIfTId(this.mgh2nii(obj));
                     end
                     obj = MGH(obj);
                 catch ME
