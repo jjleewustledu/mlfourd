@@ -10,7 +10,8 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$  	 
 
-    properties (Constant)
+    
+    properties (Constant)        
         KERNEL_MULTIPLE = 2
     end
     
@@ -139,27 +140,23 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             import mlfourd.* mlpet.*;
             rankEuclid = min(this.rank, 3);
             ip = inputParser;
-            addOptional(ip, 'blur', PETRegistry.instance.petPointSpread, ...
-                                       @(x) isnumeric(x) && length(x) <= rankEuclid);
+            addOptional(ip, 'blur', 0, @(x) isnumeric(x) && length(x) <= rankEuclid);
             addOptional(ip, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
             parse(ip, varargin{:});            
             this.blur = ip.Results.blur;
-            if (length(this.blur) < rankEuclid)
-                this.blur = mean(this.blur)*ones(1, rankEuclid);
-            end
-            if (isempty(this.blur) || sum(this.blur) < eps); return; end
             this.mask = ip.Results.mask; 
             
-            mmppix_ = this.mmppix;
-            if (sum(this.blur < mmppix_(1:length(this.blur))) > 1)
-                warning('mlfourd:discretizationErrors', ...
-                        'BlurringNIfTI.blurred:  blur->%s, mmppix->%s', mat2str(this.blur), mat2str(mmppix_));
+            if (isempty(this.blur) || sum(this.blur) < eps)
+                return
             end
+            if (length(this.blur) < rankEuclid)
+                this.blur = mean(this.blur)*ones(1, rankEuclid);
+            end            
             if (this.rank < 4)  
-                this.img = this.blurredVolume(this.img, mmppix_);
+                this.img = this.blurredVolume(this.img, this.mmppix);
             elseif (4 == this.rank)
                 for t = 1:size(this,4)
-                    this.img(:,:,:,t) = this.blurredVolume(this.img(:,:,:,t), mmppix_);
+                    this.img(:,:,:,t) = this.blurredVolume(this.img(:,:,:,t), this.mmppix);
                 end
             else
                 error('mlfourd:paramOutOfBounds', 'BlurringNIfTI.blurred.rank->%i', this.rank);
@@ -177,7 +174,7 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             end
             fp = [this.fileprefix '_' twoDigits{1} twoDigits{2} twoDigits{3} this.metric];
         end
-        function tf = isequaln(this, bnii)
+        function tf   = isequaln(this, bnii)
             tf = isa(bnii, class(this));
             if (tf)
                 tf = isa(bnii, 'mlfourd.BlurringNIfTId');
@@ -216,9 +213,9 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
     %% PRIVATE    
     
     properties (Access = private)
-        mask_
         blur_
         blurCount_ = 0;
+        mask_
     end
     
     methods (Static, Access = private)
@@ -264,9 +261,9 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             %  Examples:
             %         gimg = this.gaussSigma(img, [fwhh_x fwhh_y])
             %         gimg = this.gaussSigma(img, fwhh_vec3, 'mm', mlpet.PETBuilder.petPointSpread)
-            %  See also:  gaussFullwidth
+            %  See also:  gaussFullwidth, imgaussfilt, imgaussfilt3
             
-            import mlfourd.*;
+            import mlfourd.*; 
             switch (nargin)
                 case 2
                     metric  = 'voxel';
@@ -285,82 +282,31 @@ classdef BlurringNIfTId < mlfourd.NIfTIdecoratorProperties
                     error('mlfourd:NotImplementedErr', ...
                          ['BlurringNIfTId.gaussFullwidth.metric->' metric ' was unrecognizable;\n' ...
                           'try pixel(s), voxel(s), mm, cm']);
-            end
+            end            
             img     = double(img);
             imgRank = length(size(img));
-            if (length(sigma) < imgRank)
-                sigma = BlurringNIfTId.embedVecInSitu(sigma, zeros(size(size(img))));
-            end
             if (length(metppix) < length(sigma))
                 metppix = BlurringNIfTId.stretchVec(metppix, length(sigma));
             elseif (length(metppix) > length(sigma))
                 metppix = metppix(1:length(sigma));
             end
-            sigma = sigma ./ metppix; % Convert metric units to pixels
-            if (norm(sigma) < eps); return; end % Trivial case
+            sigma = sigma ./ metppix; % convert metric units to pixels
+            if (norm(sigma) < eps) % trivial case
+                return 
+            end 
             
-            % Assemble filter kernel & call imfilter              
-            krnlLens = mlfourd.BlurringNIfTId.KERNEL_MULTIPLE * ceil(sigma);
-            for q = 1:length(krnlLens) %#ok<FORPF>
-                if (krnlLens(q) < 1); krnlLens(q) = 1; end
-            end             
-            h0 = zeros(prod(krnlLens), imgRank); % filter kernel with peak centered in the kernel's span
+            % assemble filter kernel & call imfilter              
+            krnlLens = BlurringNIfTId.KERNEL_MULTIPLE*ceil(2*sigma)+1; % see also imgaussfilt, imgaussfilt3
+            krnlLens(krnlLens < 1) = 1;
             switch(imgRank)
-                case 1
-                    h0 = h1d(krnlLens, h0);
                 case 2
-                    h0 = h2d(krnlLens, h0);
+                    img = imgaussfilt( img, sigma, 'FilterSize', krnlLens);
                 case 3
-                    h0 = h3d(krnlLens, h0);
-                case 4
-                    h0 = h4d(krnlLens, h0);
+                    img = imgaussfilt3(img, sigma, 'FilterSize', krnlLens);
                 otherwise
-                    error('mlfourd:ParameterOutOfBounds', ...
-                         ['imgRank->' num2str(imgRank) ', but only imgRank <= 4 is supported']);
+                    error('mlfourd:parameterOutOfBounds', ...
+                         ['imgRank->' num2str(imgRank) ', but only imgRank \in [2 3] are supported']);
             end
-            h1  = reshape(BlurringNIfTId.gaussian(h0, zeros(1,imgRank), sigma), krnlLens);
-            img = imfilter(img, h1);
-            
-            %% Private utility subfunctions
-            
-            function h0 = h1d(krnlLens, h0)
-                for i = 1:krnlLens(1) %#ok<FORFLG>
-                    h0(i,:) = i-krnlLens(1)/2; 
-                end
-            end
-            function h0 = h2d(krnlLens, h0)
-                p     = 0;
-                for j = 1:krnlLens(2) %#ok<FORFLG>
-                    for i = 1:krnlLens(1) 
-                        p = p + 1;
-                        h0(p,:) = [i-krnlLens(1)/2    j-krnlLens(2)/2]; 
-                    end
-                end
-            end 
-            function h0 = h3d(krnlLens, h0)
-                p     = 0;
-                for k = 1:krnlLens(3) %#ok<FORFLG>
-                    for j = 1:krnlLens(2) 
-                        for i = 1:krnlLens(1)
-                            p = p + 1;
-                            h0(p,:) = [i-krnlLens(1)/2    j-krnlLens(2)/2 k-krnlLens(3)/2]; 
-                        end
-                    end
-                end
-            end 
-            function h0 = h4d(krnlLens, h0)
-                p     = 0;
-                for m = 1:krnlLens(4) %#ok<FORFLG>
-                    for k = 1:krnlLens(3) 
-                        for j = 1:krnlLens(2)
-                            for i = 1:krnlLens(1)
-                                p = p + 1;
-                                h0(p,:) = [i-krnlLens(1)/2    j-krnlLens(2)/2 k-krnlLens(3)/2 m-krnlLens(4)/2]; 
-                            end
-                        end
-                    end
-                end
-            end 
         end 
         function sz    = embedVecInSitu(sz, fixedsz)
             %% EMBEDVECINSITU resizes sz to match rank of fixedsz
