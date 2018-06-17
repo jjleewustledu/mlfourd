@@ -47,7 +47,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         pixdim 
         seriesNumber                   
         
-        %% New for NIfTIdecoratorProperties
+        %%
         
         lexistFile
         separator
@@ -61,40 +61,40 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         
         % NIfTIIO        
         function this = set.filename(this, fn)
-            this.component.filename = fn;
+            this.component_.filename = fn;
         end
         function fn   = get.filename(this)
-            fn = this.component.filename;
+            fn = this.component_.filename;
         end
         function this = set.filepath(this, pth)
-            this.component.filepath = pth;
+            this.component_.filepath = pth;
         end
         function pth  = get.filepath(this)
-            pth = this.component.filepath;
+            pth = this.component_.filepath;
         end
         function this = set.fileprefix(this, fp)
-            this.component.fileprefix = fp;
+            this.component_.fileprefix = fp;
         end
         function fp   = get.fileprefix(this)
-            fp = this.component.fileprefix;
+            fp = this.component_.fileprefix;
         end
         function this = set.filesuffix(this, fs)
-            this.component.filesuffix = fs;
+            this.component_.filesuffix = fs;
         end
         function fs   = get.filesuffix(this)
-            fs = this.component.filesuffix;
+            fs = this.component_.filesuffix;
         end
         function this = set.fqfilename(this, fqfn)
-            this.component.fqfilename = fqfn; 
+            this.component_.fqfilename = fqfn; 
         end
         function fqfn = get.fqfilename(this)
-            fqfn = this.component.fqfilename;
+            fqfn = this.component_.fqfilename;
         end
         function this = set.fqfileprefix(this, fqfp)
-            this.component.fqfileprefix = fqfp;
+            this.component_.fqfileprefix = fqfp;
         end
         function fqfp = get.fqfileprefix(this)
-            fqfp = this.component.fqfileprefix;
+            fqfp = this.component_.fqfileprefix;
         end
         function this = set.fqfn(this, f)
             this.fqfilename = f;
@@ -109,130 +109,130 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             f = this.fqfileprefix;
         end
         function this = set.noclobber(this, nc)
-            this.component.noclobber = nc;
+            this.component_.noclobber = nc;
         end
         function tf   = get.noclobber(this)
-            tf = this.component.noclobber;
+            tf = this.component_.noclobber;
         end
         
         % JimmyShenInterface        
         function e    = get.ext(this)
-            e = this.component.ext;
+            e = this.component_.ext;
         end
         function f    = get.filetype(this)
-            f = this.component.filetype;
+            f = this.component_.filetype;
         end
         function this = set.filetype(this, ft)
-            this.component.filetype = ft;
+            this.component_.filetype = ft;
         end
         function h    = get.hdr(this)
-            h = this.component.hdr;
+            h = this.component_.hdr;
         end 
         function this = set.img(this, im)
-            this.component.img = im;
+            this.component_.img = im;
         end
         function im   = get.img(this)
-            im = this.component.img;
+            im = this.component_.img;
         end
         function o    = get.originalType(this)
-            o = this.component.originalType;
+            o = this.component_.originalType;
         end
         function u    = get.untouch(this)
-            u = this.component.untouch;
+            u = this.component_.untouch;
         end        
         
         % INIfTI         
         function this = set.bitpix(this, x)
-            this.component.bitpix = x;
+            this.component_.bitpix = x;
         end
         function sw   = get.bitpix(this)
-            sw = this.component.bitpix;
+            sw = this.component_.bitpix;
         end
         function this = set.creationDate(this, x)
-            this.component.creationDate = x;
+            this.component_.creationDate = x;
         end
         function sw   = get.creationDate(this)
-            sw = this.component.creationDate;
+            sw = this.component_.creationDate;
         end
         function this = set.datatype(this, x)
-            this.component.datatype = x;
+            this.component_.datatype = x;
         end
         function sw   = get.datatype(this)
-            sw = this.component.datatype;
+            sw = this.component_.datatype;
         end
         function this = set.descrip(this, x)
-            this.component.descrip = x;
+            this.component_.descrip = x;
         end
         function x    = get.descrip(this)
-            x = this.component.descrip;
+            x = this.component_.descrip;
         end
         function this = set.entropy(this, x)
-           this.component.entropy = x;
+           this.component_.entropy = x;
         end
        function sw    = get.entropy(this)
-           sw = this.component.entropy;
+           sw = this.component_.entropy;
        end
         function x    = get.hdxml(this)
-            x = this.component.hdxml;
+            x = this.component_.hdxml;
         end
         function this = set.label(this, x)
-            this.component.label = x;
+            this.component_.label = x;
         end
         function sw   = get.label(this)
-            sw = this.component.label;
+            sw = this.component_.label;
         end
         function this = set.machine(this, x)
-            this.component.machine = x;
+            this.component_.machine = x;
         end
         function sw   = get.machine(this)
-            sw = this.component.machine;
+            sw = this.component_.machine;
         end
         function this = set.negentropy(this, x)
-            this.component.negentropy = x;
+            this.component_.negentropy = x;
         end
         function sw   = get.negentropy(this)
-            sw = this.component.negentropy;
+            sw = this.component_.negentropy;
         end        
         function this = set.mmppix(this, m)
-            this.component.mmppix = m;
+            this.component_.mmppix = m;
         end
         function m    = get.mmppix(this)
-            m = this.component.mmppix;
+            m = this.component_.mmppix;
         end
         function this = set.orient(this, x)
-            this.component.orient = x;
+            this.component_.orient = x;
         end
         function x    = get.orient(this)
-            x = this.component.orient;
+            x = this.component_.orient;
         end   
         function this = set.pixdim(this, p)
-            this.component.pixdim = p;
+            this.component_.pixdim = p;
         end
         function p    = get.pixdim(this)
-            p = this.component.pixdim;
+            p = this.component_.pixdim;
         end   
         function num  = get.seriesNumber(this)
-            num = this.component.seriesNumber;
+            num = this.component_.seriesNumber;
         end
         
-        % New for AbstractNIfTIComponent        
+        %       
         function tf   = get.lexistFile(this)
-            tf = this.component.lexistFile;
+            tf = this.component_.lexistFile;
         end
         function s    = get.separator(this)
-            s = this.component.separator;
+            s = this.component_.separator;
         end
         function this = set.separator(this, s)
-            this.component.separator = s;
+            this.component_.separator = s;
         end
         function s    = get.stack(this)
-            s = this.component.stack;
+            s = this.component_.stack;
         end
         function s    = get.viewer(this)
-            s = this.component.viewer;
+            s = this.component_.viewer;
         end
         function this = set.viewer(this, s)
-            this.component.viewer = s;
+            this.component_.viewer = s;
         end
     end
     

@@ -12,31 +12,40 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$ 
     
-    properties
+    properties (Dependent)
         component
     end
     
     methods
         
+        %% GET/SET
+        
+        function g = get.component(this)
+            g = this.component_;
+        end
+%         function this = set.component(this, s)
+%             this.component_ = s;
+%         end
+        
         %% IOInterface
         
         function        save(this)
-            this.component.save;
+            this.component_.save;
         end
         function obj  = saveas(this, fqfn)
             obj = this.clone;
-            obj.component = this.component.saveas(fqfn);
+            obj.component_ = this.component_.saveas(fqfn);
         end
         function obj  = saveasx(this, fqfn, x)
             obj = this.clone;
-            obj.component = this.component.saveasx(fqfn, x);
+            obj.component_ = this.component_.saveasx(fqfn, x);
         end
         
         %% INIfTI
         
         function obj  = clone(this)
             obj = this;
-            obj.component = this.component.clone;
+            obj.component_ = this.component_.clone;
         end   
         function tf   = isequal(this, niid)
             tf = this.isequaln(niid);
@@ -44,95 +53,101 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
         function tf   = isequaln(this, niid)
             tf = isa(niid, class(this));
             if (tf)
-                tf = this.component.isequaln(niid.component);
+                tf = this.component_.isequaln(niid.component_);
             end
         end
         function this = makeSimilar(this, varargin)
-            this.component = this.component.makeSimilar(varargin{:});
+            this.component_ = this.component_.makeSimilar(varargin{:});
         end          
         
         function x    = char(this)
-            x = this.component.char;
+            x = this.component_.char;
         end
         function this = append_descrip(this, varargin)
-            this.component = this.component.append_descrip(varargin{:});
+            this.component_ = this.component_.append_descrip(varargin{:});
         end
         function this = prepend_descrip(this, varargin)
-            this.component = this.component.prepend_descrip(varargin{:});
+            this.component_ = this.component_.prepend_descrip(varargin{:});
         end
         function x    = double(this)
-            x = this.component.double;
+            x = this.component_.double;
         end
         function x    = duration(this)
-            x = this.component.duration;
+            x = this.component_.duration;
         end
         function this = append_fileprefix(this, varargin)
-            this.component = this.component.append_fileprefix(varargin{:});
+            this.component_ = this.component_.append_fileprefix(varargin{:});
         end
         function this = prepend_fileprefix(this, varargin)
-            this.component = this.component.prepend_fileprefix(varargin{:});
+            this.component_ = this.component_.prepend_fileprefix(varargin{:});
         end
         function this = false(this, varargin)
-            this.component = this.component.false(varargin{:});
+            this.component_ = this.component_.false(varargin{:});
         end
         function f    = fov(this) 
-            f = this.component.fov;     
+            f = this.component_.fov;     
         end
         function m    = matrixsize(this)
-            m = this.component.matrixsize;
+            m = this.component_.matrixsize;
         end
         function this = nan(this, varargin)
-            this.component = this.component.nan(varargin{:});
+            this.component_ = this.component_.nan(varargin{:});
         end
         function this = ones(this, varargin)
-            this.component = this.component.ones(varargin{:});
+            this.component_ = this.component_.ones(varargin{:});
         end
         function x    = rank(this, varargin)
-            x = this.component.rank(varargin{:});
+            x = this.component_.rank(varargin{:});
         end
         function this = scrubNanInf(this)
-            this.component = this.component.scrubNanInf;
+            this.component_ = this.component_.scrubNanInf;
         end
         function x    = single(this)
-            x = this.component.single;
+            x = this.component_.single;
         end
         function x    = size(this, varargin)
-            x = this.component.size(varargin{:});
+            x = this.component_.size(varargin{:});
         end
         function this = true(this, varargin)
-            this.component = this.component.true(varargin{:});
+            this.component_ = this.component_.true(varargin{:});
         end
         function this = zeros(this, varargin)
-            this.component = this.component.zeros(varargin{:});
+            this.component_ = this.component_.zeros(varargin{:});
         end        
                 
-        %% Other ...
+        %% 
         
         function        addLog(this, varargin)
-            this.component.addLog(varargin{:});
+            this.component_.addLog(varargin{:});
         end
         function        hist(this, varargin)
-            this.component.hist(varargin{:});
+            this.component_.hist(varargin{:});
         end        
         function tf   = isscalar(this)
-            tf = this.component.isscalar;
+            tf = this.component_.isscalar;
         end
         function tf   = isvector(this)
-            tf = this.component.isvector;
+            tf = this.component_.isvector;
         end
         function        freeview(this, varargin)
-            this.component.freeview(varargin{:});
+            this.component_.freeview(varargin{:});
         end        
         function        fsleyes(this, varargin)
-            this.component.fsleyes(varargin{:});
+            this.component_.fsleyes(varargin{:});
         end
         function        fslview(this, varargin)
-            this.component.fslview(varargin{:});
+            this.component_.fslview(varargin{:});
         end
         function        view(this, varargin)
-            this.component.view(varargin{:});
+            this.component_.view(varargin{:});
         end        
     end 
+    
+    %% PROTECTED
+    
+    properties (Access = protected)
+        component_
+    end
     
     methods (Access = protected)
  		function this = NIfTIdecorator(varargin) 
@@ -144,7 +159,12 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
             ip.KeepUnmatched = true;
             addOptional(ip, 'cmp', mlfourd.NIfTId, @(x) isa(x, 'mlfourd.INIfTI'));
             parse(ip, varargin{:});
-            this.component = ip.Results.cmp;
+            if (isa(ip.Results.cmp, 'mlfourd.NIfTIdecorator'))
+                c = ip.Results.cmp;
+                this.component_ = c.component_;
+                return
+            end
+            this.component_ = ip.Results.cmp;
         end         
     end
     
