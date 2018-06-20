@@ -73,7 +73,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
         function this = blurred(this, varargin)
             bnii = mlfourd.BlurringNIfTId(this.component);
             bnii = bnii.blurred(varargin{:});
-            this.component = bnii.component;
+            this.component_ = bnii.component;
             this.blur_ = bnii.blur;
         end
         function this = masked(this, niidMask)

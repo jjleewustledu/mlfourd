@@ -248,7 +248,7 @@ classdef LoggingNIfTId < mlfourd.NIfTIdecorator
             this.logger_.save;
         end
         function this = saveas(this, s)
-            this.component = this.component.saveas(s);
+            this.component_ = this.component.saveas(s);
             this.logger_.fqfileprefix = this.component.fqfileprefix;
             this.logger_.saveas(s);
         end

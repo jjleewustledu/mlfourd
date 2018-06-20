@@ -255,12 +255,14 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             this.state_.viewer = v;
         end
     
-        %% state changes        
+        %% state changes
         
         function f = fourdfp(this)
+            this.filesuffix = '.4dfp.ifh';
             f = this.state_.fourdfp;
         end
         function f = mgh(this)
+            this.filesuffix = '.mgz';
             f = this.state_.mgh;
         end
         function f = niftid(this)
@@ -299,6 +301,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
+            this.numericalNiftid;
             b = mlfourd.ImagingContext(this.state_.binarized);
         end
         function b  = binarizeBlended(this, varargin)
@@ -306,6 +309,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
+            this.numericalNiftid;
             b = mlfourd.ImagingContext(this.state_.binarizeBlended(varargin{:}));
         end
         function b  = blurred(this, varargin)
@@ -318,7 +322,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             
             if (isempty(varargin));    b = this; return; end
             if (isempty(varargin{1})); b = this; return; end
-            if (0 ==    varargin{1});  b = this; return; end
+            if (0 ==    varargin{1});  b = this; return; end            
+            this.numericalNiftid;
             b = mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
         function f  = char(this)
@@ -401,7 +406,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             l = this.double > 0;
         end
         function m  = maskBlended(this, varargin)
-            this = this.numericalNiftid;
+            this.numericalNiftid;
             m = mlfourd.ImagingContext(this.state_maskBlended(varargin{:}));
         end
         function m  = masked(this, varargin)
@@ -410,6 +415,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return internal image is masked.
             %  @warning mflourd:possibleMaskingError
             
+            this.numericalNiftid;
             m =  mlfourd.ImagingContext(this.state_.masked(varargin{:}));
         end
         function m  = maskedByZ(this, varargin)
@@ -418,6 +424,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return internal image is cropped by rng.  
             %  @throws MATLAB:assertion:failed for rng out of bounds.
             
+            this.numericalNiftid;
             m =  mlfourd.ImagingContext(this.state_.maskedByZ(varargin{:}));
         end
         function n  = nan(this, varargin)
@@ -485,6 +492,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             
             if (isempty(t)); t = this; return; end
             if (0 ==    t ); t = this; return; end
+            this.numericalNiftid;
             t = mlfourd.ImagingContext(this.state_.thresh(t));
         end
         function p  = threshp(this, p)
@@ -494,7 +502,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return this if p == 0 or p is empty
             
             if (isempty(p)); p = this; return; end
-            if (0 ==    p ); p = this; return; end            
+            if (0 ==    p ); p = this; return; end  
+            this.numericalNiftid;          
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
         function ic = timeContracted(this, varargin)
@@ -502,12 +511,14 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
             %  @return ic := \int_T dt this.state_(\vec{r}, t).
             
+            this.numericalNiftid;
             ic = mlfourd.ImagingContext(this.state_.timeContracted(varargin{:}));
         end
         function ic = timeSummed(this)
             %% TIMESUMMED integrates over imaging dimension 4. 
             %  @return ic, the modified imaging context, a dynamic image reduced to summed volume.
             
+            this.numericalNiftid;
             ic = mlfourd.ImagingContext(this.state_.timeSummed);
         end
         function t  = true(this, varargin)
@@ -520,7 +531,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return this if u == 0 or u is empty
             
             if (isempty(u)); u = this; return; end
-            if (0 ==    u ); u = this; return; end            
+            if (0 ==    u ); u = this; return; end   
+            this.numericalNiftid;         
             u =  mlfourd.ImagingContext(this.state_.uthresh(u));
         end
         function p  = uthreshp(this, p)
@@ -530,7 +542,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return this if u == 0 or u is empty
             
             if (isempty(p)); p = this; return; end
-            if (0 ==    p ); p = this; return; end              
+            if (0 ==    p ); p = this; return; end  
+            this.numericalNiftid;            
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
         end
         function ic = volumeContracted(this, varargin)
@@ -538,12 +551,14 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @param mask as ImagingContext specifying \Omega \in {\Bbb R}^3.
             %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
             
+            this.numericalNiftid;
             ic = mlfourd.ImagingContext(this.state_.volumeContracted(varargin{:}));
         end
         function ic = volumeSummed(this)
             %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
             %  @return ic, the modified imaging context, a dynamic image reduced to time series
             
+            this.numericalNiftid;
             ic = mlfourd.ImagingContext(this.state_.volumeSummed);
         end
         function      view(this, varargin)
@@ -567,7 +582,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return this if prod(varargin{...}) == 1
             
             if (isempty(varargin));             z = this; return; end
-            if (1 == prod(cell2mat(varargin))); z = this; return; end            
+            if (1 == prod(cell2mat(varargin))); z = this; return; end       
+            this.numericalNiftid;     
             z =  mlfourd.ImagingContext(this.state_.zoomed(varargin{:}));
         end
         
@@ -629,9 +645,15 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
                 this.state_ = NIfTIdState(obj, this);
                 return
             end
+            if (isa(obj, 'mlfourd.INIfTIdecorator')) % other decorators
+                this.state_ = NIfTIdState(obj.component, this);
+                return
+            end
             if (ischar(obj)) 
-                % filename need not yet exist 
+                % filename need not yet exist
                 this.state_ = FilenameState(obj, this);
+                %assert(~isempty(this.filesuffix), ...
+                %    'mlfourd:missingFilesuffix', 'ImagingContext.ctor'); 
                 return
             end
             error('mlfourd:unsupportedTypeclass', ...
