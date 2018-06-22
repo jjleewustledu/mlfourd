@@ -506,6 +506,14 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             this.numericalNiftid;          
             p =  mlfourd.ImagingContext(this.state_.threshp(p));
         end
+        function ic = timeAveraged(this, varargin)
+            %% TIMEAVERAGED
+            %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
+            %  @return ic := \int_T dt this.state_(\vec{r}, t).
+            
+            this.numericalNiftid;
+            ic = mlfourd.ImagingContext(this.state_.timeAveraged(varargin{:}));
+        end
         function ic = timeContracted(this, varargin)
             %% TIMECONTRACTED
             %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
@@ -545,6 +553,14 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             if (0 ==    p ); p = this; return; end  
             this.numericalNiftid;            
             p =  mlfourd.ImagingContext(this.state_.uthreshp(p));
+        end
+        function ic = volumeAveraged(this, varargin)
+            %% VOLUMEAVERAGED
+            %  @param mask as ImagingContext specifying \Omega \in {\Bbb R}^3.
+            %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
+            
+            this.numericalNiftid;
+            ic = mlfourd.ImagingContext(this.state_.volumeAveraged(varargin{:}));
         end
         function ic = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED

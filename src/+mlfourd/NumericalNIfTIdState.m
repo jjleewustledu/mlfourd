@@ -95,6 +95,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         function b = threshp(this, varargin)
             b = this.numericalNiftid.threshp(varargin{:});
         end
+        function b = timeAveraged(this, varargin)
+            b = this.numericalNiftid.timeAveraged(varargin{:});
+        end
         function b = timeSummed(this, varargin)
             b = this.numericalNiftid.timeSummed(varargin{:});
         end
@@ -112,6 +115,9 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
         end
         function b = volumeSummed(this, varargin)
             b = this.numericalNiftid.volumeSummed(varargin{:});
+        end
+        function b = volumeAveraged(this, varargin)
+            b = this.numericalNiftid.volumeAveraged(varargin{:});
         end
         function b = volumeContracted(this, varargin)
             b = this.numericalNiftid.volumeContracted(varargin{:});
