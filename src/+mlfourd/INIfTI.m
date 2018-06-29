@@ -7,21 +7,15 @@ classdef INIfTI
  	%  last modified 31-May-2017 16:23:00
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.  Copyright 2015, 2017 John J. Lee.
- 	
-    properties (Constant) 
-        FILETYPE     = 'NIFTI_GZ'
-        FILETYPE_EXT = '.nii.gz'
-    end
     
-	properties (Abstract)
-        img
-        
+	properties (Abstract)        
         bitpix 
         creationDate
         datatype
         descrip
         entropy
         hdxml
+        img
         label
         machine
         mmppix

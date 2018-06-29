@@ -1,5 +1,6 @@
 classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
-	%% NIFTIC  
+	%% NIFTIC specifies imaging data composites using img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
+    %  described by Jimmy Shen's entries at http://www.mathworks.com/matlabcentral/fileexchange/authors/20638.
 
 	%  $Revision$
  	%  was created 15-Jan-2016 02:58:04
@@ -10,14 +11,8 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
  	
     methods (Static)
         function this = load(varargin)
-            %% LOAD loads imaging objects from the filesystem.  In the absence of file extension, LOAD will attempt guesses.
-            %  @param [fn] is a cell-array of [fully-qualified] fileprefix or filename, specifies imaging objects on the filesystem.
-            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
-            %  @return this is an instance of mlfourd.NIfTIc.
-            %  See also:  mlfourd.NIfTIc.NIfTIc
+            %% LOAD aliases the ctor.
             
-            assert(nargin >= 1);
-            assert(iscell(varargin{1}));
             this = mlfourd.NIfTIc(varargin{:});
         end
     end
@@ -32,10 +27,10 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             niic = mlfourd.NIfTIc(this, varargin{:});
             niic = niic.append_descrip('made similar');
         end
-        function tf = isequal(this, obj)
+        function tf   = isequal(this, obj)
             tf = this.isequaln(obj);
         end
-        function tf = isequaln(this, obj)
+        function tf   = isequaln(this, obj)
             tf = true;
             titer = this.createIterator;
             oiter = obj.createIterator;
@@ -54,32 +49,30 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             niic = niic.append_descrip('made similar');
 
         end   
-        function o = ones(this)
+        function o    = ones(this)
             o = this.innerNIfTI_.innerCellComp_.fevalOut('ones');
         end     
-        function z = zeros(this)
+        function z    = zeros(this)
             z = this.innerNIfTI_.innerCellComp_.fevalOut('zeros');
         end
         
  		function this = NIfTIc(varargin)
- 			%% NIFTIC specifies imaging data with img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
-            %  described by Jimmy Shen's entries at Mathworks File Exchange.  
-            %  @ param [obj] may be a filename, numerical, INIfTI instantiation, struct compliant with 
-            %  package mlniftitools; it constructs the class instance. 
+ 			%% NIFTIC 
+            %  @ param [obj] may be empty, a filename, numerical, INIfTI instantiation, struct compliant with 
+            %  package mlniftitools, cell-array, mlpatterns.Composite; it constructs the class instance. 
             %  @ param [param-name, param-value[, ...]] allow adjusting public fields at creation.
             %  Valid param-names:  bitpix, datatype, descrip, ext, filename, filepath, fileprefix,
             %  filetype, fqfilename, fqfileprefix, hdr, img, label, mmppix, noclobber, pixdim, separator.
             %  @ return this as a class instance.  Without arguments, this has default values.
             %  @ throws mlfourd:invalidCtorObj, mlfourd:fileTypeNotSupported, mlfourd:fileNotFound, mlfourd:unsupportedParamValue, 
-            %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed
-            %  See also:  http://www.mathworks.com/matlabcentral/fileexchange/authors/20638
+            %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed.
 
  			this = this@mlfourd.AbstractNIfTIComponent(mlfourd.InnerNIfTIc);
             if (0 == nargin); return; end
             
             import mlfourd.*;
             ip = inputParser;
-            addOptional( ip, 'obj',          [], @NIfTIc.assertCtorObj);
+            addOptional( ip, 'obj',          [], @NIfTIc.assertCtorObj); % compare to NIfTId
             addParameter(ip, 'bitpix',       [], @isnumeric);
             addParameter(ip, 'datatype',     [], @(x) isnumeric(x) || ischar(x));
             addParameter(ip, 'descrip',      '', @ischar);
@@ -100,12 +93,17 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             parse(ip, varargin{:});
 
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
-            switch (this.originalType) % no returns within switch!  must reach this.adjustFieldsFromInputParser.
+            switch (class(ip.Results.obj))
                 case 'char'
-                    this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                    this.innerNIfTI_.innerCellComp_ = ...
+                        this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj)); % varargin{:}?
                 case 'struct'
-                    % as described by mlniftitools.load_untouch_nii
-                    this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                    this.innerNIfTI_.innerCellComp_ = ...
+                        this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj)); % varargin{:}?
+                case 'mlio.IOInterface'
+                case 'mlfourd.INIfTId'
+                case 'mlfourd.INIfTIc'
+                case 'mlfourd.NIfTIInterface'
                 otherwise
                     if (isnumeric(ip.Results.obj))
                         this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
@@ -141,7 +139,7 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
     %% PRIVATE
     
     methods (Static, Access = private)
-        function     assertCtorObj(obj)
+        function      assertCtorObj(obj)
             if (~(ischar(obj) || isstruct(obj) || isnumeric(obj) || ...
                     isa(obj, 'mlfourd.INIfTI') || isa(obj, 'mlfourd.NIfTIInterface') || ...
                     isa(obj, 'mlpatterns.Composite') || iscell(obj)))

@@ -49,7 +49,7 @@ classdef ImagingParser
             import mlfourd.*;
             fname = imcast(fname, 'fqfilename');
             sname = struct('path', '', 'stem', '', 'ext', '');
-            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.INIfTI.FILETYPE_EXT);
+            [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.NIfTId.FILETYPE_EXT);
             varargin = cellfun(@ensureChar, varargin, 'UniformOutput', false);
             for k = 1:length(varargin) 
                 sname = buildFilename(sname, varargin{k});
@@ -68,7 +68,7 @@ classdef ImagingParser
                             sn.ext  = '';
                         case {'fqfilename' 'fqfn'}
                             sn      = makeFullyQualified(sn,k);
-                            sn.ext  = INIfTI.FILETYPE_EXT;
+                            sn.ext  = NIfTId.FILETYPE_EXT;
                         case {'fp' 'fileprefix' 'fileprefixPattern'} 
                             sn.path = '';
                             sn.ext  = '';

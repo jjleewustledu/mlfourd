@@ -10,10 +10,6 @@ classdef JimmyShenInterface
  	%  and checked into repository $URL$,  
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%  $Id$ 
- 	 
-    properties (Constant)
-        SUPPORTED_EXT = {'.nii.gz' '.nii' '.hdr'}
-    end
     
 	properties (Abstract)   
         ext

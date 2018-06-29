@@ -22,12 +22,6 @@ classdef Test_Fourdfp < mlfourd_xunit.Test_mlfourd
 	methods 
  		% N.B. (Static, Abstract, Access='', Hidden, Sealed) 
 
-        function test_FILETYPE(this)
-            assertEqual('4DFP', this.aFourdfp.FILETYPE);
-        end
-        function test_FILETYPE_EXT(this)
-            assertEqual('.4dfp.ifh', this.aFourdfp.FILETYPE_EXT);
-        end
         function test_SUPPORTED_EXTENSIONS(this)            
             assertEqual({'.4dfp.ifh'}, this.aFourdfp.SUPPORTED_EXTENSIONS);
         end

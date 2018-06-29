@@ -29,7 +29,7 @@ classdef MGHState < mlfourd.ImagingState
                 end
                 if (strcmp('.mgz', fsuffix)    || strcmp('.mgh', fsuffix))
                     f2 = filename( ...
-                         fileprefix(f1, fsuffix), mlfourd.NIfTI.FILETYPE_EXT); 
+                         fileprefix(f1, fsuffix), mlfourd.NIfTId.FILETYPE_EXT); 
                 end
             end
             mlbash(sprintf('mri_convert %s %s', f1, f2));

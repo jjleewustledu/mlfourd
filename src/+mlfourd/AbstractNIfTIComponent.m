@@ -1,6 +1,5 @@
-classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
-	%% ABSTRACTNIFTICOMPONENT  
-    %  yet abstract:  load, save, saveas
+classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
+	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern
 
 	%  $Revision$
  	%  was created 20-Jan-2016 00:28:23
@@ -100,8 +99,7 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         end
         function f    = get.fqfp(this)
             f = this.fqfileprefix;
-        end  
-        
+        end        
         function this = set.noclobber(this, nc)
             this.innerNIfTI_.noclobber = nc;
         end            
@@ -233,8 +231,65 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
             this.innerNIfTI_.viewer = v;
         end
         
-        %% NIfTIIO
+        %% 
         
+        function        addLog(this, varargin)
+            this.innerNIfTI_.addLog(varargin{:});
+        end
+        function c    = char(this)
+            c = this.innerNIfTI_.char;
+        end
+        function this = append_descrip(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
+        end
+        function this = prepend_descrip(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.prepend_descrip(varargin{:});
+        end
+        function d    = double(this)
+            d = this.innerNIfTI_.double;
+        end
+        function d    = duration(this)
+            d = this.innerNIfTI_.duration;
+        end
+        function this = append_fileprefix(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.append_fileprefix(varargin{:});
+        end
+        function this = prepend_fileprefix(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
+        end
+        function f    = fov(this)
+            f = this.innerNIfTI_.fov;
+        end
+        function e    = fslentropy(this)
+            e = this.innerNIfTI_.fslentropy;
+        end
+        function E    = fslEntropy(this)
+            E = this.innerNIfTI_.fslEntropy;
+        end
+        function        freeview(this, varargin)
+            this.innerNIfTI_.freeview(varargin{:});
+        end
+        function        fsleyes(this, varargin)
+            this.innerNIfTI_.fsleyes(varargin{:});
+        end
+        function        fslview(this, varargin)
+            this.innerNIfTI_.fslview(varargin{:});
+        end
+        function        hist(this, varargin)
+            this.innerNIfTI_.hist(varargin{:});
+        end        
+        function m    = matrixsize(this)
+            m = this.innerNIfTI_.matrixsize;
+        end
+        function o    = ones(this)
+            o = this.innerNIfTI_.ones;
+        end
+        function this = prod(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
+        end
+        function r    = rank(this, varargin)
+            r = this.innerNIfTI_.rank(varargin{:});
+        end
         function        save(this)
             this.innerNIfTI_.save;
         end
@@ -244,87 +299,24 @@ classdef AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO &
         function this = saveasx(this, fqfn, x)
             this.innerNIfTI_ = this.innerNIfTI_.saveasx(fqfn, x);
         end
-        
-        %% INIfTI  
-        
-        function c = char(this)
-            c = this.innerNIfTI_.char;
-        end
-        function this = append_descrip(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
-        end
-        function this = prepend_descrip(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prepend_descrip(varargin{:});
-        end
-        function d = double(this)
-            d = this.innerNIfTI_.double;
-        end
-        function d = duration(this)
-            d = this.innerNIfTI_.duration;
-        end
-        function this = append_fileprefix(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.append_fileprefix(varargin{:});
-        end
-        function this = prepend_fileprefix(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
-        end
-        function f = fov(this)
-            f = this.innerNIfTI_.fov;
-        end
-        function m = matrixsize(this)
-            m = this.innerNIfTI_.matrixsize;
-        end
-        function o = ones(this)
-            o = this.innerNIfTI_.ones;
-        end
-        function this = prod(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
-        end
-        function r = rank(this, varargin)
-            r = this.innerNIfTI_.rank(varargin{:});
-        end
         function this = scrubNanInf(this)
             this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
         end
-        function s = single(this)
+        function s    = single(this)
             s = this.innerNIfTI_.single;
         end
-        function s = size(this, varargin)
+        function s    = size(this, varargin)
             s = this.innerNIfTI_.size(varargin{:});
         end
         function this = sum(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.sum(varargin{:});
         end
-        function z = zeros(this)
-            z = this.innerNIfTI_.zeros;
-        end
-        
-        %% 
-        
-        function     addLog(this, varargin)
-            this.innerNIfTI_.addLog(varargin{:});
-        end
-        function e = fslentropy(this)
-            e = this.innerNIfTI_.fslentropy;
-        end
-        function E = fslEntropy(this)
-            E = this.innerNIfTI_.fslEntropy;
-        end
-        function hist(this, varargin)
-            this.innerNIfTI_.hist(varargin{:});
-        end
-        function view(this, varargin)
+        function        view(this, varargin)
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
-        function freeview(this, varargin)
-            this.innerNIfTI_.freeview(varargin{:});
-        end
-        function fsleyes(this, varargin)
-            this.innerNIfTI_.fsleyes(varargin{:});
-        end
-        function fslview(this, varargin)
-            this.innerNIfTI_.fslview(varargin{:});
+        function z    = zeros(this)
+            z = this.innerNIfTI_.zeros;
         end
         
         %% mlpatterns.Composite

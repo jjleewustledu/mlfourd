@@ -81,7 +81,7 @@ classdef (Sealed) Np797Registry < mlfourd.FslRegistry
             
             %% BETTED is a convenience wrapper
             import mlfsl.*;
-            [~,f, e] =  filepartsx(fnam, mlfourd.INIfTI.FILETYPE_EXT);
+            [~,f, e] =  filepartsx(fnam, mlfourd.NIfTId.FILETYPE_EXT);
                 fnam = [BetBuilder.BET_PREFIX f BetBuilder.BET_SUFFIX e];
         end
  
@@ -216,7 +216,7 @@ classdef (Sealed) Np797Registry < mlfourd.FslRegistry
                 case 1
                     fn = fullfilename(this.epi_path, [fn this.onRefSuffix]);
                 case 0
-                    fn =                             [fn this.onRefSuffix mlfourd.INIfTI.FILETYPE_EXT];
+                    fn =                             [fn this.onRefSuffix mlfourd.NIfTId.FILETYPE_EXT];
                 otherwise
             end
         end % epi_filename

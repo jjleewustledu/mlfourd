@@ -89,7 +89,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             if (~exist('pth', 'var')); pth = pwd; end
             dt = mlsystem.DirTool(fullfile(pth, '*.hdr'));
             for n = 1:length(dt.fqfns)  %#ok<FORFLG>
-                mlbash(['fslchfiletype ' mlfourd.INIfTI.FILETYPE ' ' dt.fqfns{n}]);  
+                mlbash(['fslchfiletype ' mlfourd.NIfTId.FILETYPE ' ' dt.fqfns{n}]);  
             end
         end % static analyze2nifti       
         
@@ -154,7 +154,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             this.allFqFilenames = cellfun(@(x) fullfile(this.fslPath, x), fns, 'UniformOutput', false);
         end % set.allFilenames
         function fns  = get.allFilenames(this)
-            [~,f,e] = cellfun(@(x) filepartsx(x, mlfourd.INIfTI.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
+            [~,f,e] = cellfun(@(x) filepartsx(x, mlfourd.NIfTId.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
              fns    = cellfun(@(x,y) [x y], f, e, 'UniformOutput', false);
         end % get.allFilenames    
         function this = set.modalityPath(this, pth)
@@ -166,7 +166,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             assert(lexist(pth, 'dir'));
         end % get.modalityPath    
         function fld  = get.modalityFolder(this)
-            [~,fld] = filepartsx(this.modalityPath, mlfourd.INIfTI.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.modalityPath, mlfourd.NIfTId.FILETYPE_EXT);
         end % get.modalityFolder
         function this = set.unpackPath(this, pth)
             this.unpackPath_ = ensuredir(pth);
@@ -201,7 +201,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             pth = this.sessionPath_;
         end % get.sessionPath   
         function fld  = get.sessionId(this)
-            [~,fld] = filepartsx(this.sessionPath, mlfourd.INIfTI.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.sessionPath, mlfourd.NIfTId.FILETYPE_EXT);
         end % get.sessionId
         function this = set.studyPath(  this, pth)
             assert(lstrfind(this.modalityPath, pth));

@@ -68,7 +68,7 @@ classdef (Sealed) DBase < mlfourd.CvlDBase
             
             %% BETTED is a convenience wrapper
             import mlfsl.* mlfourd.*;
-            [~,f, e] =  filepartsx(fnam, INIfTI.FILETYPE_EXT);
+            [~,f, e] =  filepartsx(fnam, NIfTId.FILETYPE_EXT);
                 fnam = [BetBuilder.BET_PREFIX f BetBuilder.BET_SUFFIX e];
         end
         
@@ -91,7 +91,7 @@ classdef (Sealed) DBase < mlfourd.CvlDBase
             
             % KLUDGE!
             
-            fps0 = dir2cell(['*ep2d*' '_rot' mlfsl.FslBuilder.MCF_SUFF '*' mlfourd.INIfTI.FILETYPE_EXT]);
+            fps0 = dir2cell(['*ep2d*' '_rot' mlfsl.FslBuilder.MCF_SUFF '*' mlfourd.NIfTId.FILETYPE_EXT]);
             fps0 = fileprefixes(fps0);
             if (~iscell(fps0)); fps0 = {fps0}; end
             f      = 0;

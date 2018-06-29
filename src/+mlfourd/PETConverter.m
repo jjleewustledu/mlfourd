@@ -277,7 +277,7 @@ classdef PETConverter < mlfourd.AbstractConverter
             workpth = p.Results.workPath;
             
             dtWorkpth = mlsystem.DirTool(fullfile(workpth, '*'));   
-            if (~lcontains(dtWorkpth.fns, INIfTI.FILETYPE_EXT))
+            if (~lcontains(dtWorkpth.fns, NIfTId.FILETYPE_EXT))
                 this.analyze2nifti(workpth); 
                 this.cleanAnalyze(workpth); 
             end

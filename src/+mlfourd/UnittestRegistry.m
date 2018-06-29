@@ -20,7 +20,7 @@ classdef UnittestRegistry < mlpatterns.Singleton
         oc_fp = 'oc_default'
         oo_fp = 'oo_meanvol_default'
  		sessionFolder = 'mm01-020_p7377_2009feb5'
-        smallT1_fp = 't1_default_on_ho_meanvol_default'
+        smallT1_fp = 't1_default_on_ho_meanvol_default_161616fwhh'
         t1_fp = 't1_default'
         t2_fp = 't2_default'
         tr_fp = 'tr_default'

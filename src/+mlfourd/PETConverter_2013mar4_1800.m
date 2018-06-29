@@ -86,7 +86,7 @@ classdef PETConverter_2013mar4_1800 < mlfourd.AbstractConverter
                           'PETConverter.convertModalityPath');
                 end
                 dirnii = mlsystem.DirTool(this.unpackPath);
-                if (~lcontains(dirnii.fns, NIfTI.FILETYPE_EXT))
+                if (~lcontains(dirnii.fns, NIfTId.FILETYPE_EXT))
                     this.analyze2nifti(this.unpackPath);
                 end
                 this.cleanAnalyze(this.unpackPath);
@@ -177,7 +177,7 @@ classdef PETConverter_2013mar4_1800 < mlfourd.AbstractConverter
         end % get.oosumFqFilenames
         function fns  = get.ocFqFilenames(this)
             if (isempty(this.ocFqFilenames_))
-                [~,f,~] = cellfun(@(x) filepartsx(x, mlfourd.NIfTI.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
+                [~,f,~] = cellfun(@(x) filepartsx(x, mlfourd.NIfTId.FILETYPE_EXT), this.allFqFilenames, 'UniformOutput', false);
                 this.ocFqFilenames_ = this.allFqFilenames(cell2logical(strfind(f, 'oc')));
             end
             fns = this.ocFqFilenames_;

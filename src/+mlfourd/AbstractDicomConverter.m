@@ -95,7 +95,7 @@ classdef AbstractDicomConverter < mlfourd.AbstractConverter
             pref = this.namingRegistry_.FSL_NAMES;
         end
         function fld  = get.dicomFolder(this)
-            [~,fld] = filepartsx(this.dicomPath, mlfourd.INIfTI.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.dicomPath, mlfourd.NIfTId.FILETYPE_EXT);
         end % get.dicomFolder
         function this = set.dicomInfo(this, cal)
             assert(isa(cal, 'mlfourd.ImagingArrayList'));
@@ -113,7 +113,7 @@ classdef AbstractDicomConverter < mlfourd.AbstractConverter
             error('mlfourd:PathNotFound', 'could not find any of:  %s', cell2str(this.dicomFolders));
         end % get.dicomPath
         function fld  = get.mrFolder(this)
-            [~,fld] = filepartsx(this.mrPath, mlfourd.INIfTI.FILETYPE_EXT);
+            [~,fld] = filepartsx(this.mrPath, mlfourd.NIfTId.FILETYPE_EXT);
         end % get.mrFolder
         function pth  = get.mrPath(this)
             pth = this.modalityPath;

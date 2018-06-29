@@ -252,7 +252,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.mmppix(this, mpp)
             %% SET.MMPPIX sets voxel-time dimensions in mm, s.
             
-            %assert(all(this.rank == length(mpp)));
             this.hdr_.dime.pixdim(2:length(mpp)+1) = mpp;
             this.untouch_ = false;
         end  
@@ -314,9 +313,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         %% NIfTIIO
         
         function        save(this)
-            %% SAVE supports extensions 
-            %  mlfourd.JimmyShenInterface.SUPPORTED_EXT and mlsurfer.SurferRegistry.SUPPORTED_EXT,
-            %  defaulting to this.FILETYPE_EXT if needed. 
+            %% SAVE 
             %  If this.noclobber == true,  it will never overwrite files.
             %  If this.noclobber == false, it may overwrite files. 
             %  If this.untouch   == true,  it will never overwrite files.
@@ -325,6 +322,15 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
             %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
+            this = this.ensureExtension;
+            this = this.ensureImg;
+            this = this.ensureNoclobber;
+%             switch (this.filesuffix)
+%                 case
+%                 case
+%                 case
+%                 otherwise
+%             end
             this.save_nii;
             this.saveLogger;
         end 
@@ -341,12 +347,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.fqfilename = fullfile(p, [f e]);
             this.untouch_ = false;
             this.save;
-        end
-        function        saveLogger(this)
-            if (~isempty(this.logger_))
-                this.logger_.fqfileprefix = this.fqfileprefix;
-                this.logger_.save;
-            end
         end
         
         %% INIfTI
@@ -489,68 +489,6 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             this.img = sum(this.img_, varargin{:});
         end    
-        
-        %% 
-        
-        function        addLog(this, varargin)
-            %% ADDLOG
-            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
-            
-            if (isempty(this.logger_))
-                return
-            end
-            this.logger_.add(varargin{:});
-        end
-        function e    = fslentropy(this)
-            if (~lexist(this.fqfilename, 'file'))
-                e = nan;
-                return
-            end
-            [~,e] = mlbash(sprintf('fslstats %s -e', this.fqfileprefix));
-            e = str2double(e);
-        end
-        function E    = fslEntropy(this)
-            if (~lexist(this.fqfilename, 'file'))
-                E = nan;
-                return
-            end
-            [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
-            E = str2double(E);
-        end 
-        function        hist(this, varargin)
-            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
-        end
-        function        view(this, varargin)
-            this.launchExternalViewer(this.viewer, varargin{:});
-        end
-        function        freeview(this, varargin)
-            %% FREEVIEW
-            %  @param [filename[, ...]]
-            
-            this.launchExternalViewer('freeview', varargin{:});
-        end
-        function        fsleyes(this, varargin)
-            %% FSLVIEW
-            %  @param [filename[, ...]]
-            
-            try
-                this.launchExternalViewer('fsleyes', varargin{:});
-            catch ME
-                handwarning(ME);
-                this.fslview(varargin{:});
-            end
-        end 
-        function        fslview(this, varargin)
-            %% FSLVIEW
-            %  @param [filename[, ...]]
-            
-            try
-                this.launchExternalViewer('fslview', varargin{:});
-            catch ME
-                handwarning(ME);
-                this.launchExternalViewer('fslview_deprecated', varargin{:});
-            end
-        end   
 
         %% mlpatterns.Composite
         
@@ -587,7 +525,67 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             s = [1 1];
         end    
         
-        %% Ctor
+        %% 
+        
+        function      addLog(this, varargin)
+            %% ADDLOG
+            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
+            
+            if (isempty(this.logger_))
+                return
+            end
+            this.logger_.add(varargin{:});
+        end
+        function e  = fslentropy(this)
+            if (~lexist(this.fqfilename, 'file'))
+                e = nan;
+                return
+            end
+            [~,e] = mlbash(sprintf('fslstats %s -e', this.fqfileprefix));
+            e = str2double(e);
+        end
+        function E  = fslEntropy(this)
+            if (~lexist(this.fqfilename, 'file'))
+                E = nan;
+                return
+            end
+            [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
+            E = str2double(E);
+        end 
+        function      hist(this, varargin)
+            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
+        end
+        function      view(this, varargin)
+            this.launchExternalViewer(this.viewer, varargin{:});
+        end
+        function      freeview(this, varargin)
+            %% FREEVIEW
+            %  @param [filename[, ...]]
+            
+            this.launchExternalViewer('freeview', varargin{:});
+        end
+        function      fsleyes(this, varargin)
+            %% FSLVIEW
+            %  @param [filename[, ...]]
+            
+            try
+                this.launchExternalViewer('fsleyes', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.fslview(varargin{:});
+            end
+        end 
+        function      fslview(this, varargin)
+            %% FSLVIEW
+            %  @param [filename[, ...]]
+            
+            try
+                this.launchExternalViewer('fslview', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.launchExternalViewer('fslview_deprecated', varargin{:});
+            end
+        end   
         
         function this = InnerNIfTId
             
@@ -699,9 +697,19 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             if (isempty(this.filesuffix))
                 this.filesuffix = this.FILETYPE_EXT;
             end
-            assert(lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT) ||  ...
-                   lstrfind(this.filesuffix, mlsurfer.SurferRegistry.SUPPORTED_EXT) || ...
-                   lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT));
+        end
+        function this = ensureImg(this)
+            if (isempty(this.img))
+                error('mlfourd:IOError:savingEmptyObjectError', ...
+                    'InnerNIfTId.save:  request is incompatible with mlnifittools.save_[untouch]_nii');
+            end
+        end
+        function this = ensureNoclobber(this)
+            if (this.noclobber && lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:noclobberPreventedSaving', ...
+                    'NIfTId.save.noclobber->%i; fqfilename->%s already exists; data not saved', ...
+                    this.noclobber, this.fqfilename);
+            end
         end
         function this = ensureSingle(this)
             this.hdr_.dime.datatype = 16;
@@ -741,13 +749,13 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             fqfn = this.fqfilename;
         end
         function tf   = hasJimmyShenExtension(this)
-            tf = lstrfind(this.filesuffix, mlfourd.JimmyShenInterface.SUPPORTED_EXT);
+            tf = lstrfind(this.filesuffix, mlfourd.NIfTId.SUPPORTED_EXT);
         end
         function tf   = hasSurferExtension(this)
             tf = lstrfind(this.filesuffix, {'.mgz' '.mgh'});
         end
         function tf   = has4dfpExtension(this)
-            tf = lstrfind(this.filesuffix, mlfourdfp.IFourdfp.SUPPORTED_EXT);
+            tf = lstrfind(this.filesuffix, mlfourdfp.Fourdfp.SUPPORTED_EXT);
         end
         function        launchExternalViewer(this, app, varargin)
             s = []; r = '';
@@ -801,20 +809,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
         end
         function        save_nii(this)
-            if (isempty(this.img))
-                error('mlfourd:saveError', ...
-                    'InnerNIfTId.save_nii:  mlnifittools.save_[untouch]_nii will throw MATLAB:badsubscript');
-            end
-            this = this.ensureExtension;
-            if (this.noclobber && lexist(this.fqfilename, 'file'))
-                error('mlfourd:IOError:noclobberPreventedSaving', ...
-                      'NIfTId.save_nii.noclobber->%i and fqfilename->%s already exists; data not saved', this.noclobber, this.fqfilename);
-            end
-            if (this.untouch)
-                this.save_untouch_nii;
-                return
-            end
-            this = this.optimizePrecision;
+            
             try
                 
                 %% KLUDGE
@@ -836,7 +831,13 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                     warning('on', 'MATLAB:structOnObject');
                     return
                 end
-                
+
+                if (this.untouch)
+                    this.save_untouch_nii;
+                    return
+                end
+                this = this.optimizePrecision; % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
+
                 warning('off', 'MATLAB:structOnObject');
                 if (this.hasJimmyShenExtension) 
                     mlniftitools.save_nii(struct(this), this.fqfilename);
@@ -846,35 +847,36 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 warning('on', 'MATLAB:structOnObject');
                 
             catch ME
-                handerror(ME, ...
-                    'mlfourd:IOError', ...
-                    'InnerNIfTId.save_nii failed to save %s', this.fqfilename);
+                dispexcept(ME, ...
+                    'mlfourd:IOError:from_mlniftitools', ...
+                    'InnerNIfTId.save_nii erred while attempting to save %s', this.fqfilename);
             end
         end
         function        save_untouch_nii(this)
-            assert(this.untouch);            
             if (lexist(this.fqfilename, 'file'))
                 warning('mlfourd:IOError:untouchPreventedSaving', ...
-                        'NIfTId.save_untouch_nii.untouch->%i and fqfilename->%s already exists; data not saved', this.untouch, this.fqfilename);
+                    'NIfTId.save_untouch_nii.untouch->%i; fqfilename->%s already exists; data not saved', ...
+                    this.untouch, this.fqfilename);
                 return
-            end             
-            this = this.optimizePrecision;
+            end  
+            
             try
-                if (this.hasJimmyShenExtension) 
-                    warning('off', 'MATLAB:structOnObject');
-                    mlniftitools.save_untouch_nii(struct(this), this.fqfilename);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
-                end
+                assert(this.hasJimmyShenExtension, ...
+                    'mlfourd:unsupportedInternalState', ...
+                    'InnerNIfTId.save_untouch_nii.hasJimmyShenExtension->%i', this.hasJimmyShenExtension);
                 warning('off', 'MATLAB:structOnObject');
-                mlniftitools.save_untouch_nii(struct(this), this.fqfilenameNiiGz);            
-                mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-                deleteExisting(this.fqfilenameNiiGz);
+                mlniftitools.save_untouch_nii(struct(this), this.fqfilename);
                 warning('on', 'MATLAB:structOnObject');
             catch ME
-                handerror(ME, ...
-                    'mlfourd:IOError', ...
-                    'InnerNIfTId.save_untouch_nii failed to save %s', this.fqfilename);
+                dispexcept(ME, ...
+                    'mlfourd:IOError:from_mlniftitools', ...
+                    'InnerNIfTId.save_untouch_nii erred while attempting to save %s', this.fqfilename);
+            end
+        end
+        function        saveLogger(this)
+            if (~isempty(this.logger_))
+                this.logger_.fqfileprefix = this.fqfileprefix;
+                this.logger_.save;
             end
         end
         function im   = scrub1D(this, im)

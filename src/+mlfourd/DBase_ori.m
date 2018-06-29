@@ -29,7 +29,7 @@ classdef (Sealed) DBase_ori < mlfourd.AbstractDBase
         timepoint      = 'tp1';
         pv_variant     = '';            % naming convention
         t1_variant     = 't1_rot';      % naming convention
-        img_format     = mlfourd.INIfTI.FILETYPE_EXT;
+        img_format     = mlfourd.NIfTId.FILETYPE_EXT;
         useQBOLD       = false;
         metricThresh   = [eps 1e7]; % refine in MR/PETconverter    
         iscomparator   = false;

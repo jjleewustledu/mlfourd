@@ -165,7 +165,7 @@ classdef AbstractConverterCrashes < mlfourd.ConverterInterface
             if (~exist('pth', 'var')); pth = pwd; end
             anaList = mlsystem.DirTool(fullfile(pth, '*.hdr'));
             for n = 1:length(anaList.fqfns)  %#ok<FORFLG>
-                mlbash(['fslchfiletype ' NIfTI.FILETYPE ' ' anaList.fqfns{n}]);  
+                mlbash(['fslchfiletype ' NIfTId.FILETYPE ' ' anaList.fqfns{n}]);  
             end
         end % static analyze2nifti   
     end % static methods

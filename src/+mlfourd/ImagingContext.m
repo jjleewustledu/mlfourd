@@ -401,7 +401,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @return l is the length of a composite imaging state
             
             l = this.state_.length;
-        end        
+        end
         function l  = logical(this)
             l = this.double > 0;
         end

@@ -9,12 +9,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
  	
     properties (Dependent)
-        
-        %% NIfTIIO
-        
-        noclobber         
-        
-        %% JimmyShenInterface to support struct arguments to NIfTId ctor
+        noclobber
         
         ext        %   Legacy variable for mlfourd.JimmyShenInterface
         filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
@@ -41,8 +36,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         originalType
         untouch
         
-        %% INIfTI
-        
         bitpix
         creationDate
         datatype
@@ -57,8 +50,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         pixdim
         seriesNumber
         
-        %% New for InnerNIfTIc
-        
         lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
@@ -66,9 +57,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         viewer
     end 
 
-    methods %% GET/SET
+    methods
         
-        %% NIfTIIO
+        %% GET/SET
         
         function tf   = get.noclobber(this)
             tf = this.innerCellComp_.getter('noclobber');
@@ -76,8 +67,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.noclobber(this, nc)
             this = this.innerCellComp_.setter('noclobber', nc);
         end
-        
-        %% JimmyShenInterface
         
         function g    = get.ext(this)
             g = this.innerCellComp_.getter('ext');
@@ -103,8 +92,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function g    = get.untouch(this)
             g = this.innerCellComp_.getter('untouch');
         end
-        
-        %% INIfTI  
         
         function g    = get.bitpix(this)
             g = this.innerCellComp_.getter('bitpix');
@@ -164,8 +151,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             g = this.innerCellComp_.getter('seriesNumber');
         end
         
-        %% New for InnerNIfTIc
-        
         function s    = get.lexistFile(this)
             s = this.innerCellComp_.getter('lexistFile');
         end
@@ -187,9 +172,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.viewer(this, v)
             this.viewer_ = v;
         end
-    end
-    
-	methods
         
         %% NIfTIIO
         
@@ -258,37 +240,7 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = sum(this)
             this.innerCellComp_ = this.innerCellComp_.fevalThis('sum');
         end
-        
-        %% New for InnerNIfTIc
-        
-        function     addLog(this, varargin)
-            for c = 1:this.innerCellComp_.length
-                cached = this.innerCellComp_{c};
-                cached.addLog(varargin{:});
-            end
-        end
-        function e = fslentropy(this)
-            e = this.innerCellComp_.fevalOut('fslentropy');
-        end
-        function E = fslEntropy(this)
-            E = this.innerCellComp_.fevalOut('fslEntropy');
-        end
-        function view(this, varargin)
-            this.freeview(varargin{:});
-        end
-        function freeview(this, varargin)
-            first = this.innerCellComp_.get(1);
-            fqfns = this.innerCellComp_.fevalOut('fqfilename');
-            fqfns = [fqfns(2:end) varargin{:}];
-            first.freeview(fqfns{:});
-        end
-        function fslview(this, varargin)
-            first = this.innerCellComp_.get(1);
-            fqfns = this.innerCellComp_.fevalOut('fqfilename');
-            fqfns = [fqfns(2:end) varargin{:}];
-            first.fslview(fqfns{:});
-        end
-        
+                
         %% mlpatterns.Composite
         
         function this = add(this, obj)
@@ -321,7 +273,35 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.innerCellComp_ = this.innerCellComp_.rm(idx);
         end   
         
-        %% Ctor
+        %% 
+        
+        function     addLog(this, varargin)
+            for c = 1:this.innerCellComp_.length
+                cached = this.innerCellComp_{c};
+                cached.addLog(varargin{:});
+            end
+        end
+        function e = fslentropy(this)
+            e = this.innerCellComp_.fevalOut('fslentropy');
+        end
+        function E = fslEntropy(this)
+            E = this.innerCellComp_.fevalOut('fslEntropy');
+        end
+        function     view(this, varargin)
+            this.freeview(varargin{:});
+        end
+        function     freeview(this, varargin)
+            first = this.innerCellComp_.get(1);
+            fqfns = this.innerCellComp_.fevalOut('fqfilename');
+            fqfns = [fqfns(2:end) varargin{:}];
+            first.freeview(fqfns{:});
+        end
+        function     fslview(this, varargin)
+            first = this.innerCellComp_.get(1);
+            fqfns = this.innerCellComp_.fevalOut('fqfilename');
+            fqfns = [fqfns(2:end) varargin{:}];
+            first.fslview(fqfns{:});
+        end
         
  		function this = InnerNIfTIc(varargin)
             if (nargin == 1 && isa(varargin{1}, 'mlfourd.InnerNIfTIc'))
