@@ -507,7 +507,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             %% from Trio mpr & ep2d read by mlniftitools.load_untouch_nii
             
             this.fileprefix = ['instance_' strrep(class(this), '.', '_')];
-            this.filesuffix = this.FILETYPE_EXT;
+            this.filesuffix = mlfourd.NIfTId.NIFTI_EXT;
             hk   = struct( ...
                 'sizeof_hdr', 348, ...
                 'data_type', '', ...
@@ -675,7 +675,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             end
         end 
         function fn = tempFqfilename(this)
-            fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), this.FILETYPE_EXT);
+            fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), mlfourd.NIfTId.NIFTI_EXT);
         end
     end
     

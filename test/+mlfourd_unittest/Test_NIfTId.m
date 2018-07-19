@@ -16,9 +16,11 @@ classdef Test_NIfTId < matlab.unittest.TestCase
 	properties
         registry
  		testObj 
+        doview = true
  	end 
 
     properties (Dependent)
+        dataroot
         fslPath 
         maskT1_fp
         maskT1_fqfn
@@ -29,9 +31,16 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         smallT1_niid  
         smallT1_struct
         T1_mgz
+        TmpDir
     end
     
-    methods %% GET/SET
+    methods 
+        
+        %% GET/SET
+        
+        function g = get.dataroot(~)
+            g = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', '');
+        end
         function g = get.fslPath(this)
             g = this.registry.fslPath;
         end
@@ -61,6 +70,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         end
         function g = get.T1_mgz(this)
             g = fullfile(this.sessionPath, 'mri', 'T1.mgz');
+        end
+        function g = get.TmpDir(~)
+            g = fullfile(getenv('HOME'), 'Tmp', '');
         end
     end
     
@@ -149,12 +161,123 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.filesuffix, '.nii.gz');
             this.verifyEqual(niid.img, this.testObj.img);
         end
-        function test_load_surfer(this)
-            niid = mlfourd.NIfTId(this.T1_mgz);
-            this.verifyEqual(niid.filepath, myfileparts(this.T1_mgz));
-            this.verifyEqual(niid.fileprefix, 'T1');
+        function test_load_4dfp(this)
+            %% loads 4dfp created directly from DICOM and checks integrity; checks *.nii.gz created by nifti_4dfp.
+            
+            pwd0 = pushd(this.TmpDir);
+            x = {'.ifh' '.hdr' '.img' '.img.rec'};
+            for ix = 1:length(x)
+                copyfile(fullfile(this.dataroot, ['t1_mprage_sag_series8.4dfp' x{ix}]), ['t1_mprage_sag_series8.4dfp' x{ix}], 'f');
+            end 
+            copyfile(fullfile(this.dataroot, 't1_mprage_sag_series8.nii.gz'), 't1_mprage_sag_series8.nii.gz', 'f');
+            
+            niid = mlfourd.NIfTId('t1_mprage_sag_series8.4dfp.hdr', 'circshiftK', 1, 'N', true); % sagittal
+            this.verifyEqual(class(niid.img), 'single');
+            this.verifyEqual(size(niid.img),  [176 248 256]);
+            this.verifyEqual(niid.originalType, 'struct');
+            this.verifyEqual(niid.entropy, 0.143003055853027, 'RelTol', 1e-6);
+            this.verifyEqual(niid.filepath, this.TmpDir);
+            this.verifyEqual(niid.fileprefix, 't1_mprage_sag_series8');
             this.verifyEqual(niid.filesuffix, '.nii.gz');
-            %this.verifyTrue(~lexist(niid.fqfilename));
+            this.verifyEqual(niid.hdr.hk.sizeof_hdr, 348);
+            this.verifyEqual(niid.hdr.hk.extents, 0);
+            this.verifyEqual(niid.hdr.dime.dim, [4 176 248 256 1 1 1 1]);
+            this.verifyEqual(niid.hdr.dime.datatype, 16);
+            this.verifyEqual(niid.hdr.dime.bitpix, 32);
+            this.verifyEqual(niid.hdr.dime.pixdim, [1 1 1 1 1 0 0 0], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.dime.vox_offset, 352);
+            this.verifyEqual(niid.hdr.dime.xyzt_units, 10);
+            this.verifyEqual(niid.hdr.dime.glmax, 1296);
+            this.verifyEqual(niid.hdr.dime.glmin, 0);
+            this.verifyEqual(niid.hdr.hist.qform_code, 0);
+            this.verifyEqual(niid.hdr.hist.sform_code, 3);
+            this.verifyEqual(niid.hdr.hist.quatern_b, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_c, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_d, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_x, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_y, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_z, 0, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_x, [1 0 0 -87], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_y, [0 1 0 -123], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_z, [0 0 1 -127], 'RelTol', 1e-6);
+            this.verifyTrue(niid.machine.maxsize > 1e14);
+            this.verifyEqual(niid.machine.endian, 'L');    
+            imshow(fullfile(this.dataroot, 'NIfTId_t1_mprage_sag_series8_csK1_Ntrue.png'));  
+            if (this.doview); niid.fsleyes; end
+            
+            niid1 = mlfourd.NIfTId('t1_mprage_sag_series8.nii.gz', 'circshiftK', 0, 'N', true);
+            this.verifyEqual(niid1, niid);
+            if (this.doview); niid1.fsleyes; end
+            
+            popd(pwd0);
+        end
+        function test_load_nifti(this)
+            %% loads *.nii.gz created directly from DICOM by Freesurfer and checks integrity; checks 4dfp created by nifti_4dfp. 
+            
+            pwd0 = pushd(this.TmpDir);
+            copyfile(fullfile(this.dataroot, '001.nii.gz'), '001.nii.gz', 'f'); % transverse
+            x = {'.ifh' '.hdr' '.img' '.img.rec'};
+            for ix = 1:length(x)
+                copyfile(fullfile(this.dataroot, ['001.4dfp' x{ix}]), ['001.4dfp' x{ix}], 'f');
+            end           
+            
+            niid = mlfourd.NIfTId('001.nii.gz', 'circshiftK', 0, 'N', false);
+            this.verifyEqual(class(niid.img), 'int16');
+            this.verifyEqual(size(niid.img),  [248 256 176]);
+            this.verifyEqual(niid.originalType, 'struct');
+            this.verifyEqual(niid.entropy, 0.143003055853027, 'RelTol', 1e-6);
+            this.verifyEqual(niid.filepath, this.TmpDir);
+            this.verifyEqual(niid.fileprefix, '001');
+            this.verifyEqual(niid.filesuffix, '.nii.gz');
+            this.verifyEqual(niid.hdr.hk.sizeof_hdr, 348);
+            this.verifyEqual(niid.hdr.hk.extents, 0);
+            this.verifyEqual(niid.hdr.dime.dim, [3 248 256 176 1 1 1 1]);
+            this.verifyEqual(niid.hdr.dime.datatype, 4);
+            this.verifyEqual(niid.hdr.dime.bitpix, 16);
+            this.verifyEqual(niid.hdr.dime.pixdim, [-1 1 1 1 2.400000095367432 1 1 1], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.dime.vox_offset, 352);
+            this.verifyEqual(niid.hdr.dime.xyzt_units, 10);
+            this.verifyEqual(niid.hdr.dime.glmax, 1296);
+            this.verifyEqual(niid.hdr.dime.glmin, 0);
+            this.verifyEqual(niid.hdr.hist.qform_code, 1);
+            this.verifyEqual(niid.hdr.hist.sform_code, 1);
+            this.verifyEqual(niid.hdr.hist.quatern_b, -0.492527604103088, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_c, 0.492527604103088, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_d, -0.507362365722656, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_x, 83.6641998291016, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_y, 165.646484375, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_z, 122.161727905273, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_x, [0 0.029666258022189 -0.999559879302979 83.664199829101562], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_y, [-1 0 0 165.6464843750000], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_z, [0 -0.9995598793030 -0.0296662449837 122.1617279052734], 'RelTol', 1e-6);
+            this.verifyTrue(niid.machine.maxsize > 1e14);
+            this.verifyEqual(niid.machine.endian, 'L');    
+            imshow(fullfile(this.dataroot, 'NIfTId_001_csK-1_Ntrue_datatype4.png'));
+            if (this.doview); niid.fsleyes; end
+            
+            niid1 = mlfourd.NIfTId('001.4dfp.hdr', 'circshiftK', -1, 'N', true, 'datatype', 4);
+            this.verifyEqual(niid1,niid);
+            if (this.doview); niid1.fsleyes; end
+            
+            popd(pwd0);
+        end
+        function test_load_nii(this)
+            pwd0 = pushd(this.TmpDir);
+            copyfile(fullfile(this.dataroot, '001.nii'), '001.nii', 'f');            
+            this.verifyT1(mlfourd.NIfTId('001.nii'), '.nii');            
+            popd(pwd0);
+        end
+        function test_load_niigz(this)
+            pwd0 = pushd(this.TmpDir);
+            copyfile(fullfile(this.dataroot, '001.nii.gz'), '001.nii.gz', 'f');            
+            this.verifyT1(mlfourd.NIfTId('001.nii.gz'), '.nii.gz');            
+            popd(pwd0);
+        end
+        function test_load_mgz(this)
+            pwd0 = pushd(this.TmpDir);
+            copyfile(fullfile(this.dataroot, '001.mgz'), 'f');            
+            this.verifyT1(mlfourd.NIfTId('001.mgz'), '.nii.gz');   
+            popd(pwd0);
         end
         function test_ctorParametersAdjusted(this)
             niid = mlfourd.NIfTId(this.testObj.img, ...
@@ -217,12 +340,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_ctorNumeric(this)
             niid = mlfourd.NIfTId(this.testObj.img);
             this.verifyEqual(niid.img, this.testObj.img);
-        end        
-%         function test_ctorNIfTIInterface(this)
-%             import mlfourd.*;
-%             niid = NIfTId(NIfTI.load(this.smallT1_fqfn));
-%             this.verifyEqual(niid, NIfTId.load(this.smallT1_fqfn));
-%         end
+        end      
         function test_ctorINIfTI(this)
             niid = mlfourd.MaskingNIfTId(this.testObj);
             this.verifyEqual(niid.img, this.testObj.img);
@@ -349,20 +467,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
 %             
 %             deleteExisting(fqfn); deleteExisting(fqfn0);
 %         end
-%         function test_saveasSpmHdr(this)
-%             fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasSpmHdr.hdr');
-%             fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasSpmHdr.img');
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%             
-%             niid = mlfourd.NIfTId.load([this.smallT1_fp '_spm.hdr']);
-%             try
-%                 niid.saveas(fqfn);
-%             catch ME
-%                 this.verifyEqual(ME.identifier, 'MATLAB:nonExistentField');
-%             end
-%             
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%         end
 %         function test_saveasMgz(this)
 %             fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasMgz.mgz');
 %             deleteExisting(fqfn);
@@ -378,17 +482,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
 %             
 %             this.testObj.saveas(fqfn);
 %             this.verifyTrue(lexist(fqfn, 'file'));
-%             
-%             deleteExisting(fqfn);
-%         end
-%         function test_saveasSpmImg(this)
-%             fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasSpmImg.img');
-%             deleteExisting(fqfn);
-%             
-%             this.testObj.saveas(fqfn);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             imgobj = mlniftitools.load_untouch_nii(fqfn);
-%             this.verifyEqual(imgobj.filetype, 0);
 %             
 %             deleteExisting(fqfn);
 %         end
@@ -465,7 +558,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_descrip(this)
             niid     = this.testObj;
             descrip0 = niid.descrip;
-            this.verifyEqual(niid.descrip(1:148), ['NIfTId.adjustFieldsAfterLoading read ' niid.fqfn]);
+            this.verifyEqual(niid.descrip(1:148), ['NIfTId.adjustInnerNIfTIdAfterLoading read ' niid.fqfn]);
             niid = niid.prepend_descrip(    'toPrepend');
             this.verifyEqual(niid.descrip, ['toPrepend; ' descrip0]);
             niid = niid.append_descrip(     'toAppend');            
@@ -673,6 +766,43 @@ classdef Test_NIfTId < matlab.unittest.TestCase
     methods (Access = private)
         function cleanupFiles(this)
             deleteExisting2(fullfile(this.fslPath, 'Test_NIfTId*'));
+        end
+        function verifyT1(this, niid, varargin)
+            ip = inputParser;
+            addOptional(ip, 'suff', '.nii.gz', @ischar);
+            parse(ip, varargin{:});
+            
+            this.verifyEqual(class(niid.img), 'int16');
+            this.verifyEqual(size(niid.img),  [248 256 176]);
+            this.verifyEqual(niid.originalType, 'struct');
+            this.verifyEqual(niid.entropy, 0.143003055853027, 'RelTol', 1e-6);
+            this.verifyEqual(niid.filepath, this.TmpDir);
+            this.verifyEqual(niid.fileprefix, '001');
+            this.verifyEqual(niid.filesuffix, ip.Results.suff);
+            this.verifyEqual(niid.hdr.hk.sizeof_hdr, 348);
+            this.verifyEqual(niid.hdr.hk.extents, 0);
+            this.verifyEqual(niid.hdr.dime.dim, [3 248 256 176 1 1 1 1]);
+            this.verifyEqual(niid.hdr.dime.datatype, 4);
+            this.verifyEqual(niid.hdr.dime.bitpix, 16);
+            this.verifyEqual(niid.hdr.dime.pixdim, [-1 1 1 1 2.400000095367432 1 1 1], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.dime.vox_offset, 352);
+            this.verifyEqual(niid.hdr.dime.xyzt_units, 10);
+            this.verifyEqual(niid.hdr.dime.glmax, 1296);
+            this.verifyEqual(niid.hdr.dime.glmin, 0);
+            this.verifyEqual(niid.hdr.hist.qform_code, 1);
+            this.verifyEqual(niid.hdr.hist.sform_code, 1);
+            this.verifyEqual(niid.hdr.hist.quatern_b, -0.492527604103088, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_c,  0.492527604103088, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.quatern_d, -0.507362365722656, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_x,  83.664199829101562, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_y,  1.656464843750000e+02, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.qoffset_z,  1.221617279052734e+02, 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_x, [0 0.029666258022189 -0.999559879302979 83.664199829101562], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_y, [-1 0 0 1.656464843750000e+02], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.srow_z, [0 -0.999559879302979 -0.029666244983673 1.221617279052734e+02], 'RelTol', 1e-6);
+            this.verifyEqual(niid.hdr.hist.originator, [0 0 0], 'RelTol', 1e-6)
+            this.verifyTrue(niid.machine.maxsize > 1e14);
+            this.verifyEqual(niid.machine.endian, 'L');
         end
     end
     

@@ -90,6 +90,8 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
             addParameter(ip, 'noclobber',    []);
             addParameter(ip, 'pixdim',       [], @isnumeric);
             addParameter(ip, 'separator',    '', @ischar);
+            addParameter(ip, 'circshiftK', 0,    @isnumeric);  % see also mlfourd.ImagingInfo
+            addParameter(ip, 'N', true,          @islogical); % 
             parse(ip, varargin{:});
 
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
@@ -102,34 +104,36 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                         this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj)); % varargin{:}?
                 case 'mlio.IOInterface'
                 case 'mlfourd.INIfTId'
-                case 'mlfourd.INIfTIc'
-                case 'mlfourd.NIfTIInterface'
+                    %% dedecorates
+                    this.innerNIfTI_.innerCellComp_ = ...
+                        this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                case 'mlfourd.NIfTIInterface' 
+                    %% legacy
+                    warning('off', 'MATLAB:structOnObject');
+                    this = NIfTIc(struct(ip.Results.obj));
+                    warning('on', 'MATLAB:structOnObject');
                 otherwise
                     if (isnumeric(ip.Results.obj))
-                        this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
-                    elseif (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
-                        warning('off', 'MATLAB:structOnObject');
-                        this = NIfTIc(struct(ip.Results.obj));
-                        warning('on', 'MATLAB:structOnObject');
-                    elseif (isa(ip.Results.obj, 'mlfourd.INIfTId')) %% dedecorates
-                        this.innerNIfTI_.innerCellComp_ = this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
-                    elseif (iscell(ip.Results.obj)) %% dedecorates
+                        this.innerNIfTI_.innerCellComp_ = ...
+                            this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                    elseif (iscell(ip.Results.obj)) 
+                        %% dedecorates
                         for idx = 1:length(ip.Results.obj)
                             this.innerNIfTI_.innerCellComp_ = ...
                                 this.innerNIfTI_.innerCellComp_.add( ...
-                                    NIfTId( ...
-                                        this.reduceImagingContexts(ip.Results.obj{idx})));
+                                    NIfTId(this.reduceImagingContexts(ip.Results.obj{idx})));
                         end
-                    elseif (isa(ip.Results.obj, 'mlpatterns.Composite')) %% dedecorates
+                    elseif (isa(ip.Results.obj, 'mlpatterns.Composite')) 
+                        %% dedecorates
                         iter = ip.Results.obj.createIterator;
                         while (iter.hasNext)   
                             this.innerNIfTI_.innerCellComp_ = ...
                                 this.innerNIfTI_.innerCellComp_.add( ...
-                                    NIfTId( ...
-                                        this.reduceImagingContexts(iter.next)));
+                                    NIfTId(this.reduceImagingContexts(iter.next)));
                         end
                     else
-                        NIfTIc.assertCtorObj(ip.Results.obj);
+                        error('mlfourd:unsupportedSwitchcase', ...
+                            'class(NIfTIc.ctor.ip.Results.obj) -> %s', class(ip.Results.obj));
                     end
             end
             this = this.adjustFieldsFromInputParser(ip);

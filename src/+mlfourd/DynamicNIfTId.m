@@ -125,7 +125,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             addParameter('reffile', '', @ischar);
             parse(ip, varargin{:});
             
-            mcffn = sprintf('%s_mcf%s', this.fqfileprefix, this.FILETYPE_EXT);
+            mcffn = sprintf('%s_mcf%s', this.fqfileprefix, mlfourd.NIfTId.NIFTI_EXT);
             if (isempty(ip.Results.reffile))
                 system(sprintf('mcflirt -in %s -refvol %i  -meanvol -stats -mats -plots -report', this.fqfn, this.referenceVolumeIndex));
             else
@@ -144,7 +144,7 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             working = working.blurred(ip.Results.blur);
             working.save;
             
-            mcffn = sprintf('%s_mcf%s', this.fqfileprefix, this.FILETYPE_EXT);
+            mcffn = sprintf('%s_mcf%s', this.fqfileprefix, mlfourd.NIfTId.NIFTI_EXT);
             matfn = sprintf('%s_mcf.mat', working.fqfileprefix); 
             if (lexist(matfn, 'dir'))
                 rmdir(matfn, 's');

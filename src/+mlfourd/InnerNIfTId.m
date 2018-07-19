@@ -183,10 +183,17 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         function this = set.datatype(this, dt)
             if (ischar(dt))
                 switch (strtrim(dt))
-                    case {'uchar', 'uint8', 'int16',  'int32', 'int', 'single', 'float32', 'float', ...
-                          'schar',          'uint16', 'uint32'}
+                    case {'uchar', 'uint8'} 
+                        this = this.ensureUint8;
+                    case {'int16'}
+                        this = this.ensureInt16;
+                    case {'int32', 'int'} 
+                        this = this.ensureInt32;                        
+                    case {'single', 'float32', 'float'}
                         this = this.ensureSingle;
-                    case {'int64', 'uint64' 'double', 'float64'}
+                    case {'int64'}
+                        this = this.ensureInt64;  
+                    case {'double', 'float64'}
                         this = this.ensureDouble;
                     otherwise
                         error('mlfourd:unknownSwitchCase', ...
@@ -325,13 +332,17 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this = this.ensureExtension;
             this = this.ensureImg;
             this = this.ensureNoclobber;
-%             switch (this.filesuffix)
-%                 case
-%                 case
-%                 case
-%                 otherwise
-%             end
-            this.save_nii;
+            switch (this.filesuffix)
+                case mlsurfer.MGH.SUPPORTED_EXT
+                    this.save_mgz
+                case mlfourdfp.Fourdfp.SUPPORTED_EXT
+                    this.save_4dfp
+                case mlfourd.NIfTId.SUPPORTED_EXT
+                    this.save_nii;
+                otherwise
+                    error('mlfourd:unsupportedSwitchcase', ...
+                        'InnerNIfTId.save.this.filesuffix -> %s', this.filesuffix);
+            end
             this.saveLogger;
         end 
         function this = saveas(this, fn)
@@ -342,7 +353,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             
             [p,f,e] = myfileparts(fn);
             if (isempty(e))
-                e = this.FILETYPE_EXT;
+                e = mlfourd.NIfTId.NIFTI_EXT;
             end
             this.fqfilename = fullfile(p, [f e]);
             this.untouch_ = false;
@@ -594,7 +605,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;
             
             this.fileprefix = sprintf('instance_%s_%s', strrep(class(this), '.', '_'), datestr(now, 30));
-            this.filesuffix = this.FILETYPE_EXT;
+            this.filesuffix = mlfourd.NIfTId.NIFTI_EXT;
             hk   = struct( ...
                 'sizeof_hdr', 348, ...
                 'data_type', '', ...
@@ -695,7 +706,7 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
         end 
         function this = ensureExtension(this)
             if (isempty(this.filesuffix))
-                this.filesuffix = this.FILETYPE_EXT;
+                this.filesuffix = mlfourd.NIfTId.NIFTI_EXT;
             end
         end
         function this = ensureImg(this)
@@ -727,32 +738,47 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
             end
             this.img_ = uint8(this.img_);
         end
-        function fqfn = fqfilename4dfp(this)
-            if (~lstrfind(this.filesuffix, '.4dfp'))
-                fqfn = [this.fqfileprefix '.4dfp.img'];
+        function this = ensureInt16(this)
+            this.hdr_.dime.datatype = 4;
+            this.hdr_.dime.bitpix   = 16;
+            if (isa(this.img_, 'int16'))
                 return
             end
+            this.img_ = int16(this.img_);
+        end
+        function this = ensureInt32(this)
+            this.hdr_.dime.datatype = 8;
+            this.hdr_.dime.bitpix   = 32;
+            if (isa(this.img_, 'int32'))
+                return
+            end
+            this.img_ = int32(this.img_);
+        end
+        function this = ensureInt64(this)
+            this.hdr_.dime.datatype = 1024;
+            this.hdr_.dime.bitpix   = 64;
+            if (isa(this.img_, 'int64'))
+                return
+            end
+            this.img_ = int32(this.img_);
+        end
+        function fqfn = fqfilename4dfp(this)
+            this.filesuffix = mlfourdfp.Fourdfp.FOURDFP_EXT;
             fqfn = this.fqfilename;
         end
         function fqfn = fqfilenameNii(this)
-            if (~strcmp(this.filesuffix, '.nii'))
-                fqfn = [this.fqfileprefix '.nii'];
-                return
-            end
+            this.filesuffix = '.nii';
             fqfn = this.fqfilename;
         end
         function fqfn = fqfilenameNiiGz(this)
-            if (~strcmp(this.filesuffix, this.FILETYPE_EXT))
-                fqfn = [this.fqfileprefix this.FILETYPE_EXT];
-                return
-            end
+            this.filesuffix = '.nii.gz';
             fqfn = this.fqfilename;
         end
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, mlfourd.NIfTId.SUPPORTED_EXT);
         end
         function tf   = hasSurferExtension(this)
-            tf = lstrfind(this.filesuffix, {'.mgz' '.mgh'});
+            tf = lstrfind(this.filesuffix, mlsurfer.MGH.SUPPORTED_EXT);
         end
         function tf   = has4dfpExtension(this)
             tf = lstrfind(this.filesuffix, mlfourdfp.Fourdfp.SUPPORTED_EXT);
@@ -808,49 +834,51 @@ classdef InnerNIfTId < mlfourd.NIfTIdIO & mlfourd.JimmyShenInterface & mlfourd.I
                 handerror(ME);
             end
         end
-        function        save_nii(this)
-            
+        function        save_4dfp(this)
+            warning('off', 'MATLAB:structOnObject');
             try
+                % mlniftitools.save_nii(struct(this), this.fqfilenameNii);
+                % visitor = mlfourdfp.FourdfpVisitor;
+                % visitor.nifti_4dfp_4(this.fqfileprefix);
+                % deleteExisting(this.fqfilenameNii);
                 
-                %% KLUDGE
-                
-                if (this.has4dfpExtension)
-                    warning('off', 'MATLAB:structOnObject');
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
-                    visitor = mlfourdfp.FourdfpVisitor;
-                    visitor.nifti_4dfp_4(this.fqfileprefix);
-                    deleteExisting(this.fqfilenameNii);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
-                end
-                if (this.hasSurferExtension)
-                    warning('off', 'MATLAB:structOnObject');
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
-                    mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
-                    deleteExisting(this.fqfilenameNiiGz);
-                    warning('on', 'MATLAB:structOnObject');
-                    return
-                end
-
-                if (this.untouch)
-                    this.save_untouch_nii;
-                    return
-                end
-                this = this.optimizePrecision; % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
-
-                warning('off', 'MATLAB:structOnObject');
-                if (this.hasJimmyShenExtension) 
-                    mlniftitools.save_nii(struct(this), this.fqfilename);
-                else
-                    mlniftitools.save_nii(struct(this), this.fqfilenameNii);
-                end
-                warning('on', 'MATLAB:structOnObject');
-                
+                this.save_nii;
+            catch ME
+                dispexcept(ME, ...
+                    'mlfourd:IOError', ...
+                    'InnerNIfTId.save_4dfp erred while attempting to save %s', this.fqfilename);
+            end
+            warning('on', 'MATLAB:structOnObject');
+        end
+        function        save_mgz(this)
+            warning('off', 'MATLAB:structOnObject');
+            try
+                mlniftitools.save_nii(struct(this), this.fqfilenameNiiGz);            
+                mlbash(sprintf('mri_convert %s %s', this.fqfilenameNiiGz, this.fqfilename));
+                deleteExisting(this.fqfilenameNiiGz);            
+            catch ME
+                dispexcept(ME, ...
+                    'mlfourd:IOError', ...
+                    'InnerNIfTId.save_mgz erred while attempting to save %s', this.fqfilename);
+            end
+            warning('on', 'MATLAB:structOnObject');
+        end
+        function        save_nii(this)    
+            if (this.untouch)
+                this.save_untouch_nii;
+                return
+            end
+            %this = this.optimizePrecision; % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
+            
+            warning('off', 'MATLAB:structOnObject');
+            try                
+                mlniftitools.save_nii(struct(this), this.fqfilename);
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError:from_mlniftitools', ...
                     'InnerNIfTId.save_nii erred while attempting to save %s', this.fqfilename);
             end
+            warning('on', 'MATLAB:structOnObject');
         end
         function        save_untouch_nii(this)
             if (lexist(this.fqfilename, 'file'))

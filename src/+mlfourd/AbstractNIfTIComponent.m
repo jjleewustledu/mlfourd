@@ -229,7 +229,34 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         end
         function this = set.viewer(this, v)
             this.innerNIfTI_.viewer = v;
+        end        
+        
+        %% mlpatterns.Composite
+        
+        function this = add(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.add(varargin{:});
+        end        
+        function iter = createIterator(this)
+            iter = this.innerNIfTI_.createIterator;
         end
+        function idx  = find(this, obj)
+            idx = this.innerNIfTI_.find(obj);
+        end
+        function obj  = get(this, idx)
+            obj = this.innerNIfTI_.get(idx);
+        end
+        function tf   = isempty(this)
+            tf = this.innerNIfTI_.isempty;
+        end
+        function len  = length(this)
+            len = this.innerNIfTI_.length;
+        end
+        function this = rm(this, idx)
+            this.innerNIfTI_ = this.innerNIfTI_.rm(idx);
+        end
+        function s    = csize(this)   
+            s = this.innerNIfTI_.csize;
+        end    
         
         %% 
         
@@ -317,34 +344,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         end
         function z    = zeros(this)
             z = this.innerNIfTI_.zeros;
-        end
-        
-        %% mlpatterns.Composite
-        
-        function this = add(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.add(varargin{:});
-        end        
-        function iter = createIterator(this)
-            iter = this.innerNIfTI_.createIterator;
-        end
-        function idx  = find(this, obj)
-            idx = this.innerNIfTI_.find(obj);
-        end
-        function obj  = get(this, idx)
-            obj = this.innerNIfTI_.get(idx);
-        end
-        function tf   = isempty(this)
-            tf = this.innerNIfTI_.isempty;
-        end
-        function len  = length(this)
-            len = this.innerNIfTI_.length;
-        end
-        function this = rm(this, idx)
-            this.innerNIfTI_ = this.innerNIfTI_.rm(idx);
-        end
-        function s    = csize(this)   
-            s = this.innerNIfTI_.csize;
-        end     
+        end 
     end
     
     %% PROTECTED
