@@ -1,0 +1,33 @@
+Series UID: 1.3.12.2.1107.5.2.38.51010.2016092309523463242787459.0.0.0
+Study date: 20160923
+Study time: 090544.531000
+Series date: 20160923
+Series time: 095804.656000
+Subject: HYGLY28
+Subject birth date: 19920421
+Series description: t1_mprage_sag
+Image type: ORIGINAL\PRIMARY\M\ND\NORM
+Manufacturer: SIEMENS
+Model name: Biograph_mMR
+Software version: syngo MR B20P
+Study id: 1
+Series number: 8
+Repetition time (ms): 2400
+Echo time[1] (ms): 2.13
+Inversion time (ms): 1000
+Flip angle: 8
+Number of averages: 1
+Slice thickness (mm): 1
+Slice spacing (mm): 
+Image columns: 248
+Image rows: 256
+Phase encoding direction: ROW
+Voxel size x (mm): 1
+Voxel size y (mm): 1
+Number of volumes: 1
+Number of slices: 176
+Number of files: 176
+Number of frames: 0
+Slice duration (ms) : 0
+Orientation: sag
+PixelBandwidth: 219

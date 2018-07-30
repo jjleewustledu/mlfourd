@@ -49,7 +49,6 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         
         %%
         
-        lexistFile
         separator
         stack
         viewer
@@ -215,10 +214,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             num = this.component_.seriesNumber;
         end
         
-        %       
-        function tf   = get.lexistFile(this)
-            tf = this.component_.lexistFile;
-        end
+        %      
         function s    = get.separator(this)
             s = this.component_.separator;
         end

@@ -157,10 +157,14 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         end
         function test_loadNoExtension(this)
             import mlfourd.*;
-            niid = NIfTId.load(this.smallT1_fp);
-            this.verifyEqual(niid.filesuffix, '.nii.gz');
-            this.verifyEqual(niid.img, this.testObj.img);
+            pwd0 = pushd(this.TmpDir);
+            niid = NIfTId('t1_mprage_sag_series8');
+            this.verifyEqual(niid.filename, 't1_mprage_sag_series8.nii.gz');
+            this.verifyEqual(niid.size, [248 256 176]);
+            this.verifyClass(niid.imagingInfo, 'mlfourdfp.FourdfpInfo');
+            popd(pwd0);
         end
+        
         function test_load_4dfp(this)
             %% loads 4dfp created directly from DICOM and checks integrity; checks *.nii.gz created by nifti_4dfp.
             
@@ -178,7 +182,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.entropy, 0.143003055853027, 'RelTol', 1e-6);
             this.verifyEqual(niid.filepath, this.TmpDir);
             this.verifyEqual(niid.fileprefix, 't1_mprage_sag_series8');
-            this.verifyEqual(niid.filesuffix, '.nii.gz');
+            this.verifyEqual(niid.filesuffix, '.4dfp.hdr');
             this.verifyEqual(niid.hdr.hk.sizeof_hdr, 348);
             this.verifyEqual(niid.hdr.hk.extents, 0);
             this.verifyEqual(niid.hdr.dime.dim, [4 176 248 256 1 1 1 1]);
@@ -200,13 +204,12 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hist.srow_x, [1 0 0 -87], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_y, [0 1 0 -123], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_z, [0 0 1 -127], 'RelTol', 1e-6);
-            this.verifyTrue(niid.machine.maxsize > 1e14);
-            this.verifyEqual(niid.machine.endian, 'L');    
+            this.verifyEqual(niid.machine, 'ieee-le');   
             imshow(fullfile(this.dataroot, 'NIfTId_t1_mprage_sag_series8_csK1_Ntrue.png'));  
             if (this.doview); niid.fsleyes; end
             
             niid1 = mlfourd.NIfTId('t1_mprage_sag_series8.nii.gz', 'circshiftK', 0, 'N', true);
-            this.verifyEqual(niid1, niid);
+            this.verifyEqualNIfTId(niid1,niid);
             if (this.doview); niid1.fsleyes; end
             
             popd(pwd0);
@@ -250,13 +253,37 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hist.srow_x, [0 0.029666258022189 -0.999559879302979 83.664199829101562], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_y, [-1 0 0 165.6464843750000], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_z, [0 -0.9995598793030 -0.0296662449837 122.1617279052734], 'RelTol', 1e-6);
-            this.verifyTrue(niid.machine.maxsize > 1e14);
-            this.verifyEqual(niid.machine.endian, 'L');    
+            this.verifyEqual(niid.machine, 'ieee-le');   
             imshow(fullfile(this.dataroot, 'NIfTId_001_csK-1_Ntrue_datatype4.png'));
             if (this.doview); niid.fsleyes; end
             
             niid1 = mlfourd.NIfTId('001.4dfp.hdr', 'circshiftK', -1, 'N', true, 'datatype', 4);
-            this.verifyEqual(niid1,niid);
+            this.verifyEqualNIfTId(niid1,niid);
+            % Warning: NIfTId.checkFields:  mismatch at field pixdim. 
+            % > In mlfourd.NIfTId/checkFields (line 223)
+            %   In mlfourd.NIfTId/hdrsequaln (line 471)
+            %   In mlfourd.NIfTId/isequaln (line 53)
+            %   In matlab.unittest.constraints.ObjectComparator>areEqualUsingIsequalOrIsequaln (line 131)
+            %   In matlab.unittest.constraints.ObjectComparator/containerSatisfiedBy (line 50)
+            %   In matlab.unittest.constraints.Comparator>deepComparisonIsSatisfied (line 352)
+            %   In matlab.unittest.constraints.Comparator/satisfiedBy (line 84)
+            %   In matlab.unittest.constraints.IsEqualTo/satisfiedBy (line 193)
+            %   In matlab.unittest.internal.constraints.CasualDiagnosticDecorator/satisfiedBy (line 28)
+            %   In matlab.unittest.internal.constraints.AliasDecorator/satisfiedBy (line 29)
+            %   In matlab.unittest.internal.qualifications.QualificationDelegate/qualifyThat (line 80)
+            %   In matlab.unittest.internal.qualifications.QualificationDelegate/qualifyEqual (line 149)
+            %   In matlab.unittest.qualifications.Verifiable/verifyEqual (line 444)
+            %   In mlfourd_unittest.Test_NIfTId/test_load_nifti (line 259)
+            %   Columns 1 through 5
+            % 
+            %   -1.000000000000000   1.000000000000000   1.000000000000000   1.000000000000000   2.400000095367432
+            % 
+            %   Columns 6 through 8
+            % 
+            %    1.000000000000000   1.000000000000000   1.000000000000000
+            % 
+            %     -1     1     1     1     1     1     1     1
+
             if (this.doview); niid1.fsleyes; end
             
             popd(pwd0);
@@ -279,6 +306,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyT1(mlfourd.NIfTId('001.mgz'), '.nii.gz');   
             popd(pwd0);
         end
+        
         function test_ctorParametersAdjusted(this)
             niid = mlfourd.NIfTId(this.testObj.img, ...
                 'fileprefix', this.testObj.fileprefix, ...
@@ -427,77 +455,77 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             
             deleteExisting(fqfn);
         end
-%         function test_saveasAnalyzeHdr(this)
-%             fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyzeHdr.hdr');
-%             fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyzeHdr.img');
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%             
-%             this.testObj.filetype = 0;
-%             this.testObj.saveas(fqfn);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             imgobj = mlniftitools.load_untouch_nii(fqfn);
-%             this.verifyEqual(imgobj.filetype, 0);
-%             
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%         end
-%         function test_saveasNifti1Hdr(this)
-%             fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNifti1Hdr.hdr');
-%             fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNifti1Hdr.img');
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%             
-%             niid = mlfourd.NIfTId.load([this.smallT1_fp '_nifti1.hdr']);
-%             niid.saveas(fqfn);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             niid2 = mlniftitools.load_untouch_nii(fqfn);
-%             this.verifyEqual(niid2.filetype, 0);
-%             
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%         end
-%         function test_saveasAnalyze4dHdr(this)
-%             fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyze4dHdr.hdr');
-%             fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyze4dHdr.img');
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%             
-%             niid = mlfourd.NIfTId.load([this.smallT1_fp '_analyze4d.hdr']);
-%             try
-%                 niid.saveas(fqfn);
-%             catch ME
-%                 this.verifyEqual(ME.identifier, 'MATLAB:nonExistentField');
-%             end
-%             
-%             deleteExisting(fqfn); deleteExisting(fqfn0);
-%         end
-%         function test_saveasMgz(this)
-%             fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasMgz.mgz');
-%             deleteExisting(fqfn);
-%             
-%             this.testObj.saveas(fqfn);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             
-%             deleteExisting(fqfn);
-%         end
-%         function test_saveasMgh(this)
-%             fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasMgh.mgh');
-%             deleteExisting(fqfn);
-%             
-%             this.testObj.saveas(fqfn);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             
-%             deleteExisting(fqfn);
-%         end
-%         function test_saveasNoExtension(this)
-%             fqfp = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNoExtension');
-%             fqfn = [fqfp '.nii.gz'];
-%             deleteExisting(fqfn);
-%             
-%             this.testObj.saveas(fqfp);
-%             this.verifyTrue(lexist(fqfn, 'file'));
-%             savedas = mlfourd.NIfTId.load(fqfn);
-%             this.verifyEqual(savedas.img, this.testObj.img);
-%             
-%             deleteExisting(fqfn);
-%         end
+        function test_saveasAnalyzeHdr(this)
+            fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyzeHdr.hdr');
+            fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyzeHdr.img');
+            deleteExisting(fqfn); deleteExisting(fqfn0);
             
+            this.testObj.filetype = 0;
+            this.testObj.saveas(fqfn);
+            this.verifyTrue(lexist(fqfn, 'file'));
+            imgobj = mlniftitools.load_untouch_nii(fqfn);
+            this.verifyEqual(imgobj.filetype, 0);
+            
+            deleteExisting(fqfn); deleteExisting(fqfn0);
+        end
+        function test_saveasNifti1Hdr(this)
+            fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNifti1Hdr.hdr');
+            fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNifti1Hdr.img');
+            deleteExisting(fqfn); deleteExisting(fqfn0);
+            
+            niid = mlfourd.NIfTId.load([this.smallT1_fp '_nifti1.hdr']);
+            niid.saveas(fqfn);
+            this.verifyTrue(lexist(fqfn, 'file'));
+            niid2 = mlniftitools.load_untouch_nii(fqfn);
+            this.verifyEqual(niid2.filetype, 0);
+            
+            deleteExisting(fqfn); deleteExisting(fqfn0);
+        end
+        function test_saveasAnalyze4dHdr(this)
+            fqfn0 = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyze4dHdr.hdr');
+            fqfn  = fullfile(this.fslPath, 'Test_NIfTId_test_saveasAnalyze4dHdr.img');
+            deleteExisting(fqfn); deleteExisting(fqfn0);
+            
+            niid = mlfourd.NIfTId.load([this.smallT1_fp '_analyze4d.hdr']);
+            try
+                niid.saveas(fqfn);
+            catch ME
+                this.verifyEqual(ME.identifier, 'MATLAB:nonExistentField');
+            end
+            
+            deleteExisting(fqfn); deleteExisting(fqfn0);
+        end
+        function test_saveasMgz(this)
+            fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasMgz.mgz');
+            deleteExisting(fqfn);
+            
+            this.testObj.saveas(fqfn);
+            this.verifyTrue(lexist(fqfn, 'file'));
+            
+            deleteExisting(fqfn);
+        end
+        function test_saveasMgh(this)
+            fqfn = fullfile(this.fslPath, 'Test_NIfTId_test_saveasMgh.mgh');
+            deleteExisting(fqfn);
+            
+            this.testObj.saveas(fqfn);
+            this.verifyTrue(lexist(fqfn, 'file'));
+            
+            deleteExisting(fqfn);
+        end
+        function test_saveasNoExtension(this)
+            fqfp = fullfile(this.fslPath, 'Test_NIfTId_test_saveasNoExtension');
+            fqfn = [fqfp '.nii.gz'];
+            deleteExisting(fqfn);
+            
+            this.testObj.saveas(fqfp);
+            this.verifyTrue(lexist(fqfn, 'file'));
+            savedas = mlfourd.NIfTId.load(fqfn);
+            this.verifyEqual(savedas.img, this.testObj.img);
+            
+            deleteExisting(fqfn);
+        end
+        
         function test_char(this)
             this.verifyEqual(this.testObj.char, this.smallT1_fqfn);
         end
@@ -546,14 +574,37 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         %% test properties
         
         function test_bitpix(this)
-            this.verifyEqual(this.testObj.bitpix, 32);
+            this.verifyEqual(this.testObj.bitpix, 16);
+            this.verifyClass(this.testObj.img, 'int16');
+            
+            this.testObj.bitpix = 64;
+            this.verifyClass(this.testObj.img, 'double');
         end
         function test_creationDate(this)
-            this.verifyTrue(ischar(this.testObj.creationDate) && ...
-                            20 == length(this.testObj.creationDate));
+            this.verifyTrue(lstrfind(this.testObj.creationDate, datestr(now, 1)));
         end
         function test_datatype(this)
-            this.verifyEqual(this.testObj.datatype, 16);
+            this.verifyEqual(this.testObj.datatype, 4);
+            this.verifyClass(this.testObj.img, 'int16');
+            
+            this.testObj.datatype = 64;
+            this.verifyClass(this.testObj.img, 'double');
+            this.testObj.datatype = 'double';
+            this.verifyClass(this.testObj.img, 'double');
+            this.testObj.datatype = 'uint8';
+            this.verifyClass(this.testObj.img, 'uint8');
+            this.testObj.datatype = 'int16';
+            this.verifyClass(this.testObj.img, 'int16');
+            this.testObj.datatype = 'int32';
+            this.verifyClass(this.testObj.img, 'int32');
+            this.testObj.datatype = 'int64';
+            this.verifyClass(this.testObj.img, 'int64');
+            this.testObj.datatype = 'double';
+            this.verifyClass(this.testObj.img, 'double');
+            this.testObj.datatype = 'single';
+            this.verifyClass(this.testObj.img, 'single');
+            this.testObj.datatype = 16;
+            this.verifyClass(this.testObj.img, 'single');
         end
         function test_descrip(this)
             niid     = this.testObj;
@@ -602,26 +653,26 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_filetype(this)
             this.verifyEqual(this.testObj.filetype, 2);
         end
-%         function test_hdr(this)
-%             this.verifyEqual(this.testObj.hdr.hk.sizeof_hdr, 348);
-%             this.verifyEqual(this.testObj.hdr.dime.dim,    [3 128 128 63 1 1 1 1]);
-%             this.verifyEqual(this.testObj.hdr.dime.pixdim, [-1 2.003313 2.003313 2.424999 1.5 1 1 1], 'RelTol', 1e-4);
-%             this.verifyEqual(this.testObj.hdr.dime.vox_offset, 352);
-%             this.verifyEqual(this.testObj.hdr.dime.glmax, 821.72595214, 'RelTol', 1e-8);
-%             this.verifyEqual(this.testObj.hdr.dime.glmin, 0.9186493158, 'RelTol', 1e-8);
-%             this.verifyEqual(this.testObj.hdr.hist.qform_code, 1);
-%             this.verifyEqual(this.testObj.hdr.hist.sform_code, 1);
-%             this.verifyEqual(this.testObj.hdr.hist.quatern_b, 0);
-%             this.verifyEqual(this.testObj.hdr.hist.quatern_c, 1);
-%             this.verifyEqual(this.testObj.hdr.hist.quatern_d, 0);
-%             this.verifyEqual(this.testObj.hdr.hist.qoffset_x,  54572.2500000000, 'RelTol', 1e-8);
-%             this.verifyEqual(this.testObj.hdr.hist.qoffset_y, -55587.9296875000, 'RelTol', 1e-8);
-%             this.verifyEqual(this.testObj.hdr.hist.qoffset_z, -62698.3750000000, 'RelTol', 1e-8);
-%             this.verifyEqual(this.testObj.hdr.hist.srow_x, [-2.0033130645752 0 0 54572.25],      'RelTol', 1e-6);
-%             this.verifyEqual(this.testObj.hdr.hist.srow_y, [0 2.0033130645752 0 -55587.9296875], 'RelTol', 1e-6);
-%             this.verifyEqual(this.testObj.hdr.hist.srow_z, [0 0 2.42499995231628 -62698.375],    'RelTol', 1e-6);
-%             this.verifyEqual(this.testObj.hdr.hist.magic, 'n+1');
-%         end
+        function test_hdr(this)
+            this.verifyEqual(this.testObj.hdr.hk.sizeof_hdr, 348);
+            this.verifyEqual(this.testObj.hdr.dime.dim,    [3 128 128 63 1 1 1 1]);
+            this.verifyEqual(this.testObj.hdr.dime.pixdim, [-1 2.003313 2.003313 2.424999 1.5 1 1 1], 'RelTol', 1e-4);
+            this.verifyEqual(this.testObj.hdr.dime.vox_offset, 352);
+            this.verifyEqual(this.testObj.hdr.dime.glmax, 821.72595214, 'RelTol', 1e-8);
+            this.verifyEqual(this.testObj.hdr.dime.glmin, 0.9186493158, 'RelTol', 1e-8);
+            this.verifyEqual(this.testObj.hdr.hist.qform_code, 1);
+            this.verifyEqual(this.testObj.hdr.hist.sform_code, 1);
+            this.verifyEqual(this.testObj.hdr.hist.quatern_b, 0);
+            this.verifyEqual(this.testObj.hdr.hist.quatern_c, 1);
+            this.verifyEqual(this.testObj.hdr.hist.quatern_d, 0);
+            this.verifyEqual(this.testObj.hdr.hist.qoffset_x,  54572.2500000000, 'RelTol', 1e-8);
+            this.verifyEqual(this.testObj.hdr.hist.qoffset_y, -55587.9296875000, 'RelTol', 1e-8);
+            this.verifyEqual(this.testObj.hdr.hist.qoffset_z, -62698.3750000000, 'RelTol', 1e-8);
+            this.verifyEqual(this.testObj.hdr.hist.srow_x, [-2.0033130645752 0 0 54572.25],      'RelTol', 1e-6);
+            this.verifyEqual(this.testObj.hdr.hist.srow_y, [0 2.0033130645752 0 -55587.9296875], 'RelTol', 1e-6);
+            this.verifyEqual(this.testObj.hdr.hist.srow_z, [0 0 2.42499995231628 -62698.375],    'RelTol', 1e-6);
+            this.verifyEqual(this.testObj.hdr.hist.magic, 'n+1');
+        end
         function test_hdxml(this)
             this.verifyEqual(this.testObj.hdxml(1:12), '<nifti_image');
             this.verifyEqual(this.testObj.hdxml(end-1:end), '/>');
@@ -653,12 +704,12 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(this.testObj.label, 't1_default_on_ho_meanvol_default_161616fwhh');
         end
         function test_machine(this)
-            this.verifyEqual(this.testObj.machine.arch, 'maci64');
-            this.verifyEqual(this.testObj.machine.maxsize, 281474976710655);
-            this.verifyEqual(this.testObj.machine.endian, 'L');
+            this.verifyEqual(this.testObj.machine, 'ieee-le');
         end
         function test_mmppix(this)
-            this.verifyEqual(this.testObj.mmppix, [2.0033 2.0033 2.4250], 'RelTol', 1e-4);
+            pet = mlfourd.NIfTId(fullfile(this.dataroot, 'fdgv2r1_on_resolved_sumt.4dfp.ifh'));
+            this.verifyEqual(         pet.mmppix, [2.08626013 2.0862601 2.0312500], 'RelTol', 1e-4);            
+            this.verifyEqual(this.testObj.mmppix, [2.00 2.00 2.00], 'RelTol', 1e-4);
         end
         function test_negentropy(this)
             this.verifyEqual(this.testObj.negentropy, -0.00002075192819, 'RelTol', 1e-8);
@@ -742,6 +793,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.registry = mlfourd.UnittestRegistry.instance('initialize');
             this.registry.sessionFolder = 'mm01-020_p7377_2009feb5';
  			this.testObj_ = this.smallT1_niid; 
+            this.oriPath_ = pwd;
  		end 
  	end 
 
@@ -760,12 +812,14 @@ classdef Test_NIfTId < matlab.unittest.TestCase
     %% PRIVATE
     
     properties (Access = 'private')
+        oriPath_
         testObj_
     end
     
     methods (Access = private)
         function cleanupFiles(this)
             deleteExisting2(fullfile(this.fslPath, 'Test_NIfTId*'));
+            cd(this.oriPath_);
         end
         function verifyT1(this, niid, varargin)
             ip = inputParser;
@@ -800,9 +854,21 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hist.srow_x, [0 0.029666258022189 -0.999559879302979 83.664199829101562], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_y, [-1 0 0 1.656464843750000e+02], 'RelTol', 1e-6);
             this.verifyEqual(niid.hdr.hist.srow_z, [0 -0.999559879302979 -0.029666244983673 1.221617279052734e+02], 'RelTol', 1e-6);
-            this.verifyEqual(niid.hdr.hist.originator, [0 0 0], 'RelTol', 1e-6)
-            this.verifyTrue(niid.machine.maxsize > 1e14);
-            this.verifyEqual(niid.machine.endian, 'L');
+            this.verifyEqual(niid.hdr.hist.originator, [124 128 88], 'RelTol', 1e-6)
+            this.verifyEqual(niid.machine, 'ieee-le');
+            this.verifyEqual(sum(sum(sum(niid.img))), 1128125789);
+        end
+        function verifyEqualNIfTId(this, n1, n2)            
+            toignore = [mlfourd.NIfTId.EQUALN_IGNORES ...
+                {'filename' 'fileprefix' 'filesuffix' 'fqfilename' 'fqfileprefix' 'fqfn' 'fqfp' ...
+                'filetype' 'imagingInfo' 'orient' }];
+            props = properties(n1);
+            
+            for p = 1:length(props)
+                if (~lstrfind(props{p}, toignore))
+                    this.verifyEqual(n1.(props{p}), n2.(props{p}));
+                end
+            end
         end
     end
     

@@ -1,0 +1,1 @@
+mri_convert /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2/mri/rawavg.mgz /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2/mri/orig.mgz -rt cubic --conform

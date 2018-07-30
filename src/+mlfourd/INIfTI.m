@@ -1,4 +1,4 @@
-classdef INIfTI
+classdef (Abstract) INIfTI
 	%% INIFTI provide a minimal set of imaging properties, methods
 
 	%  $Revision$
@@ -8,21 +8,28 @@ classdef INIfTI
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.  Copyright 2015, 2017 John J. Lee.
     
-	properties (Abstract)        
+	properties (Abstract)  
+        hdr % See also:  mlfourd.ImagingInfo
+        img
+        
         bitpix 
         creationDate
         datatype
         descrip
         entropy
         hdxml
-        img
         label
         machine
         mmppix
         negentropy
-        orient
+        orient % Analyze 7.5 field := RADIOLOGICAL, NEUROLOGICAL; deprecated by NIfTI-1
+        originalType
         pixdim
-        seriesNumber        
+        seriesNumber
+        
+        logger
+        stack
+        viewer
     end 
     
 	methods (Abstract) 

@@ -1,0 +1,452 @@
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:10
+Executing: mkdir -p  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:10
+Executing: mkdir -p  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:10
+Executing: mkdir -p  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:10
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/scans/8/resources/DICOM/files" -m GET -b -a -s 6BD5FB6414676D8597911B0BBD3C7F85 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:14
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -r "https://cnda.wustl.edu/data/workflows/4604440?wrk:workflowData/comments=%7B%22assessorId%22:%22CNDA_E191506_freesurfer_20160926064508%22%7D&event_id=4604440" -m PUT -s 6BD5FB6414676D8597911B0BBD3C7F85 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/26 18:45:15
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED
+Executing: /data/CNDA/pipeline/catalog/Freesurfer/scripts/recon_all_from_params_file.sh  5.3-HCP-patch  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS/HYGLY28_VISIT_2.bashparams 
+
+--------------------------------------------------------------------------------------
++ VERSION=1
++ '[' 5.3-HCP-patch == -version ']'
++ '[' 5.3-HCP-patch == --version ']'
++ '[' 5.3-HCP-patch == -v ']'
++ FS_VERSION=5.3-HCP-patch
++ PARAMS_FILE=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS/HYGLY28_VISIT_2.bashparams
++ SCRIPTS_HOME=/data/CNDA/pipeline/scripts
++ case $FS_VERSION in
++ SETUP=/data/CNDA/pipeline/scripts/freesurfer53-patch_setup.sh
++ source /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS/HYGLY28_VISIT_2.bashparams
+++ workdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2
+++ logdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS
+++ rawdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW
+++ freesurferdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED
+++ freesurfer_subjectdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2
+++ freesurfer_tempdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/temp
+++ tempdir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp
+++ datestamp=20160926064508
+++ relaunch=false
+++ assessorId=CNDA_E191506_freesurfer_20160926064508
+++ paramsFile=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS/HYGLY28_VISIT_2.bashparams
+++ id=CNDA_E191506
+++ label=HYGLY28_VISIT_2
+++ project=CCIR_00754
+++ mailhost=mail.nrg.wustl.edu
+++ userfullname=J.Lee
+++ builddir=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch
+++ xnatserver=CNDA
+++ adminemail=cnda-ops@nrg.wustl.edu
+++ useremail=jjlee.wustl.edu@gmail.com
+++ workflowid=4604440
+++ recon_all_args='-qcache -all -hippo-subfields'
+++ scan_ids=("8")
+++ format=DICOM
+++ XNAT_CSRF=9870c3d3-bcfc-48cc-a890-484901c47b84
+++ environment=LOCAL
+++ email_csv_in=cnda-ops@nrg.wustl.edu
+++ use_manual_qc=0
+++ qc_rating_scale='&apos;'
+++ qc_rating=1
++ [[ -z -qcache -all -hippo-subfields ]]
++ RECON_ALL_ARGS='-s HYGLY28_VISIT_2 -sd /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED -qcache -all -hippo-subfields'
++ [[ false != true ]]
++ for t1 in '${scan_ids[*]}'
+++ ls /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8
+++ head -1
++ scan_file=HYGLY28.MR.CCIR-00700_CCIR-00754_Arbelaez.8.100.20160923.090544.1kuofv.dcm
++ RECON_ALL_ARGS='-s HYGLY28_VISIT_2 -sd /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED -qcache -all -hippo-subfields -i /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8/HYGLY28.MR.CCIR-00700_CCIR-00754_Arbelaez.8.100.20160923.090544.1kuofv.dcm'
++ source /data/CNDA/pipeline/scripts/freesurfer53-patch_setup.sh
+++ PACKAGES_DIR=/nrgpackages
+++ FREESURFER_HOME=/nrgpackages/tools/freesurfer53-patch
+++ '[' -z '' ']'
+++ source /nrgpackages/scripts/fsl5_setup.sh
++++ FSLDIR=/nrgpackages/tools/fsl5
++++ source /nrgpackages/tools/fsl5/etc/fslconf/fsl.sh
+++++ FSLOUTPUTTYPE=NIFTI_GZ
+++++ export FSLOUTPUTTYPE
+++++ FSLMULTIFILEQUIT=TRUE
+++++ export FSLMULTIFILEQUIT
+++++ FSLTCLSH=/nrgpackages/tools/fsl5/bin/fsltclsh
+++++ FSLWISH=/nrgpackages/tools/fsl5/bin/fslwish
+++++ export FSLTCLSH FSLWISH
+++++ FSLLOCKDIR=
+++++ FSLMACHINELIST=
+++++ FSLREMOTECALL=
+++++ export FSLLOCKDIR FSLMACHINELIST FSLREMOTECALL
+++++ FSLGECUDAQ=cuda.q
+++++ export FSLGECUDAQ
+++++ '[' -f /usr/local/etc/fslconf/fsl.sh ']'
+++++ '[' -f /etc/fslconf/fsl.sh ']'
+++++ '[' -f /data/CNDA/home/.fslconf/fsl.sh ']'
++++ PATH=/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
++++ export FSLDIR PATH LD_LIBRARY_PATH
+++ source /nrgpackages/tools/freesurfer53-patch/SetUpFreeSurfer.sh
++++ '[' -z /nrgpackages/tools/freesurfer53-patch ']'
++++ '[' -z ']'
++++ export SUBJECTS_DIR=/nrgpackages/tools/freesurfer53-patch/subjects
++++ SUBJECTS_DIR=/nrgpackages/tools/freesurfer53-patch/subjects
++++ '[' -z ']'
++++ export FUNCTIONALS_DIR=/nrgpackages/tools/freesurfer53-patch/sessions
++++ FUNCTIONALS_DIR=/nrgpackages/tools/freesurfer53-patch/sessions
++++ source /nrgpackages/tools/freesurfer53-patch/FreeSurferEnv.sh
+++++ VERSION='$Id: FreeSurferEnv.sh,v 1.50.2.2 2011/03/29 22:06:48 greve Exp $'
+++++ '[' 2 -gt 1 ']'
+++++ [[ 5.3-HCP-patch == \-\-\h\e\l\p ]]
+++++ [[ 5.3-HCP-patch == \-\h\e\l\p ]]
++++++ uname -s
+++++ os=Linux
+++++ export OS=Linux
+++++ OS=Linux
+++++ '[' -n '' ']'
+++++ output=1
+++++ [[ -z cnda ]]
+++++ [[ -z '' ]]
+++++ output=0
+++++ '[' -z /nrgpackages/tools/freesurfer53-patch ']'
+++++ '[' '!' -d /nrgpackages/tools/freesurfer53-patch ']'
+++++ [[ 0 == 1 ]]
+++++ '[' -z /nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin ']'
+++++ '[' -z '' ']'
+++++ export FS_OVERRIDE=0
+++++ FS_OVERRIDE=0
+++++ [[ -z '' ]]
+++++ export FSFAST_HOME=/nrgpackages/tools/freesurfer53-patch/fsfast
+++++ FSFAST_HOME=/nrgpackages/tools/freesurfer53-patch/fsfast
+++++ [[ -z /nrgpackages/tools/freesurfer53-patch/subjects ]]
+++++ [[ 0 != 0 ]]
+++++ [[ -z '' ]]
+++++ [[ -z '' ]]
+++++ '[' -n '' ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/bin ']'
+++++ export MINC_BIN_DIR=/nrgpackages/tools/freesurfer53-patch/mni/bin
+++++ MINC_BIN_DIR=/nrgpackages/tools/freesurfer53-patch/mni/bin
+++++ export MNI_DIR=/nrgpackages/tools/freesurfer53-patch/mni
+++++ MNI_DIR=/nrgpackages/tools/freesurfer53-patch/mni
+++++ [[ -z '' ]]
+++++ [[ -z '' ]]
+++++ '[' -n '' ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib ']'
+++++ export MINC_LIB_DIR=/nrgpackages/tools/freesurfer53-patch/mni/lib
+++++ MINC_LIB_DIR=/nrgpackages/tools/freesurfer53-patch/mni/lib
+++++ [[ -z '' ]]
+++++ [[ -z '' ]]
+++++ '[' -n '' ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/data ']'
+++++ export MNI_DATAPATH=/nrgpackages/tools/freesurfer53-patch/mni/data
+++++ MNI_DATAPATH=/nrgpackages/tools/freesurfer53-patch/mni/data
+++++ [[ -z '' ]]
+++++ '[' -n /nrgpackages/tools/fsl5 ']'
+++++ export FSL_DIR=/nrgpackages/tools/fsl5
+++++ FSL_DIR=/nrgpackages/tools/fsl5
+++++ export FREESURFER_HOME=/nrgpackages/tools/freesurfer53-patch
+++++ FREESURFER_HOME=/nrgpackages/tools/freesurfer53-patch
+++++ export LOCAL_DIR=/nrgpackages/tools/freesurfer53-patch/local
+++++ LOCAL_DIR=/nrgpackages/tools/freesurfer53-patch/local
+++++ for d in '"$FSFAST_HOME"' '"$SUBJECTS_DIR"'
+++++ '[' '!' -d /nrgpackages/tools/freesurfer53-patch/fsfast ']'
+++++ for d in '"$FSFAST_HOME"' '"$SUBJECTS_DIR"'
+++++ '[' '!' -d /nrgpackages/tools/freesurfer53-patch/subjects ']'
+++++ [[ -z '' ]]
+++++ export FSF_OUTPUT_FORMAT=nii.gz
+++++ FSF_OUTPUT_FORMAT=nii.gz
+++++ [[ 0 == 1 ]]
+++++ [[ -z '' ]]
+++++ export FMRI_ANALYSIS_DIR=/nrgpackages/tools/freesurfer53-patch/fsfast
+++++ FMRI_ANALYSIS_DIR=/nrgpackages/tools/freesurfer53-patch/fsfast
+++++ SUF=/data/CNDA/home/matlab/startup.m
+++++ '[' '!' -e /data/CNDA/home/matlab/startup.m ']'
++++++ grep FSFAST_HOME /data/CNDA/home/matlab/startup.m
++++++ wc -l
+++++ tmp1=1
++++++ grep FMRI_ANALYSIS_DIR /data/CNDA/home/matlab/startup.m
++++++ wc -l
+++++ tmp2=0
++++++ grep FREESURFER_HOME /data/CNDA/home/matlab/startup.m
++++++ wc -l
+++++ tmp3=1
+++++ [[ 1 == 0 ]]
+++++ [[ 0 == 1 ]]
+++++ '[' -z '' ']'
+++++ '[' -n /nrgpackages/tools/freesurfer53-patch/mni/bin ']'
+++++ '[' '!' -d /nrgpackages/tools/freesurfer53-patch/mni/bin ']'
+++++ '[' -n /nrgpackages/tools/freesurfer53-patch/mni/lib ']'
+++++ '[' '!' -d /nrgpackages/tools/freesurfer53-patch/mni/lib ']'
+++++ '[' -z '' ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.8 ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib/../Library/Perl/Updates/5.10.0 ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib/../System/Library/Perl/5.8.6 ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib/../System/Library/Perl/5.8.1 ']'
+++++ '[' -e /nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.5 ']'
+++++ export MNI_PERL5LIB=/nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.5
+++++ MNI_PERL5LIB=/nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.5
+++++ '[' -z '' ']'
+++++ export PERL5LIB=/nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.5
+++++ PERL5LIB=/nrgpackages/tools/freesurfer53-patch/mni/lib/perl5/5.8.5
+++++ '[' -z '' ']'
+++++ '[' -n /nrgpackages/tools/freesurfer53-patch/mni/bin ']'
+++++ PATH=/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++++ '[' -d /nrgpackages/tools/freesurfer53-patch/lib/misc/bin ']'
+++++ '[' -d /nrgpackages/tools/freesurfer53-patch/lib/misc/lib ']'
+++++ [[ 0 == 1 ]]
+++++ '[' -d /nrgpackages/tools/freesurfer53-patch/bin/freeview.app ']'
+++++ '[' -n '' ']'
+++++ [[ 0 == 1 ]]
+++++ '[' -n /nrgpackages/tools/fsl5 ']'
+++++ export FSLDIR=/nrgpackages/tools/fsl5
+++++ FSLDIR=/nrgpackages/tools/fsl5
+++++ export FSL_BIN=/nrgpackages/tools/fsl5/bin
+++++ FSL_BIN=/nrgpackages/tools/fsl5/bin
+++++ '[' '!' -d /nrgpackages/tools/fsl5/bin ']'
+++++ '[' -e /nrgpackages/tools/fsl5/etc/fslconf/fsl.sh ']'
+++++ source /nrgpackages/tools/fsl5/etc/fslconf/fsl.sh
++++++ FSLOUTPUTTYPE=NIFTI_GZ
++++++ export FSLOUTPUTTYPE
++++++ FSLMULTIFILEQUIT=TRUE
++++++ export FSLMULTIFILEQUIT
++++++ FSLTCLSH=/nrgpackages/tools/fsl5/bin/fsltclsh
++++++ FSLWISH=/nrgpackages/tools/fsl5/bin/fslwish
++++++ export FSLTCLSH FSLWISH
++++++ FSLLOCKDIR=
++++++ FSLMACHINELIST=
++++++ FSLREMOTECALL=
++++++ export FSLLOCKDIR FSLMACHINELIST FSLREMOTECALL
++++++ FSLGECUDAQ=cuda.q
++++++ export FSLGECUDAQ
++++++ '[' -f /usr/local/etc/fslconf/fsl.sh ']'
++++++ '[' -f /etc/fslconf/fsl.sh ']'
++++++ '[' -f /data/CNDA/home/.fslconf/fsl.sh ']'
+++++ export FSLOUTPUTTYPE=NIFTI_GZ
+++++ FSLOUTPUTTYPE=NIFTI_GZ
+++++ '[' -e /usr/bin/display ']'
+++++ export FSLDISPLAY=/usr/bin/display
+++++ FSLDISPLAY=/usr/bin/display
+++++ '[' -e /usr/bin/convert ']'
+++++ export FSLCONVERT=/usr/bin/convert
+++++ FSLCONVERT=/usr/bin/convert
+++++ '[' -n /nrgpackages/tools/fsl5/bin ']'
+++++ PATH=/nrgpackages/tools/fsl5/bin:/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++++ [[ 0 == 1 ]]
+++++ '[' -d /nrgpackages/tools/freesurfer53-patch/tktools ']'
+++++ PATH=/nrgpackages/tools/freesurfer53-patch/tktools:/nrgpackages/tools/fsl5/bin:/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++++ export PATH=/nrgpackages/tools/freesurfer53-patch/bin:/nrgpackages/tools/freesurfer53-patch/fsfast/bin:/nrgpackages/tools/freesurfer53-patch/tktools:/nrgpackages/tools/fsl5/bin:/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++++ PATH=/nrgpackages/tools/freesurfer53-patch/bin:/nrgpackages/tools/freesurfer53-patch/fsfast/bin:/nrgpackages/tools/freesurfer53-patch/tktools:/nrgpackages/tools/fsl5/bin:/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++++ export FIX_VERTEX_AREA=
+++++ FIX_VERTEX_AREA=
+++++ return 0
+++ QA_SCRIPTS=/nrgpackages/tools/freesurfer53-patch/QAtools
+++ RECON_CHECKER_SCRIPTS=/nrgpackages/tools/freesurfer53-patch/QAtools/data_checker
+++ PATH=/nrgpackages/tools/freesurfer53-patch/QAtools/data_checker:/nrgpackages/tools/freesurfer53-patch/QAtools:/nrgpackages/tools/freesurfer53-patch/bin:/nrgpackages/tools/freesurfer53-patch/fsfast/bin:/nrgpackages/tools/freesurfer53-patch/tktools:/nrgpackages/tools/fsl5/bin:/nrgpackages/tools/freesurfer53-patch/mni/bin:/nrgpackages/tools/fsl5/bin:/tmp/1962608.1.cnda_standard.q:/nrgpackages/tools/maven3/bin:/nrgpackages/tools/dcmtk/bin:/nrgpackages/tools/xnat-tools:/nrgpackages/tools/nrg-tools:/nrgpackages/tools/nil-tools:/nrgpackages/tools/nilsrc/TRX:/nrgpackages/tools/ImageMagick/bin:/nrgpackages/tools/mricron:/nrgpackages/tools/dinifti:/nrgpackages/scripts:/nrgpackages/sge_root/bin/lx24-amd64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/puppet/bin:/usr/sbin:/data/CNDA/pipeline/bin:/data/CNDA/home/dicomTools/dicom/bin:/data/CNDA/home/bin
+++ export PATH FREESURFER_HOME
++ /nrgpackages/tools/freesurfer53-patch/bin/recon-all -s HYGLY28_VISIT_2 -sd /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED -qcache -all -hippo-subfields -i /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8/HYGLY28.MR.CCIR-00700_CCIR-00754_Arbelaez.8.100.20160923.090544.1kuofv.dcm
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+rm: No match.
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:54:57
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp
+Executing: /data/CNDA/pipeline/catalog/Freesurfer/scripts/stats2xml_fs5.3.pl -p CCIR_00754 -x CNDA_E191506 -t Freesurfer -f CNDA_E191506_freesurfer_20160926064508 -m "8"  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2/stats 
+
+--------------------------------------------------------------------------------------
+No creation time found in /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2/stats/aseg.stats; using dummy timestamp.
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:54:58
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -u ac097260-d771-4a0b-ba25-d1712d7d8c02 -p ######## -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/assessors/CNDA_E191506_freesurfer_20160926064508?inbody=true&overwrite=true&event_id=4604440" -l CNDA_E191506_freesurfer5.xml -m PUT 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:06
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -u ac097260-d771-4a0b-ba25-d1712d7d8c02 -p ######## -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/assessors/CNDA_E191506_freesurfer_20160926064508/out/resources/DATA?event_id=4604440" -m PUT 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:09
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -u ac097260-d771-4a0b-ba25-d1712d7d8c02 -p ######## -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/assessors/CNDA_E191506_freesurfer_20160926064508/out/resources/LOG?event_id=4604440" -m PUT 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:11
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -u ac097260-d771-4a0b-ba25-d1712d7d8c02 -p ######## -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/assessors/CNDA_E191506_freesurfer_20160926064508/out/resources/SNAPSHOTS?event_id=4604440" -m PUT 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:12
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp
+Executing: rm -r -f  * 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:12
+WorkDirectory /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp
+Executing: mv  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED/HYGLY28_VISIT_2  . 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:13
+Executing: /data/CNDA/pipeline/xnat-tools/XnatDataClient -u ac097260-d771-4a0b-ba25-d1712d7d8c02 -p ######## -r "https://cnda.wustl.edu/data/experiments/CNDA_E191506/assessors/CNDA_E191506_freesurfer_20160926064508/resources/DATA/files?overwrite=true&label=DATA&reference=/data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp&event_id=4604440" -m PUT 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:33
+Executing: rm -r -f  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/temp 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:34
+Executing: rm -r -f  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW 
+
+--------------------------------------------------------------------------------------
+
+-----------------------------nrglab08.nrg.mir----------------
+2016/09/27 10:55:35
+Executing: rm -f  /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/LOGS/HYGLY28_VISIT_2.bashparams 
+
+--------------------------------------------------------------------------------------

@@ -1,5 +1,7 @@
-classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
-	%% INNERNIFTIC  
+classdef InnerNIfTIc < mlfourd.InnerNIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+	%% INNERNIFTIC supplies composite INIfTI objects to AbstractNIfTIComponent.  It also forms a composite
+    %  design pattern with decorators InnerNIfTId, which supplies composite INIfTI objects to AbstractNIfTIComponent.
+    %  InnerNIfTIc supports cell and mlpatterns.CellComposite.
 
 	%  $Revision$
  	%  was created 15-Jan-2016 03:04:23
@@ -11,27 +13,9 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
     properties (Dependent)
         noclobber
         
-        ext        %   Legacy variable for mlfourd.JimmyShenInterface
-        filetype   %   0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
-        hdr        %   Tip: to change the data type, set nii.hdr.dime.datatype and nii.hdr.dime.bitpix to:
-                   %     0 None                     (Unknown bit per voxel)  % DT_NONE, DT_UNKNOWN 
-                   %     1 Binary                        (ubit1, bitpix=1)   % DT_BINARY 
-                   %     2 Unsigned char        (uchar or uint8, bitpix=8)   % DT_UINT8, NIFTI_TYPE_UINT8 
-                   %     4 Signed short                  (int16, bitpix=16)  % DT_INT16, NIFTI_TYPE_INT16 
-                   %     8 Signed integer                (int32, bitpix=32)  % DT_INT32, NIFTI_TYPE_INT32 
-                   %    16 Floating point    (single or float32, bitpix=32)  % DT_FLOAT32, NIFTI_TYPE_FLOAT32 
-                   %    32 Complex, 2 float32      (Use float32, bitpix=64)  % DT_COMPLEX64, NIFTI_TYPE_COMPLEX64
-                   %    64 Double precision  (double or float64, bitpix=64)  % DT_FLOAT64, NIFTI_TYPE_FLOAT64 
-                   %   128 uint RGB                  (Use uint8, bitpix=24)  % DT_RGB24, NIFTI_TYPE_RGB24 
-                   %   256 Signed char           (schar or int8, bitpix=8)   % DT_INT8, NIFTI_TYPE_INT8 
-                   %   511 Single RGB              (Use float32, bitpix=96)  % DT_RGB96, NIFTI_TYPE_RGB96
-                   %   512 Unsigned short               (uint16, bitpix=16)  % DT_UNINT16, NIFTI_TYPE_UNINT16 
-                   %   768 Unsigned integer             (uint32, bitpix=32)  % DT_UNINT32, NIFTI_TYPE_UNINT32 
-                   %  1024 Signed long long              (int64, bitpix=64)  % DT_INT64, NIFTI_TYPE_INT64
-                   %  1280 Unsigned long long           (uint64, bitpix=64)  % DT_UINT64, NIFTI_TYPE_UINT64 
-                   %  1536 Long double, float128   (Unsupported, bitpix=128) % DT_FLOAT128, NIFTI_TYPE_FLOAT128 
-                   %  1792 Complex128, 2 float64   (Use float64, bitpix=128) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
-                   %  2048 Complex256, 2 float128  (Unsupported, bitpix=256) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
+        ext        % Legacy variable for mlfourd.JimmyShenInterface
+        filetype   % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
+        hdr        % See also:  mlfourd.ImagingInfo
         img
         originalType
         untouch
@@ -50,7 +34,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
         pixdim
         seriesNumber
         
-        lexistFile
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -151,9 +134,6 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             g = this.innerCellComp_.getter('seriesNumber');
         end
         
-        function s    = get.lexistFile(this)
-            s = this.innerCellComp_.getter('lexistFile');
-        end
         function s    = get.logger(this)
             s = this.innerCellComp_.getter('logger');
         end
@@ -310,9 +290,14 @@ classdef InnerNIfTIc < mlfourd.NIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.I
             fqfns = this.innerCellComp_.fevalOut('fqfilename');
             fqfns = [fqfns(2:end) varargin{:}];
             first.fslview(fqfns{:});
+        end        
+        function e = lexistFile(this)
+            e = this.innerCellComp_.fevalOut('lexist');
         end
         
  		function this = InnerNIfTIc(varargin)
+            
+            % copy-ctor
             if (nargin == 1 && isa(varargin{1}, 'mlfourd.InnerNIfTIc'))
                 this.innerCellComp_ = varargin{1}.innerCellComp_;
                 return

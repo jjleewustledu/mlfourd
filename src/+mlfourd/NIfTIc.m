@@ -99,31 +99,50 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                 case 'char'
                     this.innerNIfTI_.innerCellComp_ = ...
                         this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj)); % varargin{:}?
+                    this = this.adjustFieldsFromInputParser(ip);
                 case 'struct'
                     this.innerNIfTI_.innerCellComp_ = ...
                         this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj)); % varargin{:}?
-                case 'mlio.IOInterface'
-                case 'mlfourd.INIfTId'
-                    %% dedecorates
-                    this.innerNIfTI_.innerCellComp_ = ...
-                        this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
-                case 'mlfourd.NIfTIInterface' 
-                    %% legacy
-                    warning('off', 'MATLAB:structOnObject');
-                    this = NIfTIc(struct(ip.Results.obj));
-                    warning('on', 'MATLAB:structOnObject');
+                    this = this.adjustFieldsFromInputParser(ip);
                 otherwise
+                    if (isa(ip.Results.obj, 'mlio.IOInterface'))
+                        this = this.adjustFieldsFromInputParser(ip);
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlfourd.INIfTId'))
+                        %% dedecorates
+                        this.innerNIfTI_.innerCellComp_ = ...
+                            this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
+                        %% legacy
+                        warning('off', 'MATLAB:structOnObject');
+                        this = NIfTIc(struct(ip.Results.obj));
+                        warning('on', 'MATLAB:structOnObject');
+                        this = this.adjustFieldsFromInputParser(ip);
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
+                    end
                     if (isnumeric(ip.Results.obj))
                         this.innerNIfTI_.innerCellComp_ = ...
                             this.innerNIfTI_.innerCellComp_.add(NIfTId(ip.Results.obj));
-                    elseif (iscell(ip.Results.obj)) 
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
+                    end
+                    if (iscell(ip.Results.obj)) 
                         %% dedecorates
                         for idx = 1:length(ip.Results.obj)
                             this.innerNIfTI_.innerCellComp_ = ...
                                 this.innerNIfTI_.innerCellComp_.add( ...
                                     NIfTId(this.reduceImagingContexts(ip.Results.obj{idx})));
                         end
-                    elseif (isa(ip.Results.obj, 'mlpatterns.Composite')) 
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlpatterns.Composite')) 
                         %% dedecorates
                         iter = ip.Results.obj.createIterator;
                         while (iter.hasNext)   
@@ -131,12 +150,12 @@ classdef NIfTIc < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTIc
                                 this.innerNIfTI_.innerCellComp_.add( ...
                                     NIfTId(this.reduceImagingContexts(iter.next)));
                         end
-                    else
-                        error('mlfourd:unsupportedSwitchcase', ...
-                            'class(NIfTIc.ctor.ip.Results.obj) -> %s', class(ip.Results.obj));
+                        this = this.adjustFieldsFromInputParser(ip);
+                        return
                     end
+                    error('mlfourd:unsupportedSwitchcase', ...
+                        'class(NIfTIc.ctor.ip.Results.obj) -> %s', class(ip.Results.obj));
             end
-            this = this.adjustFieldsFromInputParser(ip);
  		end
     end 
     

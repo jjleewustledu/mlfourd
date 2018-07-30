@@ -1,5 +1,7 @@
 classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
-	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern
+	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern using InnerNIfTId, InnerNIfTIc and common interface
+    %  INIfTI.  See also concrete implementations mlfourd.NIfTId and mlfourd.NIfTIc.
+    %  See also:  mlfourdfp.InnerFourdfp and mlsurfer.InnerMGH.
 
 	%  $Revision$
  	%  was created 20-Jan-2016 00:28:23
@@ -7,7 +9,11 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
  	%  last modified $LastChangedDate$
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
- 	
+ 
+    properties (Constant)
+        EQUALN_IGNORES = ...
+            {'creationDate' 'descrip' 'hdr' 'hdxml' 'imagingInfo' 'label' 'logger' 'originalType' 'regular' 'stack' 'untouch'}
+    end
     
 	properties (Dependent) 
         filename
@@ -41,11 +47,35 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         pixdim
         seriesNumber
         
-        lexistFile
+        imagingInfo
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
         viewer
+    end
+    
+    methods (Static)        
+        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
+            tf = true; 
+            msg = '';
+            flds = fieldnames(obj1);
+            for f = 1:length(flds)
+                if (~evalIgnore(flds{f}))
+                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
+                        tf = false;
+                        msg = sprintf('AbstractNIfTIComponent.checkFields:  mismatch at field %s.', flds{f});
+                        warning('mlfourd:mismatchedField', msg); %#ok<SPWRN>
+                        if (strcmp(flds{f}, 'img'))
+                            disp(size(obj1.img));
+                            disp(size(obj2.img));
+                            continue
+                        end
+                        disp(obj1.(flds{f}));
+                        disp(obj2.(flds{f}));
+                    end
+                end
+            end
+        end 
     end
     
     methods 
@@ -206,8 +236,8 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             num = this.innerNIfTI_.seriesNumber;
         end
         
-        function tf   = get.lexistFile(this)
-            tf = this.innerNIfTI_.lexistFile;
+        function ii   = get.imagingInfo(this)
+            ii = this.innerNIfTI_.imagingInfo;
         end
         function im   = get.logger(this)
             im = this.innerNIfTI_.logger;
@@ -229,34 +259,42 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         end
         function this = set.viewer(this, v)
             this.innerNIfTI_.viewer = v;
-        end        
+        end         
+                
+        %% mlpatterns.Composite, an interface
         
-        %% mlpatterns.Composite
-        
-        function this = add(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.add(varargin{:});
+        function this = add(~, ~) %#ok<STOUT>
+            error('mlfourd:notImplemented', 'AbstractNIfTIComponent.add should not be called');
         end        
-        function iter = createIterator(this)
-            iter = this.innerNIfTI_.createIterator;
+        function iter = createIterator(~) %#ok<STOUT>
+            error('mlfourd:notImplemented', 'AbstractNIfTIComponent.createIterator should not be called');
         end
         function idx  = find(this, obj)
-            idx = this.innerNIfTI_.find(obj);
+            if (this.isequal(obj))
+                idx = 1;
+                return
+            end
+            idx = [];
         end
         function obj  = get(this, idx)
-            obj = this.innerNIfTI_.get(idx);
+            if (idx == 1)
+                obj = this;
+                return
+            end
+            obj = [];
         end
         function tf   = isempty(this)
-            tf = this.innerNIfTI_.isempty;
+            tf = isempty(this.img);
         end
-        function len  = length(this)
-            len = this.innerNIfTI_.length;
+        function len  = length(~)
+            len = 1;
         end
-        function this = rm(this, idx)
-            this.innerNIfTI_ = this.innerNIfTI_.rm(idx);
+        function        rm(~, ~)
+            error('mlfourd:notImplemented', 'AbstractNIfTIComponent.rm should not be called');
         end
-        function s    = csize(this)   
-            s = this.innerNIfTI_.csize;
-        end    
+        function s    = csize(~)
+            s = [1 1];
+        end   
         
         %% 
         
@@ -305,11 +343,11 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function        hist(this, varargin)
             this.innerNIfTI_.hist(varargin{:});
         end        
+        function tf   = lexist(this)
+            tf = this.innerNIfTI_.lexist;
+        end
         function m    = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
-        end
-        function o    = ones(this)
-            o = this.innerNIfTI_.ones;
         end
         function this = prod(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
@@ -342,9 +380,39 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
-        function z    = zeros(this)
-            z = this.innerNIfTI_.zeros;
-        end 
+        
+        %% support for isequal[n]
+        
+        function [tf,msg] = classesequal(this, c)
+            tf  = true; 
+            msg = '';
+            if (~isa(c, class(this)))
+                tf  = false;
+                msg = sprintf('AbstractNIfTIComponent.classesequal:  class(this)-> %s but class(compared)->%s', class(this), class(c));
+                warning('mlfourd:mismatchedClass', msg); %#ok<SPWRN>
+            end
+        end
+        function [tf,msg] = fieldsequaln(this, obj)
+            [tf,msg] = mlfourd.AbstractNIfTIComponent.checkFields( ...
+                this, obj, @(x) lstrfind(x, this.EQUALN_IGNORES));
+        end
+        function [tf,msg] = hdrsequaln(this, obj)
+            tf = true; 
+            msg = '';
+            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
+            import mlfourd.*;
+            [tf,msg] = AbstractNIfTIComponent.checkFields( ...
+                this.hdr.hk, obj.hdr.hk,  @(x) lstrfind(x, this.EQUALN_IGNORES));
+            if (tf)
+                [tf,msg] = AbstractNIfTIComponent.checkFields( ...
+                    this.hdr.dime, obj.hdr.dime, @(x) lstrfind(x, this.EQUALN_IGNORES));
+                if (tf)
+                    [tf,msg] = AbstractNIfTIComponent.checkFields( ...
+                        this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, this.EQUALN_IGNORES));
+                end
+            end
+        end
+        
     end
     
     %% PROTECTED
@@ -352,7 +420,6 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
     methods (Access = protected)
  		function this = AbstractNIfTIComponent(inner)
             assert(isa(inner, 'mlfourd.NIfTIIO') && ...
-                   isa(inner, 'mlfourd.JimmyShenInterface') && ...
                    isa(inner, 'mlfourd.INIfTI'));
             this.innerNIfTI_ = inner;
  		end

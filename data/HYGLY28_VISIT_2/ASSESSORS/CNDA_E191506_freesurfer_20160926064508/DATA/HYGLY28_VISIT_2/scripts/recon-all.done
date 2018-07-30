@@ -1,0 +1,13 @@
+------------------------------
+SUBJECT HYGLY28_VISIT_2
+START_TIME Mon Sep 26 18:45:15 CDT 2016
+END_TIME Tue Sep 27 10:54:56 CDT 2016
+RUNTIME_HOURS 16.161
+USER cnda
+HOST nrglab08.nrg.mir
+PROCESSOR x86_64
+OS Linux
+UNAME Linux nrglab08.nrg.mir 2.6.32-573.12.1.el6.x86_64 #1 SMP Tue Dec 15 21:19:08 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
+VERSION $Id: recon-all,v 1.482 2014/08/26 20:36:16 nicks Exp $
+CMDPATH /nrgpackages/tools/freesurfer53-patch/bin/recon-all
+CMDARGS -s HYGLY28_VISIT_2 -sd /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/PROCESSED -qcache -all -hippo-subfields -i /data/CNDA/build/CCIR_00754/20160926_184458/restlaunch/HYGLY28_VISIT_2/RAW/8/HYGLY28.MR.CCIR-00700_CCIR-00754_Arbelaez.8.100.20160923.090544.1kuofv.dcm

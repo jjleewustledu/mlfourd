@@ -14,16 +14,88 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         FILETYPE      = 'NIFTI_GZ'
         FILETYPE_EXT  = '.nii.gz'
         NIFTI_EXT     = '.nii.gz'
-        SUPPORTED_EXT = {'.nii.gz' '.nii'}
+        SUPPORTED_EXT = {'.nii' '.nii.gz'}
     end
     
-    methods (Static) 
-        function this = load(varargin)
-            %% LOAD aliases the ctor.
+    methods (Static)
+        function this = construct(fn, varargin)
+            this = mlfourd.NIfTId(fn, varargin{:});
+        end
+        function inn  = constructInner(obj, varargin)
+            if (~ischar(obj))
+                inn = mlfourd.InnerNIfTId;
+                return
+            end
             
-            this = mlfourd.NIfTId(varargin{:});
+            [~,~,e] = myfileparts(obj);            
+            switch (e)
+                case mlfourdfp.Fourdfp.SUPPORTED_EXT
+                    inn = mlfourdfp.InnerFourdfp( ...
+                        mlfourdfp.FourdfpInfo(obj, varargin{:}), varargin{:});
+                case mlfourd.NIfTId.SUPPORTED_EXT
+                    inn = mlfourd.InnerNIfTId( ...
+                        mlfourd.NIfTIInfo(obj, varargin{:}), varargin{:});
+                case mlsurfer.MGH.SUPPORTED_EXT 
+                    inn = mlsurfer.InnerMGH( ...
+                        mlsurfer.MGHInfo(obj, varargin{:}), varargin{:});
+                otherwise                    
+                    inn = mlfourd.InnerNIfTId( ...
+                        [myfileprefix(obj) mlfourd.NIfTIInfo.NIFTI_EXT], varargin{:});
+            end
+        end
+        function this = load(fn, varargin)
+            %% LOAD is a factory method having homology with decorators of NIfTId.
+            
+            this = mlfourd.NIfTId(fn, varargin{:});
         end 
-    end 
+        function [tf,e] = supportedFileformExists(fn)
+            %% SUPPORTEDFILEFORMEXISTS searches for an existing filename.  If not found it attempts to find 
+            %  the same fileprefix with alternative extension for supported image formats:  drawn from
+            %  {mlfourdfp.Fourdfp.SUPPORTED_EXT mlfourd.NIfTId.SUPPORTED_EXT mlsurfer.MGH.SUPPORTED_EXT},
+            %  respecting their enumerated cardinality.
+            %  @param fn is the filename queried.
+            %  @return tf := filename or fileprefix with support image format found.
+            %  @return e  := found image format expressed as file extension.            
+            
+            % ff exists
+            if (lexist(fn, 'file'))
+                tf = true;
+                [~,~,e] = myfileparts(fn);
+                return
+            end
+            
+            % ff doesn't exist as an explicit file; check if there exists a variation of filesuffix           
+            [p,f] = myfileparts(fn);
+            e3s = mlfourdfp.Fourdfp.SUPPORTED_EXT;
+            for ie = 1:length(e3s)
+                if (lexist(fullfile(p, [f e3s{ie}]), 'file'))
+                    tf = true;
+                    e  = e3s{ie};
+                    return
+                end
+            end
+            e1s = mlfourd.NIfTId.SUPPORTED_EXT;
+            for ie = 1:length(e1s)
+                if (lexist(fullfile(p, [f e1s{ie}]), 'file'))
+                    tf = true;
+                    e  = e1s{ie};
+                    return
+                end
+            end
+            e2s = mlsurfer.MGH.SUPPORTED_EXT;
+            for ie = 1:length(e2s)
+                if (lexist(fullfile(p, [f e2s{ie}]), 'file'))
+                    tf = true;
+                    e  = e2s{ie};
+                    return
+                end
+            end
+            
+            % ff and variants don't exist at all on the filesystem
+            tf = false;         
+            [~,~,e] = myfileparts(fn);
+        end
+    end
     
     methods 
         function niid = clone(this, varargin)
@@ -98,7 +170,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
         end   
         
-        function this = NIfTId(varargin)
+        function this = NIfTId(obj, varargin)
             %% NIfTId  
             %  @ param [obj] may be empty, a filename, numerical, INIfTI instantiation, struct compliant with 
             %  package mlniftitools; it constructs the class instance. 
@@ -110,10 +182,10 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             %  @ throws mlfourd:invalidCtorObj, mlfourd:fileTypeNotSupported, mlfourd:fileNotFound, mlfourd:unsupportedParamValue, 
             %  mlfourd:unknownSwitchCase, mlfourd:unsupportedDatatype, mfiles:unixException, MATLAB:assertion:failed.
             
-            this = this@mlfourd.AbstractNIfTIComponent(mlfourd.InnerNIfTId);
-            if (0 == nargin); return; end
-            
             import mlfourd.*;
+            this = this@mlfourd.AbstractNIfTIComponent( ...
+                NIfTId.constructInner(obj, varargin{:}));
+            
             ip = inputParser;
             addOptional( ip, 'obj',          [], @NIfTId.assertCtorObj); % compare to NIfTIc
             addParameter(ip, 'bitpix',       [], @isnumeric);
@@ -135,58 +207,50 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             addParameter(ip, 'separator',    '', @ischar);
             addParameter(ip, 'circshiftK', 0,    @isnumeric); % see also mlfourd.ImagingInfo
             addParameter(ip, 'N', true,          @islogical); % 
-            parse(ip, varargin{:});
+            addParameter(ip, 'imagingInfo',  [], @(x) isa(x, 'mlfourd.ImagingInfo') || isempty(x));
+            parse(ip, obj, varargin{:});
             
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
             switch (class(ip.Results.obj))
                 case 'char'
                     if (NIfTId.supportedFileformExists(ip.Results.obj))
-                        this = NIfTId.load_existing( ...
-                            ip.Results.obj, ...
-                            'circshiftK', ip.Results.circshiftK, 'N', ip.Results.N, 'datatype', ip.Results.datatype);
-                    else
-                        [p,f] = myfileparts(ip.Results.obj);
-                        this.fqfilename = fullfile(p, [f NIfTId.NIFTI_EXT]);
-                        this = this.populateLogger;
-                        this = this.adjustFieldsFromInputParser(ip);
+                        this = NIfTId(this.innerNIfTI_.asStruct);
                     end
                 case 'struct' 
                     %% base case for recursion using Jimmy Shen's mlniftitools
-                    this = this.adjustInnerNIfTI(ip.Results.obj);
-                    this = this.populateLogger;
-                    this = this.adjustFieldsFromInputParser(ip);
-                case 'mlio.IOInterface'
-                    this = NIfTId(ip.Results.obj.fqfilename);
-                case 'mlfourd.INIfTId'
-                    this = this.adjustInnerNIfTIWithINIfTId(ip.Results.obj);
-                    this = this.populateLogger;
-                    this = this.adjustFieldsFromInputParser(ip);
-                case 'mlfourd.INIfTIc'
-                    this = NIfTId(ip.Results.obj.get(1));
-                case 'mlfourd.NIfTIInterface' 
-                    %% legacy
-                    warning('off', 'MATLAB:structOnObject');
-                    this = NIfTId(struct(ip.Results.obj));
-                    warning('on', 'MATLAB:structOnObject');
+                    this = this.adjustInnerNIfTIWithStruct(ip.Results.obj);
                 otherwise
+                    if (isa(ip.Results.obj, 'mlio.IOInterface'))
+                        this = NIfTId(ip.Results.obj.fqfilename);
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlfourd.INIfTId'))
+                        this = this.adjustInnerNIfTIWithINIfTId(ip.Results.obj);
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlfourd.INIfTIc'))
+                        this = NIfTId(ip.Results.obj.get(1));
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
+                        %% legacy support of deprecated NIfTIInterface
+                        warning('off', 'MATLAB:structOnObject');
+                        this = NIfTId(struct(ip.Results.obj));
+                        warning('on', 'MATLAB:structOnObject');
+                        return
+                    end
                     if (isnumeric(ip.Results.obj))
                         this = this.adjustInnerNIfTIWithNumeric(ip.Results.obj);
-                        this = this.populateLogger;
-                        this = this.adjustFieldsFromInputParser(ip);
-                    else
-                        error('mlfourd:unsupportedSwitchcase', ...
-                            'class(NIfTId.ctor.ip.Results.obj) -> %s', class(ip.Results.obj));
+                        return
                     end
+                    error('mlfourd:unsupportedSwitchcase', ...
+                        'class(NIfTId.ctor.ip.Results.obj) -> %s', class(ip.Results.obj));
             end
+            this = this.adjustFieldsFromInputParser(ip);
         end 
     end
     
     %% PRIVATE
- 
-    properties (Constant, Access = private)
-        EQUALN_IGNORES = ...
-            {'creationDate' 'descrip' 'hdr' 'hdxml' 'label' 'logger' 'originalType' 'regular' 'stack' 'untouch'}
-    end
     
     methods (Static, Access = private)
         function        assertCtorObj(obj)
@@ -197,266 +261,82 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                 'mlfourd:invalidCtorObj', ...
                 'NIfTId.assertCtorObj does not support class(obj)->%s', class(obj));
         end
-        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
-            tf = true; 
-            msg = '';
-            flds = fieldnames(obj1);
-            for f = 1:length(flds)
-                if (~evalIgnore(flds{f}) && ~isequaln(obj1.(flds{f}), obj2.(flds{f})))
-                    tf = false;
-                    msg = sprintf('NIfTId.checkFields:  mismatch at field %s.', flds{f});
-                    warning('mlfourd:mismatchedField', msg); %#ok<SPWRN>
-                    if (strcmp(flds{f}, 'img'))
-                        disp(size(obj1.img));
-                        disp(size(obj2.img));
-                        continue
-                    end
-                    disp(obj1.(flds{f}));
-                    disp(obj2.(flds{f}));
-                end
-            end
-        end 
-        function s    = FourdfpInfo2struct(fn, varargin)
-            finfo = mlfourdfp.FourdfpInfo(fn, varargin{:});
-            nii = finfo.make_nii;
-            s = struct( ...
-                'hdr', nii.hdr, ...
-                'filetype', 2, ...
-                'fileprefix', finfo.fileprefix, ...
-                'machine', finfo.machine, ...
-                'ext', [], ...
-                'img', nii.img, ...
-                'untouch', nii.untouch);  
-            
-            %% DEBUGGING
-            %save_nii(nii, 'test.nii.gz');
-            %system('fsleyes test.nii.gz');
-        end
-        function this = load_existing(fn, varargin)
-            try
-                import mlfourd.* mlfourdfp.*;
-                e = NIfTId.selectExistingExtension(fn);
-                if (lstrfind(e, NIfTId.SUPPORTED_EXT))
-                    this = NIfTId.load_JimmyShen(fn, varargin{:});
-                    this = this.adjustInnerNIfTIdAfterLoading(fn);
-                    return
-                end
-                if (lstrfind(e, mlsurfer.MGH.SUPPORTED_EXT))
-                    this = NIfTId.load_surfer(fn, varargin{:});
-                    this = this.adjustInnerNIfTIdAfterLoading(fn);
-                    return
-                end
-                if (lstrfind(e, Fourdfp.SUPPORTED_EXT))
-                    this = NIfTId.load_4dfp(fn, varargin{:});
-                    this = this.adjustInnerNIfTIdAfterLoading(fn);
-                    return
-                end
-            catch ME
-                handexcept(ME, ...
-                    'mlfourd:fileNotFound', 'NIfTId.load_existing could not open fn->%s', fn);
-            end
-        end
         function this = load_4dfp(fn, varargin)
 
-            %% NIFTI_4DFP
-            % import mlfourd.* mlfourdfp.*;
-            % [pth,fp] = myfileparts(fn);
-            % fp2 = [fp '_' datestr(now,30)];
-            % fn2 = fullfile(pth, [fp2 '.nii']);
-            % visitor = FourdfpVisitor;
-            % visitor.nifti_4dfp_n(fullfile(pth,fp), fullfile(pth, fp2));
-            % this = NIfTId.load_JimmyShen(fn2);
-            % this.fileprefix = fp;
-            % deleteExisting(fn2);
-            
-            import mlfourd.*;
-            [p,f] = myfileparts(fn);
-            this = NIfTId( ...
-                NIfTId.FourdfpInfo2struct(fullfile(p, [f '.4dfp.hdr']), varargin{:})); 
-        end
-        function this = load_JimmyShen(fn, varargin)
-            %% makes recursive call to ctor with struct
-            
-            import mlfourd.*;
-            this = NIfTId( ...
-                NIfTId.NIfTIInfo2struct(fn, varargin{:})); % (mlniftitools.load_untouch_nii(fn));
-            this.innerNIfTI_.fqfilename = fn;
-        end
-        function this = load_surfer(fn, varargin)
-            import mlfourd.*;
-            [p,f] = myfileparts(fn);
-            fn2 = fullfile(p, [f '_' datestr(now,30) NIfTId.FILETYPE_EXT]); 
-            mlbash(sprintf('mri_convert %s %s', fn, fn2));
-            this = NIfTId.load_JimmyShen(fn2, varargin{:});
-            this.fileprefix = f;
+            %% NIFTI_4DFP:  legacy implementation using nifti_4dfp
+            import mlfourd.* mlfourdfp.*;
+            [pth,fp] = myfileparts(fn);
+            fp2 = [fp '_' datestr(now,30)];
+            fn2 = fullfile(pth, [fp2 '.nii']);
+            visitor = FourdfpVisitor;
+            visitor.nifti_4dfp_n(fullfile(pth,fp), fullfile(pth, fp2));
+            this = NIfTId.load_JimmyShen(fn2);
+            this.fileprefix = fp;
             deleteExisting(fn2);
-        end
-        function s    = NIfTIInfo2struct(fn, varargin)
-            ninfo = mlfourd.NIfTIInfo(fn, varargin{:});
-            nii = ninfo.make_nii;
-            s = struct( ...
-                'hdr', nii.hdr, ...
-                'filetype', ninfo.filetype, ...
-                'fileprefix', ninfo.fileprefix, ...
-                'machine', ninfo.machine, ...
-                'ext', ninfo.ext, ...
-                'img', nii.img, ...
-                'untouch', nii.untouch);
-        end
-        function e    = selectExistingExtension(fn)
-            [~,~,e] = myfileparts(fn);
-            if (lexist(fn, 'file') && ~isempty(e))
-                return
-            end
-            if (isempty(e))
-                dt = mlsystem.DirTool([fn '.*']);
-                fns = dt.fns;
-                for f = 1:length(fns)
-                    if (lstrfind(fns{f}, mlfourd.NIfTId.SUPPORTED_EXT) || ...
-                        lstrfind(fns{f}, mlsurfer.MGH.SUPPORTED_EXT) || ...
-                        lstrfind(fns{f}, mlfourdfp.Fourdfp.SUPPORTED_EXT))
-                        [~,~,e] = myfileparts(fns{f});
-                        return
-                    end
-                end
-            end
-            error('mlfourd:IOError:fileNotFound', ...
-                  'NIfTId.selectExistingExtension could not find %s', fn);
-        end
-        function tf   = supportedFileformExists(ff)
-            tf = false;
-            if (lexist(ff, 'file'))
-                tf = true;
-                return
-            end
-            [p,f] = myfileparts(ff);
-            e1s = mlfourd.NIfTId.SUPPORTED_EXT;
-            for e = 1:length(e1s)
-                if (lexist(fullfile(p, [f e1s{e}]), 'file'))
-                    tf = true;
-                    return
-                end
-            end
-            e2s = mlsurfer.MGH.SUPPORTED_EXT;
-            for e = 1:length(e2s)
-                if (lexist(fullfile(p, [f e2s{e}]), 'file'))
-                    tf = true;
-                    return
-                end
-            end
-            e3s = mlfourdfp.Fourdfp.SUPPORTED_EXT;
-            for e = 1:length(e3s)
-                if (lexist(fullfile(p, [f e3s{e}]), 'file'))
-                    tf = true;
-                    return
-                end
-            end
+            
+            %import mlfourd.* mlfourdfp.*;
+            %this = NIfTId(InnerFourdfp.imagingInfo2struct(fn, varargin{:}));
         end
     end 
     
     methods (Access = private)
         function this     = adjustFieldsFromInputParser(this, ip)
-            %% updates this.innerNIfTI_ with ip.Results from ctor
+            %% ADJUSTFIELDSFROMINPUTPARSER updates this.innerNIfTI_ with ip.Results from ctor.
             
-            if (isstruct(ip.Results.obj))
-                return
-            end
             for p = 1:length(ip.Parameters)
                 if (~ismember(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
+                        case 'datatype'
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
                         case 'ext'
-                            this.innerNIfTI_.ext_ = ip.Results.ext;
+                            this.innerNIfTI_.ext = ip.Results.ext;
                         case 'hdr'
-                            this.innerNIfTI_.hdr_ = ip.Results.hdr;
+                            this.innerNIfTI_.hdr = ip.Results.hdr;
                         case 'img'
                             this.innerNIfTI_.img_ = ip.Results.img;
                         case 'obj'
                         case 'circshiftK'
                         case 'N'
+                        case 'imagingInfo'
+                            this.innerNIfTI_.imagingInfo = ip.Results.imagingInfo;
                         otherwise
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
                     end
                 end
             end
         end
-        function this     = adjustInnerNIfTI(this, obj)
+        function this     = adjustInnerNIfTIWithStruct(this, s)
             % as described by mlniftitools.load_untouch_nii
-            this.innerNIfTI_.hdr_         = obj.hdr;
-            this.innerNIfTI_.filetype_    = obj.filetype;
-            this.innerNIfTI_.fqfileprefix = obj.fileprefix; % Jimmy Shen's fileprefix includes filepath
-            this.innerNIfTI_.ext_         = obj.ext;
-            this.innerNIfTI_.img_         = obj.img;
-            this.innerNIfTI_.untouch_     = obj.untouch;
-        end
-        function this     = adjustInnerNIfTIdAfterLoading(this, fn)
-            this.innerNIfTI_.orient_ = this.innerNIfTI_.orient; % caches results of fslorient
-            lg = sprintf('NIfTId.adjustInnerNIfTIdAfterLoading read %s', fn);
-            this.innerNIfTI_.hdr_.hist.descrip = lg;
-            this.addLog(lg);
+            this.innerNIfTI_.hdr          = s.hdr;
+            this.innerNIfTI_.filetype     = s.filetype;
+            this.innerNIfTI_.fqfilename   = s.fileprefix; % Jimmy Shen's fileprefix includes filepath, filesuffix
+            this.innerNIfTI_.ext          = s.ext;
+            this.innerNIfTI_.img_         = s.img;
+            this.innerNIfTI_.untouch      = s.untouch;
         end
         function this     = adjustInnerNIfTIWithINIfTId(this, obj)
             %% dedecorates
-            this.innerNIfTI_.ext_         = obj.ext;
+            this.innerNIfTI_.ext          = obj.ext;
             this.innerNIfTI_.fqfileprefix = obj.fqfileprefix;
-            this.innerNIfTI_.filetype_    = obj.filetype;
+            this.innerNIfTI_.filetype     = obj.filetype;
             this.innerNIfTI_.img_         = obj.img;
             this.innerNIfTI_.label        = obj.label;
             this.innerNIfTI_.noclobber    = obj.noclobber;
             this.innerNIfTI_.orient_      = obj.orient;
             this.innerNIfTI_.separator    = obj.separator;
-            this.innerNIfTI_.untouch_     = obj.untouch;  
-            this.innerNIfTI_.hdr_         = obj.hdr;
+            this.innerNIfTI_.untouch      = obj.untouch;  
+            this.innerNIfTI_.hdr          = obj.hdr;
         end
         function this     = adjustInnerNIfTIWithNumeric(this, num)
-            rank                                             = length(size(num));
-            this.innerNIfTI_.img_                            = num;
-            this.innerNIfTI_.hdr_.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-            this.innerNIfTI_.hdr_.dime.dim                   = ones(1,8);
-            this.innerNIfTI_.hdr_.dime.dim(1)                = rank;
-            this.innerNIfTI_.hdr_.dime.dim(2:rank+1)         = size(num);
-            this.innerNIfTI_.hdr_.dime.datatype              = 64;
-            this.innerNIfTI_.hdr_.dime.bitpix                = 64;
-        end
-        function [tf,msg] = classesequal(this, c)
-            tf  = true; 
-            msg = '';
-            if (~isa(c, class(this)))
-                tf  = false;
-                msg = sprintf('NIfTId.classesequal:  class(this)-> %s but class(compared)->%s', class(this), class(c));
-                warning('mlfourd:mismatchedClass', msg); %#ok<SPWRN>
-            end
-        end
-        function [tf,msg] = fieldsequaln(this, obj)
-            [tf,msg] = mlfourd.NIfTId.checkFields(this, obj, @(x) lstrfind(x, this.EQUALN_IGNORES));
-        end
-        function [tf,msg] = hdrsequaln(this, obj)
-            tf = true; 
-            msg = '';
-            if (isempty(this.hdr) && isempty(obj.hdr)); return; end
-            import mlfourd.*;
-            [tf,msg] = NIfTId.checkFields(this.hdr.hk, obj.hdr.hk,  @(x) lstrfind(x, this.EQUALN_IGNORES));
-            if (tf)
-                [tf,msg] = NIfTId.checkFields(this.hdr.dime, obj.hdr.dime, @(x) lstrfind(x, this.EQUALN_IGNORES));
-                if (tf)
-                    [tf,msg] = NIfTId.checkFields(this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, this.EQUALN_IGNORES));
-                end
-            end
-        end
-        function this     = populateLogger(this)
-            import mlpipeline.*;
-            logfn  = [this.fqfileprefix mlpipeline.Logger.FILETYPE_EXT];
-            this.innerNIfTI_.logger_ = Logger(logfn, this);
-            if (~isempty(this.descrip))
-                this.innerNIfTI_.addLog('Previous descrip:  %s', this.descrip);
-            end            
-            
-%             imgrec = [this.fqfileprefix '.img.rec'];
-%             if (lexist(imgrec, 'file'))
-%                 c = mlsystem.FilesystemRegistry.textfileToCell(imgrec);
-%                 this.innerNIfTI_.addLog(cell2str(c));
-%             end
+            rank                                            = length(size(num));
+            this.innerNIfTI_.img_                           = num;
+            this.innerNIfTI_.hdr.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
+            this.innerNIfTI_.hdr.dime.dim                   = ones(1,8);
+            this.innerNIfTI_.hdr.dime.dim(1)                = rank;
+            this.innerNIfTI_.hdr.dime.dim(2:rank+1)         = size(num);
+            this.innerNIfTI_.hdr.dime.datatype              = 64;
+            this.innerNIfTI_.hdr.dime.bitpix                = 64;
         end
     end 
     

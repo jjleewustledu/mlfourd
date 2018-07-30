@@ -1,0 +1,1 @@
+mri_aparc2aseg --s HYGLY28_VISIT_2 --volmask --a2009s

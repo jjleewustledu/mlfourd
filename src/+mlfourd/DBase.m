@@ -435,9 +435,9 @@ classdef (Sealed) DBase < mlfourd.CvlDBase
             
             switch (double(isfq))
                 case 1
-                    fn = fullfile(this.epi_path, [fn this.onReference mlfourd.NIfTId.NIFTI_EXT]);
+                    fn = fullfile(this.epi_path, [fn this.onReference mlfourd.NIfTIInfo.NIFTI_EXT]);
                 case 0
-                    fn =                         [fn this.onReference mlfourd.NIfTId.NIFTI_EXT];
+                    fn =                         [fn this.onReference mlfourd.NIfTIInfo.NIFTI_EXT];
                 otherwise
             end
         end % epi_filename

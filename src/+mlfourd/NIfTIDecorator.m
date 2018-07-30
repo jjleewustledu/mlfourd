@@ -87,6 +87,9 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
         function f    = fov(this) 
             f = this.component_.fov;     
         end
+        function tf   = lexist(this)
+            tf = this.component_.lexist;
+        end
         function m    = matrixsize(this)
             m = this.component_.matrixsize;
         end
