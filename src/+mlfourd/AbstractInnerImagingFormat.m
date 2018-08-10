@@ -1,5 +1,5 @@
-classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
-	%% ABSTRACTINNERIMAGINGFORMAT  
+classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
+	%% ABSTRACTINNERIMAGINGFORMAT 
 
 	%  $Revision$
  	%  was created 22-Jul-2018 01:31:58 by jjlee,
@@ -13,8 +13,8 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
     end
     
     methods (Abstract, Static)
-        this = construct(fn, varargin) % abstract factory design pattern
-        info = constructImagingInfo(fn, varargin)
+        this = create(fn, varargin) % abstract factory design pattern
+        info = createImagingInfo(fn, varargin)
         e = defaultFilesuffix
         s = imagingInfo2struct(fn, varargin)
     end
@@ -24,8 +24,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         VIEWER = fullfile(getenv('FREESURFER_HOME'), 'bin', 'freeview')
     end  
     
-	properties (Dependent) 		
-        hdr % See also:  mlfourd.ImagingInfo
+	properties (Dependent)
+        ext      % KLUDGE for mlfourd.ImagingContext
+        filetype % KLUDGE for mlfourd.ImagingContext
+        hdr      % See also:  mlfourd.ImagingInfo
         img
         
         bitpix
@@ -42,6 +44,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         seriesNumber
         
         imagingInfo
+        imgrec
         logger
         noclobber
         separator % for descrip & label properties, not for filesystem behaviors
@@ -53,6 +56,27 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         
         %% GET/SET
         
+        function g    = get.ext(this)
+            g = this.imagingInfo_.ext;
+        end
+        function this = set.ext(this, s)
+            this.imagingInfo_.ext = s;
+        end
+        function f    = get.filetype(this)
+            f = this.imagingInfo_.filetype;
+        end
+        function this = set.filetype(this, ft)
+            switch (ft)
+                case {0 1}
+                    this.imagingInfo_.filetype = ft;
+                    this.filesuffix = '.hdr';
+                case 2
+                    this.imagingInfo_.filetype = ft;
+                    this.filesuffix = this.defaultFilesuffix;
+                otherwise
+                    error('mlfourd:unsupportedParamValue', 'InnerNIfTI.set.filetype.ft->%g', ft);
+            end
+        end  
         function h    = get.hdr(this)
             h = this.imagingInfo_.hdr;
             if (~isfield(h.hist, 'originator') || ...
@@ -60,7 +84,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                 h.hist.originator = zeros(1,3); % KLUDGE for mlniftitools.save_nii_hdr line28
             end
         end 
-        function this = set.hdr(this, h)
+        function this = set.hdr(this, h) % KLUDGE
             assert(isstruct(h));
             this.imagingInfo_.hdr = h;
         end
@@ -72,12 +96,13 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             %  @param im is the incoming imaging array; converted to single if data bandwidth is appropriate.
             %  @return updates img, datatype, bitpix, dim.
             
-            this.img_                        = im;
-            this                             = this.optimizePrecision;
-            this.hdr.dime.dim                = ones(1,8);
-            this.hdr.dime.dim(1)             = this.rank;
-            this.hdr.dime.dim(2:this.rank+1) = this.size;
-            this.stack_                      = [this.stack_ {this.descrip}];
+            this.img_                                     = im;
+            this                                          = this.optimizePrecision;
+            this.imagingInfo_.hdr.dime.dim                = ones(1,8);
+            this.imagingInfo_.hdr.dime.dim(1)             = this.rank;
+            this.imagingInfo_.hdr.dime.dim(2:this.rank+1) = this.size;
+            this.imagingInfo_.hdr                         = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
+            this.stack_                                   = [this.stack_ {this.descrip}];
         end
         
         function bp   = get.bitpix(this) 
@@ -96,7 +121,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                 case  'uint64';             bp = 64;
                 otherwise
                     error('mlfourd:unknownSwitchCase', ...
-                          'InnerNIfTId.get.bitpix could not recognize the class(img)->%s', class(this.img_));
+                          'InnerNIfTI.get.bitpix could not recognize the class(img)->%s', class(this.img_));
             end
         end
         function this = set.bitpix(this, bp)
@@ -126,7 +151,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                 case  'uint64';             dt = 1280;
                 otherwise
                     error('mlfourd:unknownSwitchCase', ...
-                          'InnerNIfTId.get.datatype could not recognize the class(img)->%s', class(this.img_));
+                          'InnerNIfTI.get.datatype could not recognize the class(img)->%s', class(this.img_));
             end
         end
         function this = set.datatype(this, dt)
@@ -146,7 +171,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                         this = this.ensureDouble;
                     otherwise
                         error('mlfourd:unknownSwitchCase', ...
-                              'InnerNIfTId.set.datatype could not recognize dt->%s', strtrim(dt));
+                              'InnerNIfTI.set.datatype could not recognize dt->%s', strtrim(dt));
                 end
             elseif (isnumeric(dt))
                 if (dt < 64)
@@ -155,7 +180,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                     this = this.ensureDouble;
                 end
             else
-                error('mlfourd:unsupportedDatatype', 'InnerNIfTId.set.datatype does not support class(dt)->%s', class(dt));
+                error('mlfourd:unsupportedDatatype', 'InnerNIfTI.set.datatype does not support class(dt)->%s', class(dt));
             end            
         end
         function d    = get.descrip(this)
@@ -166,7 +191,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             %  @param s:  do not add separators such as ";" or ","
             
             assert(ischar(s));
-            this.hdr.hist.descrip = this.delimitDescrip(s);
+            this.imagingInfo_.hdr.hist.descrip = this.delimitDescrip(s);
         end 
         function E    = get.entropy(this)
             if (isempty(this.img_))
@@ -208,7 +233,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         function this = set.pixdim(this, pd)
             %% SET.PIXDIM sets voxel-time dimensions in mm, s.
             
-            this.hdr.dime.pixdim(2:length(mpp)+1) = pd;
+            this.imagingInfo_.hdr.dime.pixdim(2:length(mpp)+1) = pd;
         end 
         function s    = get.seriesNumber(this)
             s = this.seriesNumber_;
@@ -225,8 +250,22 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             assert(isa(s, 'mlfourd.ImagingInfo'));
             this.imagingInfo_ = s;
         end
-        function s    = get.logger(this)
-            s = this.logger_;
+        function g    = get.imgrec(this)
+            if (~isprop(this.imagingInfo_, 'imgrec'))
+                g = [];
+                return
+            end
+            g = this.imagingInfo_.imgrec;
+        end
+        function this = set.imgrec(this, s)
+            if (~isprop(this.imagingInfo_, 'imgrec'))
+                return
+            end
+            assert(isa(s, mlfourdfp.ImgRecLogger));
+            this.imagingInfo_.imgrec = s;
+        end
+        function g    = get.logger(this)
+            g = this.logger_;
         end
         function tf   = get.noclobber(this)
             tf = this.filesystemRegistry_.noclobber;
@@ -253,7 +292,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             this.viewer_ = v;
         end
         
-        %% mlfourd.InnerNIfTIdIO
+        %% mlfourd.InnerNIfTIIO
         
         function        save(this)
             %% SAVE 
@@ -268,6 +307,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
+            this = this.mutateInnerImagingFormatByFilesuffix;
             this.save__;
             this.saveLogger;
         end 
@@ -275,7 +315,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             %% SAVEAS
             %  @param fn updates internal filename
             %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
-            %  See also:  mlfourd.InnerNIfTId.save
+            %  See also:  mlfourd.InnerNIfTI.save
             
             [p,f,e] = myfileparts(fn);
             if (isempty(e))
@@ -436,6 +476,19 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         
         %%
         
+        function        addImgrec(this, varargin)
+            %% ADDIMGREC
+            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
+            
+            if (isempty(this.imgrec))
+                return
+            end
+            if (ischar(varargin{1}))
+                this.imgrec.add(varargin{:});
+                return
+            end
+            this.imgrec.add(ensureString(varargin{:}));
+        end
         function        addLog(this, varargin)
             %% ADDLOG
             %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
@@ -443,7 +496,20 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             if (isempty(this.logger_))
                 return
             end
-            this.logger_.add(varargin{:});
+            if (ischar(varargin{1}))
+                this.logger_.add(varargin{:});
+                return
+            end
+            this.logger_.add(ensureString(varargin{:}));
+        end        
+        function this = applyScl(this)
+            iihd = this.imagingInfo_.hdr.dime;
+            this = this.append_descrip( ...
+                sprintf('applyScl:  img := %g img + %g', ...
+                iihd.scl_slope, iihd.scl_inter));            
+            this.img = double(this.img) * this.hdr.dime.scl_slope + this.hdr.dime.scl_inter;
+            this.imagingInfo_.hdr.dime.scl_slope = 1; % now incorporated into this.img
+            this.imagingInfo_.hdr.dime.scl_inter = 0; %                  
         end
         function s    = asStruct(this) 
             info = this.imagingInfo; % updated with make_nii in AbstractInnerImagingFormat.ctor
@@ -526,7 +592,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                     img__ = scrub4D(img__);
                 otherwise
                     error('mlfourd:unsupportedParamValue', ...
-                          'InnerNIfTId.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
+                          'InnerNIfTI.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
             end            
             this.img = img__;
             
@@ -589,7 +655,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             ip = inputParser;
             ip.KeepUnmatched = true;
             addOptional( ip, 'imagingInfo', ImagingInfo(this.defaultFqfilename), @(x) isa(x, 'mlfourd.ImagingInfo'));
-            addParameter(ip, 'creationDate', datestr(now), @isdatetime);
+            addParameter(ip, 'creationDate', datestr(now), @ischar);
             addParameter(ip, 'img', [], @isnumeric);
             addParameter(ip, 'label', '', @ischar);
             addParameter(ip, 'logger', mlpipeline.Logger(this.defaultFqfilename), @(x) isa(x, 'mlpipeline.AbstractLogger'));
@@ -598,9 +664,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             addParameter(ip, 'seriesNumber', nan, @isnumeric);
             addParameter(ip, 'separator', ';', @ischar);
             addParameter(ip, 'stack', {}, @iscell);
-            addParameter(ip, 'viewer', this.VIEWER, @ischar);            
-            addParameter(ip, 'circshiftK', 0, @isnumeric); % see also mlfourd.ImagingInfo
-            addParameter(ip, 'N', true, @islogical); % 
+            addParameter(ip, 'viewer', this.VIEWER, @ischar);  
             parse(ip, varargin{:});
             
             this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;
@@ -625,7 +689,12 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
             end
             if (isempty(this.stack_))
                 this.stack_ = this.initialStack;
-            end                    
+            end 
+            
+            this.logger_ = mlpipeline.Logger(this.fqfileprefix, this);
+            if (~isempty(this.descrip))
+                this.addLog(this.descrip);
+            end                   
  		end
  	end 
     
@@ -661,10 +730,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end   
         function this = ensureDouble(this)
             if (this.hdr.dime.datatype ~= 64)
-                this.hdr.dime.datatype  = 64;
+                this.imagingInfo_.hdr.dime.datatype = 64;
             end
-            if (this.hdr.dime.bitpix   ~= 64)
-                this.hdr.dime.bitpix    = 64;
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
             end
             if (~isa(this.img_, 'double'))
                 this.img_ = double(this.img_);
@@ -691,10 +760,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end
         function this = ensureSingle(this)
             if (this.hdr.dime.datatype ~= 16)
-                this.hdr.dime.datatype  = 16;
+                this.imagingInfo_.hdr.dime.datatype = 16;
             end
-            if (this.hdr.dime.bitpix   ~= 32)
-                this.hdr.dime.bitpix    = 32;
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
             end
             if (~isa(this.img_, 'single'))
                 this.img_ = single(this.img_);
@@ -702,10 +771,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end 
         function this = ensureUint8(this)
             if (this.hdr.dime.datatype ~= 2)
-                this.hdr.dime.datatype  = 2;
+                this.imagingInfo_.hdr.dime.datatype = 2;
             end
-            if (this.hdr.dime.bitpix   ~= 8)
-                this.hdr.dime.bitpix    = 8;
+            if (this.hdr.dime.bitpix ~= 8)
+                this.imagingInfo_.hdr.dime.bitpix = 8;
             end
             if (~isa(this.img_, 'uint8'))
                 this.img_ = uint8(this.img_);
@@ -713,10 +782,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end
         function this = ensureInt16(this)
             if (this.hdr.dime.datatype ~= 4)
-                this.hdr.dime.datatype  = 4;
+                this.imagingInfo_.hdr.dime.datatype = 4;
             end
-            if (this.hdr.dime.bitpix   ~= 16)
-                this.hdr.dime.bitpix    = 16;
+            if (this.hdr.dime.bitpix ~= 16)
+                this.imagingInfo_.hdr.dime.bitpix = 16;
             end
             if (~isa(this.img_, 'int16'))
                 this.img_ = int16(this.img_);
@@ -724,10 +793,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end
         function this = ensureInt32(this)
             if (this.hdr.dime.datatype ~= 8)
-                this.hdr.dime.datatype  = 8;
+                this.imagingInfo_.hdr.dime.datatype = 8;
             end
-            if (this.hdr.dime.bitpix   ~= 32)
-                this.hdr.dime.bitpix    = 32;
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
             end
             if (~isa(this.img_, 'int32'))
                 this.img_ = int32(this.img_);
@@ -735,10 +804,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
         end
         function this = ensureInt64(this)
             if (this.hdr.dime.datatype ~= 1024)
-                this.hdr.dime.datatype  = 1024;
+                this.imagingInfo_.hdr.dime.datatype = 1024;
             end
-            if (this.hdr.dime.bitpix   ~= 64)
-                this.hdr.dime.bitpix    = 64;
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
             end
             if (~isa(this.img_, 'int64'))
                 this.img_ = int64(this.img_);
@@ -752,10 +821,12 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                 'mlfourd:initializationOrderError', 'AbstractInnerImagingFormat.initialStack');
             s = {this.imagingInfo_.hdr.hist.descrip};
         end
+        function this = mutateInnerImagingFormatByFilesuffix(this)
+        end
         function this = optimizePrecision(this)
-            return % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
+            %return % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
             
-            try %#ok<UNRCH>
+            try 
                 if (isempty(this.img_))
                     this = this.ensureDouble;
                     return
@@ -836,7 +907,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIdIO & mlfourd.INIfTI
                 [s,r] = v.aview([tmp varargin{:}]);
                 this.deleteExisting(tmp);
             catch ME
-                handexcept(ME, 'mlfourd:viewerError', ...
+                dispexcept(ME, 'mlfourd:viewerError', ...
                     'AbstractInnerImagingFormat.viewExternally called mlbash with %s; \nit returned s->%i, r->%s', ...
                     app, s, r);
             end

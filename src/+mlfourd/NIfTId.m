@@ -18,29 +18,60 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
     end
     
     methods (Static)
-        function this = construct(fn, varargin)
-            this = mlfourd.NIfTId(fn, varargin{:});
+        function inn  = createInner(varargin)
+            import mlfourd.* mlfourdfp.*;
+            if (isempty(varargin))
+                inn = InnerFourdfp(FourdfpInfo);
+                return
+            end
+            if (1 == length(varargin))
+                inn = NIfTId.createInner1(varargin{:});
+                return
+            end
+            inn = NIfTId.createInner2(varargin{:});
         end
-        function inn  = constructInner(obj, varargin)
+        function inn  = createInner1(obj)   
+            import mlfourd.* mlfourdfp.* mlsurfer.*;         
             if (~ischar(obj))
-                inn = mlfourd.InnerNIfTId;
+                inn = InnerFourdfp(FourdfpInfo);
                 return
             end
             
             [~,~,e] = myfileparts(obj);            
             switch (e)
-                case mlfourdfp.Fourdfp.SUPPORTED_EXT
-                    inn = mlfourdfp.InnerFourdfp( ...
-                        mlfourdfp.FourdfpInfo(obj, varargin{:}), varargin{:});
-                case mlfourd.NIfTId.SUPPORTED_EXT
-                    inn = mlfourd.InnerNIfTId( ...
-                        mlfourd.NIfTIInfo(obj, varargin{:}), varargin{:});
-                case mlsurfer.MGH.SUPPORTED_EXT 
-                    inn = mlsurfer.InnerMGH( ...
-                        mlsurfer.MGHInfo(obj, varargin{:}), varargin{:});
-                otherwise                    
-                    inn = mlfourd.InnerNIfTId( ...
-                        [myfileprefix(obj) mlfourd.NIfTIInfo.NIFTI_EXT], varargin{:});
+                case FourdfpInfo.SUPPORTED_EXT
+                    inn = InnerFourdfp(FourdfpInfo(obj));
+                case NIfTIInfo.SUPPORTED_EXT
+                    inn = InnerNIfTI(NIfTIInfo(obj));
+                case mlsurfer.MGHInfo.SUPPORTED_EXT 
+                    inn = InnerMGH(MGHInfo(obj));
+                case '.hdr'
+                    inn = InnerNIfTI(Analyze75Info(obj));
+                otherwise
+                    inn = NIfTId.createInner([myfileprefix(obj) NIfTId.NIFTI_EXT]);
+            end
+        end
+        function inn  = createInner2(varargin)
+            import mlfourd.* mlfourdfp.* mlsurfer.*;  
+            obj = varargin{1};
+            v_  = varargin(2:end);
+            if (~ischar(obj))
+                inn = InnerNIfTI(FourdfpInfo);
+                return
+            end
+            
+            [~,~,e] = myfileparts(obj);            
+            switch (e)
+                case FourdfpInfo.SUPPORTED_EXT
+                    inn = InnerFourdfp(FourdfpInfo(obj, v_{:}), v_{:});
+                case NIfTIInfo.SUPPORTED_EXT
+                    inn = InnerNIfTI(NIfTIInfo(obj, v_{:}), v_{:});
+                case MGHInfo.SUPPORTED_EXT 
+                    inn = InnerMGH(MGHInfo(obj, v_{:}), v_{:});
+                case '.hdr'
+                    inn = InnerNIfTI(Analyze75Info(obj, v_{:}), v_{:});
+                otherwise
+                    inn = NIfTId.createInner([myfileprefix(obj) NIfTId.NIFTI_EXT], v_{:});
             end
         end
         function this = load(fn, varargin)
@@ -170,7 +201,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
         end   
         
-        function this = NIfTId(obj, varargin)
+        function this = NIfTId(varargin)
             %% NIfTId  
             %  @ param [obj] may be empty, a filename, numerical, INIfTI instantiation, struct compliant with 
             %  package mlniftitools; it constructs the class instance. 
@@ -184,7 +215,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             
             import mlfourd.*;
             this = this@mlfourd.AbstractNIfTIComponent( ...
-                NIfTId.constructInner(obj, varargin{:}));
+                NIfTId.createInner(varargin{:}));
             
             ip = inputParser;
             addOptional( ip, 'obj',          [], @NIfTId.assertCtorObj); % compare to NIfTIc
@@ -208,39 +239,45 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
             addParameter(ip, 'circshiftK', 0,    @isnumeric); % see also mlfourd.ImagingInfo
             addParameter(ip, 'N', true,          @islogical); % 
             addParameter(ip, 'imagingInfo',  [], @(x) isa(x, 'mlfourd.ImagingInfo') || isempty(x));
-            parse(ip, obj, varargin{:});
+            parse(ip, varargin{:});
             
             this.innerNIfTI_.originalType_ = class(ip.Results.obj);
             switch (class(ip.Results.obj))
                 case 'char'
                     if (NIfTId.supportedFileformExists(ip.Results.obj))
                         this = NIfTId(this.innerNIfTI_.asStruct);
+                        this = this.adjustFieldsFromInputParser(ip);
                     end
                 case 'struct' 
                     %% base case for recursion using Jimmy Shen's mlniftitools
                     this = this.adjustInnerNIfTIWithStruct(ip.Results.obj);
                 otherwise
-                    if (isa(ip.Results.obj, 'mlio.IOInterface'))
-                        this = NIfTId(ip.Results.obj.fqfilename);
-                        return
-                    end
                     if (isa(ip.Results.obj, 'mlfourd.INIfTId'))
                         this = this.adjustInnerNIfTIWithINIfTId(ip.Results.obj);
+                        this = this.adjustFieldsFromInputParser(ip);
                         return
                     end
                     if (isa(ip.Results.obj, 'mlfourd.INIfTIc'))
                         this = NIfTId(ip.Results.obj.get(1));
+                        this = this.adjustFieldsFromInputParser(ip);
                         return
                     end
                     if (isa(ip.Results.obj, 'mlfourd.NIfTIInterface'))
                         %% legacy support of deprecated NIfTIInterface
                         warning('off', 'MATLAB:structOnObject');
                         this = NIfTId(struct(ip.Results.obj));
+                        this = this.adjustFieldsFromInputParser(ip);
                         warning('on', 'MATLAB:structOnObject');
+                        return
+                    end
+                    if (isa(ip.Results.obj, 'mlio.IOInterface'))
+                        this = NIfTId(ip.Results.obj.fqfilename);
+                        this = this.adjustFieldsFromInputParser(ip);
                         return
                     end
                     if (isnumeric(ip.Results.obj))
                         this = this.adjustInnerNIfTIWithNumeric(ip.Results.obj);
+                        this = this.adjustFieldsFromInputParser(ip);
                         return
                     end
                     error('mlfourd:unsupportedSwitchcase', ...
@@ -292,7 +329,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
                         case 'ext'
                             this.innerNIfTI_.ext = ip.Results.ext;
                         case 'hdr'
-                            this.innerNIfTI_.hdr = ip.Results.hdr;
+                            this.innerNIfTI_.imagingInfo.hdr = ip.Results.hdr;
                         case 'img'
                             this.innerNIfTI_.img_ = ip.Results.img;
                         case 'obj'
@@ -317,9 +354,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.INIfTId
         end
         function this     = adjustInnerNIfTIWithINIfTId(this, obj)
             %% dedecorates
-            this.innerNIfTI_.ext          = obj.ext;
+            this.innerNIfTI_.ext          = obj.innerNIfTI_.ext;
             this.innerNIfTI_.fqfileprefix = obj.fqfileprefix;
-            this.innerNIfTI_.filetype     = obj.filetype;
+            this.innerNIfTI_.filetype     = obj.innerNIfTI_.filetype;
             this.innerNIfTI_.img_         = obj.img;
             this.innerNIfTI_.label        = obj.label;
             this.innerNIfTI_.noclobber    = obj.noclobber;

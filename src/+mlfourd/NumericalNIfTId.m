@@ -393,7 +393,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             this = NumericalNIfTId(m.component);
         end
                 
-        %% Ctor
+        %% 
         
         function this = NumericalNIfTId(cmp, varargin)
             this = this@mlfourd.NIfTIdecoratorProperties(cmp, varargin{:});

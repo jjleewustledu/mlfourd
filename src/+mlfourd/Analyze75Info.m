@@ -208,7 +208,7 @@ classdef Analyze75Info < mlfourd.ImagingInfo
             
             jimmy = this.load_nii; % struct
             X = jimmy.img;
-            X = flip(X, 1); % storage order := Neurological, conforming to Analyze conventions
+            %X = flip(X, 1); % storage order := Neurological, removing Analyze conventions
             X = this.ensureDatatype(X, this.datatype_);
             untouch = false;
             hdr = this.adjustHdr(jimmy.hdr);
@@ -226,9 +226,13 @@ classdef Analyze75Info < mlfourd.ImagingInfo
  			%% ANALYZE75INFO calls mlniftitools.load_untouch_header_only
  			%  @param filename is required.
  			
-            this = this@mlfourd.ImagingInfo(varargin{:});            
+            this = this@mlfourd.ImagingInfo(varargin{:});                
             
-            this.info_ = analyze75info(this.fqfilename); % Matlab's native 
+            if (~lexist(this.fqfilename))
+                return
+            end
+            
+            this.info_ = analyze75info(strrep(this.fqfilename, '.4dfp.ifh', '.4dfp.hdr')); % Matlab's native 
             this.info_ = this.permuteInfo(this.info_); % KLUDGE            
             this.raw_.sizeof_hdr = this.HdrFileSize;
             this.raw_.descrip = this.Descriptor;

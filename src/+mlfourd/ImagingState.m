@@ -20,7 +20,10 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         fqfileprefix
         fqfn
         fqfp
-        noclobber        
+        noclobber 
+        
+        imgrec
+        logger       
         viewer
     end 
         
@@ -63,6 +66,20 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         function f = get.fqfp(this)
             f = this.concreteObj_.fqfp;
         end
+        function f = get.imgrec(this)
+            if (~isprop(this.concreteObj_, 'imgrec'))
+                f = [];
+                return
+            end
+            f = this.concreteObj_.imgrec;
+        end   
+        function f = get.logger(this)
+            if (~isprop(this.concreteObj_, 'logger'))
+                f = [];
+                return
+            end
+            f = this.concreteObj_.logger;
+        end   
         function f = get.noclobber(this)
             f = this.concreteObj_.noclobber;
         end        
@@ -127,6 +144,12 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
         
         function        add(~)
             error('mlfourd:notImplemented', 'ImagingState.add'); 
+        end
+        function        addImgrec(this, varargin)
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NIfTIdState(this.concreteObj_, this.contexth_));
+            this.contexth_.addImgrec(varargin{:});            
         end
         function        addLog(this, varargin)
             %% ADDLOG

@@ -1,4 +1,4 @@
-classdef ImagingContext < handle & mlio.HandleIOInterface
+classdef ImagingContext < handle & mlio.HandleNIfTIIO
 	%% IMAGINGCONTEXT provides the context for a state design pattern for imaging data.  It also 
     %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
     %  is to improve the fluent expressivity of behaviors involving imaging data.
@@ -38,6 +38,9 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         fqfn
         fqfp
         noclobber
+        
+        imgrec
+        logger
         stateTypeclass
         viewer
     end
@@ -213,6 +216,12 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         function f = get.fqfp(this)
             f = this.state_.fqfp;
         end
+        function f = get.imgrec(this)
+            f = this.state_.imgrec;
+        end
+        function f = get.logger(this)
+            f = this.state_.logger;
+        end
         function f = get.noclobber(this)
             f = this.state_.noclobber;
         end
@@ -258,7 +267,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
         %% state changes
         
         function f = fourdfp(this)
-            this.filesuffix = '.4dfp.ifh';
+            this.filesuffix = '.4dfp.hdr';
             f = this.state_.fourdfp;
         end
         function f = mgh(this)
@@ -279,6 +288,9 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             %  @param varargin are added to a composite imaging state
             
             this.state_ = this.state_.add(varargin{:});
+        end
+        function      addImgrec(this, varargin)
+            this.state_.addImgrec(varargin{:});
         end
         function      addLog(this, varargin)
             %% ADDLOG

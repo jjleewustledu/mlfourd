@@ -118,14 +118,14 @@ classdef Test_NIfTId < matlab.unittest.TestCase
         function test_loadMissingFileAdjusted(this)
             niid = mlfourd.NIfTId.load('nonexistentFile.nii.gz'); % remaining parameters are default
             this.verifyEqual(niid.bitpix, 64);
-            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTId');
+            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTI');
             this.verifyEqual(niid.filename, 'nonexistentFile.nii.gz');
             this.verifyEqual(niid.filetype, 2);
             this.verifyEqual(niid.hdr.dime.dim, [4 0 0 0 0 1 1 1]);
             this.verifyEqual(niid.hdr.dime.datatype, 64);
             this.verifyEqual(niid.hdr.dime.bitpix, 64);
             this.verifyEqual(niid.hdr.dime.pixdim, [1 1 1 1 1 0 0 0]);
-            this.verifyEqual(niid.hdr.hist.descrip, 'instance of mlfourd.InnerNIfTId');
+            this.verifyEqual(niid.hdr.hist.descrip, 'instance of mlfourd.InnerNIfTI');
             this.verifyEqual(niid.img, []);
             this.verifyEqual(niid.originalType, 'char');
             this.verifyFalse(niid.untouch);
@@ -322,7 +322,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
                 'separator', '--');            
             this.verifyEqual(niid.bitpix, 64);
             this.verifyEqual(niid.datatype, 64);
-            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTId; new');
+            this.verifyEqual(niid.descrip, 'instance of mlfourd.InnerNIfTI; new');
             this.verifyEqual(niid.ext, magic(2));
             this.verifyEqual(niid.filename, [this.testObj.fileprefix '.hdr']);
             this.verifyEqual(niid.filepath, this.testObj.filepath);
@@ -707,7 +707,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(this.testObj.machine, 'ieee-le');
         end
         function test_mmppix(this)
-            pet = mlfourd.NIfTId(fullfile(this.dataroot, 'fdgv2r1_on_resolved_sumt.4dfp.ifh'));
+            pet = mlfourd.NIfTId(fullfile(this.dataroot, 'fdgv2r1_on_resolved_sumt.4dfp.hdr'));
             this.verifyEqual(         pet.mmppix, [2.08626013 2.0862601 2.0312500], 'RelTol', 1e-4);            
             this.verifyEqual(this.testObj.mmppix, [2.00 2.00 2.00], 'RelTol', 1e-4);
         end

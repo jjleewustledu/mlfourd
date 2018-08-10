@@ -49,6 +49,8 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         
         %%
         
+        imgrec
+        logger
         separator
         stack
         viewer
@@ -214,7 +216,13 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             num = this.component_.seriesNumber;
         end
         
-        %      
+        %    
+        function g    = get.imgrec(this)
+            g = this.component_.imgrec;
+        end 
+        function g    = get.logger(this)
+            g = this.component_.logger;
+        end
         function s    = get.separator(this)
             s = this.component_.separator;
         end

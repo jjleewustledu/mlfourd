@@ -168,7 +168,6 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             
             jimmy = this.load_untouch_nii; % struct
             V = jimmy.img;
-%            V = this.permuteCircshiftX(V);
             V = this.ensureDatatype(V, this.datatype_);
             untouch = jimmy.untouch;
             hdr = this.adjustHdr(jimmy.hdr); % update hdr.dime.{glmax,glmin}

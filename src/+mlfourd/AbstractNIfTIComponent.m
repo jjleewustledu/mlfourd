@@ -1,5 +1,5 @@
 classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
-	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern using InnerNIfTId, InnerNIfTIc and common interface
+	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern using InnerNIfTI, InnerNIfTIc and common interface
     %  INIfTI.  See also concrete implementations mlfourd.NIfTId and mlfourd.NIfTIc.
     %  See also:  mlfourdfp.InnerFourdfp and mlsurfer.InnerMGH.
 
@@ -48,6 +48,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         seriesNumber
         
         imagingInfo
+        imgrec
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -144,7 +145,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             f = this.innerNIfTI_.filetype;
         end
         function this = set.filetype(this, ft)
-            this.innerNIfTI_.filetype = ft;
+            this.innerNIfTI_.imagingInfo.filetype = ft;
         end
         function h    = get.hdr(this)
             h = this.innerNIfTI_.hdr;
@@ -239,8 +240,15 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function ii   = get.imagingInfo(this)
             ii = this.innerNIfTI_.imagingInfo;
         end
-        function im   = get.logger(this)
-            im = this.innerNIfTI_.logger;
+        function g    = get.imgrec(this)
+            if (~isprop(this.innerNIfTI_, 'imgrec'))
+                g = [];
+                return
+            end
+            g = this.innerNIfTI_.imgrec;
+        end
+        function g    = get.logger(this)
+            g = this.innerNIfTI_.logger;
         end
         function s    = get.separator(this)
             s = this.innerNIfTI_.separator;
@@ -298,7 +306,16 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         
         %% 
         
+        function        addImgrec(this, varargin)
+            if (~ismethod(this.innerNIfTI_, 'addImgrec'))
+                return
+            end
+            this.innerNIfTI_.addImgrec(varargin{:});
+        end
         function        addLog(this, varargin)
+            if (~ismethod(this.innerNIfTI_, 'addLog'))
+                return
+            end
             this.innerNIfTI_.addLog(varargin{:});
         end
         function c    = char(this)

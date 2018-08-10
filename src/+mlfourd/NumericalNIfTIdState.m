@@ -139,7 +139,7 @@ classdef NumericalNIfTIdState < mlfourd.ImagingState
                     obj = NumericalNIfTId(NIfTId(obj));
                 catch ME
                     handexcept(ME, 'mlfourd:castingError', ...
-                        'NIfTIdState.ctor does not support objects of type %s', class(obj));
+                        'NumericalNIfTId.ctor does not support objects of type %s', class(obj));
                 end
             end
             this.concreteObj_ = obj;

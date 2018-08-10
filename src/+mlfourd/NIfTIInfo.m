@@ -19,7 +19,11 @@ classdef NIfTIInfo < mlfourd.AbstractNIfTIInfo
  			%% NIFTIINFO calls mlniftitools.load_untouch_header_only
  			%  @param filename is required.
             
-            this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
+            this = this@mlfourd.AbstractNIfTIInfo(varargin{:});            
+            
+            if (~lexist(this.fqfilename))
+                return
+            end
             
             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
             this.hdr_ = this.adjustHdr(this.hdr_);        

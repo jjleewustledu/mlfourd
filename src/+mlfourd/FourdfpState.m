@@ -48,6 +48,9 @@ classdef FourdfpState < mlfourd.ImagingState
         
         %%
         
+        function        addImgrec(this, varargin)
+            this.concreteObj_.addImgrec(varargin{:});
+        end
         function        addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end
@@ -55,15 +58,6 @@ classdef FourdfpState < mlfourd.ImagingState
             try
                 fv = mlfourdfp.FourdfpVisitor;
                 fv.nifti_4dfp_n(varargin{:});
-                this.filesuffix = '.nii';
-            catch ME
-                handexcept(ME);
-            end
-        end
-        function this = nifti_4dfp_ng(this, varargin)
-            try
-                fv = mlfourdfp.FourdfpVisitor;
-                fv.nifti_4dfp_ng(varargin{:});
                 this.filesuffix = '.nii.gz';
             catch ME
                 handexcept(ME);
@@ -73,7 +67,7 @@ classdef FourdfpState < mlfourd.ImagingState
             try
                 fv = mlfourdfp.FourdfpVisitor;
                 fv.nifti_4dfp_4(varargin{:});
-                this.filesuffix = '.4dfp.ifh';
+                this.filesuffix = '.4dfp.hdr';
             catch ME
                 handexcept(ME);
             end
@@ -89,7 +83,7 @@ classdef FourdfpState < mlfourd.ImagingState
                     import mlfourdfp.*;
                     if (ischar(obj))
                         [pth,fp,x] = myfileparts(obj);
-                        assert(strcmp(x, '.4dfp.ifh'));
+                        assert(strcmp(x, '.4dfp.hdr'));
                         fqfp = fullfile(pth, fp);
                         this.nifti_4dfp_n(fqfp);
                         obj = mlfourd.NIfTId(fqfp);

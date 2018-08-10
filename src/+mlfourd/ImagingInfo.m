@@ -92,6 +92,9 @@ classdef ImagingInfo < mlio.AbstractIO
                     error('mlfourd:unsupportSwitchcase', 'ImagingInfo.ensureDatatype.dt');
             end
         end
+        function f = tempFqfilename
+            f = tempFqfilename('mlfourd_ImagingInfo.4dfp.hdr');
+        end
     end
     
 	methods 
@@ -164,6 +167,14 @@ classdef ImagingInfo < mlio.AbstractIO
         
         %%
         
+        function hdr  = adjustHdr(this, hdr)
+            if (~isempty(this.datatype_))
+                hdr.dime.datatype = this.datatype_;
+                hdr.dime.bitpix = this.newBitpix;
+            end
+            hdr = this.permuteHdr(hdr);
+            hdr = this.adjustHistOriginator(hdr);
+        end 
         function nii = load_nii(this)
             nii = mlniftitools.load_nii(this.fqfilename);
         end
@@ -187,18 +198,26 @@ classdef ImagingInfo < mlio.AbstractIO
             
             ip = inputParser;
             ip.KeepUnmatched = true;
-            addRequired(ip, 'filename', @ischar);
+            addOptional( ip, 'filename', this.tempFqfilename, @ischar);
             addParameter(ip, 'circshiftK', 0, @isnumeric);
-            addParameter(ip, 'N', true, @islogical);
             addParameter(ip, 'datatype', [], @isnumeric); % 16
+            addParameter(ip, 'ext', []);
+            addParameter(ip, 'filetype', []);
+            addParameter(ip, 'N', true, @islogical);
+            addParameter(ip, 'untouch', true, @islogical);
+            addParameter(ip, 'hdr', this.initialHdr, @isstruct);
             parse(ip, varargin{:});
-            this.fqfilename = ip.Results.filename;
+            this.fqfilename = strrep(ip.Results.filename, '.4dfp.ifh', '.4dfp.hdr');
             this.circshiftK_ = ip.Results.circshiftK;
             this.N_ = ip.Results.N;
             this.datatype_ = ip.Results.datatype;
-            this.hdr_ = this.initialHdr;
- 			this.raw_ = this.initialRaw;
-            this.anaraw_ = this.initialAnaraw;                 
+            this.ext_ = ip.Results.ext;
+            this.filetype_ = ip.Results.filetype;            
+ 			this.untouch_ = ip.Results.untouch;
+            
+            this.hdr_ = ip.Results.hdr;
+ 			this.raw_ = this.initialRaw;   
+            this.anaraw_ = this.initialAnaraw;            
         end		  
     end 
     
@@ -206,7 +225,6 @@ classdef ImagingInfo < mlio.AbstractIO
     
     properties (Access = protected)
         anaraw_   
-        bitpix_
         circshiftK_
         datatype_
         hdr_
@@ -215,18 +233,24 @@ classdef ImagingInfo < mlio.AbstractIO
         machine_
         N_
         raw_
-        untouch_ = true
+        untouch_
     end
     
-    methods (Access = protected)
-        function hdr  = adjustHdr(this, hdr)
-            if (~isempty(this.datatype_))
-                hdr.dime.datatype = this.datatype_;
-                hdr.dime.bitpix = this.newBitpix;
+    methods (Access = protected) 
+        function hdr  = adjustHistOriginator(this, hdr)
+            if (~isprop(hdr, 'originator'))
+                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
+                return
             end
-            hdr = this.permuteHdr(hdr);
-            hdr = this.adjustHistOriginator(hdr);
-        end  
+            if (norm(hdr.hist.originator) < eps)
+                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
+                return
+            end
+            if (isa(this, 'mlfourdfp.FourdfpInfo') && this.N) % See also:  nifti_4dfp
+                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
+                return
+            end
+        end 
         function araw = initialAnaraw(this)
             assert(~isempty(this.hdr_));
             araw = struct( ...
@@ -342,11 +366,6 @@ classdef ImagingInfo < mlio.AbstractIO
     %% PRIVATE
     
     methods (Access = private)
-        function hdr  = adjustHistOriginator(this, hdr)
-            if (isa(this, 'mlfourdfp.FourdfpInfo') && this.N) % See also:  nifti_4dfp
-                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
-            end
-        end 
         function bp   = newBitpix(this)
             assert(~isempty(this.datatype_));
             switch (this.datatype_)

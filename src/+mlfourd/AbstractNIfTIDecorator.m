@@ -1,5 +1,6 @@
 classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
-	%% ABSTRACTNIFTIDECORATOR  
+	%% ABSTRACTNIFTIDECORATOR maintains a reference to a component object and defines an interface that conforms to
+    %  the component's interface
 
 	%  $Revision$
  	%  was created 24-Jul-2018 01:02:19 by jjlee,
@@ -21,8 +22,7 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
         filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
         hdr
         img
-        originalType
-        untouch
+        untouch        
         
         bitpix
         creationDate
@@ -35,6 +35,7 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
         mmppix
         negentropy
         orient
+        originalType
         pixdim
         seriesNumber
         
@@ -42,7 +43,7 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
-        viewer
+        viewer        
     end
     
 	methods 
@@ -233,6 +234,9 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
         function        addLog(this, varargin)
             this.component_.addLog(varargin{:});
         end
+        function this = applyScl(this)
+            this.component_ = this.component_.applyScl;
+        end
         function c    = char(this)
             c = this.component_.char;
         end
@@ -308,6 +312,9 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
         function this = sum(this, varargin)
             this.component_ = this.component_.sum(varargin{:});
         end
+        function fqfn = tempFqfilename(this)
+            fqfn = this.component_.tempFqfilename;
+        end
         function        view(this, varargin)
             this.component_.viewer = this.viewer;
             this.component_.view(varargin{:});
@@ -318,15 +325,15 @@ classdef AbstractNIfTIDecorator < mlfourd.INIfTIComponent
  			%  @param .
 
             ip = inputParser;
-            AddRequired(ip, 'component', @(x) isa(x, INIfTIComponent));
+            addRequired(ip, 'component', @(x) isa(x, 'mlfourd.INIfTIComponent'));
             parse(ip, varargin{:});
             this.component_ = ip.Results.component;
  		end
     end 
     
-    %% PRIVATE
+    %% PROTECTED
     
-	properties (Access = private)
+	properties (Access = protected)
  		component_
  	end
 

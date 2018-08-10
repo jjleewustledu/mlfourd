@@ -35,6 +35,9 @@ classdef NIfTIdState < mlfourd.ImagingState
         
         %%
         
+        function        addImgrec(this, varargin)
+            this.concreteObj_.addImgrec(varargin{:});
+        end
         function        addLog(this, varargin)
             this.concreteObj_.addLog(varargin{:});
         end

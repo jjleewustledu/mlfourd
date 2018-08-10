@@ -120,6 +120,9 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTIdecorator &
                 
         %% 
         
+        function        addImgrec(this, varargin)
+            this.component_.addImgrec(varargin{:});
+        end
         function        addLog(this, varargin)
             this.component_.addLog(varargin{:});
         end

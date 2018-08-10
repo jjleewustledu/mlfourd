@@ -27,7 +27,7 @@ classdef (Abstract) INIfTI
         pixdim
         seriesNumber
         
-        logger
+        %logger
         stack
         viewer
     end 
