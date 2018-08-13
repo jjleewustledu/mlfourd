@@ -1,5 +1,5 @@
-classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI 
-	%% NIFTICONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported states
+classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI 
+	%% IMAGINGFORMATCONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported states
     %  include mlfourd.{InnerFourdfp,InnerNIfTI,InnerMGH}.  The state is configured by field imagingInfo which is an 
     %  mlfourd.{ImagingInfo,Analyze75Info,FourdfpInfo,NIfTIInfo,MGHInfo}.
 
@@ -52,70 +52,6 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
     end
     
     methods (Static)
-        function inn  = createInner(varargin)
-            import mlfourd.* mlfourdfp.*;
-            if (isempty(varargin))
-                inn = InnerFourdfp(FourdfpInfo);
-                return
-            end
-            if (1 == length(varargin))
-                inn = NIfTIContext.createInner1(varargin{:});
-                return
-            end
-            inn = NIfTIContext.createInner2(varargin{:});
-        end            
-        function inn  = createInner1(obj)   
-            import mlfourd.* mlfourdfp.* mlsurfer.*;         
-            if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = obj;
-                return
-            end
-            if (~ischar(obj))
-                inn = InnerFourdfp(FourdfpInfo);
-                return
-            end
-            
-            [~,~,e] = myfileparts(obj);            
-            switch (e)
-                case FourdfpInfo.SUPPORTED_EXT
-                    inn = InnerFourdfp(FourdfpInfo(obj));
-                case NIfTIInfo.SUPPORTED_EXT
-                    inn = InnerNIfTI(NIfTIInfo(obj));
-                case mlsurfer.MGHInfo.SUPPORTED_EXT 
-                    inn = InnerMGH(MGHInfo(obj));
-                case '.hdr'
-                    inn = InnerNIfTI(Analyze75Info(obj));
-                otherwise
-                    inn = NIfTIContext.createInner([myfileprefix(obj) NIfTIContext.PREFERRED_EXT]);
-            end
-        end
-        function inn  = createInner2(varargin)
-            import mlfourd.* mlfourdfp.* mlsurfer.*;  
-            obj = varargin{1};
-            v_  = varargin(2:end);
-            if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = obj;
-                return
-            end
-            if (~ischar(obj))
-                inn = InnerNIfTI(FourdfpInfo);
-                return
-            end
-            
-            [~,~,e] = myfileparts(obj);            
-            switch (e)
-                case FourdfpInfo.SUPPORTED_EXT
-                    inn = InnerFourdfp(FourdfpInfo(obj, v_{:}), v_{:});
-                case NIfTIInfo.SUPPORTED_EXT
-                    inn = InnerNIfTI(NIfTIInfo(obj, v_{:}), v_{:});
-                case MGHInfo.SUPPORTED_EXT 
-                    inn = InnerMGH(MGHInfo(obj, v_{:}), v_{:});
-                case '.hdr'
-                    inn = InnerNIfTI(Analyze75Info(obj, v_{:}), v_{:});
-                otherwise
-                    inn = NIfTIContext.createInner([myfileprefix(obj) NIfTIContext.PREFERRED_EXT], v_{:});
-            end
-        end
         function [tf,e] = supportedFileformExists(fn)
             %% SUPPORTEDFILEFORMEXISTS searches for an existing filename.  If not found it attempts to find 
             %  the same fileprefix with alternative extension for supported image formats:  drawn from
@@ -413,9 +349,6 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
         function this = saveas(this, fqfn)
             this.innerNIfTI_ = this.innerNIfTI_.saveas(fqfn);
         end
-        function this = saveasx(this, fqfn, x)
-            this.innerNIfTI_ = this.innerNIfTI_.saveasx(fqfn, x);
-        end
         function this = scrubNanInf(this)
             this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
         end
@@ -436,15 +369,18 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
             this.innerNIfTI_.view(varargin{:});
         end
         
- 		function this = NIfTIContext(varargin)
- 			%% NIFTICONTEXT
- 			%  @param .
+ 		function this = ImagingFormatContext(varargin)
+ 			%% IMAGINGFORMATCONTEXT
+ 			%  @param obj must satisfy this.assertCtorObj; if char it must satisfy this.supportedFileformExists.
+            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
+            %  Valid param-names:  bitpix, datatype, descrip, ext, filename, filepath, fileprefix, filetype, fqfilename, 
+            %  fqfileprefix, hdr, img, label, mmppix, noclobber, pixdim, separator.
 
             import mlfourd.*;            
-            this.innerNIfTI_ = NIfTIContext.createInner(varargin{:}); 
+            this.innerNIfTI_ = ImagingFormatContext.createInner(varargin{:}); 
             
             ip = inputParser;
-            addOptional( ip, 'obj',          [], @NIfTIContext.assertCtorObj);
+            addOptional( ip, 'obj',          [], @ImagingFormatContext.assertCtorObj);
             addParameter(ip, 'bitpix',       [], @isnumeric);
             addParameter(ip, 'datatype',     [], @(x) isnumeric(x) || ischar(x));
             addParameter(ip, 'descrip',      '', @ischar);
@@ -464,25 +400,26 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
             addParameter(ip, 'separator',    '', @ischar);
             addParameter(ip, 'circshiftK', 0,    @isnumeric); % see also mlfourd.ImagingInfo
             addParameter(ip, 'N', true,          @islogical); % 
+
             parse(ip, varargin{:});
             obj = ip.Results.obj;
             
             this.innerNIfTI_.originalType_ = class(obj);
-            if (ischar(obj) && ...
-                    NIfTIContext.supportedFileformExists(obj))
-                % using nontrivial innerNIfTI_ from call to superclass
+            if (isa(obj, 'mlfourd.ImagingFormatContext') || ...
+                isa(obj, 'mlfourd.AbstractInnerImagingFormat') || ...
+                isa(obj, 'mlfourd.ImagingInfo'))
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
-            if (isa(obj, 'mlfourd.INIfTId'))
-                this = NIfTIContext(obj, varargin{:}); % inf recursion?
+            if (ischar(obj) && ...
+                ImagingFormatContext.supportedFileformExists(obj))
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
             if (isa(obj, 'mlio.IOInterface') || isa(obj, 'mlio.HandleIOInterface'))
                 assert(lexist(obj.fqfilename, 'file'), ...
-                    'mlfourd:fileNotFound', 'NIfTIContext.ctor could not find %s', obj.fqfilename);
-                this = NIfTIContext(obj.fqfilename);
+                    'mlfourd:fileNotFound', 'ImagingFormatContext.ctor could not find %s', obj.fqfilename);
+                this = ImagingFormatContext(obj.fqfilename);
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
@@ -497,8 +434,19 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
+            if (isa(obj, 'mlfourd.INIfTId')) 
+                %% legacy support
+                if (isa(obj, 'mlfourd.INIfTIdecorator'))
+                    obj = obj.component;
+                end
+                warning('off', 'MATLAB:structOnObject');
+                this = this.adjustInnerNIfTIWithStruct(struct(obj));
+                this = this.adjustFieldsFromInputParser(ip);
+                warning('on', 'MATLAB:structOnObject');
+                return
+            end
             error('mlfourd:unsupportedParamTypeclass', ...
-                'class(NIfTIContext.ctor..obj) -> %s', class(obj));
+                'class(ImagingFormatContext.ctor..obj) -> %s', class(obj));
  		end
     end 
     
@@ -510,18 +458,104 @@ classdef NIfTIContext < handle & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShen
     
     %% PRIVATE    
     
-    methods (Static, Access = private)        
-        function assertCtorObj(obj)
+    methods (Static, Access = private)
+        function        assertCtorObj(obj)
             assert( ...
+                isempty(obj) || ...
+                isa(obj, 'mlfourd.ImagingFormatContext') || ...
+                isa(obj, 'mlfourd.AbstractInnerImagingFormat') || ...
+                isa(obj, 'mlfourd.ImagingInfo') || ...
                 ischar(obj) ||  ...
+                isa(obj, 'mlfourd.INIfTId') || ...
                 isa(obj, 'mlio.IOInterface') || isa(obj, 'mlio.HandleIOInterface') || ...
-                isnumeric(obj) || ...
-                isstruct(obj), ...
+                isstruct(obj) || ...
+                isnumeric(obj), ...
                 'mlfourd:invalidCtorParam', ...
-                'NIfTIContext.assertCtorObj does not support an obj param with typeclass %s', class(obj));
+                'NIfTIHeavy.assertCtorObj does not support an obj param with typeclass %s', class(obj));
+        end
+        function inn  = createInner(varargin)
+            import mlfourd.* mlfourdfp.*;
+            if (isempty(varargin))
+                inn = InnerFourdfp(FourdfpInfo); % trivial
+                return
+            end
+            if (1 == length(varargin))
+                inn = ImagingFormatContext.createInner1(varargin{:});
+                return
+            end
+            inn = ImagingFormatContext.createInner2(varargin{:});
+        end            
+        function inn  = createInner1(obj)
+            import mlfourd.* mlfourdfp.* mlsurfer.*;     
+            if (isa(obj, 'mlfourd.ImagingFormatContext'))
+                inn = obj.innerNIfTI_; % copy ctor
+                return
+            end
+            if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
+                inn = obj;
+                return
+            end
+            if (isa(obj, 'mlfourd.ImagingInfo'))
+                inn = InnerNIfTI(obj);
+                return
+            end
+            if (ischar(obj))
+                [~,~,e] = myfileparts(obj);            
+                switch (e)
+                    case FourdfpInfo.SUPPORTED_EXT
+                        inn = InnerFourdfp(FourdfpInfo(obj));
+                    case NIfTIInfo.SUPPORTED_EXT
+                        inn = InnerNIfTI(NIfTIInfo(obj));
+                    case mlsurfer.MGHInfo.SUPPORTED_EXT 
+                        inn = InnerMGH(MGHInfo(obj));
+                    case '.hdr'
+                        inn = InnerNIfTI(Analyze75Info(obj));
+                    otherwise
+                        inn = ImagingFormatContext.createInner([myfileprefix(obj) ImagingFormatContext.PREFERRED_EXT]);
+                end
+                return
+            end            
+            
+            % trivial
+            inn = InnerFourdfp(FourdfpInfo);
+        end
+        function inn  = createInner2(varargin)
+            import mlfourd.* mlfourdfp.* mlsurfer.*;  
+            obj = varargin{1};
+            v_  = varargin(2:end);
+            if (isa(obj, 'mlfourd.ImagingFormatContext'))
+                inn = obj.innerNIfTI_; 
+                return
+            end
+            if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
+                inn = obj;
+                return
+            end
+            if (isa(obj, 'mlfourd.ImagingInfo'))
+                obj = obj.fqfilename;
+            end
+            if (ischar(obj))
+                [~,~,e] = myfileparts(obj);            
+                switch (e)
+                    case FourdfpInfo.SUPPORTED_EXT
+                        inn = InnerFourdfp(FourdfpInfo(obj, v_{:}), v_{:});
+                    case NIfTIInfo.SUPPORTED_EXT
+                        inn = InnerNIfTI(NIfTIInfo(obj, v_{:}), v_{:});
+                    case MGHInfo.SUPPORTED_EXT 
+                        inn = InnerMGH(MGHInfo(obj, v_{:}), v_{:});
+                    case '.hdr'
+                        inn = InnerNIfTI(Analyze75Info(obj, v_{:}), v_{:});
+                    otherwise
+                        inn = ImagingFormatContext.createInner([myfileprefix(obj) ImagingFormatContext.PREFERRED_EXT], v_{:});
+                end
+                return
+            end
+            
+            % trivial
+            inn = InnerNIfTI(FourdfpInfo);            
         end
     end
-    
+
     methods (Access = private)
         function this = adjustFieldsFromInputParser(this, ip)
             %% ADJUSTFIELDSFROMINPUTPARSER updates this.innerNIfTI_ with ip.Results from ctor.

@@ -27,13 +27,16 @@ classdef (Abstract) INIfTI
         pixdim
         seriesNumber
         
-        %logger
+        imagingInfo
+        logger
+        separator % for descrip & label properties, not for filesystem behaviors
         stack
         viewer
     end 
     
 	methods (Abstract) 
-        char(this)
+        addLog(this, varargin)
+        applyScl(this)    
         append_descrip(this, s)
         prepend_descrip(this, s)
         double(this)
@@ -41,11 +44,23 @@ classdef (Abstract) INIfTI
         append_fileprefix(this, s)
         prepend_fileprefix(this, s)
         fov(this)
+        freeview(this, varargin)
+        fslentropy(this)
+        fslEntropy(this)
+        fsleyes(this, varargin)
+        fslview(this, varargin)
+        hist(this, varargin)
         matrixsize(this)
+        prod(this, varargin)
         rank(this)
+        save(this)
+        saveas(this, fqfn)
         scrubNanInf(this)
         single(this)
         size(this)
+        sum(this, varargin)
+        tempFqfilename(this)
+        view(this, varargin)
     end 
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

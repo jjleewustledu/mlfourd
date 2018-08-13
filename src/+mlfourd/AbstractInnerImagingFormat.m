@@ -25,6 +25,8 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
     end  
     
 	properties (Dependent)
+        noclobber
+        
         ext      % KLUDGE for mlfourd.ImagingContext
         filetype % KLUDGE for mlfourd.ImagingContext
         hdr      % See also:  mlfourd.ImagingInfo
@@ -46,7 +48,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         imagingInfo
         imgrec
         logger
-        noclobber
         separator % for descrip & label properties, not for filesystem behaviors
         stack % add descrip to stack at every call to set.img
         viewer
@@ -55,6 +56,14 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
 	methods 
         
         %% GET/SET
+        
+        function tf   = get.noclobber(this)
+            tf = this.filesystemRegistry_.noclobber;
+        end
+        function this = set.noclobber(this, nc)
+            nc = logical(nc);
+            this.filesystemRegistry_.noclobber = nc;
+        end
         
         function g    = get.ext(this)
             g = this.imagingInfo_.ext;
@@ -267,13 +276,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function g    = get.logger(this)
             g = this.logger_;
         end
-        function tf   = get.noclobber(this)
-            tf = this.filesystemRegistry_.noclobber;
-        end
-        function this = set.noclobber(this, nc)
-            nc = logical(nc);
-            this.filesystemRegistry_.noclobber = nc;
-        end
         function s    = get.separator(this)
             s = this.separator_;
         end
@@ -290,40 +292,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end
         function this = set.viewer(this, v)
             this.viewer_ = v;
-        end
-        
-        %% mlfourd.InnerNIfTIIO
-        
-        function        save(this)
-            %% SAVE 
-            %  If this.noclobber == true,  it will never overwrite files.
-            %  If this.noclobber == false, it may overwrite files. 
-            %  If this.untouch   == true,  it will never overwrite files.
-            %  If this.untouch   == false, it may saving imaging data with modified state.
-            %  @return saves this to this.fqfilename.  
-            %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
-            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
-            
-            this = this.ensureFilesuffix;
-            this = this.ensureImg;
-            this = this.ensureNoclobber;
-            this = this.mutateInnerImagingFormatByFilesuffix;
-            this.save__;
-            this.saveLogger;
-        end 
-        function this = saveas(this, fn)
-            %% SAVEAS
-            %  @param fn updates internal filename
-            %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
-            %  See also:  mlfourd.InnerNIfTI.save
-            
-            [p,f,e] = myfileparts(fn);
-            if (isempty(e))
-                e = this.defaultFilesuffix;
-            end
-            this.fqfilename = fullfile(p, [f e]);
-            this.untouch = false;
-            this.save;
         end
         
         %% mlfourd.INIfTI
@@ -401,6 +369,53 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function f3d  = fov(this)
             f3d = this.mmppix .* this.matrixsize;
         end   
+        function        freeview(this, varargin)
+            %% FREEVIEW
+            %  @param [filename[, ...]]
+            
+            this.viewExternally('freeview', varargin{:});
+        end
+        function e    = fslentropy(this)
+            if (~lexist(this.fqfilename, 'file'))
+                e = nan;
+                return
+            end
+            [~,e] = mlbash(sprintf('fslstats %s -e', this.fqfileprefix));
+            e = str2double(e);
+        end
+        function E    = fslEntropy(this)
+            if (~lexist(this.fqfilename, 'file'))
+                E = nan;
+                return
+            end
+            [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
+            E = str2double(E);
+        end
+        function        fsleyes(this, varargin)
+            %% FSLVIEW
+            %  @param [filename[, ...]]
+            
+            try
+                this.viewExternally('fsleyes', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.fslview(varargin{:});
+            end
+        end 
+        function        fslview(this, varargin)
+            %% FSLVIEW
+            %  @param [filename[, ...]]
+            
+            try
+                this.viewExternally('fslview', varargin{:});
+            catch ME
+                handwarning(ME);
+                this.viewExternally('fslview_deprecated', varargin{:});
+            end
+        end
+        function        hist(this, varargin)
+            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
+        end 
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
         end   
@@ -417,6 +432,106 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             if (nargin < 2)
                 img = this.img_; end
             rnk = size(size(img),2);
+        end
+        function        save(this)
+            %% SAVE 
+            %  If this.noclobber == true,  it will never overwrite files.
+            %  If this.noclobber == false, it may overwrite files. 
+            %  If this.untouch   == true,  it will never overwrite files.
+            %  If this.untouch   == false, it may saving imaging data with modified state.
+            %  @return saves this to this.fqfilename.  
+            %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
+            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
+            
+            this = this.ensureFilesuffix;
+            this = this.ensureImg;
+            this = this.ensureNoclobber;
+            this = this.mutateInnerImagingFormatByFilesuffix;
+            this.save__;
+            this.saveLogger;
+        end 
+        function this = saveas(this, fn)
+            %% SAVEAS
+            %  @param fn updates internal filename
+            %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
+            %  See also:  mlfourd.InnerNIfTI.save
+            
+            [p,f,e] = myfileparts(fn);
+            if (isempty(e))
+                e = this.defaultFilesuffix;
+            end
+            this.fqfilename = fullfile(p, [f e]);
+            this.untouch = false;
+            this.save;
+        end
+        function this = scrubNanInf(this, varargin)
+            %% SCRUBNANINF sets to zero non-finite elements of its argument
+            %  @param obj := this.img_ by default.
+            %  @return this.
+            %  See also mlfourd.AbstractNIfTIComponent and mlfourd.NIfTIDecorator.
+            
+            p = inputParser;
+            addOptional(p, 'obj', this.img_, @isnumeric);
+            parse(p, varargin{:});
+            img__ = double(p.Results.obj);
+            
+            if (all(isfinite(img__(:))))
+                return; end
+            switch (this.rank(img__))
+                case 1
+                    img__ = scrub1D(img__);
+                case 2
+                    img__ = scrub2D(img__);
+                case 3
+                    img__ = scrub3D(img__);
+                case 4
+                    img__ = scrub4D(img__);
+                otherwise
+                    error('mlfourd:unsupportedParamValue', ...
+                          'InnerNIfTI.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
+            end            
+            this.img = img__;
+            
+            function im   = scrub1D(this, im)
+                assert(isnumeric(im));
+                for x = 1:this.size(1)
+                    if (~isfinite(im(x)))
+                        im(x) = 0; end
+                end
+            end
+            function im   = scrub2D(this, im)
+                assert(isnumeric(im));
+                for y = 1:this.size(2)
+                    for x = 1:this.size(1)
+                        if (~isfinite(im(x,y)))
+                            im(x,y) = 0; end
+                    end
+                end
+            end
+            function im   = scrub3D(this, im)
+                assert(isnumeric(im));
+                for z = 1:this.size(3)
+                    for y = 1:this.size(2)
+                        for x = 1:this.size(1)
+                            if (~isfinite(im(x,y,z)))
+                                im(x,y,z) = 0; end
+                        end
+                    end
+                end
+            end
+            function im   = scrub4D(this, im)
+                assert(isnumeric(im));
+                for t = 1:this.size(4)
+                    for z = 1:this.size(3)
+                        for y = 1:this.size(2)
+                            for x = 1:this.size(1)
+                                if (~isfinite(im(x,y,z,t)))
+                                    im(x,y,z,t) = 0; end
+                            end
+                        end
+                    end
+                end
+            end 
         end
         function s    = single(this)
             if (~isa(this.img, 'single'))
@@ -439,39 +554,16 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             
             this.img = sum(this.img_, varargin{:});
         end  
-        
-        %% viewing
-        
-        function      view(this, varargin)
+        function fn   = tempFqfilename(this, varargin)
+            ip = inputParser;
+            addOptional(ip, 'fqfp', this.fqfileprefix, @ischar);
+            parse(ip, varargin{:});
+            
+            fn = [myfileprefix(ip.Results.fqfp) this.defaultFilesuffix];
+            fn = tempFqfilename(fn);
+        end
+        function        view(this, varargin)
             this.viewExternally(this.viewer, varargin{:});
-        end
-        function      freeview(this, varargin)
-            %% FREEVIEW
-            %  @param [filename[, ...]]
-            
-            this.viewExternally('freeview', varargin{:});
-        end
-        function      fsleyes(this, varargin)
-            %% FSLVIEW
-            %  @param [filename[, ...]]
-            
-            try
-                this.viewExternally('fsleyes', varargin{:});
-            catch ME
-                handwarning(ME);
-                this.fslview(varargin{:});
-            end
-        end 
-        function      fslview(this, varargin)
-            %% FSLVIEW
-            %  @param [filename[, ...]]
-            
-            try
-                this.viewExternally('fslview', varargin{:});
-            catch ME
-                handwarning(ME);
-                this.viewExternally('fslview_deprecated', varargin{:});
-            end
         end
         
         %%
@@ -548,102 +640,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end
         function fqfn = fqfileprefix_nii_gz(this)
             fqfn = [this.fqfileprefix '.nii.gz'];
-        end
-        function e    = fslentropy(this)
-            if (~lexist(this.fqfilename, 'file'))
-                e = nan;
-                return
-            end
-            [~,e] = mlbash(sprintf('fslstats %s -e', this.fqfileprefix));
-            e = str2double(e);
-        end
-        function E    = fslEntropy(this)
-            if (~lexist(this.fqfilename, 'file'))
-                E = nan;
-                return
-            end
-            [~,E] = mlbash(sprintf('fslstats %s -E', this.fqfileprefix));
-            E = str2double(E);
-        end
-        function        hist(this, varargin)
-            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
-        end 
-        function this = scrubNanInf(this, varargin)
-            %% SCRUBNANINF sets to zero non-finite elements of its argument
-            %  @param obj := this.img_ by default.
-            %  @return this.
-            %  See also mlfourd.AbstractNIfTIComponent and mlfourd.NIfTIDecorator.
-            
-            p = inputParser;
-            addOptional(p, 'obj', this.img_, @isnumeric);
-            parse(p, varargin{:});
-            img__ = double(p.Results.obj);
-            
-            if (all(isfinite(img__(:))))
-                return; end
-            switch (this.rank(img__))
-                case 1
-                    img__ = scrub1D(img__);
-                case 2
-                    img__ = scrub2D(img__);
-                case 3
-                    img__ = scrub3D(img__);
-                case 4
-                    img__ = scrub4D(img__);
-                otherwise
-                    error('mlfourd:unsupportedParamValue', ...
-                          'InnerNIfTI.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
-            end            
-            this.img = img__;
-            
-            function im   = scrub1D(this, im)
-                assert(isnumeric(im));
-                for x = 1:this.size(1)
-                    if (~isfinite(im(x)))
-                        im(x) = 0; end
-                end
-            end
-            function im   = scrub2D(this, im)
-                assert(isnumeric(im));
-                for y = 1:this.size(2)
-                    for x = 1:this.size(1)
-                        if (~isfinite(im(x,y)))
-                            im(x,y) = 0; end
-                    end
-                end
-            end
-            function im   = scrub3D(this, im)
-                assert(isnumeric(im));
-                for z = 1:this.size(3)
-                    for y = 1:this.size(2)
-                        for x = 1:this.size(1)
-                            if (~isfinite(im(x,y,z)))
-                                im(x,y,z) = 0; end
-                        end
-                    end
-                end
-            end
-            function im   = scrub4D(this, im)
-                assert(isnumeric(im));
-                for t = 1:this.size(4)
-                    for z = 1:this.size(3)
-                        for y = 1:this.size(2)
-                            for x = 1:this.size(1)
-                                if (~isfinite(im(x,y,z,t)))
-                                    im(x,y,z,t) = 0; end
-                            end
-                        end
-                    end
-                end
-            end 
-        end
-        function fn   = tempFqfilename(this, varargin)
-            ip = inputParser;
-            addOptional(ip, 'fqfp', this.fqfileprefix, @ischar);
-            parse(ip, varargin{:});
-            
-            fn = [myfileprefix(ip.Results.fqfp) this.defaultFilesuffix];
-            fn = tempFqfilename(fn);
         end
         
  		function this = AbstractInnerImagingFormat(varargin)
@@ -752,6 +748,9 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             end
         end
         function this = ensureNoclobber(this)
+            %% ENSURENOCLOBBER ensures that there is no clobbering.
+            %  @throws mlfourd:IOError:noclobberPreventedSaving if this.noclobber and lexist(this.fqfilename).
+            
             if (this.noclobber && lexist(this.fqfilename, 'file'))
                 error('mlfourd:IOError:noclobberPreventedSaving', ...
                     'AbstractInnerImagingFormat.ensureNoclobber->%i but the file %s already exists; please check intentions', ...

@@ -1,4 +1,4 @@
-classdef NIfTIIO < mlio.IOInterface
+classdef (Abstract) NIfTIIO < mlio.IOInterface
 	%% NIFTIIO  
 
 	%  $Revision$
