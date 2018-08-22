@@ -6,7 +6,7 @@ classdef NIfTIInfo < mlfourd.AbstractNIfTIInfo
  	%  was created 30-Apr-2018 16:39:09 by jjlee,
  	%  last modified $LastChangedDate$ and placed into repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
- 	    
+ 	     	
     properties (Constant)
         FILETYPE      = 'NIFTI_GZ'
         FILETYPE_EXT  = '.nii.gz'

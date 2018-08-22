@@ -1,5 +1,7 @@
 classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
-	%% ABSTRACTINNERIMAGINGFORMAT 
+	%% ABSTRACTINNERIMAGINGFORMAT supports imaging formats through concrete subclasses such as InnerNIfTI,  
+    %  mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  Altering property filesuffix is a convenient way to change states 
+    %  for formats.
 
 	%  $Revision$
  	%  was created 22-Jul-2018 01:31:58 by jjlee,
@@ -15,7 +17,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
     methods (Abstract, Static)
         this = create(fn, varargin) % abstract factory design pattern
         info = createImagingInfo(fn, varargin)
-        e = defaultFilesuffix
         s = imagingInfo2struct(fn, varargin)
     end
     
@@ -48,6 +49,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         imagingInfo
         imgrec
         logger
+        N
         separator % for descrip & label properties, not for filesystem behaviors
         stack % add descrip to stack at every call to set.img
         viewer
@@ -81,7 +83,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                     this.filesuffix = '.hdr';
                 case 2
                     this.imagingInfo_.filetype = ft;
-                    this.filesuffix = this.defaultFilesuffix;
+                    this.filesuffix = this.imagingInfo.defaultFilesuffix;
                 otherwise
                     error('mlfourd:unsupportedParamValue', 'InnerNIfTI.set.filetype.ft->%g', ft);
             end
@@ -242,7 +244,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function this = set.pixdim(this, pd)
             %% SET.PIXDIM sets voxel-time dimensions in mm, s.
             
-            this.imagingInfo_.hdr.dime.pixdim(2:length(mpp)+1) = pd;
+            this.imagingInfo_.hdr.dime.pixdim(2:this.rank+1) = pd;
         end 
         function s    = get.seriesNumber(this)
             s = this.seriesNumber_;
@@ -275,6 +277,13 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end
         function g    = get.logger(this)
             g = this.logger_;
+        end
+        function g    = get.N(this)
+            g = this.imagingInfo_.N;
+        end
+        function this = set.N(this, s)
+            assert(islogical(s));
+            this.imagingInfo_.N = s;
         end
         function s    = get.separator(this)
             s = this.separator_;
@@ -458,7 +467,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             
             [p,f,e] = myfileparts(fn);
             if (isempty(e))
-                e = this.defaultFilesuffix;
+                e = this.imagingInfo.defaultFilesuffix;
             end
             this.fqfilename = fullfile(p, [f e]);
             this.untouch = false;
@@ -479,13 +488,13 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 return; end
             switch (this.rank(img__))
                 case 1
-                    img__ = scrub1D(img__);
+                    img__ = scrub1D(this, img__);
                 case 2
-                    img__ = scrub2D(img__);
+                    img__ = scrub2D(this, img__);
                 case 3
-                    img__ = scrub3D(img__);
+                    img__ = scrub3D(this, img__);
                 case 4
-                    img__ = scrub4D(img__);
+                    img__ = scrub4D(this, img__);
                 otherwise
                     error('mlfourd:unsupportedParamValue', ...
                           'InnerNIfTI.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
@@ -559,7 +568,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             addOptional(ip, 'fqfp', this.fqfileprefix, @ischar);
             parse(ip, varargin{:});
             
-            fn = [myfileprefix(ip.Results.fqfp) this.defaultFilesuffix];
+            fn = [myfileprefix(ip.Results.fqfp) this.imagingInfo.defaultFilesuffix];
             fn = tempFqfilename(fn);
         end
         function        view(this, varargin)
@@ -618,7 +627,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             fn = sprintf('instance_%s_%s%s', ...
                 strrep(class(this), '.', '_'), ...
                 datestr(now, 30), ...
-                this.defaultFilesuffix);
+                mlfourd.ImagingInfo.defaultFilesuffix);
         end
         function        deleteExisting(~, fn)
             deleteExisting(fn);
@@ -661,10 +670,14 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             addParameter(ip, 'separator', ';', @ischar);
             addParameter(ip, 'stack', {}, @iscell);
             addParameter(ip, 'viewer', this.VIEWER, @ischar);  
+            addParameter(ip, 'circshiftK', 0, @isnumeric); % see also mlfourd.ImagingInfo
+            addParameter(ip, 'N', true, @islogical);       % 
             parse(ip, varargin{:});
             
             this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;
             this.imagingInfo_ = ip.Results.imagingInfo;
+            this.imagingInfo_.circshiftK = ip.Results.circshiftK;
+            this.imagingInfo_.N = ip.Results.N;
             
             this.creationDate_ = ip.Results.creationDate;
             this.img_ = ip.Results.img;
@@ -737,7 +750,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end 
         function this = ensureFilesuffix(this)
             if (isempty(this.filesuffix))
-                this.filesuffix = this.defaultFilesuffix;
+                this.filesuffix = this.imagingInfo.defaultFilesuffix;
             end
         end
         function this = ensureImg(this)

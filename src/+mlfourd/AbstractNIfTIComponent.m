@@ -12,7 +12,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
  
     properties (Constant)
         EQUALN_IGNORES = ...
-            {'creationDate' 'descrip' 'hdr' 'hdxml' 'imagingInfo' 'label' 'logger' 'originalType' 'regular' 'stack' 'untouch'}
+            {'bitpix' 'creationDate' 'datatype' 'descrip' 'glmax' 'hdr' 'hdxml' 'imagingInfo' 'imgrec' 'label' 'logger' 'originalType' 'regular' 'stack' 'untouch'}
     end
     
 	properties (Dependent) 
@@ -53,30 +53,6 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         separator % for descrip & label properties, not for filesystem behaviors
         stack
         viewer
-    end
-    
-    methods (Static)        
-        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
-            tf = true; 
-            msg = '';
-            flds = fieldnames(obj1);
-            for f = 1:length(flds)
-                if (~evalIgnore(flds{f}))
-                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
-                        tf = false;
-                        msg = sprintf('AbstractNIfTIComponent.checkFields:  mismatch at field %s.', flds{f});
-                        warning('mlfourd:mismatchedField', msg); %#ok<SPWRN>
-                        if (strcmp(flds{f}, 'img'))
-                            disp(size(obj1.img));
-                            disp(size(obj2.img));
-                            continue
-                        end
-                        disp(obj1.(flds{f}));
-                        disp(obj2.(flds{f}));
-                    end
-                end
-            end
-        end 
     end
     
     methods 
@@ -304,7 +280,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             s = [1 1];
         end   
         
-        %% 
+        %% INIfTI
         
         function        addImgrec(this, varargin)
             if (~ismethod(this.innerNIfTI_, 'addImgrec'))
@@ -317,9 +293,15 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
                 return
             end
             this.innerNIfTI_.addLog(varargin{:});
-        end
-        function c    = char(this)
-            c = this.innerNIfTI_.char;
+        end   
+        function this = applyScl(this)
+            iihd = this.imagingInfo_.hdr.dime;
+            this = this.append_descrip( ...
+                sprintf('applyScl:  img := %g img + %g', ...
+                iihd.scl_slope, iihd.scl_inter));            
+            this.img = double(this.img) * this.hdr.dime.scl_slope + this.hdr.dime.scl_inter;
+            this.imagingInfo_.hdr.dime.scl_slope = 1; % now incorporated into this.img
+            this.imagingInfo_.hdr.dime.scl_inter = 0; %                  
         end
         function this = append_descrip(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
@@ -342,14 +324,14 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function f    = fov(this)
             f = this.innerNIfTI_.fov;
         end
+        function        freeview(this, varargin)
+            this.innerNIfTI_.freeview(varargin{:});
+        end
         function e    = fslentropy(this)
             e = this.innerNIfTI_.fslentropy;
         end
         function E    = fslEntropy(this)
             E = this.innerNIfTI_.fslEntropy;
-        end
-        function        freeview(this, varargin)
-            this.innerNIfTI_.freeview(varargin{:});
         end
         function        fsleyes(this, varargin)
             this.innerNIfTI_.fsleyes(varargin{:});
@@ -360,9 +342,6 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function        hist(this, varargin)
             this.innerNIfTI_.hist(varargin{:});
         end        
-        function tf   = lexist(this)
-            tf = this.innerNIfTI_.lexist;
-        end
         function m    = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
         end
@@ -378,9 +357,6 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function this = saveas(this, fqfn)
             this.innerNIfTI_ = this.innerNIfTI_.saveas(fqfn);
         end
-        function this = saveasx(this, fqfn, x)
-            this.innerNIfTI_ = this.innerNIfTI_.saveasx(fqfn, x);
-        end
         function this = scrubNanInf(this)
             this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
         end
@@ -393,13 +369,89 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         function this = sum(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.sum(varargin{:});
         end
+        function fqfn = tempFqfilename(this)
+            fqfn = this.innerNIfTI_.tempFqfilename;
+        end
         function        view(this, varargin)
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
         
-        %% support for isequal[n]
+        %% 
         
+        function c    = char(this)
+            c = this.innerNIfTI_.char;
+        end
+        function f    = false(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'false', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_false'], @ischar);
+            parse(p, varargin{:});
+            f = this.makeSimilar('img', false(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end  
+        function tf   = isequal(this, obj)
+            tf = this.isequaln(obj);
+        end
+        function tf   = isequaln(this, obj)
+            tf = this.classesequal(obj);
+            if (tf)
+                tf = this.fieldsequaln(obj);
+                if (tf)
+                    tf = this.hdrsequaln(obj);
+                end
+            end
+        end 
+        function tf   = isscalar(this)
+            tf = isscalar(this.img);
+        end
+        function tf   = isvector(this)
+            tf = isvector(this.img);
+        end   
+        function tf   = lexist(this)
+            tf = this.innerNIfTI_.lexist;
+        end   
+        function niid = makeSimilar(this, varargin)
+            %% MAKESIMILAR 
+            %  @param [param-name, param-value[, ...]] allow adjusting public fields at creation.
+            %  @return niid copy-construction with niid.descrip appended with 'made similar'.
+            %  See also:  mlfourd.NIfTId.NIfTId
+    
+            niid = mlfourd.NIfTId(this, varargin{:});
+            niid.addLog('made similar');
+        end
+        function o    = nan(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'nan', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_nan'], @ischar);
+            parse(p, varargin{:});
+            o = this.makeSimilar('img', nan(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function o    = ones(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'ones', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_ones'], @ischar);
+            parse(p, varargin{:});
+            o = this.makeSimilar('img', ones(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function t    = true(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'true', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_true'], @ischar);
+            parse(p, varargin{:});
+            t = this.makeSimilar('img', true(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function z    = zeros(this, varargin)
+            p = inputParser;
+            addOptional(p, 'desc', 'zeros', @ischar);
+            addOptional(p, 'fp',   [this.fileprefix '_zeros'],     @ischar);
+            parse(p, varargin{:});
+            z = this.makeSimilar('img', zeros(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end   
+    end
+    
+    %% PROTECTED
+    
+    methods (Access = protected)
         function [tf,msg] = classesequal(this, c)
             tf  = true; 
             msg = '';
@@ -428,15 +480,9 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
                         this.hdr.hist, obj.hdr.hist, @(x) lstrfind(x, this.EQUALN_IGNORES));
                 end
             end
-        end
-        
-    end
-    
-    %% PROTECTED
-    
-    methods (Access = protected)
+        end      
  		function this = AbstractNIfTIComponent(inner)
-            assert(isa(inner, 'mlfourd.NIfTIIO') && ...
+            assert(isa(inner, 'mlfourd.InnerNIfTIIO') && ...
                    isa(inner, 'mlfourd.INIfTI'));
             this.innerNIfTI_ = inner;
  		end
@@ -444,6 +490,32 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
     
     properties (Access = protected)
         innerNIfTI_
+    end
+    
+    %% HIDDEN    
+    
+    methods (Static, Hidden)
+        function [tf,msg] = checkFields(obj1, obj2, evalIgnore)
+            tf = true; 
+            msg = '';
+            flds = fieldnames(obj1);
+            for f = 1:length(flds)
+                if (~evalIgnore(flds{f}))
+                    if (~isequaln(obj1.(flds{f}), obj2.(flds{f})))
+                        tf = false;
+                        msg = sprintf('AbstractNIfTIComponent.checkFields:  mismatch at field %s.', flds{f});
+                        warning('mlfourd:mismatchedField', msg); %#ok<SPWRN>
+                        if (strcmp(flds{f}, 'img'))
+                            disp(size(obj1.img));
+                            disp(size(obj2.img));
+                            continue
+                        end
+                        disp(obj1.(flds{f}));
+                        disp(obj2.(flds{f}));
+                    end
+                end
+            end
+        end 
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

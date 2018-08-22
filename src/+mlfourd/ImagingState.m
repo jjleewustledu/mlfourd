@@ -1,4 +1,4 @@
-classdef (Abstract) ImagingState < mlfourd.NIfTIIO
+classdef (Abstract) ImagingState < handle & mlfourd.HandleNIfTIIO
 	%% IMAGINGSTATE is the parent class for all internal states used by ImagingContext in a state design pattern.
     %  See also:  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
@@ -91,34 +91,34 @@ classdef (Abstract) ImagingState < mlfourd.NIfTIIO
             f = 'freeview';
         end
         
-        function this = set.filename(this, f)
+        function     set.filename(this, f)
             this.concreteObj_.filename = f;
         end  
-        function this = set.filepath(this, f)
+        function     set.filepath(this, f)
             this.concreteObj_.filepath = f;
         end  
-        function this = set.fileprefix(this, f)
+        function     set.fileprefix(this, f)
             this.concreteObj_.fileprefix = f;
         end        
-        function this = set.filesuffix(this, f)
+        function     set.filesuffix(this, f)
             this.concreteObj_.filesuffix = f;
         end        
-        function this = set.fqfilename(this, f)
+        function     set.fqfilename(this, f)
             this.concreteObj_.fqfilename = f;
         end        
-        function this = set.fqfileprefix(this, f)
+        function     set.fqfileprefix(this, f)
             this.concreteObj_.fqfileprefix = f;
         end        
-        function this = set.fqfn(this, f)
+        function     set.fqfn(this, f)
             this.concreteObj_.fqfilename = f;
         end        
-        function this = set.fqfp(this, f)
+        function     set.fqfp(this, f)
             this.concreteObj_.fqfileprefix = f;
         end     
-        function this = set.noclobber(this, f)
+        function     set.noclobber(this, f)
             this.concreteObj_.noclobber = f;
         end        
-        function this = set.viewer(this, f)
+        function     set.viewer(this, f)
             if (isprop(this.concreteObj_, 'viewer'))
                 assert(ischar(f));
                 this.concreteObj_.viewer = f;

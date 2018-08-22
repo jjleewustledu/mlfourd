@@ -1,7 +1,9 @@
 classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI 
-	%% IMAGINGFORMATCONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported states
-    %  include mlfourd.{InnerFourdfp,InnerNIfTI,InnerMGH}.  The state is configured by field imagingInfo which is an 
-    %  mlfourd.{ImagingInfo,Analyze75Info,FourdfpInfo,NIfTIInfo,MGHInfo}.
+	%% IMAGINGFORMATCONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported 
+    %  states include mlfourd.InnerNIfTI, mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  The state is configured by field  
+    %  imagingInfo which is an mlfourd.{ImagingInfo,Analyze75Info,NIfTIInfo}, mlfourdfp.FourdfpInfo, mlsurfer.MGHInfo.  
+    %  The different available states predominantly manage different imaging formats.  Altering property filesuffix is a
+    %  convenient way to change states for formats.
 
 	%  $Revision$
  	%  was created 24-Jul-2018 00:35:24 by jjlee,
@@ -400,7 +402,6 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             addParameter(ip, 'separator',    '', @ischar);
             addParameter(ip, 'circshiftK', 0,    @isnumeric); % see also mlfourd.ImagingInfo
             addParameter(ip, 'N', true,          @islogical); % 
-
             parse(ip, varargin{:});
             obj = ip.Results.obj;
             
@@ -471,7 +472,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 isstruct(obj) || ...
                 isnumeric(obj), ...
                 'mlfourd:invalidCtorParam', ...
-                'NIfTIHeavy.assertCtorObj does not support an obj param with typeclass %s', class(obj));
+                'ImagingFormatContext.assertCtorObj does not support an obj param with typeclass %s', class(obj));
         end
         function inn  = createInner(varargin)
             import mlfourd.* mlfourdfp.*;
@@ -581,20 +582,6 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 end
             end
         end
-        function this = adjustInnerNIfTIWithINIfTId(this, obj, varargin)
-            this.innerNIfTI_.creationDate_ = obj.creationDate;
-            this.innerNIfTI_.img_ = obj.img;
-            this.innerNIfTI_.label_ = obj.label;
-            this.innerNIfTI_.logger_ = obj.logger;
-            this.innerNIfTI_.orient_ = obj.orient;
-            this.innerNIfTI_.originalType_ = obj.originalType;
-            this.innerNIfTI_.seriesNumber_ = obj.seriesNumber;
-            this.innerNIfTI_.separator_ = ';';
-            this.innerNIfTI_.stack_ = obj.stack;
-            this.innerNIfTI_.viewer = obj.viewer;
-            % mlsystem.FilesystemRegistry is a singleton design pattern
-            this.innerNIfTI_.imagingInfo = mlfourd.NIfTIInfo(obj.fqfilename, varargin{:});
-        end
         function this = adjustInnerNIfTIWithNumeric(this, num)
             rank                                                        = length(size(num));
             this.innerNIfTI_.img_                                       = num;
@@ -616,6 +603,16 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             this.innerNIfTI_.untouch      = s.untouch;
         end
     end 
+    
+    %% HIDDEN
+    
+    methods (Hidden)
+        function c = innerTypeclass(this)
+            %% INNERTYPECLASS assists debugging.
+            
+            c = class(this.innerNIfTI_);
+        end
+    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

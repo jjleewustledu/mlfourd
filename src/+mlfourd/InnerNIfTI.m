@@ -9,8 +9,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 8.5.0.197613 (R2015a) for MACI64.  
     
-    properties (Dependent)        
-        N
+    properties (Dependent) 
         untouch
         
         hdxml
@@ -25,9 +24,6 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
         end
         function info = createImagingInfo(fn, varargin)
             info = mlfourd.NIfTIInfo(fn, varargin{:});
-        end
-        function e = defaultFilesuffix
-            e =  mlfourd.NIfTIInfo.NIFTI_EXT;
         end
         function [s,ninfo] = imagingInfo2struct(fn, varargin)
             ninfo = mlfourd.NIfTIInfo(fn, varargin{:});
@@ -55,15 +51,12 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
             [~,x] = mlbash(['fslhd -x ' this.fqfileprefix]);
             x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
         end
-        function g    = get.N(this)
-            g = this.imagingInfo.N;
-        end
         function o    = get.orient(this)
             if (~isempty(this.orient_))
                 o = this.orient_;
                 return
             end
-            if (lexist(this.fqfilename, 'file') && lstrfind(this.filesuffix, this.defaultFilesuffix))
+            if (lexist(this.fqfilename, 'file') && lstrfind(this.filesuffix, this.imagingInfo.defaultFilesuffix))
                 [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
                 o = strtrim(o);
                 return
@@ -79,7 +72,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
          
         %%         
         
-        function this = InnerNIfTI(varargin)     
+        function this = InnerNIfTI(varargin)
  			%  @param imagingInfo is an mlfourd.ImagingInfo object and is required; it may be an aufbau object.
             
             this = this@mlfourd.AbstractInnerImagingFormat(varargin{:});
@@ -94,8 +87,9 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
             hdr_ = this.hdr;
             switch (this.filesuffix)
                 case FourdfpInfo.SUPPORTED_EXT
+                    [this.img,hdr_] = FourdfpInfo.exportFourdfp(this.img, hdr_);
                     info = FourdfpInfo(this.fqfilename, ...
-                        'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', this.hdr);
+                        'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', hdr_);                    
                     this = InnerFourdfp(info, ...
                        'creationDate', this.creationDate, 'img', this.img, 'label', this.label, 'logger', this.logger, ...
                        'orient', this.orient_, 'originalType', this.originalType, 'seriesNumber', this.seriesNumber, ...
@@ -114,7 +108,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
                     error('mlfourd:unsupportedSwitchcase', ...
                         'InnerNIfTI.filesuffix->%s', this.filesuffix);
             end
-        end
+        end        
     end
     
     %% HIDDEN

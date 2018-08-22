@@ -1,4 +1,4 @@
-classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numerical & mlpatterns.DipNumerical & mlfourd.INumerical
+classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numerical & mlpatterns.DipNumerical
 	%% NUMERICALNIFTID extends NIfTId implementations with bsxfun and other numerical functionality.
     
 	%  $Revision$
@@ -261,11 +261,6 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             b = b.blurred(varargin{:});
             this = NumericalNIfTId(b.component);
         end
-        function this = coulombPotential(this, varargin)
-            import mlfourd.*;
-            b = CoulombPotentialNIfTId(this.component, varargin{:});
-            this = NumericalNIfTId(b.component);
-        end
         function this = maskBlended(this, varargin)
             ip = inputParser;
             addRequired(ip, 'mask', @(x) isa(x, 'mlfourd.INIfTI'));
@@ -398,12 +393,15 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
         function this = NumericalNIfTId(cmp, varargin)
             this = this@mlfourd.NIfTIdecoratorProperties(cmp, varargin{:});
             if (nargin == 1 && isa(cmp, 'mlfourd.NumericalNIfTId'))
-                this = this.component;
+                this.component_ = cmp.component;
                 return
             end
-            this = this.append_descrip('decorated by NumericalNIfTId');
+            this.addLog('decorated by NumericalNIfTId');
+        end
+        function that = clone(this)
+            that = mlfourd.NumericalNIfTId(this.component);
         end
     end 
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
- end 
+end 

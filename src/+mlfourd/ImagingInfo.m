@@ -29,6 +29,7 @@ classdef ImagingInfo < mlio.AbstractIO
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
     properties (Dependent)
+        circshiftK
         qfac % from this.hdr.dime.pixdim(1)
         qform_code
         raw % : [1×1 struct]
@@ -43,6 +44,9 @@ classdef ImagingInfo < mlio.AbstractIO
     end
     
     methods (Static)
+        function e = defaultFilesuffix
+            e =  mlfourd.NIfTIInfo.FILETYPE_EXT;
+        end
         function X = ensureDatatype(X, dt)
             %  @param X is numeric.
             %  @param dt is char for the datatype; cf. compmlete listing in help('mlfourd.ImagingInfo').
@@ -93,7 +97,7 @@ classdef ImagingInfo < mlio.AbstractIO
             end
         end
         function f = tempFqfilename
-            f = tempFqfilename('mlfourd_ImagingInfo.4dfp.hdr');
+            f = tempFqfilename(['mlfourd_ImagingInfo' mlfourd.ImagingInfo.defaultFilesuffix]);
         end
     end
     
@@ -101,6 +105,13 @@ classdef ImagingInfo < mlio.AbstractIO
         
         %% GET, SET 
         
+        function g = get.circshiftK(this)
+            g = this.circshiftK_;
+        end        
+        function this = set.circshiftK(this, s)
+            assert(isnumeric(s));
+            this.circshiftK_ = s;
+        end
         function g = get.qfac(this)
             g = this.hdr.dime.pixdim(1);
             if (0 == g)
@@ -237,6 +248,24 @@ classdef ImagingInfo < mlio.AbstractIO
     end
     
     methods (Access = protected) 
+        function hdr  = adjustDime(this, hdr)
+            %  mimicry:  mlniftitools.make_nii squeezes singleton dimensions s.t. nii.hdr.dime.dim(1) := 3 for single
+            %  time frames.  However, load_nii sets nii.hdr.dime.dim(1) := 4 for single time frames.
+            %  mimicry:  mlniftitools.make_nii populates nii.hdr.dime.pixdim := [0 1 1 1 1 1 1 1].   
+            %  However, load_nii tends to set nii.hdr.dime.pixdim := [1 1 1 1 1 0 0 0].
+            %  mimicry:  mlniftitools.make_nii  sets nii.hdr.dime.vox_offset := 0.
+            
+            hdr.dime.pixdim(1) = this.qfac; % qfac rules https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            hdr.dime.vox_offset = 352;
+        end
+        function hdr  = adjustHist(~, hdr)
+            % mimicry:  mlniftitools.make_nii drops nii.hdr.hist.magic := ''.            
+            hdr.hist.aux_file = '';
+            hdr.hist.magic = 'n+1';
+            if (isfield(hdr.hist, 'originator'))
+                hdr.hist.originator = hdr.hist.originator(1:3);
+            end
+        end
         function hdr  = adjustHistOriginator(this, hdr)
             if (~isprop(hdr, 'originator'))
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
@@ -353,6 +382,145 @@ classdef ImagingInfo < mlio.AbstractIO
                'intent_name', this.hdr_.hist.intent_name, ...
                      'magic', this.hdr_.hist.magic);             
         end
+        
+        %% methods to complete NIfTI-1 specifications from Analyze 7.5 data        
+        
+        function hdr  = newHdr(this, hdr)
+            hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
+            hdr.hist.qform_code = 1;
+            hdr.hist.sform_code = 1;
+            
+                                    % a = 0.5  * sqrt(1 + trace(R));
+            hdr.hist.quatern_b = 0; % 0.25 * (R(3,2) - R(2,3)) / a;
+            hdr.hist.quatern_c = 0; % 0.25 * (R(1,3) - R(3,1)) / a;
+            hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
+            hdr.hist.qoffset_x = -hdr.hist.originator(1)*hdr.dime.pixdim(2);
+            hdr.hist.qoffset_y = -hdr.hist.originator(2)*hdr.dime.pixdim(3);
+            hdr.hist.qoffset_z = -hdr.hist.originator(3)*hdr.dime.pixdim(4);            
+            
+            % for compliance with NIfTI format
+            srow = [[hdr.dime.pixdim(2) 0 0           -hdr.hist.originator(1)*hdr.dime.pixdim(2)]; ...
+                    [0 hdr.dime.pixdim(3) 0           -hdr.hist.originator(2)*hdr.dime.pixdim(3)]; ...
+                    [0 0 hdr.dime.pixdim(4)*this.qfac -hdr.hist.originator(3)*hdr.dime.pixdim(4)]];
+            
+            hdr.hist.srow_x = srow(1,:);
+            hdr.hist.srow_y = srow(2,:);
+            hdr.hist.srow_z = srow(3,:);            
+            hdr = mlniftitools.extra_nii_hdr(hdr);
+            hdr = this.adjustDime(hdr);
+            hdr = this.adjustHist(hdr);
+        end
+        function xyz  = RMatrixMethod2(this, ijk)
+            %%   RMATRIXMETHOD2 (used when qform_code > 0, which should be the "normal" case):
+            %    -----------------------------------------------------------------------------
+            %    The (x,y,z) coordinates are given by the pixdim[] scales, a rotation
+            %    matrix, and a shift.  This method is intended to represent
+            %    "scanner-anatomical" coordinates, which are often embedded in the
+            %    image header (e.g., DICOM fields (0020,0032), (0020,0037), (0028,0030),
+            %    and (0018,0050)), and represent the nominal orientation and location of
+            %    the data.  This method can also be used to represent "aligned"
+            %    coordinates, which would typically result from some post-acquisition
+            %    alignment of the volume to a standard orientation (e.g., the same
+            %    subject on another day, or a rigid rotation to true anatomical
+            %    orientation from the tilted position of the subject in the scanner).
+            %    The formula for (x,y,z) in terms of header parameters and (i,j,k) is:
+            % 
+            %      [ x ]   [ R11 R12 R13 ] [       pixdim[1] * i ]   [ qoffset_x ]
+            %      [ y ] = [ R21 R22 R23 ] [       pixdim[2]   j ] + [ qoffset_y ]
+            %      [ z ]   [ R31 R32 R33 ] [ qfac  pixdim[3] * k ]   [ qoffset_z ]            
+            % 
+            %    The qoffset_* shifts are in the NIFTI-1 header.  Note that the center
+            %    of the (i,j,k)=(0,0,0) voxel (first value in the dataset array) is
+            %    just (x,y,z)=(qoffset_x,qoffset_y,qoffset_z).
+            % 
+            %    The rotation matrix R is calculated from the quatern_* parameters.
+            %    This calculation is described below.
+            % 
+            %    The scaling factor qfac is either 1 or -1.  The rotation matrix R
+            %    defined by the quaternion parameters is "proper" (has determinant 1).
+            %    This may not fit the needs of the data; for example, if the image
+            %    grid is
+            %      i increases from Left-to-Right
+            %      j increases from Anterior-to-Posterior
+            %      k increases from Inferior-to-Superior
+            %    Then (i,j,k) is a left-handed triple.  In this example, if qfac=1,
+            %    the R matrix would have to be
+            % 
+            %      [  1   0   0 ]
+            %      [  0  -1   0 ]  which is "improper" (determinant = -1).
+            %      [  0   0   1 ]
+            % 
+            %    <b>If we set qfac=-1, then the R matrix would be<\b>
+            % 
+            %      [  1   0   0 ]
+            %      [  0  -1   0 ]  which is proper.
+            %      [  0   0  -1 ]
+            % 
+            %    This R matrix is represented by quaternion [a,b,c,d] = [0,1,0,0]
+            %    (which encodes a 180 degree rotation about the x-axis).    
+            %
+            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            %
+            %    @param  ijk := voxel indices
+            %    @return xyz := Cartesian position
+            
+            assert(this.qform_code > 0, ...
+                'mlfourd:unexpectedInternalParam', 'Analyze75Info.RMatrixMethod3.qform_code->%i', this.qform_code);
+            assert(abs(this.qfac) == 1, ...
+                'mlfourd:unexpectedInternalParam', 'Analyze75Info.RMatrixMethod3.qfac->%i', this.qfac);
+            
+            i   = ijk(1);
+            j   = ijk(2);
+            k   = ijk(3);
+            d   = this.hdr.dime;
+            h   = this.hdr.hist;
+            xyz = RMat * [d.pixdim(2)*i d.pixdim(3)*j d.pixdim(4)*k*this.qfac]' + ...
+                         [h.qoffset_x   h.qoffset_y   h.qoffset_z  ]';
+            
+            function R = RMat
+                if (1 == this.qfac)
+                    R = [1 0 0; 0 -1 0; 0 0 1]; % det =: -1
+                else
+                    R = [1 0 0; 0 -1 0; 0 0 -1]; % det =: 1
+                end
+            end
+            function Rq = RMatq %#ok<DEFNU>
+                qa = 0;
+                qb = this.hdr.hist.quatern_b;
+                qc = this.hdr.hist.quatern_c;
+                qd = this.hdr.hist.quatern_d;
+                Rq = [(1 - 2*qc^2  - 2*qd^2 ) (    2*qb*qc - 2*qd*qa) (    2*qb*qd + 2*qc*qa); ...
+                      (    2*qb*qc + 2*qd*qa) (1 - 2*qb^2  - 2*qd^2 ) (    2*qc*qd - 2*qb*qa); ...
+                      (    2*qb*qd - 2*qc*qa) (    2*qc*qd + 2*qb*qa) (1 - 2*qx^2  - 2*qc^2)];
+            end
+        end
+        function xyz  = AffineMethod3(this, ijk)
+            %    AFFINEMETHOD3 (used when sform_code > 0):
+            %    -----------------------------------------
+            %    The (x,y,z) coordinates are given by a general affine transformation
+            %    of the (i,j,k) indexes:
+            % 
+            %      x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
+            %      y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
+            %      z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
+            % 
+            %    The srow_* vectors are in the NIFTI_1 header.  Note that no use is
+            %    made of pixdim[] in this method.
+            %
+            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            %
+            %    @param  ijk := voxel indices
+            %    @return xyz := Cartesian position
+            
+            assert(this.sform_code > 0, ...
+                'mlfourd:unexpectedInternalParam', 'Analyze75Info.RMatrixMethod3.sform_code->%i', this.sform_code);
+            
+            S =  [srow_x(1) srow_x(2) srow_x(3); ...
+                  srow_y(1) srow_y(2) srow_y(3); ...
+                  srow_z(1) srow_z(2) srow_z(3)];
+            s1 = [srow_x(4) srow_y(4) srow_z(4)]';
+            xyz = S*ijk + s1;
+        end        
         function v    = permuteCircshiftVec(this, v)
             if (0 == this.circshiftK_); return; end
             v(1:3) = circshift(v(1:3), this.circshiftK_);
@@ -360,6 +528,13 @@ classdef ImagingInfo < mlio.AbstractIO
         function X    = permuteCircshiftX(this, X)
             if (0 == this.circshiftK_); return; end
             X = permute(X, circshift([1 2 3], this.circshiftK_));
+        end
+        function info = permuteInfo(this, info)
+            info.Width           = info.Dimensions(1);
+            info.Height          = info.Dimensions(3);
+            if (0 == this.circshiftK_); return; end
+            info.PixelDimensions = this.permuteCircshiftVec(info.PixelDimensions);
+            info.Dimensions      = this.permuteCircshiftVec(info.Dimensions);
         end
     end
     

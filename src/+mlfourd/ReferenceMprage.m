@@ -35,6 +35,10 @@ classdef ReferenceMprage
                 copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX3 suf{s}]), dest, varargin{:});
             end
         end
+        function g = dicomAsNii
+            import mlfourd.*;
+            g = [ReferenceMprage.FILEPREFIX '.nii'];
+        end
         function g = dicomAsNiigz
             import mlfourd.*;
             g = [ReferenceMprage.FILEPREFIX '.nii.gz'];
@@ -49,15 +53,19 @@ classdef ReferenceMprage
         end
         function g = surferAsMgz
             import mlfourd.*;
-            g = fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX2 '.mgz']);
+            g = [ReferenceMprage.FILEPREFIX2 '.mgz'];
+        end
+        function g = surferAsNii
+            import mlfourd.*;
+            g = [ReferenceMprage.FILEPREFIX2 '.nii'];
         end
         function g = surferAsNiigz
             import mlfourd.*;
-            g = fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX2 '.nii.gz']);
+            g = [ReferenceMprage.FILEPREFIX2 '.nii.gz'];
         end
         function g = surferAsFourdfp
             import mlfourd.*;
-            g = fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX2 '.4dfp.hdr']);
+            g = [ReferenceMprage.FILEPREFIX2 '.4dfp.hdr'];
         end
         function g = T1AsMgz
             import mlfourd.*;
@@ -88,8 +96,8 @@ classdef ReferenceMprage
         
         function this = ReferenceMprage
             import mlniftitools.*;
-            this.asstruct_  = load_untouch_nii(this.dicomAsNiigz);
-            this.asstruct2_ = load_untouch_nii(this.surferAsNiigz);
+            this.asstruct_  = load_untouch_nii(fullfile(this.DATAROOT, this.dicomAsNiigz));
+            this.asstruct2_ = load_untouch_nii(fullfile(this.DATAROOT, this.surferAsNiigz));
         end
     end
     

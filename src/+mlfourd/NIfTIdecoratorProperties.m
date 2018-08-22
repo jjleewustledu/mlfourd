@@ -9,9 +9,6 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
  	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
  	
     properties (Dependent)
-        
-        %% NIfTIIO
-        
         filename
         filepath
         fileprefix 
@@ -22,16 +19,12 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         fqfp 
         noclobber
         
-        %% JimmyShenInterface
-        
         ext
         filetype % 0 -> Analyze format .hdr/.img; 1 -> NIFTI .hdr/.img; 2 -> NIFTI .nii or .nii.gz
         hdr
         img
         originalType
-        untouch
-        
-        %% INIfTI        
+        untouch     
         
         bitpix
         creationDate
@@ -45,10 +38,9 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         negentropy
         orient
         pixdim 
-        seriesNumber                   
+        seriesNumber
         
-        %%
-        
+        imagingInfo
         imgrec
         logger
         separator
@@ -56,11 +48,10 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         viewer
     end
   
-    methods 
+    methods
         
         %% SET/GET
-        
-        % NIfTIIO        
+            
         function this = set.filename(this, fn)
             this.component_.filename = fn;
         end
@@ -115,8 +106,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         function tf   = get.noclobber(this)
             tf = this.component_.noclobber;
         end
-        
-        % JimmyShenInterface        
+              
         function e    = get.ext(this)
             e = this.component_.ext;
         end
@@ -141,8 +131,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         function u    = get.untouch(this)
             u = this.component_.untouch;
         end        
-        
-        % INIfTI         
+                 
         function this = set.bitpix(this, x)
             this.component_.bitpix = x;
         end
@@ -170,7 +159,7 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
         function this = set.entropy(this, x)
            this.component_.entropy = x;
         end
-       function sw    = get.entropy(this)
+        function sw   = get.entropy(this)
            sw = this.component_.entropy;
        end
         function x    = get.hdxml(this)
@@ -216,7 +205,9 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
             num = this.component_.seriesNumber;
         end
         
-        %    
+        function g    = get.imagingInfo(this)
+            g = this.component_.imagingInfo;
+        end 
         function g    = get.imgrec(this)
             g = this.component_.imgrec;
         end 
@@ -242,9 +233,6 @@ classdef NIfTIdecoratorProperties < mlfourd.NIfTIdecorator
     
 	methods (Access = protected)
  		function this = NIfTIdecoratorProperties(varargin)
- 			%% NIFTIDECORATORPROPERTIES
- 			%  Usage:  this = NIfTIdecoratorProperties()
-
  			this = this@mlfourd.NIfTIdecorator(varargin{:});
  		end
  	end 

@@ -1,4 +1,4 @@
-classdef ImagingContext < handle & mlio.HandleNIfTIIO
+classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
 	%% IMAGINGCONTEXT provides the context for a state design pattern for imaging data.  It also 
     %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
     %  is to improve the fluent expressivity of behaviors involving imaging data.
