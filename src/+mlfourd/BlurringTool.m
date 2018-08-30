@@ -1,0 +1,293 @@
+classdef BlurringTool < handle & mlfourd.AbstractImagingTool
+	%% BLURRINGTOOL is a concrete ImagingTool.  The blur must be provided as fwhh in mm.
+
+	%  $Revision$ 
+ 	%  was created $Date$ 
+ 	%  by $Author$,  
+ 	%  last modified $LastChangedDate$ 
+ 	%  and checked into repository $URL$,  
+ 	%  developed on Matlab 8.1.0.604 (R2013a) 
+ 	%% $Id$  	 
+    
+    properties (Constant)        
+        KERNEL_MULTIPLE = 2
+    end
+    
+    properties
+        metric = 'fwhh';
+    end
+    
+    properties (Dependent)
+        mask
+        blur
+        blurCount
+    end
+    
+    methods (Static)       
+        function width = sigma2width(sigma, fheight)
+            %% SIGMA2WIDTH returns the width at fheight corresponding to sigma, metppix & metric units.
+            %  Usage: width = sigma2width(sigma[, fheight])
+            %         width:   vector for full-width at half-height, in metric units
+            %         fheight: fractional height, 0.5 for fwhh is default, 0.1 for fwth
+            %         sigma:   vector in units of metric
+            %
+            %  See also:   width2sigma
+            
+            switch (nargin)
+                case 1
+                    fheight = 0.5;
+                case 2 
+                otherwise
+                    error('mlfourd:InputParamsErr', help('BlurringTool.sigma2width'));
+            end
+            width = 2*sqrt(2*log(1/fheight)*sigma.^2);
+        end 
+        function sigma = width2sigma(width, fheight)
+            %% WIDTH2SIGMA returns the Gaussian sigma corresponding to width at fheight, metppix & metric units.
+            %  Usage: sigma = width2sigma(width[, fheight])
+            %         width:   vector for full-width at fheight, in metric units
+            %         fheight: fractional height, 0.5 for fwhh is default, 0.1 for fwth
+            %         sigma:   vector in units of metric
+            %
+            %  Rationale:              fheight*a1 = a1*exp(-((x-b1)/c1)^2);
+            %                        log(fheight) = -((x - b1)/c1)^2
+            %                                c1^2 = 2*sigma^2;
+            %             2*sigma^2*log(fheight)  = -(x - b1)^2
+            %      sqrt(2*sigma^2*log(1/fheight)) =   x - b1
+            %                                     =   width/2
+            %  See also:  sigma2width
+            
+            switch (nargin)
+                case 1
+                    fheight = 0.5;
+                case 2
+                otherwise
+                    error('mlfourd:InputParamsErr', help('BlurringTool.width2sigma'));
+            end
+            sigma = abs(sqrt((width/2).^2/(2*log(1/fheight))));
+        end  
+    end    
+    
+    methods 
+        
+        %% GET
+        
+        function m  = get.mask(this)
+            m = this.mask_;
+        end
+        function b  = get.blur(this)
+            b = this.blur_;
+        end
+        function bc = get.blurCount(this)
+            bc = this.blurCount_;
+        end
+        
+        %%
+        
+        function blurred(this, varargin)
+            %% BLURRED
+            %  @param required blur is numeric, fwhh in mm.
+            %  @param optional mask is numeric, applied prior to blurring.
+            %  @return this modified with blurred voxels and blurCount.
+                  
+            import mlfourd.* mlpet.*;            
+            ip = inputParser;
+            addRequired(ip, 'blur', @isnumeric);
+            addOptional(ip, 'mask', 1);
+            parse(ip, varargin{:});            
+            this.blur_ = this.checkedBlur(ip.Results.blur, this.rankEuclid); % double \in \mathbb{R}^3
+            this.mask_ = this.checkedMask(ip.Results.mask, this.sizeEuclid); % double \in \mathbb{R}^3
+            
+            if (isempty(this.blur_) || sum(this.blur_) < eps)
+                return
+            end
+            if (4 == this.rank)
+                for t = 1:size(this,4)
+                    this.innerImaging_.img(:,:,:,t) = ...
+                        this.blurredImg(this.innerImaging_.img(:,:,:,t));
+                end
+            else
+                this.innerImaging_.img = this.blurredImg(this.innerImaging_.img);
+            end            
+            this.fileprefix = this.blurredFileprefix;
+            this.innerImaging_.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
+            this.blurCount_ = this.blurCount_ + 1;
+        end
+        function r = rankEuclid(this)
+            r = min(this.rank, 3);
+        end
+        function s = sizeEuclid(this)
+            s = this.innerImaging_.size;
+            s = s(1:this.rankEuclid);
+        end
+        
+ 		function this = BlurringTool(h, varargin)
+            this = this@mlfourd.AbstractImagingTool(h, varargin{:});
+            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
+        end   
+    end 
+    
+    %% PROTECTED 
+    
+    properties (Access = protected)
+        blur_
+        blurCount_ = 0;
+        height_ = 0.5;
+        mask_
+    end
+    
+    methods (Static, Access = protected)
+        function img     = gaussFullwidth(img, varargin)
+            %% GAUSSFULLWIDTH
+            %  @param img (req.):     numeric object 
+            %  @param width (req.):   row vector of full widths
+            %  @param named metric:   units of full width blur
+            %  @param named metppix:  metric units per pixel; 1 and [1 1 1] are equivalent
+            %  @param named height:   height at which width is measured (fraction 0..1)
+            %  See also mlfourd.BlurringTool.gaussSigma
+            
+            import mlfourd.*;
+            ip = inputParser;
+            addRequired( ip, 'img', @isnumeric);
+            addRequired( ip, 'width', @isnumeric);
+            addParameter(ip, 'height', 0.5, @isnumeric);
+            addParameter(ip, 'metric', 'mm', @ischar);
+            addParameter(ip, 'metppix', ones(size(img)), @isnumeric);
+            parse(ip, img, varargin{:});
+            
+            img = BlurringTool.gaussSigma( ...
+                ip.Results.img, ...
+                BlurringTool.width2sigma(ip.Results.width, ip.Results.height), ...
+                'metric',  ip.Results.metric, ...
+                'metppix', ip.Results.metppix);
+        end 
+        function img     = gaussSigma(varargin)
+            %% GAUSSSIGMA 
+            %  @param img (req.):     numeric object
+            %  @param sigma (req.):   row vector of std. deviations
+            %  @param named metric:   units of sigma \in {'voxel' 'pixel' 'mm' 'cm'}
+            %  @param named metppix:  metric units per pixel; 1 and [1 1 1] are equivalent
+            %  See also mlfourd.BlurringTool.gaussFullwidth, imgaussfilt, imgaussfilt3
+            
+            import mlfourd.*; 
+            ip = inputParser;
+            addRequired( ip, 'img', @isnumeric);
+            addRequired( ip, 'sigma', @isnumeric);
+            addParameter(ip, 'metric', 'voxel', @ischar);
+            addParameter(ip, 'metppix', 1, @isnumeric);
+            parse(ip, varargin{:});            
+            img   = ip.Results.img;
+            sigma = ip.Results.sigma;
+            if (norm(sigma) < eps); return; end
+            if (lstrfind(ip.Results.metric, {'voxel' 'pixel'}))
+                metppix = 1;
+            else
+                metppix = ip.Results.metppix;
+            end
+            metppix = BlurringTool.checkedMetppix(metppix, sigma);
+            sigma   = sigma ./ metppix; % convert metric units to pixels            
+            img     = double(squeeze(img));
+            rank_   = length(size(img));
+            
+            % assemble filter kernel & call imfilter              
+            krnlLens = BlurringTool.KERNEL_MULTIPLE*ceil(2*sigma)+1; % see also imgaussfilt, imgaussfilt3; this is their default
+            krnlLens(krnlLens < 1) = 1;
+            switch(rank_)
+                case 2
+                    img = imgaussfilt( img, sigma, 'FilterSize', krnlLens);
+                case 3
+                    img = imgaussfilt3(img, sigma, 'FilterSize', krnlLens);
+                otherwise
+                    error('mlfourd:parameterOutOfBounds', ...
+                         ['BlurringTool.gaussSigma.rank_->' num2str(rank_) ', but only rank_ \in [2 3] are supported']);
+            end
+        end 
+        function b       = checkedBlur(b, rank_)
+            assert(isnumeric(b));
+            if (length(b) < rank_)
+                b = mean(b)*ones(1, rank_);
+            end   
+            if (length(b) > 3)
+                b = b(1:3);
+            end
+        end
+        function m       = checkedMask(m, sz)
+            if (~isa(m, 'double'))
+                m = double(m); 
+            end
+            if (isscalar(m))
+                return
+            end
+            assert(all(size(m) == sz));
+        end
+        function metppix = checkedMetppix(metppix, sigma)
+            if (length(metppix) < length(sigma))
+                metppix = mlfourd.BlurringTool.stretchVec(metppix, length(sigma));
+            end
+            if (length(metppix) > length(sigma))
+                metppix = metppix(1:length(sigma));
+            end
+        end
+        function sz      = embedVecInSitu(sz, fixedsz)
+            %% EMBEDVECINSITU resizes sz to match rank of fixedsz
+            %  e.g.  >> sz = BlurringTool.embedVecInSitu([2 2 30], [18 18 31 100])
+            %        sz = 
+            %            2 2 30 100
+            %        >> sz = NIfTId.embedVecInSitu([18 18 31 100], [2 2 30])
+            %        sz = 
+            %            18 18 31
+            
+            if (length(sz) > length(fixedsz))
+                sz = sz(1:length(fixedsz));
+            else
+                tmp = fixedsz;
+                tmp(1:length(sz)) = sz;
+                sz  = tmp;
+            end
+        end
+        function vout    = stretchVec(vin, newlen, repeat)
+            %% STRETCHVEC stretches a vector to a new size, with repeated final element as necessary
+            %  Usage: [vout] = stretchVec(vin, newlen, repeat)
+            %         vin:     col or row vector
+            %         vout:    col or row vector with new length newlen
+            %         repeat:  value to repeat; default is 1, creating singleton dimensions
+            %  Examples:
+            %         [vout8] = stretchVec(vin3, 8)
+            %  See also:   embedVecInSitu
+            
+            switch (nargin)
+                case 3
+                case 2
+                    repeat = 1;
+                otherwise
+                    error('mlfourd:InputParamsErr:InputParamsErr', ...
+                         ['BlurringTool.stretchVec.nargin->' num2str(nargin)]);
+            end
+            assert(isnumeric(vin));
+            assert(isnumeric(newlen));
+            assert(isnumeric(repeat));
+            vout = zeros(1, newlen);
+            for d = 1:newlen %#ok<FORPF>
+                if (d <= size(vin,2))
+                    vout(d) = vin(d);
+                else
+                    vout(d) = vin(size(vin,2));
+                end
+            end
+        end
+    end
+    
+    methods (Access = protected)
+        function fp  = blurredFileprefix(this)
+            fp = sprintf('%s_b%g', this.fileprefix, round(10*max(this.blur_)));
+        end
+        function img = blurredImg(this, img)
+            img = img .* this.mask_;
+			img = this.gaussFullwidth(img, this.blur_, ...
+                'height', this.height_, 'metppix', this.innerImaging_.mmppix);
+        end
+    end
+    
+	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
+end
+

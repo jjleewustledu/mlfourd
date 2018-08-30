@@ -12,237 +12,289 @@ classdef NumericalTool < handle & mlfourd.AbstractImagingTool & mlpatterns.Handl
         
         %% implementations of mlpatterns.HandleNumerical
         
-        function that = abs(this)
-            that = this.usxfun(@abs);
+        function abs(this)
+            this.usxfun(@abs);
         end
-        function that = atan2(this, b)
-            that = this.bsxfun(@atan2, b);
+        function atan2(this, b)
+            this.bsxfun(@atan2, b);
         end
-        function that = rdivide(this, b)
-            that = this.bsxfun(@rdivide, b);
+        function rdivide(this, b)
+            this.bsxfun(@rdivide, b);
         end
-        function that = ldivide(this, b)
-            that = this.bsxfun(@ldivide, b);
+        function ldivide(this, b)
+            this.bsxfun(@ldivide, b);
         end
-        function that = hypot(this, b)
-            that = this.bsxfun(@hypot, b);
+        function hypot(this, b)
+            this.bsxfun(@hypot, b);
         end
-        function that = max(this, b)
-            that = this.bsxfun(@max, b);
+        function max(this, b)
+            this.bsxfun(@max, b);
         end
-        function that = min(this, b)
-            that = this.bsxfun(@min, b);
+        function min(this, b)
+            this.bsxfun(@min, b);
         end
-        function that = minus(this, b)
-            that = this.bsxfun(@minus, b);
+        function minus(this, b)
+            this.bsxfun(@minus, b);
         end
-        function that = mod(this, b)
-            that = this.bsxfun(@mod, b);
+        function mod(this, b)
+            this.bsxfun(@mod, b);
         end
-        function that = mpower(this, b)
-            that = this.bsxfun(@mpower, b);
+        function mpower(this, b)
+            this.bsxfun(@mpower, b);
         end
-        function that = mldivide(this, b)
-            that = this.bsxfun(@mldivide, b);
+        function mldivide(this, b)
+            this.bsxfun(@mldivide, b);
         end
-        function that = mrdivide(this, b)
-            that = this.bsxfun(@mrdivide, b);           
+        function mrdivide(this, b)
+            this.bsxfun(@mrdivide, b);           
         end
-        function that = mtimes(this, b)
-            that = this.bsxfun(@mtimes, b);
+        function mtimes(this, b)
+            this.bsxfun(@mtimes, b);
         end
-        function that = plus(this, b)
-            that = this.bsxfun(@plus, b);
+        function plus(this, b)
+            this.bsxfun(@plus, b);
         end
-        function that = power(this, b)
-            that = this.bsxfun(@power, b);
+        function power(this, b)
+            this.bsxfun(@power, b);
         end
-        function that = rem(this, b)
-            that = this.bsxfun(@rem, b);
+        function rem(this, b)
+            this.bsxfun(@rem, b);
         end
-        function that = sum(this, varargin)            
-            that = copy(this);            
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', sum(this.innerContext_.img, varargin{:}));
-            that.innerContext_.addLog( ...
+        function sum(this, varargin)  
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', sum(this.innerImaging_.img, varargin{:}));
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  sum %s %s', this.fileprefix, mat2str(varargin{:}))); 
         end
-        function that = times(this, b)
-            that = this.bsxfun(@times, b);
+        function times(this, b)
+            this.bsxfun(@times, b);
         end
-        function that = ctranspose(this)
-            that = this.usxfun(@ctranspose);
+        function ctranspose(this)
+            this.usxfun(@ctranspose);
         end
-        function that = transpose(this)
-            that = this.usxfun(@transpose);
+        function transpose(this)
+            this.usxfun(@transpose);
         end
-        function that = uminus(this)
-            that = this.usxfun(@uminus);
+        function uminus(this)
+            this.usxfun(@uminus);
         end
         
-        function that = eq(this, b)
-            that = this.bsxfun(@eq, b);
+        function eq(this, b)
+            this.lbsxfun(@eq, b);
         end
-        function that = ne(this, b)
-            that = this.bsxfun(@ne, b);
+        function ne(this, b)
+            this.lbsxfun(@ne, b);
         end
-        function that = lt(this, b)
-            that = this.bsxfun(@lt, b);
+        function lt(this, b)
+            this.lbsxfun(@lt, b);
         end
-        function that = le(this, b)
-            that = this.bsxfun(@le, b);
+        function le(this, b)
+            this.lbsxfun(@le, b);
         end
-        function that = gt(this, b)
-            that = this.bsxfun(@gt, b);
+        function gt(this, b)
+            this.lbsxfun(@gt, b);
         end
-        function that = ge(this, b)
-            that = this.bsxfun(@ge, b);
+        function ge(this, b)
+            this.lbsxfun(@ge, b);
         end
-        function that = and(this, b)
-            that = this.bsxfun(@and, b);
+        function and(this, b)
+            this.lbsxfun(@and, b);
         end
-        function that = or(this, b)
-            that = this.bsxfun(@or, b);
+        function or(this, b)
+            this.lbsxfun(@or, b);
         end
-        function that = xor(this, b)
-            that = this.bsxfun(@xor, b);
+        function xor(this, b)
+            this.lbsxfun(@xor, b);
         end
-        function that = not(this)
-            that = this.usxfun(@not);
+        function not(this)
+            this.lusxfun(@not);
         end            
         
-        function c    = char(this)
-            c = this.innerContext_.char;
+        function false(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', false(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  false %s', this.fileprefix)); 
         end
-        function d    = double(this)
-            d = double(this.innerContext_.img);
+        function nan(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', nan(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  nan %s', this.fileprefix)); 
         end
-        function s    = mat2str(this, varargin)
-            s = mat2str(this.innerContext_.img, varargin{:});
-        end
-        function that = ones(this, varargin)
-            that = copy(this);
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', ones(this.innerContext_.size, varargin{:}));
-            that.innerContext_.addLog( ...
+        function ones(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', ones(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  ones %s', this.fileprefix)); 
         end
-        function r    = rank(this)
-            r = this.innerContext_.rank;
-        end
-        function that = scrubNanInf(this)
-            that = copy(this);
-            img_ = this.innerContext_.img;
+        function scrubNanInf(this)
+            img_ = this.innerImaging_.img;
             img_(isnan(img_)) = 0;
             img_(~isfinite(img_)) = 0;
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', img_);
-            that.innerContext_.addLog( ...
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', img_);
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  scrubNanInf %s', this.fileprefix)); 
         end
-        function s    = single(this)
-            s = single(this.innerContext_.img);
+        function true(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', true(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  true %s', this.fileprefix)); 
         end
-        function s    = size(this, varargin)
-            s = size(this.innerContext_.img, varargin{:});
-        end
-        function that = zeros(this, varargin)
-            that = copy(this);
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', zeros(this.innerContext_.size, varargin{:}));
-            that.innerContext_.addLog( ...
+        function zeros(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', zeros(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  zeros %s', this.fileprefix)); 
         end
                 
         %% implementations of mlpatterns.HandleDipNumerical
         
-        function that = dipiqr(this)
-            that = this.usxfun(@dipiqr);
+        function dipiqr(this)
+            this.usxfun(@dipiqr);
         end
-        function that = dipisfinite(this)
-            that = this.usxfun(@dipisfinite);
+        function dipisfinite(this)
+            this.usxfun(@dipisfinite);
         end
-        function that = dipisinf(this)
-            that = this.usxfun(@dipisinf);
+        function dipisinf(this)
+            this.usxfun(@dipisinf);
         end
-        function that = dipisnan(this)
-            that = this.usxfun(@dipisnan);
+        function dipisnan(this)
+            this.usxfun(@dipisnan);
         end
-        function that = dipisreal(this)
-            that = this.usxfun(@dipisreal);
+        function dipisreal(this)
+            this.usxfun(@dipisreal);
         end
-        function that = diplogprod(this)
-            that = this.usxfun(@diplogprod);
+        function diplogprod(this)
+            this.usxfun(@diplogprod);
         end
-        function that = dipmad(this)
-            that = this.usxfun(@dipmad);
+        function dipmad(this)
+            this.usxfun(@dipmad);
         end        
-        function that = dipmax(this)
-            that = this.usxfun(@dipmax);
+        function dipmax(this)
+            this.usxfun(@dipmax);
         end        
-        function that = dipmean(this)
-            that = this.usxfun(@dipmean);
+        function dipmean(this)
+            this.usxfun(@dipmean);
         end        
-        function that = dipmedian(this)
-            that = this.usxfun(@dipmedian);
+        function dipmedian(this)
+            this.usxfun(@dipmedian);
         end        
-        function that = dipmin(this)
-            that = this.usxfun(@dipmin);
+        function dipmin(this)
+            this.usxfun(@dipmin);
         end   
-        function that = dipmode(this)
-            that = this.usxfun(@dipmode);
+        function dipmode(this)
+            this.usxfun(@dipmode);
         end
-        function that = dipprctile(this, b)
-            that = this.bsxfun(@dipprctile, b);
+        function dipprctile(this, b)
+            this.bsxfun(@dipprctile, b);
         end
-        function that = dipprod(this)
-            that = this.usxfun(@dipprod);
+        function dipprod(this)
+            this.usxfun(@dipprod);
         end        
-        function that = dipquantile(this, b)
-            that = this.bsxfun(@dipquantile, b);
+        function dipquantile(this, b)
+            this.bsxfun(@dipquantile, b);
         end
-        function that = dipstd(this)
-            that = this.usxfun(@dipstd);
+        function dipstd(this)
+            this.usxfun(@dipstd);
         end                
-        function that = dipsum(this)
-            that = this.usxfun(@dipsum);
+        function dipsum(this)
+            this.usxfun(@dipsum);
         end 
-        function that = diptrimmean(this, b)
-            that = this.bsxfun(@diptrimmean, b);
+        function diptrimmean(this, b)
+            this.bsxfun(@diptrimmean, b);
         end
                 
         %% 
         
-        function that = usxfun(this, funh)
-            %% USXFUN
+        function lusxfun(this, funh)
+            %% LUSXFUN
             %  @param funh  is a function_handle.
-            %  @return that is a modified copy of this.
+            %  @return this is modified.
             %  @throws MATLAB
             
-            that = copy(this);
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', double(funh(this.innerContext_.img)));
-            that.innerContext_.addLog( ...
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', logical(funh(this.innerImaging_.img)));
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  %s %s', func2str(funh), this.fileprefix));
         end
-        function that = bsxfun(this, funh, b)
-            %% BSXFUN overloads bsxfun for INIfTI
+        function lbsxfun(this, funh, b)
+            %% LBSXFUN overloads bsxfun for INIfTI
             %  @param funh  is a function_handle.
-            %  @param b     is an ImagingFormatContext
-            %  @return that is a modified copy of this.
+            %  @param b     is logical, AbstractImagingTool, ImagingFormatContext or acceptable arg to
+            %               ImagingFormatContext.ctor.
+            %  @return this is modified.
             %  @throws MATLAB:bsxfun:nonnumericOperands
             
-            assert(isa(b, 'mlfourd.ImagingFormatContext'));
-            that = copy(this);
-            that.innerContext_ = mlfourd.ImagingFormatContext( ...
-                this.innerContext_, 'img', double(bsxfun(funh, this.innerContext_.img, b.img)));
-            that.innerContext_.addLog( ...
+            import mlfourd.*;
+            if (isnumeric(b))
+                this.innerImaging_ = ImagingFormatContext( ...
+                    this.innerImaging_, 'img', logical(bsxfun(funh, this.innerImaging_.img, b)));
+                this.innerImaging_.addLog( ...
+                    sprintf('NumericalTool:  %s %s %g', func2str(funh), this.fileprefix, b));
+                return
+            end
+            if (isa(b, 'mlfourd.ImagingContext2'))
+                b = b.nifti;
+                this.innerImaging_ = ImagingFormatContext( ...
+                    this.innerImaging_, 'img', logical(bsxfun(funh, this.innerImaging_.img, b.img)));
+                this.innerImaging_.addLog( ...
+                    sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                return
+            end
+            b = ImagingFormatContext(b);
+            this.innerImaging_ = ImagingFormatContext( ...
+                this.innerImaging_, 'img', logical(bsxfun(funh, this.innerImaging_.img, b.img)));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+        end
+        function usxfun(this, funh)
+            %% USXFUN
+            %  @param funh  is a function_handle.
+            %  @return this is modified.
+            %  @throws MATLAB
+            
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', double(funh(this.innerImaging_.img)));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  %s %s', func2str(funh), this.fileprefix));
+        end
+        function bsxfun(this, funh, b)
+            %% BSXFUN overloads bsxfun for INIfTI
+            %  @param funh  is a function_handle.
+            %  @param b     is numeric, AbstractImagingTool, ImagingFormatContext or acceptable arg to
+            %               ImagingFormatContext.ctor.
+            %  @return this is modified.
+            %  @throws MATLAB:bsxfun:nonnumericOperands
+            
+            import mlfourd.*;
+            if (isnumeric(b))
+                this.innerImaging_ = ImagingFormatContext( ...
+                    this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b)));
+                this.innerImaging_.addLog( ...
+                    sprintf('NumericalTool:  %s %s %g', func2str(funh), this.fileprefix, b));
+                return
+            end
+            if (isa(b, 'mlfourd.ImagingContext2'))
+                b = b.nifti;
+                this.innerImaging_ = ImagingFormatContext( ...
+                    this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b.img)));
+                this.innerImaging_.addLog( ...
+                    sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                return
+            end
+            b = ImagingFormatContext(b);
+            this.innerImaging_ = ImagingFormatContext( ...
+                this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b.img)));
+            this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
         end
         
         function this = NumericalTool(h, varargin)
             this = this@mlfourd.AbstractImagingTool(h, varargin{:});
-            this.innerContext_ = mlfourd.ImagingFormatContext(varargin{:});
+            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
         end
     end 
     

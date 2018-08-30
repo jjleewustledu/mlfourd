@@ -15,23 +15,23 @@ classdef ImagingFormatTool < handle & mlfourd.AbstractImagingTool
         %% get some ImagingFormatContext 
         
         function ifc = fourdfp(this)
-            this.innerContext_.filesuffix = '.4dfp.hdr';
-            ifc = this.innerContext_;
+            this.innerImaging_.filesuffix = '.4dfp.hdr';
+            ifc = this.innerImaging_;
         end
         function ifc = mgz(this)
-            this.innerContext_.filesuffix = '.mgz';
-            ifc = this.innerContext_;
+            this.innerImaging_.filesuffix = '.mgz';
+            ifc = this.innerImaging_;
         end
         function ifc = nifti(this)
-            this.innerContext_.filesuffix = '.nii.gz';
-            ifc = this.innerContext_;
+            this.innerImaging_.filesuffix = '.nii.gz';
+            ifc = this.innerImaging_;
         end
         
         %%
         
         function this = ImagingFormatTool(h, varargin)
             this = this@mlfourd.AbstractImagingTool(h, varargin{:});
-            this.innerContext_ = mlfourd.ImagingFormatContext(varargin{:});
+            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
         end
   	end      
     

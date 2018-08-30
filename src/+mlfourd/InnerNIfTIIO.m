@@ -130,8 +130,9 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
     end
     
     methods
-        function c = char(this)
+        function c = char(this, varargin)
             c = this.fqfilename;
+            c = c(varargin{:});
         end
     end
     

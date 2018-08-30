@@ -25,6 +25,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             'folder' 'path'}
     end
     
+    properties 
+        verbosity = 0;
+    end
+    
 	properties (Dependent)
         filename
         filepath
@@ -36,7 +40,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         fqfp
         noclobber
         
+        imagingInfo
         imgrec
+        innerTypeclass
         logger
         stateTypeclass
         viewer
@@ -190,9 +196,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         function f = get.fqfp(this)
             f = this.state_.fqfp;
         end
+        function g = get.imagingInfo(this)
+            g = this.state_.imagingInfo;
+        end
         function f = get.imgrec(this)
             f = this.state_.imgrec;
         end
+        function g = get.innerTypeclass(this)
+            g = this.state_.innerTypeclass;
+        end 
         function f = get.logger(this)
             f = this.state_.logger;
         end
@@ -256,147 +268,223 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         %% select states
         
         function selectBlurringTool(this)
-            this.state_.selectBlurringTool;
+            this.state_.selectBlurringTool(this);
         end
         function selectDynamicsTool(this)
-            this.state_.selectDynamicsTool;
+            this.state_.selectDynamicsTool(this);
         end
         function selectFilesystemTool(this)
-            this.state_.selectFilesystemTool;
+            this.state_.selectFilesystemTool(this);
         end
         function selectIsNumericTool(this)
-            this.state_.selectIsNumericTool;
+            this.state_.selectIsNumericTool(this);
         end
         function selectImagingFormatTool(this)
-            this.state_.selectImagingFormatTool;
+            this.state_.selectImagingFormatTool(this);
         end
         function selectMaskingTool(this)
-            this.state_.selectMaskingTool;
+            this.state_.selectMaskingTool(this);
         end
         function selectNumericalTool(this)
-            this.state_.selectNumericalTool;
+            this.state_.selectNumericalTool(this);
         end
         function selectRegistrationTool(this)
-            this.state_.selectRegistrationTool;
+            this.state_.selectRegistrationTool(this);
         end
         
-        %% mlpatterns.HandleNumerical        
+        %% mlpatterns.HandleNumerical
         
         function that = abs(this)
-            that = this.state_.abs;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.abs;
         end
         function that = atan2(this, b)
-            that = this.state_.atan2(b);            
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.atan2(b);            
         end
         function that = bsxfun(this, pfun, b)
-            that = this.state_.bsxfun(pfun, b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.bsxfun(pfun, b);
         end
         function that = rdivide(this, b)
-            that = this.state_.rdivide(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.rdivide(b);
         end
         function that = ldivide(this, b)
-            that = this.state_.ldivide(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.ldivide(b);
         end
         function that = hypot(this, b)
-            that = this.state_.hypot(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.hypot(b);
         end
         function that = max(this, b)
-            that = this.state_.max(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.max(b);
         end
         function that = min(this, b)
-            that = this.state_.min(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.min(b);
         end
         function that = minus(this, b)
-            that = this.state_.minus(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.minus(b);
         end
         function that = mod(this, b)
-            that = this.state_.mod(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.mod(b);
+        end
+        function that = mpower(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.mpower(b);
+        end
+        function that = mldivide(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.mldivide(b); 
+        end
+        function that = mrdivide(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.mrdivide(b);         
+        end
+        function that = mtimes(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.mtimes(b); 
         end
         function that = plus(this, b)
-            that = this.state_.plus(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.plus(b);
         end
         function that = power(this, b)
-            that = this.state_.power(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.power(b);
         end
         function that = rem(this, b)
             %% remainder after division
             
-            that = this.state_.rem(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.rem(b);
         end
         function that = times(this, b)
-            that = this.state_.times(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.times(b);
         end
         function that = ctranspose(this)
-            that = this.state_.ctranspose;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.ctranspose;
         end
         function that = transpose(this)
-            that = this.state_.transpose;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.transpose;
         end
         function that = usxfun(this, pfun)
-            that = this.state_.usxfun(pfun);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.usxfun(pfun);
         end        
         
         function that = eq(this, b)
-            that = this.state_.eq(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.eq(b);
         end
         function that = ne(this, b)
-            that = this.state_.ne(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.ne(b);
         end
         function that = lt(this, b)
-            that = this.state_.lt(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.lt(b);
         end
         function that = le(this, b)
-            that = this.state_.le(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.le(b);
         end
         function that = gt(this, b)
-            that = this.state_.gt(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.gt(b);
         end
         function that = ge(this, b)
-            that = this.state_.ge(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.ge(b);
         end
         function that = and(this, b)
-            that = this.state_.and(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.and(b);
         end
         function that = or(this, b)
-            that = this.state_.or(b);
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.or(b);
         end
         function that = xor(this, b)
-            that = this.state_.xor(b);
+            that = copy(this);
+            that.state_.xor(b);
         end
         function that = not(this)
-            that = this.state_.not;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.not;
         end
         
-        function c    = char(this)
-            c = this.state_.char;
+        function that = false(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.false(varargin{:});
         end
-        function d    = double(this)
-            d = this.state_.double;
-        end
-        function s    = mat2str(this, varargin)
-            s = this.state_.mat2str(varargin{:});
+        function that = nan(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_ = this.state_.nan(varargin{:});
         end
         function that = ones(this, varargin)
-            that = this.state_.ones(varargin{:});
-        end
-        function r    = rank(this)
-            r = this.state_.rank;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.ones(varargin{:});
         end
         function that = scrubNanInf(this)
-            that = this.state_.scrubNanInf;
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.scrubNanInf;
         end
-        function s    = single(this)
-            s = this.state_.single;
-        end
-        function s    = size(this, varargin)
-            s = this.state_.size(varargin{:});
+        function that = true(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.true(varargin{:});
         end
         function that = zeros(this, varargin)
-            that = this.state_.zeros(varargin{:});
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.zeros(varargin{:});
         end
         
-%         %% mlpatterns.HandleDipNumerical      
-%         
+        %% mlpatterns.HandleDipNumerical
+         
 %         dipiqr(this)
 %         dipisfinite(this)
 %         dipisinf(this)
@@ -418,19 +506,19 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% BlurringTool
         
-        function b  = blurred(this, varargin)
+        function that = blurred(this, varargin)
             %% BLURRED
-            %  @param [fwhh_x fwhh_y fwhh_z] describes the anisotropic Gaussian blurring kernel
-            %  applied to the internally stored image
+            %  @param fwhh specifies an isotropic Gaussian blurring.
+            %  @param [fwhh_x fwhh_y fwhh_z] \in \mathbb{R}^3 specifies an anisotropic Gaussian blurring.
             %  @return the blurred image
-            %  @return this if varargin|varargin{1} are empty
-            %  @return this if varargin{1} == 0
+            %  @return this if varargin{1} is empty || varargin{1} == 0.
             
-            if (isempty(varargin));    b = this; return; end
-            if (isempty(varargin{1})); b = this; return; end
-            if (0 ==    varargin{1});  b = this; return; end            
-            this.numericalNiftid;
-            b = mlfourd.ImagingContext2(this.state_.blurred(varargin{:}));
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            if (varargin{1} < eps);    that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.blurred(varargin{:});
         end 
         
         %% DynamicsTool
@@ -500,9 +588,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.numericalNiftid;
             b = mlfourd.ImagingContext2(this.state_.binarizeBlended(varargin{:}));
         end
-        function f  = false(this, varargin)
-            f =  mlfourd.ImagingContext2(this.state_.false(varargin{:}));
-        end
         function l  = logical(this)
             l = this.double > 0;
         end
@@ -550,9 +635,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.numericalNiftid;          
             p =  mlfourd.ImagingContext2(this.state_.threshp(p));
         end
-        function t  = true(this, varargin)
-            t =  mlfourd.ImagingContext2(this.state_.true(varargin{:}));
-        end
         function u  = uthresh(this, u)
             %% UTHRESH
             %  @param u:  use t to upper-threshold current image (zero anything above the number)
@@ -576,6 +658,20 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             p =  mlfourd.ImagingContext2(this.state_.uthreshp(p));
         end
         
+        function that = zoomed(this, varargin)
+            %% ZOOMED 
+            %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
+            %  @return internal image is zoomed.
+            %  @return this if varargin is empty
+            %  @return this if prod(varargin{...}) == 1
+            
+            if (isempty(varargin));             z = this; return; end
+            if (1 == prod(cell2mat(varargin))); z = this; return; end    
+            this.selectMaskingTool  
+            that = copy(this);
+            that.state_.zoomed(varargin{:});
+        end
+        
         %% mfourdfp.RegistrationTool
         
         %%
@@ -589,14 +685,17 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             
             this.state_.addLog(varargin{:});
         end
-        function      disp(this)
-            disp(this.state_);
+        function c    = char(this)
+            c = this.state_.char;
+        end
+        function d  = double(this)
+            d = this.state_.double;
         end
         function      ensureSaved(this)
             %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
             
             if (~lexist(this.fqfilename))
-                this.state_.save;
+                this.save;
             end
         end
         function      freeview(this, varargin)
@@ -607,12 +706,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         function      fsleyes(this, varargin)
             this.state_.fsleyes(varargin{:});
-        end
-        function g  = getLog(this)
-            %% GETLOG
-            %  @return g is the internal logger (handle) for the imaging state
-            
-            g =  this.state_.getLog;
         end
         function      hist(this, varargin)
             this.state_.hist(varargin{:});
@@ -629,21 +722,30 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             
             l = this.state_.length;
         end
-        function n  = nan(this, varargin)
-            n =  mlfourd.ImagingContext2(this.state_.nan(varargin{:}));
+        function s  = mat2str(this, varargin)
+            s = this.state_.mat2str(varargin{:});
+        end
+        function r  = rank(this)
+            r = this.state_.rank;
         end
         function      save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
-            this.state_.save;
+            this.state_.save(this);
         end
-        function      saveas(this, filename)
+        function      saveas(this, varargin)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
             %  @param filename is a string that is compatible with requirements of the filesystem;
             %  it replaces internal filename & filesystem information.
 
-            this.state_.saveas(filename);
-        end      
+            this.state_.saveas(this, varargin{:});
+        end   
+        function s  = single(this)
+            s = this.state_.single;
+        end  
+        function s  = size(this, varargin)
+            s = this.state_.size(varargin{:});
+        end 
         function tf = sizeEq(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
@@ -672,18 +774,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @return new window with a view of the imaging state
             
             this.state_.view(varargin{:});
-        end
-        function z  = zoomed(this, varargin)
-            %% ZOOMED 
-            %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
-            %  @return internal image is zoomed.
-            %  @return this if varargin is empty
-            %  @return this if prod(varargin{...}) == 1
-            
-            if (isempty(varargin));             z = this; return; end
-            if (1 == prod(cell2mat(varargin))); z = this; return; end       
-            this.numericalNiftid;     
-            z =  mlfourd.ImagingContext2(this.state_.zoomed(varargin{:}));
         end
         
         function this = ImagingContext2(obj)
@@ -718,7 +808,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     %% PROTECTED
     
     properties (Access = protected)
-        state_
+        state_ = []
     end 
     
     methods (Access = protected)
@@ -744,7 +834,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     %% DEPRECATED
 
     methods (Static, Hidden)
-        function ic   = recastImagingContext(obj, oriClass)
+        function ic = recastImagingContext(obj, oriClass)
             switch (oriClass)
                 case 'mlfourd.ImagingContext'
                     ic = mlfourd.ImagingContext(obj);
@@ -762,6 +852,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     end
     
     methods (Hidden)
+        function g   = getLog(this)
+            g = this.logger;
+        end
         function ifc = niftid(this)
             ifc = this.state_.niftid;
         end

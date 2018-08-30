@@ -11,7 +11,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
     
     properties (Constant)
-        PREFERRED_EXT = '.4dfp.hdr'
+        PREFERRED_EXT = '.nii.gz'
     end
  	
 	properties (Dependent)
@@ -47,6 +47,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         seriesNumber
         
         imagingInfo
+        innerTypeclass
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -260,6 +261,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         
         function ii   = get.imagingInfo(this)
             ii = this.innerNIfTI_.imagingInfo;
+        end        
+        function tc   = get.innerTypeclass(this)
+            tc = class(this.innerNIfTI_);
         end
         function im   = get.logger(this)
             im = this.innerNIfTI_.logger;
@@ -291,8 +295,8 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function this = applyScl(this)
             this.innerNIfTI_ = this.innerNIfTI_.applyScl;
         end
-        function c    = char(this)
-            c = this.innerNIfTI_.char;
+        function c    = char(this, varargin)
+            c = this.innerNIfTI_.char(varargin{:});
         end
         function this = append_descrip(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
@@ -367,6 +371,15 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             fqfn = this.innerNIfTI_.tempFqfilename;
         end
         function        view(this, varargin)
+            %% VIEW 
+            %  @return if this.img is vector, plot(this.img, varargin{:});
+            %          else launch this.viewer with this.img and varargin.
+            
+            if (this.rank < 3 && ...
+                numel(this.img) == length(this.img))
+                plot(this.img, varargin{:});
+                return
+            end
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
         end
@@ -477,7 +490,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function inn  = createInner(varargin)
             import mlfourd.* mlfourdfp.*;
             if (isempty(varargin))
-                inn = InnerFourdfp(FourdfpInfo); % trivial
+                inn = InnerNIfTI(NIfTIInfo); % trivial
                 return
             end
             if (1 == length(varargin))
@@ -497,8 +510,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 return
             end
             if (isa(obj, 'mlfourd.ImagingInfo'))
-                inn = InnerNIfTI(obj);
-                return
+                obj = obj.fqfilename;
             end
             if (ischar(obj))
                 [~,~,e] = myfileparts(obj);            
@@ -518,14 +530,14 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             end            
             
             % trivial
-            inn = InnerFourdfp(FourdfpInfo);
+            inn = InnerNIfTI(NIfTIInfo);    
         end
         function inn  = createInner2(varargin)
             import mlfourd.* mlfourdfp.* mlsurfer.*;  
             obj = varargin{1};
             v_  = varargin(2:end);
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = obj.innerNIfTI_; 
+                inn = obj.innerNIfTI_; % copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
@@ -553,7 +565,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             end
             
             % trivial
-            inn = InnerNIfTI(FourdfpInfo);            
+            inn = InnerNIfTI(NIfTIInfo);            
         end
     end
 
@@ -603,16 +615,6 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             this.innerNIfTI_.untouch      = s.untouch;
         end
     end 
-    
-    %% HIDDEN
-    
-    methods (Hidden)
-        function c = innerTypeclass(this)
-            %% INNERTYPECLASS assists debugging.
-            
-            c = class(this.innerNIfTI_);
-        end
-    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end
