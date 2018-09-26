@@ -51,8 +51,9 @@ classdef (Abstract) HandleINIfTI < handle
         fslview(this, varargin)
         hist(this, varargin)
         matrixsize(this)
+        ndims(this)
         prod(this, varargin)
-        rank(this)
+        rank(this) % rank of the image if all bases were independent; prefer ndims
         save(this)
         saveas(this, fqfn)
         scrubNanInf(this)

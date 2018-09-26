@@ -523,141 +523,161 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% DynamicsTool
         
-        function ic = timeAveraged(this, varargin)
-            %% TIMEAVERAGED
-            %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
-            %  @return ic := \int_T dt this.state_(\vec{r}, t).
-            
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.timeAveraged(varargin{:}));
-        end
-        function ic = timeContracted(this, varargin)
-            %% TIMECONTRACTED
-            %  @param T is numeric \in [{\Bbb R} {\Bbb R}]
-            %  @return ic := \int_T dt this.state_(\vec{r}, t).
-            
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.timeContracted(varargin{:}));
-        end
-        function ic = timeSummed(this)
-            %% TIMESUMMED integrates over imaging dimension 4. 
-            %  @return ic, the modified imaging context, a dynamic image reduced to summed volume.
-            
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.timeSummed);
-        end
-        function ic = volumeAveraged(this, varargin)
+        function that = volumeAveraged(this, varargin)
             %% VOLUMEAVERAGED
-            %  @param mask as ImagingContext2 specifying \Omega \in {\Bbb R}^3.
-            %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t) / \int_{\Omega} \text{mask}.
             
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.volumeAveraged(varargin{:}));
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.volumeAveraged(varargin{:});
         end
-        function ic = volumeContracted(this, varargin)
+        function that = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED
-            %  @param mask as ImagingContext2 specifying \Omega \in {\Bbb R}^3.
-            %  @return ic := \int_{\Omega} d^3r this.state_(mask(\vec{r}), t).
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
             
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.volumeContracted(varargin{:}));
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.volumeContracted(varargin{:});
         end
-        function ic = volumeSummed(this)
-            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
-            %  @return ic, the modified imaging context, a dynamic image reduced to time series
+        function that = volumeSummed(this, varargin)
+            %% VOLUMESUMMED 
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
             
-            this.numericalNiftid;
-            ic = mlfourd.ImagingContext2(this.state_.volumeSummed);
+            that = this.volumeContracted(varargin{:});
+        end
+        function that = timeAveraged(this, varargin)
+            %% TIMEAVERAGED
+            %  @param optional closed interval T \in {\Bbb R}.
+            %  @return ic := \int_T \text{this.state\_}(t) / \int_T.
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.timeAveraged(varargin{:});
+        end
+        function that = timeContracted(this, varargin)
+            %% TIMECONTRACTED
+            %  @param optional closed interval T \in {\Bbb R}.
+            %  @return ic := \int_T this.state_(t).
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.timeContracted(varargin{:});
+        end
+        function that = timeSummed(this, varargin)
+            %% TIMESUMMED 
+            %  @param optional closed interval T \in {\Bbb R}.
+            %  @return ic := \int_T \text{this.state\_}(t).
+            
+            that = this.timeContracted(varargin{:});
         end
         
         %% MaskingTool
         
-        function b  = binarized(this)
+        function that = binarized(this)
             %% BINARIZED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            this.numericalNiftid;
-            b = mlfourd.ImagingContext2(this.state_.binarized);
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.binarized;
         end
-        function b  = binarizeBlended(this, varargin)
-            %% BINARIZED
+        function that = binarizeBlended(this, varargin)
+            %% BINARIZEBLENDED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            this.numericalNiftid;
-            b = mlfourd.ImagingContext2(this.state_.binarizeBlended(varargin{:}));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.binarizeBlended(varargin{:});
         end
-        function l  = logical(this)
-            l = this.double > 0;
+        function c    = count(this)
+            this.selectMaskingTool;
+            c = this.state_.count;
         end
-        function m  = maskBlended(this, varargin)
-            this.numericalNiftid;
-            m = mlfourd.ImagingContext2(this.state_maskBlended(varargin{:}));
+        function that = maskBlended(this, varargin)
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.maskBlended(varargin{:});
         end
-        function m  = masked(this, varargin)
+        function that = masked(this, varargin)
             %% MASKED
             %  @param INIfTId of a mask with values [0 1], not required to be binary.
             %  @return internal image is masked.
             %  @warning mflourd:possibleMaskingError
             
-            this.numericalNiftid;
-            m =  mlfourd.ImagingContext2(this.state_.masked(varargin{:}));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.masked(varargin{:});
         end
-        function m  = maskedByZ(this, varargin)
+        function that = maskedMaths(this, varargin)
+            %% MASKEDMATHS
+            %  @param INIfTId of a mask with values [0 1], not required to be binary.
+            %  @return internal image is masked.
+            %  @warning mflourd:possibleMaskingError
+            
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.maskedMaths(varargin{:});
+        end
+        function that = maskedByZ(this, varargin)
             %% MASKEDBYZ
             %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
             %  @return internal image is cropped by rng.  
             %  @throws MATLAB:assertion:failed for rng out of bounds.
             
-            this.numericalNiftid;
-            m =  mlfourd.ImagingContext2(this.state_.maskedByZ(varargin{:}));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.maskedByZ(varargin{:});
         end
-        function t  = thresh(this, t)
+        function that = msktgen(this, varargin)
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.msktgen(varargin{:});
+        end
+        function that = thresh(this, varargin)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
             %  @return t, the modified imaging context
             %  @return this if t == 0 or t is empty
             
-            if (isempty(t)); t = this; return; end
-            if (0 ==    t ); t = this; return; end
-            this.numericalNiftid;
-            t = mlfourd.ImagingContext2(this.state_.thresh(t));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.thresh(varargin{:});
         end
-        function p  = threshp(this, p)
+        function that = threshp(this, varargin)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             %  @returns p, the modified imaging context
             %  @return this if p == 0 or p is empty
             
-            if (isempty(p)); p = this; return; end
-            if (0 ==    p ); p = this; return; end  
-            this.numericalNiftid;          
-            p =  mlfourd.ImagingContext2(this.state_.threshp(p));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.threshp(varargin{:});
         end
-        function u  = uthresh(this, u)
+        function that = uthresh(this, varargin)
             %% UTHRESH
             %  @param u:  use t to upper-threshold current image (zero anything above the number)
             %  @returns u, the modified imaging context
             %  @return this if u == 0 or u is empty
             
-            if (isempty(u)); u = this; return; end
-            if (0 ==    u ); u = this; return; end   
-            this.numericalNiftid;         
-            u =  mlfourd.ImagingContext2(this.state_.uthresh(u));
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.uthresh(varargin{:});
         end
-        function p  = uthreshp(this, p)
+        function that = uthreshp(this, varargin)
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
             %  @returns p, the modified imaging context
             %  @return this if u == 0 or u is empty
             
-            if (isempty(p)); p = this; return; end
-            if (0 ==    p ); p = this; return; end  
-            this.numericalNiftid;            
-            p =  mlfourd.ImagingContext2(this.state_.uthreshp(p));
-        end
-        
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.uthreshp(varargin{:});
+        end        
         function that = zoomed(this, varargin)
             %% ZOOMED 
             %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
@@ -665,9 +685,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @return this if varargin is empty
             %  @return this if prod(varargin{...}) == 1
             
-            if (isempty(varargin));             z = this; return; end
-            if (1 == prod(cell2mat(varargin))); z = this; return; end    
-            this.selectMaskingTool  
+            this.selectMaskingTool;
             that = copy(this);
             that.state_.zoomed(varargin{:});
         end
@@ -685,7 +703,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             
             this.state_.addLog(varargin{:});
         end
-        function c    = char(this)
+        function c  = char(this)
             c = this.state_.char;
         end
         function d  = double(this)
@@ -722,23 +740,31 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             
             l = this.state_.length;
         end
+        function l  = logical(this)
+            l = this.state_.logical;
+        end
         function s  = mat2str(this, varargin)
             s = this.state_.mat2str(varargin{:});
         end
+        function n  = ndims(this)
+            n = this.state_.ndims;
+        end
         function r  = rank(this)
-            r = this.state_.rank;
+            %% DEPRECATED; use ndims.
+            
+            r = this.ndims;
         end
         function      save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
-            this.state_.save(this);
+            this.state_.save;
         end
         function      saveas(this, varargin)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
             %  @param filename is a string that is compatible with requirements of the filesystem;
             %  it replaces internal filename & filesystem information.
 
-            this.state_.saveas(this, varargin{:});
+            this.state_.saveas(varargin{:});
         end   
         function s  = single(this)
             s = this.state_.single;

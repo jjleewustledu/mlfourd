@@ -428,6 +428,13 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
         end   
+        function n    = ndims(this, img)
+            %% NDIMS effectively squeezes img (this.img) before reporting number of dimensions.
+            
+            if (nargin < 2)
+                img = this.img_; end
+            n = ndims(img);
+        end
         function this = prod(this, varargin)
             %% PROD overloads prod for INIfTI
             
@@ -435,12 +442,12 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             this = this.append_fileprefix('_prod');
             this = this.append_descrip('prod');
         end
-        function rnk  = rank(this, img)
-            %% RANK squeezes this.img before reporting rank of this.img or passed img
+        function r    = rank(this, varargin)
+            %% DEPRECATED; use ndims.
             
-            if (nargin < 2)
-                img = this.img_; end
-            rnk = size(size(img),2);
+            r = this.ndims(varargin{:});
+        end
+        function this = roi(this, varargin)
         end
         function        save(this)
             %% SAVE 
@@ -573,6 +580,22 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end
         function        view(this, varargin)
             this.viewExternally(this.viewer, varargin{:});
+        end
+        function this = zoom(this, zfac)
+            assert(isnumeric(zfac));
+            if (isempty(zfac) || all(zfac == 1))
+                return
+            end
+            if (all(zfac >= 1))
+                this = this.zoomout(zfac);   
+            elseif (all(zfac <= 1))
+                this = this.zoomin(zfac);  
+            else
+                error('mlfourd:unexpectedConditionalBranch', 'AbstractInnerImagingFormat.zoomed.zfac -> %g', zfac);
+            end
+            
+            this.fileprefix = sprintf('%s_zoom%s', this.fileprefix, this.tupleTag(zfac));
+            this.addLog('AbstractInnerImagingFormat.zoom %s', mat2str(zfac));            
         end
         
         %%
@@ -722,11 +745,22 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         viewer_
     end
     
-    %% PROTECTED    
+    %% PROTECTED
     
     properties (Access = protected)
         filesystemRegistry_
         imagingInfo_ % See also mlfourd.ImagingInfo        
+    end
+    
+    methods (Static, Access = protected)
+        function tag = tupleTag(tup)
+            assert(isnumeric(tup));
+            tag = mat2str(tup);
+            tag = strrep(tag, ' ', 'x');
+            tag = strrep(tag, '.', 'p');
+            tag = strrep(tag, '[', '');
+            tag = strrep(tag, ']', '');
+        end
     end
     
     methods (Access = protected)
@@ -862,6 +896,9 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 handerror(ME);
             end
         end
+        function hdr  = recalculateHdrHistOriginator(this, hdr)
+            hdr = this.imagingInfo_.recalculateHdrHistOriginator(hdr);
+        end
         function        save_nii(this)
             if (this.untouch)
                 this.save_untouch_nii;
@@ -916,7 +953,8 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 tmp = this.tempFqfilename;
                 this.saveas(tmp); % always save temp; internal img likely has changed from img on filesystem
                 v = mlfourd.Viewer(app);
-                [s,r] = v.aview([tmp varargin{:}]);
+                tmp = [tmp varargin];
+                [s,r] = v.aview(tmp{:});
                 this.deleteExisting(tmp);
             catch ME
                 dispexcept(ME, 'mlfourd:viewerError', ...
@@ -924,6 +962,86 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                     app, s, r);
             end
         end  
+        function this = zoomin(this, xmin, xsize, ymin, ysize, zmin, zsize, tmin, tsize)            
+            size_ = size(this.img);
+            
+            % surjective or onto; "crop"
+            if (3 == length(size_))
+                rsize = [xsize ysize zsize];
+                rmin  = [xmin  ymin  zmin]; % >= 0
+                assert(all(rsize <= size_));
+                assert(all(0 <= rmin));
+                img1  = zeros(rsize);
+                for x3 = 1:rsize(3)
+                    for x2 = 1:rsize(2)
+                        for x1 = 1:rsize(1)
+                            img1(x1, x2, x3) = this.img(x1+rmin(1), x2+rmin(2), x3+rmin(3));
+                        end
+                    end
+                end
+            elseif (4 == length(size_))
+                rsize = [xsize ysize zsize tsize];
+                rmin  = [xmin  ymin  zmin  tmin]; % >= 0
+                assert(all(rsize <= size_));
+                assert(all(0 <= rmin));
+                img1  = zeros(rsize);
+                for x4 = 1:rsize(4)
+                    for x3 = 1:rsize(3)
+                        for x2 = 1:rsize(2)
+                            for x1 = 1:rsize(1)
+                                img1(x1, x2, x3, x4) = this.img(x1+rmin(1), x2+rmin(2), x3+rmin(3), x4+rmin(4));
+                            end
+                        end
+                    end
+                end
+            else
+                error('mlfourd:unsupportedSize', 'MaskingTool.zoom.size0->%s', num2str(size_));
+            end  
+            
+            this.img = img1;
+            this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
+            this.hdr = this.recalculateHdrHistOriginator(this.hdr);
+        end
+        function this = zoomout(this, xmin, xsize, ymin, ysize, zmin, zsize, tmin, tsize)
+            size_ = size(this.img);
+
+            % injective or 1-to-1; "enlarge canvas"
+            if (3 == length(size_))
+                rsize = [xsize ysize zsize];
+                rmin  = [xmin  ymin  zmin]; % <= 0
+                assert(all(size_ <= rsize));
+                assert(all(rmin <= 0));
+                img1  = zeros(rsize);
+                for x3 = 1:size_(3)
+                    for x2 = 1:size_(2)
+                        for x1 = 1:size_(1)
+                            img1(x1-rmin(1), x2-rmin(2), x3-rmin(3)) = this.img(x1, x2, x3);
+                        end
+                    end
+                end
+            elseif (4 == length(size_))
+                rsize = [xsize ysize zsize tsize];
+                rmin  = [xmin  ymin  zmin  tmin]; % <= 0
+                assert(all(size_ <= rsize));
+                assert(all(rmin <= 0));
+                img1  = zeros(rsize);
+                for x4 = 1:size_(4)
+                    for x3 = 1:size_(3)
+                        for x2 = 1:size_(2)
+                            for x1 = 1:size_(1)
+                                img1(x1-rmin(1), x2-rmin(2), x3-rmin(3), x4-rmin(4)) = this.img(x1, x2, x3, x4);
+                            end
+                        end
+                    end
+                end
+            else
+                error('mlfourd:unsupportedSize', 'MaskingTool.zoom.size0->%s', num2str(size_));
+            end
+            
+            this.img = img1;
+            this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
+            this.hdr = this.recalculateHdrHistOriginator(this.hdr);
+        end
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

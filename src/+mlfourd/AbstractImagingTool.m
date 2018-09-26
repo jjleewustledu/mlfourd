@@ -219,11 +219,17 @@ classdef (Abstract) AbstractImagingTool < handle & matlab.mixin.Copyable
         function l    = length(~)
             l = 1;
         end
+        function l    = logical(this)
+            l = logical(this.innerImaging_.img);
+        end
         function s    = mat2str(this, varargin)
             s = mat2str(this.innerImaging_.img, varargin{:});
         end
+        function n    = ndims(this)
+            n = this.innerImaging_.ndims;
+        end
         function r    = rank(this)
-            r = this.innerImaging_.rank;
+            r = this.ndims;
         end
         function        save(this)
             this.innerImaging_.save;

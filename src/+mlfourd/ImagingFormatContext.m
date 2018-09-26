@@ -343,11 +343,16 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function m    = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
         end
+        function n    = ndims(this, varargin)
+            n = this.innerNIfTI_.ndims(varargin{:});
+        end
         function this = prod(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
         end
         function r    = rank(this, varargin)
-            r = this.innerNIfTI_.rank(varargin{:});
+            %% DEPRECATED; use ndims
+            
+            r = this.ndims(varargin{:});
         end
         function        save(this)
             this.innerNIfTI_.save;
@@ -375,13 +380,16 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             %  @return if this.img is vector, plot(this.img, varargin{:});
             %          else launch this.viewer with this.img and varargin.
             
-            if (this.rank < 3 && ...
+            if (this.ndims < 3 && ...
                 numel(this.img) == length(this.img))
                 plot(this.img, varargin{:});
                 return
             end
             this.innerNIfTI_.viewer = this.viewer;
             this.innerNIfTI_.view(varargin{:});
+        end
+        function this = zoom(this, varargin)
+            this.innerNIfTI_ = this.innerNIfTI_.zoom(varargin{:});
         end
         
  		function this = ImagingFormatContext(varargin)
@@ -595,14 +603,14 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             end
         end
         function this = adjustInnerNIfTIWithNumeric(this, num)
-            rank                                                        = length(size(num));
-            this.innerNIfTI_.img_                                       = num;
-            this.innerNIfTI_.imagingInfo.hdr.dime.pixdim(2:this.rank+1) = ones(1,this.rank);
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim                   = ones(1,8);
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim(1)                = rank;
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim(2:rank+1)         = size(num);
-            this.innerNIfTI_.imagingInfo.hdr.dime.datatype              = 64;
-            this.innerNIfTI_.imagingInfo.hdr.dime.bitpix                = 64;
+            lensize                                                   = length(size(num));
+            this.innerNIfTI_.img_                                     = num;
+            this.innerNIfTI_.imagingInfo.hdr.dime.pixdim(2:lensize+1) = ones(1,lensize);
+            this.innerNIfTI_.imagingInfo.hdr.dime.dim                 = ones(1,8);
+            this.innerNIfTI_.imagingInfo.hdr.dime.dim(1)              = lensize;
+            this.innerNIfTI_.imagingInfo.hdr.dime.dim(2:lensize+1)    = size(num);
+            this.innerNIfTI_.imagingInfo.hdr.dime.datatype            = 64;
+            this.innerNIfTI_.imagingInfo.hdr.dime.bitpix              = 64;
         end
         function this = adjustInnerNIfTIWithStruct(this, s)
             % as described by mlniftitools.load_untouch_nii

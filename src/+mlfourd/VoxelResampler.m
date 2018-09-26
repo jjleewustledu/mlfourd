@@ -92,8 +92,8 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             this.dynamic_   = this.downsampleIC(this.dynamic_);
             this.mask_      = this.downsampleIC(this.mask_);
         end  
-        function r    = rank(this)
-            r = rank(this.dynamic_.niftid);
+        function r    = ndims(this)
+            r = ndims(this.dynamic_.niftid);
         end
         function this = upsample(this)
             assert(~isempty(this.dynamic_));

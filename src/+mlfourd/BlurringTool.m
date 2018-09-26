@@ -95,13 +95,13 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             addRequired(ip, 'blur', @isnumeric);
             addOptional(ip, 'mask', 1);
             parse(ip, varargin{:});            
-            this.blur_ = this.checkedBlur(ip.Results.blur, this.rankEuclid); % double \in \mathbb{R}^3
+            this.blur_ = this.checkedBlur(ip.Results.blur, this.ndimsEuclid); % double \in \mathbb{R}^3
             this.mask_ = this.checkedMask(ip.Results.mask, this.sizeEuclid); % double \in \mathbb{R}^3
             
             if (isempty(this.blur_) || sum(this.blur_) < eps)
                 return
             end
-            if (4 == this.rank)
+            if (4 == this.ndims)
                 for t = 1:size(this,4)
                     this.innerImaging_.img(:,:,:,t) = ...
                         this.blurredImg(this.innerImaging_.img(:,:,:,t));
@@ -113,12 +113,12 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             this.innerImaging_.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
             this.blurCount_ = this.blurCount_ + 1;
         end
-        function r = rankEuclid(this)
-            r = min(this.rank, 3);
+        function r = ndimsEuclid(this)
+            r = min(this.ndims, 3);
         end
         function s = sizeEuclid(this)
             s = this.innerImaging_.size;
-            s = s(1:this.rankEuclid);
+            s = s(1:this.ndimsEuclid);
         end
         
  		function this = BlurringTool(h, varargin)
@@ -187,25 +187,25 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             metppix = BlurringTool.checkedMetppix(metppix, sigma);
             sigma   = sigma ./ metppix; % convert metric units to pixels            
             img     = double(squeeze(img));
-            rank_   = length(size(img));
+            ndims_   = ndims(img);
             
             % assemble filter kernel & call imfilter              
             krnlLens = BlurringTool.KERNEL_MULTIPLE*ceil(2*sigma)+1; % see also imgaussfilt, imgaussfilt3; this is their default
             krnlLens(krnlLens < 1) = 1;
-            switch(rank_)
+            switch(ndims_)
                 case 2
                     img = imgaussfilt( img, sigma, 'FilterSize', krnlLens);
                 case 3
                     img = imgaussfilt3(img, sigma, 'FilterSize', krnlLens);
                 otherwise
                     error('mlfourd:parameterOutOfBounds', ...
-                         ['BlurringTool.gaussSigma.rank_->' num2str(rank_) ', but only rank_ \in [2 3] are supported']);
+                         ['BlurringTool.gaussSigma.ndims_->' num2str(ndims_) ', but only ndims_ \in [2 3] are supported']);
             end
         end 
-        function b       = checkedBlur(b, rank_)
+        function b       = checkedBlur(b, ndims_)
             assert(isnumeric(b));
-            if (length(b) < rank_)
-                b = mean(b)*ones(1, rank_);
+            if (length(b) < ndims_)
+                b = mean(b)*ones(1, ndims_);
             end   
             if (length(b) > 3)
                 b = b(1:3);
@@ -229,7 +229,7 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             end
         end
         function sz      = embedVecInSitu(sz, fixedsz)
-            %% EMBEDVECINSITU resizes sz to match rank of fixedsz
+            %% EMBEDVECINSITU resizes sz to match ndims of fixedsz
             %  e.g.  >> sz = BlurringTool.embedVecInSitu([2 2 30], [18 18 31 100])
             %        sz = 
             %            2 2 30 100
