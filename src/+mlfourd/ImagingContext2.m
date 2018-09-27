@@ -642,7 +642,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
             %  @return t, the modified imaging context
-            %  @return this if t == 0 or t is empty
+            %  @return copy(this) if t == 0 or t is empty
             
             this.selectMaskingTool;
             that = copy(this);
@@ -652,7 +652,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             %  @returns p, the modified imaging context
-            %  @return this if p == 0 or p is empty
+            %  @return copy(this) if p == 0 or p is empty
             
             this.selectMaskingTool;
             that = copy(this);
@@ -662,7 +662,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% UTHRESH
             %  @param u:  use t to upper-threshold current image (zero anything above the number)
             %  @returns u, the modified imaging context
-            %  @return this if u == 0 or u is empty
+            %  @return copy(this) if u == 0 or u is empty
             
             this.selectMaskingTool;
             that = copy(this);
@@ -672,18 +672,25 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
             %  @returns p, the modified imaging context
-            %  @return this if u == 0 or u is empty
+            %  @return copy(this) if u == 0 or u is empty
             
             this.selectMaskingTool;
             that = copy(this);
             that.state_.uthreshp(varargin{:});
         end        
         function that = zoomed(this, varargin)
-            %% ZOOMED 
-            %  @param vector of zoom multipliers; zoom(i) > 1 embeds this.img in a larger img.
-            %  @return internal image is zoomed.
-            %  @return this if varargin is empty
-            %  @return this if prod(varargin{...}) == 1
+            %% ZOOMED parameters resembles fslroi, but indexing starts with 1 and passing -1 for a size will set it to 
+            %  the full image extent for that dimension.
+            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean (not time) size := fac*size and
+            %                                symmetrically sets all min.
+            %  @param xsize is optional.
+            %  @param ymin  is optional.
+            %  @param ysize is optional.
+            %  @param zmin  is optional.
+            %  @param zsize is optional.
+            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
+            %  @param tsize is optional.
+            %  @returns copy(this)
             
             this.selectMaskingTool;
             that = copy(this);

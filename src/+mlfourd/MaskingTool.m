@@ -146,12 +146,21 @@ classdef MaskingTool < handle & mlfourd.AbstractImagingTool
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
             this.addLog('MaskingTool.uthreshp(%g)', p);
         end   
-        function this = zoomed(this, zoom)
-            %% ZOOMED
-            %  @param zoom:  > 1 zooms out; < 1 zooms in.
+        function this = zoomed(this, varargin)
+            %% ZOOMED parameters resembles fslroi, but indexing starts with 1 and passing -1 for a size will set it to 
+            %  the full image extent for that dimension.
+            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean (not time) size := fac*size and
+            %                                symmetrically sets all min.
+            %  @param xsize is optional.
+            %  @param ymin  is optional.
+            %  @param ysize is optional.
+            %  @param zmin  is optional.
+            %  @param zsize is optional.
+            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
+            %  @param tsize is optional.            
             %  @returns this
 
-            this.innerImaging_ = this.innerImaging_.zoom(zoom);
+            this.innerImaging_ = this.innerImaging_.zoom(varargin{:});
         end
         
         function this = MaskingTool(h, varargin)

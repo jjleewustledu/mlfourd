@@ -581,21 +581,67 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function        view(this, varargin)
             this.viewExternally(this.viewer, varargin{:});
         end
-        function this = zoom(this, zfac)
-            assert(isnumeric(zfac));
-            if (isempty(zfac) || all(zfac == 1))
-                return
-            end
-            if (all(zfac >= 1))
-                this = this.zoomout(zfac);   
-            elseif (all(zfac <= 1))
-                this = this.zoomin(zfac);  
-            else
-                error('mlfourd:unexpectedConditionalBranch', 'AbstractInnerImagingFormat.zoomed.zfac -> %g', zfac);
-            end
+        function this = zoom(this, varargin)
+            %% ZOOM parameters resembles fslroi; indexing starts with 0 and passing -1 for a size will set it to 
+            %  the full image extent for that dimension.
+            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean (not time) size := fac*size and
+            %                                symmetrically sets all min.
+            %  @param xsize is optional.
+            %  @param ymin  is optional.
+            %  @param ysize is optional.
+            %  @param zmin  is optional.
+            %  @param zsize is optional.
+            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
+            %  @param tsize is optional.
+            %  @throws .
             
-            this.fileprefix = sprintf('%s_zoom%s', this.fileprefix, this.tupleTag(zfac));
-            this.addLog('AbstractInnerImagingFormat.zoom %s', mat2str(zfac));            
+            assert(3 == ndims(this) || 4 == ndims(this));
+            
+            ip = inputParser;
+            addRequired(ip, 'xmin',      @isscalar);
+            addOptional(ip, 'xsize', [], @isscalar);
+            addOptional(ip, 'ymin',  [], @isscalar);
+            addOptional(ip, 'ysize', [], @isscalar);
+            addOptional(ip, 'zmin',  [], @isscalar);
+            addOptional(ip, 'zsize', [], @isscalar);
+            addOptional(ip, 'tmin',  [], @isscalar);
+            addOptional(ip, 'tsize', [], @isscalar);
+            parse(ip, varargin{:});            
+            ipr = this.adjustIpresultsForNegSize(ip.Results);
+            switch (nargin - 1)
+                case 1
+                    this = this.zoomFac(ipr.xmin);
+                case 2
+                    rmin  = [0 0 0 ipr.tmin];
+                    rsize = [size(this,1) size(this,2) size(this,3) ipr.tsize];
+                    this = this.zoom4D(rmin, rsize);
+                case 6
+                    rmin  = [ipr.xmin  ipr.ymin  ipr.zmin ];
+                    rsize = [ipr.xsize ipr.ysize ipr.zsize];
+                    this = this.zoom3D(rmin, rsize);
+                case 8
+                    rmin  = [ipr.xmin  ipr.ymin  ipr.zmin  ipr.tmin];
+                    rsize = [ipr.xsize ipr.ysize ipr.zsize ipr.tsize];
+                    this = this.zoom4D(rmin, rsize);
+                otherwise
+                    error('mlfourd:unsupportedNargin', 'AbstractInnerImagingFormat.zoom');
+            end
+            tag = this.tupleTag([ipr.xmin ipr.xsize ipr.ymin ipr.ysize ipr.zmin ipr.zsize ipr.tmin ipr.tsize]);
+            this.fileprefix = sprintf('%s_zoom_%s', this.fileprefix, tag);
+            this.addLog('AbstractInnerImagingFormat.zoom %s', tag);               
+        end
+        function this = zoomFac(this, fac)
+            s     = size(this);
+            rmin  = [floor([s(1) s(2) s(3)]*fac/2 - 1) 0];
+            rsize = [floor([s(1) s(2) s(3)]*fac) s(4)];            
+            switch (ndims(this))
+                case 3
+                    this = this.zoom3D(rmin, rsize);
+                case 4
+                    this = this.zoom4D(rmin, rsize);
+                otherwise 
+                    error('mlfourd:unsupportedNargin', 'AbstractInnerImagingFormat.zoomFac');
+            end
         end
         
         %%
@@ -756,7 +802,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function tag = tupleTag(tup)
             assert(isnumeric(tup));
             tag = mat2str(tup);
-            tag = strrep(tag, ' ', 'x');
+            tag = strrep(tag, ' ', '_');
             tag = strrep(tag, '.', 'p');
             tag = strrep(tag, '[', '');
             tag = strrep(tag, ']', '');
@@ -764,6 +810,15 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
     end
     
     methods (Access = protected)
+        function ipr_ = adjustIpresultsForNegSize(this, ipr_)
+            fields_ = circshift(fields(ipr_), -2, 1);
+            for i = 2:2:length(fields_)
+                if (ipr_.(fields_{i}) < 0)
+                    ipr_.(fields_{i-1}) = 0;
+                    ipr_.(fields_{i})   = size(this, i/2);
+                end
+            end
+        end
         function d    = delimitDescrip(this, d)
             d = strtrim(d);
             if (length(d) > this.DESC_LEN_LIM)
@@ -962,83 +1017,66 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                     app, s, r);
             end
         end  
-        function this = zoomin(this, xmin, xsize, ymin, ysize, zmin, zsize, tmin, tsize)            
-            size_ = size(this.img);
+        function this = zoom3D(this, rmin, rsize)
+            %% indexes starting from 0
             
-            % surjective or onto; "crop"
-            if (3 == length(size_))
-                rsize = [xsize ysize zsize];
-                rmin  = [xmin  ymin  zmin]; % >= 0
-                assert(all(rsize <= size_));
-                assert(all(0 <= rmin));
-                img1  = zeros(rsize);
-                for x3 = 1:rsize(3)
-                    for x2 = 1:rsize(2)
-                        for x1 = 1:rsize(1)
-                            img1(x1, x2, x3) = this.img(x1+rmin(1), x2+rmin(2), x3+rmin(3));
+            sz0 = size(this);
+            im  = zeros(rsize);
+            
+            if (all(rsize == sz0))
+                return
+            elseif (all(rsize <= sz0)) % zoom in
+                for x3 = rmin(3):rmin(3)+rsize(3)-1
+                    for x2 = rmin(2):rmin(2)+rsize(2)-1
+                        for x1 = rmin(1):rmin(1)+rsize(1)-1
+                            im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
                         end
                     end
-                end
-            elseif (4 == length(size_))
-                rsize = [xsize ysize zsize tsize];
-                rmin  = [xmin  ymin  zmin  tmin]; % >= 0
-                assert(all(rsize <= size_));
-                assert(all(0 <= rmin));
-                img1  = zeros(rsize);
-                for x4 = 1:rsize(4)
-                    for x3 = 1:rsize(3)
-                        for x2 = 1:rsize(2)
-                            for x1 = 1:rsize(1)
-                                img1(x1, x2, x3, x4) = this.img(x1+rmin(1), x2+rmin(2), x3+rmin(3), x4+rmin(4));
-                            end
+                end  
+            elseif (all(rsize >= sz0)) % zoom out
+                for x3 = 0:sz0(3)-1
+                    for x2 = 0:sz0(2)-1
+                        for x1 = 0:sz0(1)-1
+                            im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
                         end
                     end
-                end
+                end  
             else
-                error('mlfourd:unsupportedSize', 'MaskingTool.zoom.size0->%s', num2str(size_));
-            end  
-            
-            this.img = img1;
+                error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
+            end
+            this.img = im;
             this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
             this.hdr = this.recalculateHdrHistOriginator(this.hdr);
         end
-        function this = zoomout(this, xmin, xsize, ymin, ysize, zmin, zsize, tmin, tsize)
-            size_ = size(this.img);
-
-            % injective or 1-to-1; "enlarge canvas"
-            if (3 == length(size_))
-                rsize = [xsize ysize zsize];
-                rmin  = [xmin  ymin  zmin]; % <= 0
-                assert(all(size_ <= rsize));
-                assert(all(rmin <= 0));
-                img1  = zeros(rsize);
-                for x3 = 1:size_(3)
-                    for x2 = 1:size_(2)
-                        for x1 = 1:size_(1)
-                            img1(x1-rmin(1), x2-rmin(2), x3-rmin(3)) = this.img(x1, x2, x3);
+        function this = zoom4D(this, rmin, rsize)
+            
+            sz0 = size(this);
+            im  = zeros(rsize);
+            
+            if (all(rsize < sz0)) % zoom in
+                for x4 = rmin(4):rmin(4)+rsize(4)-1
+                    for x3 = rmin(3):rmin(3)+rsize(3)-1
+                        for x2 = rmin(2):rmin(2)+rsize(2)-1
+                            for x1 = rmin(1):rmin(1)+rsize(1)-1
+                                im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
+                            end
                         end
                     end
                 end
-            elseif (4 == length(size_))
-                rsize = [xsize ysize zsize tsize];
-                rmin  = [xmin  ymin  zmin  tmin]; % <= 0
-                assert(all(size_ <= rsize));
-                assert(all(rmin <= 0));
-                img1  = zeros(rsize);
-                for x4 = 1:size_(4)
-                    for x3 = 1:size_(3)
-                        for x2 = 1:size_(2)
-                            for x1 = 1:size_(1)
-                                img1(x1-rmin(1), x2-rmin(2), x3-rmin(3), x4-rmin(4)) = this.img(x1, x2, x3, x4);
+            elseif (all(rsize > sz0)) % zoom out
+                for x4 = 0:sz0(4)-1
+                    for x3 = 0:sz0(3)-1
+                        for x2 = 0:sz0(2)-1
+                            for x1 = 0:sz0(1)-1
+                                im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
                             end
                         end
                     end
                 end
             else
-                error('mlfourd:unsupportedSize', 'MaskingTool.zoom.size0->%s', num2str(size_));
+                error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
-            
-            this.img = img1;
+            this.img = im;
             this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
             this.hdr = this.recalculateHdrHistOriginator(this.hdr);
         end

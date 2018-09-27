@@ -266,17 +266,17 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         function test_zoomed(this)
             this.createFslroi;            
             ic   = mlfourd.ImagingContext2([this.t1 '.nii.gz']);            
-            icz  = mlfourd.ImagingContext2([this.fslroi '.nii.gz']);            
+%            icz  = mlfourd.ImagingContext2([this.fslroi '.nii.gz']);            
             
-            zin  = ic.zoomed([0.25 2/3 1]);
-%             zin.save;
-%             zout = zin.zoomed([4 3/2 1]);
-%             zout.save
-%             ic.fsleyes(zin.fqfilename, zout.fqfilename);
-%             delete(zin.fqfilename);
-%             delete(zout.fqfilename);
+            zin  = ic.zoomed(44, 88, 62, 124, 1, -1);
+            zin.save;
+            zout = zin.zoomed(-44, 176, -62, 248, 1, -1);
+            zout.save
+            ic.fsleyes(zin.fqfilename, zout.fqfilename);
+            delete(zin.fqfilename);
+            delete(zout.fqfilename);
         end
-        function test_qsforms(this)            
+        function test_qsforms(this)
             ic = mlfourd.ImagingContext2([this.t1 '.nii.gz']);
             ic.saveas([this.t1 '_test.nii.gz']);
             ic.fsleyes([this.t1 '_test.nii.gz']);

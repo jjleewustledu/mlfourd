@@ -174,14 +174,14 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
         end
         function hdr = recalculateHdrHistOriginator(~, hdr)
         end
-        function this = zoom(this, rmin, rsize)
-            shift = this.AffMats*[rmin(1:3) 0]';
-            
-            this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
-            this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
-            this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);            
-            this.hdr.hist.originator = rsize(1:3)/2;
-        end
+       function this = zoom(this, rmin, rsize)
+           shift = this.AffMats*[rmin(1:3) 0]';
+           
+           this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
+           this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
+           this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
+           this.hdr.hist.originator = rsize(1:3)/2;
+       end
         function xyz = RMatrixMethod2(this, ijk)
             %%   RMATRIXMETHOD2 (used when qform_code > 0, which should be the "normal" case):
             %    -----------------------------------------------------------------------------
