@@ -672,15 +672,6 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             end
             this.logger_.add(ensureString(varargin{:}));
         end        
-        function this = applyScl(this)
-            iihd = this.imagingInfo_.hdr.dime;
-            this = this.append_descrip( ...
-                sprintf('applyScl:  img := %g img + %g', ...
-                iihd.scl_slope, iihd.scl_inter));            
-            this.img = double(this.img) * this.hdr.dime.scl_slope + this.hdr.dime.scl_inter;
-            this.imagingInfo_.hdr.dime.scl_slope = 1; % now incorporated into this.img
-            this.imagingInfo_.hdr.dime.scl_inter = 0; %                  
-        end
         function s    = asStruct(this) 
             info = this.imagingInfo; % updated with make_nii in AbstractInnerImagingFormat.ctor
             s = struct( ...

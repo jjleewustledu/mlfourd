@@ -74,9 +74,6 @@ classdef NIfTIdecorator < mlfourd.RootNIfTIdecorator & mlfourd.INIfTId
         function        addLog(this, varargin)
             this.component_.addLog(varargin{:});
         end
-        function this = applyScl(this)
-            this.component_ = this.component_.addScl;
-        end
         function that = clone(this)
             that = this;
             that.component_ = this.component_.clone;

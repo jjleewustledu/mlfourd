@@ -36,7 +36,6 @@ classdef (Abstract) INIfTI
     
 	methods (Abstract) 
         addLog(this, varargin)
-        applyScl(this)    
         append_descrip(this, s)
         prepend_descrip(this, s)
         double(this)

@@ -292,9 +292,6 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function        addLog(this, varargin)
             this.innerNIfTI_.addLog(varargin{:});
         end
-        function this = applyScl(this)
-            this.innerNIfTI_ = this.innerNIfTI_.applyScl;
-        end
         function c    = char(this, varargin)
             c = this.innerNIfTI_.char(varargin{:});
         end
