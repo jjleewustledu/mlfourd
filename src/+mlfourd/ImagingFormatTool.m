@@ -33,7 +33,7 @@ classdef ImagingFormatTool < handle & mlfourd.AbstractImagingTool
             this = this@mlfourd.AbstractImagingTool(h, varargin{:});
             this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
         end
-  	end      
+    end      
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

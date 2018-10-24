@@ -889,10 +889,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             g = this.logger;
         end
         function ifc = niftid(this)
-            ifc = this.state_.niftid;
+            ifc = this.nifti;
         end
-        function ifc = numericalNiftid(this)
-            ifc = this.state_.numericalNiftid;
+        function this = numericalNiftid(this)
+            this.selectNumericalTool;
         end 
     end  
     
