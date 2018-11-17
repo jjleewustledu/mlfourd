@@ -24,15 +24,31 @@ classdef ReferenceMprage
             import mlfourd.*;
             suf = {'.nii.gz' '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec'};
             for s = 1:length(suf)
-                copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX suf{s}]), dest, varargin{:});
+                if (~lexist(fullfile(dest,                      [ReferenceMprage.FILEPREFIX suf{s}]), 'file'))
+                    copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX suf{s}]), ...
+                        dest, varargin{:});
+                end
             end
-            suf = ['.mgz' suf]; 
-            for s = 1:length(suf)
-                copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX2 suf{s}]), dest, varargin{:});
+            suf2 = ['.mgz' suf]; 
+            for s = 1:length(suf2)
+                try
+                    if (~lexist(fullfile(dest,                      [ReferenceMprage.FILEPREFIX2 suf2{s}]), 'file'))
+                        copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX2 suf2{s}]), ...
+                            dest, varargin{:});
+                    end
+                catch ME
+                    handwarning(ME);
+                end
             end
-            suf = ['.mgz' suf]; 
-            for s = 1:length(suf)
-                copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX3 suf{s}]), dest, varargin{:});
+            for s = 1:length(suf2)
+                try
+                    if (~lexist(fullfile(dest,                      [ReferenceMprage.FILEPREFIX3 suf2{s}]), 'file'))
+                        copyfile(fullfile(ReferenceMprage.DATAROOT, [ReferenceMprage.FILEPREFIX3 suf2{s}]), ...
+                            dest, varargin{:});
+                    end
+                catch ME
+                    handwarning(ME);
+                end
             end
         end
         function g = dicomAsNii

@@ -11,7 +11,6 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
-        dataDir = '/Users/jjlee/MATLAB-Drive/mlfourdfp/data'
         doview = true
         noDelete = false
         pwd0
@@ -21,6 +20,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
     end
     
     properties (Dependent)
+        dataDir
         TmpDir
     end
 
@@ -28,12 +28,64 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         
         %% GET/SET
         
+        function g = get.dataDir(~)
+            g = fullfile(getenv('HOME'), 'MATLAB-Drive/mlfourdfp/data', '');
+        end
         function g = get.TmpDir(~)
             g = fullfile(getenv('HOME'), 'Tmp', '');
         end
     end
     
 	methods (Test)
+        function test_ctorAndSaveas(this)            
+            pwd0_ = pushd(this.TmpDir);
+            
+            %% orig has center/mmppix
+            
+%             ifc = mlfourd.ImagingFormatContext(fullfile(this.dataDir, 'fdgcent.4dfp.hdr'));
+%             ifc.saveas(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.hdr'));
+%             ifh = mlfourdfp.IfhParser.load(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.ifh'), 'N', false);
+%             this.verifyEqual(ifc.imagingInfo.ifh.mmppix, [2.0863   -2.0863   -2.0312], 'RelTol', 1e-4);
+%             this.verifyEqual(ifc.imagingInfo.ifh.center, [179.4184 -181.5046 -130.0000], 'RelTol', 1e-6);            
+%             this.verifyEqual(ifc.imagingInfo.ifh.center, ifh.center, 'RelTol', 1e-6);            
+%             if (this.doview)
+%                 mlbash(sprintf('fsleyes %s/fdgcent.4dfp.img fdgcent_dbg.4dfp.img', this.dataDir));
+%             end
+
+            ifc = mlfourd.ImagingFormatContext(fullfile(this.dataDir, 'fdgcent.4dfp.hdr'));
+            ifc.saveas(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.hdr'));
+            ifh = mlfourdfp.IfhParser.load(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.ifh'), 'N', true); 
+            this.verifyEqual(ifc.imagingInfo.ifh.mmppix, [2.0863   -2.0863   -2.0312], 'RelTol', 1e-4);
+            this.verifyEqual(ifc.imagingInfo.ifh.center, [179.4184 -181.5046 -130.0000], 'RelTol', 1e-6);   
+            this.verifyEmpty(ifh.center); 
+            if (this.doview)
+                mlbash(sprintf('fsleyes %s/fdgcent.4dfp.img fdgcent_dbg.4dfp.img', this.dataDir));
+            end
+            
+            %% orig has no center/mmppix
+
+%             ifc = mlfourd.ImagingFormatContext(fullfile(this.dataDir, 'fdgnocent.4dfp.hdr'));
+%             ifc.saveas(fullfile(this.TmpDir, 'fdgnocent_dbg.4dfp.hdr'));
+%             ifh = mlfourdfp.IfhParser.load(fullfile(this.TmpDir, 'fdgnocent_dbg.4dfp.ifh'), 'N', false);
+%             this.verifyEmpty(ifc.imagingInfo.ifh.mmppix);
+%             this.verifyEmpty(ifc.imagingInfo.ifh.center);
+%             this.verifyEmpty(ifh.center);          
+%             if (this.doview)
+%                 mlbash(sprintf('fsleyes %s/fdgnocent.4dfp.img fdgnocent_dbg.4dfp.img', this.dataDir));
+%             end
+            
+            ifc = mlfourd.ImagingFormatContext(fullfile(this.dataDir, 'fdgnocent.4dfp.hdr'));
+            ifc.saveas(fullfile(this.TmpDir, 'fdgnocent_dbg.4dfp.hdr'));
+            ifh = mlfourdfp.IfhParser.load(fullfile(this.TmpDir, 'fdgnocent_dbg.4dfp.ifh'), 'N', true);
+            this.verifyEmpty(ifc.imagingInfo.ifh.mmppix);
+            this.verifyEmpty(ifc.imagingInfo.ifh.center);
+            this.verifyEmpty(ifh.center); 
+            if (this.doview)
+                mlbash(sprintf('fsleyes %s/fdgnocent.4dfp.img fdgnocent_dbg.4dfp.img', this.dataDir));
+            end
+            
+            popd(pwd0_);
+        end
         function test_copy(this)
  			import mlfourd.*;
             niih_ = ImagingFormatContext(this.ref.dicomAsNiigz); 

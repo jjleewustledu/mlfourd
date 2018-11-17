@@ -671,7 +671,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 return
             end
             this.logger_.add(ensureString(varargin{:}));
-        end        
+        end       
         function s    = asStruct(this) 
             info = this.imagingInfo; % updated with make_nii in AbstractInnerImagingFormat.ctor
             s = struct( ...
@@ -730,8 +730,8 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             addParameter(ip, 'separator', ';', @ischar);
             addParameter(ip, 'stack', {}, @iscell);
             addParameter(ip, 'viewer', this.VIEWER, @ischar);  
-            addParameter(ip, 'circshiftK', 0, @isnumeric); % see also mlfourd.ImagingInfo
-            addParameter(ip, 'N', true, @islogical);       % 
+            addParameter(ip, 'circshiftK', 0, @isnumeric);                        % see also mlfourd.ImagingInfo
+            addParameter(ip, 'N', mlpet.Resources.instance.defaultN, @islogical); % 
             parse(ip, varargin{:});
             
             this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;

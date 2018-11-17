@@ -232,7 +232,7 @@ classdef Analyze75Info < mlfourd.ImagingInfo
         end
         function hdr = recalculateHdrHistOriginator(this, hdr)
             hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
-            hdr.hist.qform_code = 1;
+            hdr.hist.qform_code = 0;
             hdr.hist.sform_code = 1;
             
                                     % a = 0.5  * sqrt(1 + trace(R));
@@ -269,7 +269,7 @@ classdef Analyze75Info < mlfourd.ImagingInfo
                 return
             end
             
-            this.info_ = analyze75info(strrep(this.fqfilename, '.4dfp.ifh', '.4dfp.hdr')); % Matlab's native 
+            this.info_ = analyze75info(this.fqfilename); % Matlab's native 
             this.info_ = this.permuteInfo(this.info_); % KLUDGE            
             this.raw_.sizeof_hdr = this.HdrFileSize;
             this.raw_.descrip = this.Descriptor;

@@ -216,11 +216,12 @@ classdef ImagingInfo < mlio.AbstractIO
             addParameter(ip, 'datatype', [], @isnumeric); % 16
             addParameter(ip, 'ext', []);
             addParameter(ip, 'filetype', []);
-            addParameter(ip, 'N', true, @islogical);
+            addParameter(ip, 'N', mlpet.Resources.instance.defaultN, @islogical);
             addParameter(ip, 'untouch', true, @islogical);
             addParameter(ip, 'hdr', this.initialHdr, @isstruct);
             parse(ip, varargin{:});
-            this.fqfilename = strrep(ip.Results.filename, '.4dfp.ifh', '.4dfp.hdr');
+            this.fqfilename = ip.Results.filename;
+            this = this.adjustFilesuffix;
             this.circshiftK_ = ip.Results.circshiftK;
             this.N_ = ip.Results.N;
             this.datatype_ = ip.Results.datatype;
@@ -264,20 +265,22 @@ classdef ImagingInfo < mlio.AbstractIO
             % mimicry:  mlniftitools.make_nii drops nii.hdr.hist.magic := ''.            
             hdr.hist.aux_file = '';
             hdr.hist.magic = 'n+1';
-            if (isfield(hdr.hist, 'originator'))
+            if (isfield(hdr.hist, 'originator') && length(hdr.hist.originator) > 1)
                 hdr.hist.originator = hdr.hist.originator(1:3);
             end
         end
         function hdr  = adjustHistOriginator(this, hdr)
-            if (~isprop(hdr, 'originator'))
+            % See also:  nifti_4dfp.
+            
+            if (~isprop(hdr, 'originator'))                
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
-            if (norm(hdr.hist.originator) < eps)
+            if (norm(hdr.hist.originator) < eps)                
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
-            if (isa(this, 'mlfourdfp.FourdfpInfo') && this.N) % See also:  nifti_4dfp
+            if (isa(this, 'mlfourdfp.FourdfpInfo') && this.N)                
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
@@ -439,7 +442,12 @@ classdef ImagingInfo < mlio.AbstractIO
             if (isfield(hdr.hist, 'originator'))
                 hdr.hist.originator = this.permuteCircshiftVec(hdr.hist.originator);
             end
-        end        
+        end      
+        function this = adjustFilesuffix(this)
+            if (lstrfind(this.filesuffix, '.4dfp'))
+                this.filesuffix = '.4dfp.hdr';
+            end
+        end  
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

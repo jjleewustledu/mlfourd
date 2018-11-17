@@ -418,8 +418,8 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             addParameter(ip, 'noclobber',    []);
             addParameter(ip, 'pixdim',       [], @isnumeric);
             addParameter(ip, 'separator',    '', @ischar);
-            addParameter(ip, 'circshiftK', 0,    @isnumeric); % see also mlfourd.ImagingInfo
-            addParameter(ip, 'N', true,          @islogical); % 
+            addParameter(ip, 'circshiftK', 0,    @isnumeric);                     % see also mlfourd.ImagingInfo
+            addParameter(ip, 'N', mlpet.Resources.instance.defaultN, @islogical); % 
             parse(ip, varargin{:});
             obj = ip.Results.obj;
             

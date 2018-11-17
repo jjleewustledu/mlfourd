@@ -172,7 +172,7 @@ classdef (Abstract) AbstractImagingTool < handle & matlab.mixin.Copyable
                     mlfourd.NumericalTool(h, this.innerImaging_));
             end
         end
-        function selectRegistrationTool(this, h)            
+        function selectRegistrationTool(this, h)
             if (~isa(this, 'mlfourd.RegistrationTool'))
                 h.changeState( ...
                     mlfourdfp.RegistrationTool(h, this.innerImaging_));
