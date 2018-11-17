@@ -592,7 +592,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             
             this.selectMaskingTool;
             that = copy(this);
-            that.state_.binarizeBlended(varargin{:});
+            that.state_.binarized;
+            that.selectBlurringTool;
+            that.state_.blurred(varargin{:});
         end
         function c    = count(this)
             this.selectMaskingTool;
