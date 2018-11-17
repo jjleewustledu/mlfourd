@@ -18,6 +18,9 @@ classdef NumericalTool < handle & mlfourd.AbstractImagingTool & mlpatterns.Handl
         function atan2(this, b)
             this.bsxfun(@atan2, b);
         end
+        function flip(this, b)
+            this.bsxfun(@flip, b);
+        end
         function rdivide(this, b)
             this.bsxfun(@rdivide, b);
         end

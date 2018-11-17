@@ -222,6 +222,22 @@ classdef (Abstract) AbstractImagingTool < handle & matlab.mixin.Copyable
         function l    = logical(this)
             l = logical(this.innerImaging_.img);
         end
+        function this = makeSimilar(this, varargin)
+            %% MAKESIMILAR provides a legacy interface
+            
+            ip = inputParser;
+            addParameter(ip, 'img',  this.innerImaging_.img, @isnumeric);
+            addParameter(ip, 'fileprefix', this.fileprefix, @ischar);
+            addParameter(ip, 'descrip', [class(this) '.madeSimilar'], @ischar);
+            parse(ip, varargin{:});    
+
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, ...
+                'img', ip.Results.img,  ...
+                'fileprefix', ip.Results.fileprefix, 'descrip', ip.Results.descrip);
+            this.innerImaging_.addLog( ...
+                sprintf('MaskingTool:  %s', ip.Results.descrip));
+        end
         function s    = mat2str(this, varargin)
             s = mat2str(this.innerImaging_.img, varargin{:});
         end

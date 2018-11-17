@@ -309,6 +309,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.bsxfun(pfun, b);
         end
+        function that = flip(this, adim)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.flip(adim);            
+        end
         function that = rdivide(this, b)
             this.selectNumericalTool;
             that = copy(this);
