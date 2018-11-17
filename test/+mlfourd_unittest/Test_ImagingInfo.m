@@ -142,7 +142,7 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             
             % ref_ is identical to that in test_loadMprage            
             
-            this.verifyEqual(minfo.Filename, '/Users/jjlee/MATLAB-Drive/mlfourd/data/001.nii.gz');            
+            this.verifyEqual(minfo.Filename, '/Users/jjlee/Tmp/001.nii.gz');            
             this.verifyEqual(minfo.raw.dim, [3 248 256 176 1 1 1 1]);
             this.verifyEqual(minfo.raw.pixdim, [-1 1 1 1 2.400000095367432 1 1 1], 'RelTol', 1e-6);
             this.verifyEqual(minfo.raw.qform_code, 1);
