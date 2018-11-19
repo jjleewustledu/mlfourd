@@ -9,21 +9,94 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
  	%  developed on Matlab 8.1.0.604 (R2013a) 
  	%% $Id$  	 
     
-    properties (Constant)        
-        KERNEL_MULTIPLE = 2
-    end
-    
     properties
         metric = 'fwhh';
     end
     
     properties (Dependent)
-        mask
         blur
         blurCount
+        kernelMultiple
+        mask
     end
     
-    methods (Static)       
+    methods (Static) 
+        function img   = gaussFullwidth(img, varargin)
+            %% GAUSSFULLWIDTH
+            %  @param img (req.):      numeric object 
+            %  @param width (req.):    row vector of full widths
+            %  @param named metric:    units of full width blur
+            %  @param named metppix:   metric units per pixel; 1 and [1 1 1] are equivalent
+            %  @param named krnlMult:  integer multiplier for filter size such that
+            %                          filter size := floor(krnlMult)*ceil(2*sigma) + 1
+            %  @param named height:    height at which width is measured (fraction 0..1)
+            %  See also mlfourd.BlurringTool.gaussSigma
+            
+            import mlfourd.*;
+            ip = inputParser;
+            ip.KeepUnmatched = true;
+            addRequired( ip, 'img', @isnumeric);
+            addRequired( ip, 'width', @isnumeric);
+            addParameter(ip, 'height', 0.5, @isnumeric);
+            addParameter(ip, 'metric', 'mm', @ischar);
+            addParameter(ip, 'metppix', ones(size(img)), @isnumeric);
+            addParameter(ip, 'krnlMult', 2, @isnumeric);
+            parse(ip, img, varargin{:});
+            
+            img = BlurringTool.gaussSigma( ...
+                ip.Results.img, ...
+                BlurringTool.width2sigma(ip.Results.width, ip.Results.height), ...
+                'metric',   ip.Results.metric, ...
+                'metppix',  ip.Results.metppix, ...
+                'krnlMult', ip.Results.krnlMult);
+        end 
+        function img   = gaussSigma(varargin)
+            %% GAUSSSIGMA 
+            %  @param img (req.):      numeric object
+            %  @param sigma (req.):    row vector of std. deviations
+            %  @param named metric:    units of sigma \in {'voxel' 'pixel' 'mm' 'cm'}
+            %  @param named metppix:   metric units per pixel; 1 and [1 1 1] are equivalent
+            %  @param named krnlMult:  integer multiplier for filter size such that
+            %                          filter size := 2*floor(krnlMult)*ceil(sigma) + 1
+            %  See also mlfourd.BlurringTool.gaussFullwidth, imgaussfilt, imgaussfilt3
+            
+            import mlfourd.*; 
+            ip = inputParser;
+            ip.KeepUnmatched = true;
+            addRequired( ip, 'img', @isnumeric);
+            addRequired( ip, 'sigma', @isnumeric);
+            addParameter(ip, 'metric', 'voxel', @ischar);
+            addParameter(ip, 'metppix', 1, @isnumeric);
+            addParameter(ip, 'krnlMult', 2, @isnumeric);
+            parse(ip, varargin{:});            
+            img   = ip.Results.img;
+            sigma = ip.Results.sigma;
+            
+            if (norm(sigma) < eps); return; end
+            if (lstrfind(ip.Results.metric, {'voxel' 'pixel'}))
+                metppix = 1;
+            else
+                metppix = ip.Results.metppix;
+            end
+            metppix = BlurringTool.checkedMetppix(metppix, sigma);
+            sigma   = sigma ./ metppix; % convert metric units to pixels            
+            img     = double(squeeze(img));
+            ndims_  = ndims(img);
+            
+            % assemble filter kernel & call imfilter      
+            % see also imgaussfilt, imgaussfilt3; this is their default
+            krnlLens = 2*floor(ip.Results.krnlMult)*ceil(sigma)+1;
+            krnlLens(krnlLens < 1) = 1;
+            switch(ndims_)
+                case 2
+                    img = imgaussfilt( img, sigma, 'FilterSize', krnlLens);
+                case 3
+                    img = imgaussfilt3(img, sigma, 'FilterSize', krnlLens);
+                otherwise
+                    error('mlfourd:parameterOutOfBounds', ...
+                         ['BlurringTool.gaussSigma.ndims_->' num2str(ndims_) ', but only ndims_ \in [2 3] are supported']);
+            end
+        end       
         function width = sigma2width(sigma, fheight)
             %% SIGMA2WIDTH returns the width at fheight corresponding to sigma, metppix & metric units.
             %  Usage: width = sigma2width(sigma[, fheight])
@@ -72,14 +145,17 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
         
         %% GET
         
-        function m  = get.mask(this)
-            m = this.mask_;
-        end
         function b  = get.blur(this)
             b = this.blur_;
         end
         function bc = get.blurCount(this)
             bc = this.blurCount_;
+        end
+        function m  = get.kernelMultiple(this)
+            m = this.kernelMultiple_;
+        end
+        function m  = get.mask(this)
+            m = this.mask_;
         end
         
         %%
@@ -88,15 +164,18 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             %% BLURRED
             %  @param required blur is numeric, fwhh in mm.
             %  @param optional mask is numeric, applied prior to blurring.
+            %  @param named krnlMult is integer.
             %  @return this modified with blurred voxels and blurCount.
                   
             import mlfourd.* mlpet.*;            
             ip = inputParser;
-            addRequired(ip, 'blur', @isnumeric);
-            addOptional(ip, 'mask', 1);
+            addRequired( ip, 'blur', @isnumeric);
+            addOptional( ip, 'mask', 1);
+            addParameter(ip, 'krnlMult', 2, @isnumeric);
             parse(ip, varargin{:});            
-            this.blur_ = this.checkedBlur(ip.Results.blur, this.ndimsEuclid); % double \in \mathbb{R}^3
-            this.mask_ = this.checkedMask(ip.Results.mask, this.sizeEuclid); % double \in \mathbb{R}^3
+            this.blur_           = this.checkedBlur(ip.Results.blur, this.ndimsEuclid); % double \in \mathbb{R}^3
+            this.mask_           = this.checkedMask(ip.Results.mask, this.sizeEuclid); % double \in \mathbb{R}^3
+            this.kernelMultiple_ = ip.Results.krnlMult;
             
             if (isempty(this.blur_) || sum(this.blur_) < eps)
                 return
@@ -133,75 +212,11 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
         blur_
         blurCount_ = 0;
         height_ = 0.5;
+        kernelMultiple_
         mask_
     end
     
     methods (Static, Access = protected)
-        function img     = gaussFullwidth(img, varargin)
-            %% GAUSSFULLWIDTH
-            %  @param img (req.):     numeric object 
-            %  @param width (req.):   row vector of full widths
-            %  @param named metric:   units of full width blur
-            %  @param named metppix:  metric units per pixel; 1 and [1 1 1] are equivalent
-            %  @param named height:   height at which width is measured (fraction 0..1)
-            %  See also mlfourd.BlurringTool.gaussSigma
-            
-            import mlfourd.*;
-            ip = inputParser;
-            addRequired( ip, 'img', @isnumeric);
-            addRequired( ip, 'width', @isnumeric);
-            addParameter(ip, 'height', 0.5, @isnumeric);
-            addParameter(ip, 'metric', 'mm', @ischar);
-            addParameter(ip, 'metppix', ones(size(img)), @isnumeric);
-            parse(ip, img, varargin{:});
-            
-            img = BlurringTool.gaussSigma( ...
-                ip.Results.img, ...
-                BlurringTool.width2sigma(ip.Results.width, ip.Results.height), ...
-                'metric',  ip.Results.metric, ...
-                'metppix', ip.Results.metppix);
-        end 
-        function img     = gaussSigma(varargin)
-            %% GAUSSSIGMA 
-            %  @param img (req.):     numeric object
-            %  @param sigma (req.):   row vector of std. deviations
-            %  @param named metric:   units of sigma \in {'voxel' 'pixel' 'mm' 'cm'}
-            %  @param named metppix:  metric units per pixel; 1 and [1 1 1] are equivalent
-            %  See also mlfourd.BlurringTool.gaussFullwidth, imgaussfilt, imgaussfilt3
-            
-            import mlfourd.*; 
-            ip = inputParser;
-            addRequired( ip, 'img', @isnumeric);
-            addRequired( ip, 'sigma', @isnumeric);
-            addParameter(ip, 'metric', 'voxel', @ischar);
-            addParameter(ip, 'metppix', 1, @isnumeric);
-            parse(ip, varargin{:});            
-            img   = ip.Results.img;
-            sigma = ip.Results.sigma;
-            if (norm(sigma) < eps); return; end
-            if (lstrfind(ip.Results.metric, {'voxel' 'pixel'}))
-                metppix = 1;
-            else
-                metppix = ip.Results.metppix;
-            end
-            metppix = BlurringTool.checkedMetppix(metppix, sigma);
-            sigma   = sigma ./ metppix; % convert metric units to pixels            
-            img     = double(squeeze(img));
-            ndims_   = ndims(img);
-            
-            % assemble filter kernel & call imfilter              
-            krnlLens = BlurringTool.KERNEL_MULTIPLE*ceil(2*sigma)+1; % see also imgaussfilt, imgaussfilt3; this is their default
-            krnlLens(krnlLens < 1) = 1;
-            switch(ndims_)
-                case 2
-                    img = imgaussfilt( img, sigma, 'FilterSize', krnlLens);
-                case 3
-                    img = imgaussfilt3(img, sigma, 'FilterSize', krnlLens);
-                otherwise
-                    error('mlfourd:parameterOutOfBounds', ...
-                         ['BlurringTool.gaussSigma.ndims_->' num2str(ndims_) ', but only ndims_ \in [2 3] are supported']);
-            end
-        end 
         function b       = checkedBlur(b, ndims_)
             assert(isnumeric(b));
             if (length(b) < ndims_)
@@ -282,9 +297,14 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
             fp = sprintf('%s_b%g', this.fileprefix, round(10*max(this.blur_)));
         end
         function img = blurredImg(this, img)
-            img = img .* this.mask_;
-			img = this.gaussFullwidth(img, this.blur_, ...
-                'height', this.height_, 'metppix', this.innerImaging_.mmppix);
+            assert(isnumeric(img));
+            
+			img = this.gaussFullwidth( ...
+                img .* this.mask_, ...
+                this.blur_, ...
+                'height', this.height_, ...
+                'metppix', this.innerImaging_.mmppix, ...
+                'krnlMult', this.kernelMultiple_);
         end
     end
     

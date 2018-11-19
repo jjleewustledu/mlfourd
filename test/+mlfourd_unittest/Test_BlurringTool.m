@@ -21,25 +21,36 @@ classdef Test_BlurringTool < matlab.unittest.TestCase
  			this.assumeEqual(1,1);
  			this.verifyEqual(1,1);
  			this.assertEqual(1,1);
- 		end
+        end
+        function test_blurred(this)
+            tic
+            obj = this.testObj.blurred(10);
+            toc
+            obj.fsleyes;
+            this.verifyEqual(obj.filename, 'T1_b100.4dfp.hdr');
+            
+            tic
+            obj = this.testObj.blurred(10, 'krnlMult', 1);
+            toc
+            obj.fsleyes;
+            this.verifyEqual(obj.filename, 'T1_b100.4dfp.hdr');
+        end
 	end
 
  	methods (TestClassSetup)
 		function setupBlurringTool(this)
- 			import mlfourd.*;
- 			this.testObj_ = BlurringTool;
  		end
 	end
 
  	methods (TestMethodSetup)
 		function setupBlurringToolTest(this)
- 			this.testObj = this.testObj_;
+ 			import mlfourd.*;
+ 			this.testObj = ImagingContext2('/Users/jjlee/Tmp/T1.4dfp.hdr');
  			this.addTeardown(@this.cleanTestMethod);
  		end
 	end
 
 	properties (Access = private)
- 		testObj_
  	end
 
 	methods (Access = private)
