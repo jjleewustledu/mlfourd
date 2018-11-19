@@ -290,6 +290,9 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
             this.state_ = this.state_.add(varargin{:});
         end
         function      addImgrec(this, varargin)
+            if (strcmp(this.stateTypeclass, 'mlfourd.FilenameState'))
+                return
+            end
             this.state_.addImgrec(varargin{:});
         end
         function      addLog(this, varargin)
