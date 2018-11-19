@@ -267,8 +267,8 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
         %% state changes
         
         function f = fourdfp(this)
-            this.filesuffix = '.4dfp.hdr';
-            f = this.state_.fourdfp;
+            f = this.state_.niftid;
+            f.filesuffix = '.4dfp.hdr';
         end
         function f = mgh(this)
             this.filesuffix = '.mgz';
@@ -299,6 +299,9 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
+            if (strcmp(this.stateTypeclass, 'mlfourd.FilenameState'))
+                return
+            end
             this.state_.addLog(varargin{:});
         end
         function a  = atlas(this, varargin)
@@ -630,6 +633,10 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
             import mlfourd.*;
             if (~exist('obj', 'var'))          
                 this.state_ = NIfTIdState(obj, this);
+                return
+            end
+            if (isa(obj, 'mlfourd.ImagingContext2'))
+                this.state_ = FilenameState(obj.fqfilename, this);
                 return
             end
             if (isa(obj, 'mlfourd.ImagingContext')) % copy ctor
