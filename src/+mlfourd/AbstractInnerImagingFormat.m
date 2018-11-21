@@ -40,10 +40,10 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         entropy
         label
         machine
-        mmppix
+        mmppix       % [mm mm mm]
         negentropy
         originalType % useful for AbstractInnerImagingFormat that is a state or strategy
-        pixdim
+        pixdim       % [mm mm mm sec]
         seriesNumber
         
         imagingInfo
@@ -226,6 +226,9 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         end           
         function mpp  = get.mmppix(this)
             mpp = this.pixdim;
+            if (length(mpp) > 3)
+                mpp = mpp(1:3);
+            end
         end        
         function this = set.mmppix(this, mpp)
             %% SET.MMPPIX sets voxel-time dimensions in mm, s.
