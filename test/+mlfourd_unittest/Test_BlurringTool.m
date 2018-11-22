@@ -23,17 +23,34 @@ classdef Test_BlurringTool < matlab.unittest.TestCase
  			this.assertEqual(1,1);
         end
         function test_blurred(this)
-            tic
-            obj = this.testObj.blurred(10);
-            toc
-            obj.fsleyes;
-            this.verifyEqual(obj.filename, 'T1_b100.4dfp.hdr');
+            obj1 = this.testObj.copy;
+            obj2 = this.testObj.copy;
+            obj3 = this.testObj.copy;
             
             tic
-            obj = this.testObj.blurred(10, 'krnlMult', 1);
+            obj1 = obj1.blurred(10);
             toc
-            obj.fsleyes;
-            this.verifyEqual(obj.filename, 'T1_b100.4dfp.hdr');
+            obj1.fsleyes;
+            this.verifyEqual(obj1.filename, 'T1_b100.4dfp.hdr');
+            
+            tic
+            obj2 = obj2.blurred(10, 'krnlMult', 1);
+            toc
+            obj2.fsleyes;
+            this.verifyEqual(obj2.filename, 'T1_b100.4dfp.hdr');
+            
+            % check mask := 1
+            tic
+            obj3 = obj3.blurred(10, 1, 'krnlMult', 1);
+            toc
+            obj3.fsleyes;
+            this.verifyEqual(obj3.filename, 'T1_b100.4dfp.hdr');
+            
+            % check diff of knrlMult := {1,2}
+            obj1.selectNumericalTool;
+            obj2.selectNumericalTool;
+            obj4 = obj1 - obj2;
+            obj4.fsleyes;
         end
 	end
 
