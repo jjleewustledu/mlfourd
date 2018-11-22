@@ -11,7 +11,8 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
-        doview = true
+        doview = false
+        doview_mutate = false % slow
         noDelete = false
         pwd0
         ref
@@ -103,11 +104,16 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             ifc = ImagingFormatContext(1);
             this.verifyClass(ifc.imagingInfo, 'mlfourd.NIfTIInfo');
             this.verifyEqual(ifc.innerTypeclass, 'mlfourd.InnerNIfTI');
+            
+            ifc = ImagingFormatContext(sprintf('nonexistentfile_D%s.4dfp.hdr', datestr(now,30)));
+            this.verifyTrue(~lexist(ifc.fqfilename, 'file'));
+            this.verifyClass(ifc.imagingInfo, 'mlfourdfp.FourdfpInfo');
+            this.verifyEqual(ifc.innerTypeclass, 'mlfourdfp.InnerFourdfp');            
         end
         function test_ctor_noExtension(this)
             import mlfourd.*;
             ifc = ImagingFormatContext(myfileprefix(this.ref.dicomAsNiigz));
-            this.verifyEqual(class(ifc.img), 'int16');
+            this.verifyEqual(class(ifc.img), 'single');
             this.verifyEqual(ifc.size, [176 248 256]);
             this.verifyEqual(ifc.filesuffix, '.nii.gz');
             this.verifyClass(ifc.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -119,9 +125,13 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             if (this.doview); ifc.fsleyes; end
         end      
         function test_ctor_NIfTId(this)
- 			import mlfourd.*;            
-            niih = ImagingFormatContext(NIfTId(this.ref.dicomAsNiigz));
-            this.verifyEqual(class(niih.img), 'int16');
+ 			import mlfourd.*;       
+            niid = NIfTId(this.ref.dicomAsNiigz);
+            niih = ImagingFormatContext(niid);
+            
+            this.verifyEqual(niih.hdr, niid.hdr);
+            this.verifyEqual(niih.img, niid.img);
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(niih.size, [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -135,7 +145,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_t1niigz(this) 
  			import mlfourd.*;           
             niih = ImagingFormatContext(this.ref.dicomAsNiigz); 
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -263,7 +273,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.     
             %  loading t1_dcm2niix.mgz and saving as t1_dcm2niix.4dfp.hdr FAILS.
             
-            if (~this.doview); return; end
+            if (~this.doview_mutate); return; end
  			import mlfourd.*;                               
             fpOri = myfileprefix(this.ref.dicomAsNiigz);
             xs = {'.nii.gz' '.mgz' '.4dfp.hdr'};
@@ -281,7 +291,28 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
                 end
                 this.deleteExisting([fpTmp '.*']);
             end            
-        end        
+        end          
+        function test_mutateInnerImagingFormatByFilesuffix_mgz_4dfp(this) 
+            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.     
+            %  loading t1_dcm2niix.mgz and saving as t1_dcm2niix.4dfp.hdr FAILS.
+            
+            if (~this.doview_mutate); return; end
+ 			import mlfourd.*;                               
+            fpOri = myfileprefix(this.ref.dicomAsNiigz);
+            xs = {'.nii.gz' '.mgz' '.4dfp.hdr'};
+            
+            ix = 2;
+            fprintf('test_mutateInnerImagingFormatByFilesuffix:  loading %s%s\n', fpOri, xs{ix});
+            ifc_ = ImagingFormatContext([fpOri xs{ix}]);
+            fpTmp = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix'));            
+            jx = 3;
+            ifc = copy(ifc_);
+            ifc.saveas([fpTmp xs{jx}]);
+            fprintf('test_mutateInnerImagingFormatByFilesuffix:  saving as %s%s\n', fpOri, xs{jx});
+            this.verifyTrue(lexist(ifc.fqfilename, 'file'));
+            mlbash(sprintf('fsleyes %s', ifc.fqfilename));
+            this.deleteExisting([fpTmp '.*']);
+        end     
         function test_set_filesuffix(this)
             if (~this.doview); return; end
  			import mlfourd.*;                    
@@ -311,15 +342,12 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             if (~this.doview); return; end                            
             tmp = tempFqfilename(fullfile(pwd, 'test_T1roundtrip'));  
  			import mlfourd.*;
-            ifc_ = ImagingFormatContext(this.ref.T1AsMgz);
-            mlbash(sprintf('fsleyes %s', this.ref.T1AsMgz));            
+            ifc_ = ImagingFormatContext(this.ref.T1AsMgz);         
             
-            niih = ifc_.saveas([tmp '.nii.gz']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));            
-            niih = ifc_.saveas([tmp '.4dfp.hdr']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));
-            niih = ifc_.saveas([tmp '.mgz']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));
+            niigz = ifc_.saveas([tmp '.nii.gz']);          
+            fdfp  = ifc_.saveas([tmp '.4dfp.hdr']);
+            mgz   = ifc_.saveas([tmp '.mgz']);
+            mlbash(sprintf('fsleyes %s %s %s %s', this.ref.T1AsMgz, niigz.fqfilename, fdfp.fqfilename, mgz.fqfilename));
             
             this.deleteExisting([tmp '.*']);
         end        
@@ -331,12 +359,10 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             tmp = tempFqfilename(fullfile(pwd, 'test_ctroundtrip'));  
  			import mlfourd.*;            
             ifc_ = ImagingFormatContext('ct.4dfp.hdr');
-            mlbash('fsleyes ct.4dfp.hdr');
             
-            niih = ifc_.saveas([tmp '.nii.gz']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));  
-            niih = ifc_.saveas([tmp '.4dfp.hdr']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));
+            niigz = ifc_.saveas([tmp '.nii.gz']);
+            fdfp  = ifc_.saveas([tmp '.4dfp.hdr']);
+            mlbash(sprintf('fsleyes ct.4dfp.hdr %s %s', niigz.fqfilename, fdfp.fqfilename));
             
             this.deleteExisting([tmp '.*']);
         end
@@ -348,12 +374,10 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             tmp = tempFqfilename(fullfile(pwd, 'test_fdgroundtrip'));  
  			import mlfourd.*;            
             ifc_ = ImagingFormatContext('fdgv1r1_sumt.4dfp.hdr');
-            mlbash('fsleyes fdgv1r1_sumt.4dfp.hdr');
             
-            niih = ifc_.saveas([tmp '.nii.gz']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));            
-            niih = ifc_.saveas([tmp '.4dfp.hdr']);
-            mlbash(sprintf('fsleyes %s', niih.fqfilename));
+            niigz = ifc_.saveas([tmp '.nii.gz']);           
+            fdfp  = ifc_.saveas([tmp '.4dfp.hdr']);
+            mlbash(sprintf('fsleyes fdgv1r1_sumt.4dfp.hdr %s %s', niigz.fqfilename, fdfp.fqfilename));
             
             this.deleteExisting([tmp '.*']);
         end

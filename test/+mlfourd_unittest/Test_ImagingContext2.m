@@ -11,6 +11,8 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
+        do_legacy = true
+        do_view = false
         fdg = 'fdgv1r1_sumt'
         fslroi = 't1_dcm2niix_fslroi'
         fslroi_xmin  =  65
@@ -32,6 +34,20 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         dataDir
         fslroi_zoom
         TmpDir
+    end
+    
+    methods (Static)        
+        function hdr = adjustLegacyHdr(hdr, hdr2)            
+            hdr.hk.regular = 'r';
+            hdr.dime.dim(1) = 3; % hdr2 is more NIfTI compliant
+            hdr.dime.pixdim(6:8) = [1 1 1];
+            hdr.hist.descrip = '';
+            hdr.hist.sform_code = 1;
+            hdr.hist.qoffset_x = hdr2.hist.qoffset_x;
+            hdr.hist.qoffset_y = hdr2.hist.qoffset_y;
+            hdr.hist.qoffset_z = hdr2.hist.qoffset_z;
+            hdr.extra = hdr2.extra;
+        end
     end
     
     methods
@@ -63,6 +79,71 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic4 = ImagingContext2(ic3);
             this.verifyEqual(ic4.stateTypeclass, 'mlfourd.ImagingFormatTool');
         end
+        function test_ctor_aufbau(this)
+ 			import mlfourd.*;
+            fqfn = fullfile(this.TmpDir, sprintf('test_ctor_trivial_D%s.4dfp.hdr', datestr(now, 30)));
+            
+            ic = ImagingContext2(fqfn); % trivial ctor with fqfn not on filesystem
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilesystemTool');
+            this.verifyEqual(ic.fqfilename, fqfn);
+            this.verifyTrue(~lexist(fqfn, 'file'));
+            
+            ic.selectImagingFormatTool; % prepare for aufbau
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');    
+            this.verifyEqual(ic.fqfilename, fqfn);
+            this.verifyTrue(~lexist(fqfn, 'file'));
+            
+            % do aufbau
+            ffp = ic.fourdfp;
+            ffp.img = [1 2 3];
+            ic.updateImagingFormatTool(ffp);
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');    
+            this.verifyEqual(ic.fqfilename, fqfn);
+            this.verifyEqual(ic.fourdfp.img, single([1 2 3]));
+        end
+        function test_legacy_ImagingContext(this)
+            if (~this.do_legacy); return; end
+            import mlfourd.*;
+            
+            ic2 = ImagingContext2([this.t1 '.4dfp.hdr']);                      
+            ic  = ImagingContext( [this.t1 '.4dfp.hdr']);
+            hdr = this.adjustLegacyHdr(ic.fourdfp.hdr, ic2.fourdfp.hdr);
+            this.verifyEqual(hdr,            ic2.fourdfp.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(ic.fourdfp.img, ic2.fourdfp.img);
+            
+            ic2_ic = ImagingContext2(ic);
+            hdr_ = this.adjustLegacyHdr(ic2_ic.fourdfp.hdr, ic2.fourdfp.hdr);
+            this.verifyEqual(hdr_,               ic2.fourdfp.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(ic2_ic.fourdfp.img, ic2.fourdfp.img);            
+            
+            ic_ic2 = ImagingContext( ic2);
+            hdr__ = this.adjustLegacyHdr(ic_ic2.fourdfp.hdr, ic2.fourdfp.hdr);
+            this.verifyEqual(hdr__,              ic2.fourdfp.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(ic_ic2.fourdfp.img, ic2.fourdfp.img);     
+        end
+        function test_legacy_niftid(this)
+            if (~this.do_legacy); return; end
+            import mlfourd.*;
+            
+            ifc = ImagingFormatContext([this.t1 '.4dfp.hdr']);                      
+            ffp = mlfourdfp.Fourdfp(NIfTId( [this.t1 '.4dfp.hdr']));
+            hdr = this.adjustLegacyHdr(ffp.hdr, ifc.hdr);
+            this.verifyEqual(hdr,    ifc.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(ffp.img, ifc.img);
+            
+            ifc_niid = ImagingFormatContext(ffp);
+            hdr_     = this.adjustLegacyHdr(ifc_niid.hdr, ifc.hdr);
+            this.verifyEqual(hdr_,         ifc.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(ifc_niid.img, ifc.img);            
+            
+            niid_ifc = mlfourdfp.Fourdfp(NIfTId(ifc));
+            hdr__    = this.adjustLegacyHdr(niid_ifc.hdr, ifc.hdr);
+            this.verifyEqual(hdr__,        ifc.hdr, 'RelTol', 1e-4);
+            this.verifyEqual(niid_ifc.img, ifc.img); 
+        end
+        function test_legacy_numericalNiftid(this)
+            if (~this.do_legacy); return; end
+        end
         function test_selectImagingTool(this)
             ic = mlfourd.ImagingContext2;       
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');   
@@ -73,7 +154,17 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic.selectBlurringTool;
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.BlurringTool');              
             ic.selectImagingFormatTool;
-            this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');   
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.BlurringTool'); % BlurringTool => ImagingFormatTool
+        end
+        function test_selectFilesystemTool(this)
+            fqfn = this.testObj.fqfilename;
+            deleteExisting(fqfn);
+            this.testObj.selectFilesystemTool;
+            this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.FilesystemTool');
+            this.verifyEmpty(this.testObj.imagingInfo);
+            this.verifyEmpty(this.testObj.logger);
+            this.verifyTrue(lexist(fqfn, 'file')); % selecting FilesystemTool serializes data
+            delete(fqfn);
         end
         function test_fourdfp(this)
             this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.ImagingFormatTool');   
@@ -129,7 +220,8 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             
             ic2_ = ImagingContext2(fdg_);
             ic2  = ic2_.blurred([1 10 20]);
-            ic2.fsleyes;
+            if (this.do_view)
+                ic2.fsleyes; end
             this.verifyTrue(lstrfind(ic2.fileprefix, '_b200'));
         end
         
@@ -272,14 +364,16 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             zin.save;
             zout = zin.zoomed(-44, 176, -62, 248, 1, -1);
             zout.save
-            ic.fsleyes(zin.fqfilename, zout.fqfilename);
-            delete(zin.fqfilename);
-            delete(zout.fqfilename);
+            if (this.do_view)
+                ic.fsleyes(zin.fqfilename, zout.fqfilename); end
+            deleteExisting(zin.fqfilename);
+            deleteExisting(zout.fqfilename);
         end
         function test_qsforms(this)
             ic = mlfourd.ImagingContext2([this.t1 '.nii.gz']);
-            ic.saveas([this.t1 '_test.nii.gz']);
-            ic.fsleyes([this.t1 '_test.nii.gz']);
+            ic.saveas([this.t1 '_test.nii.gz']);            
+            if (this.do_view)
+                ic.fsleyes([this.t1 '_test.nii.gz']); end
         end
         
         %%
@@ -294,18 +388,20 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             this.verifyTrue(lexist(this.testObj.fqfilename, 'file'));
             delete(this.testObj.fqfilename);
         end
+        function test_close(this)
+            
+        end
 	end
 
  	methods (TestClassSetup)
 		function setupImagingContext2(this)
- 			import mlfourd.*;
- 			this.testObj_ = ImagingContext2(1);
  		end
 	end
 
  	methods (TestMethodSetup)
 		function setupImagingContext2Test(this)
- 			this.testObj = this.testObj_;
+ 			import mlfourd.*;
+ 			this.testObj = ImagingContext2(1);
             this.pwd0 = pushd(this.TmpDir);
             if (~lexist_4dfp(this.fdg))
                 copyfile(fullfile(this.dataDir, [this.fdg '.4dfp*']));
@@ -321,7 +417,6 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
     end
 
 	properties (Access = private)
- 		testObj_
  	end
 
 	methods (Access = private)
