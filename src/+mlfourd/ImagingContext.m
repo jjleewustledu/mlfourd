@@ -174,9 +174,12 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
             end
         end
         function ic   = recastImagingContext(obj, oriClass)
+            obj = mlfourd.ImagingContext(obj);
             switch (oriClass)
                 case 'mlfourd.ImagingContext'
-                    ic = mlfourd.ImagingContext(obj);
+                    ic = obj;
+                case 'mlfourd.ImagingContext2'
+                    ic = mlfourd.ImagingContext2(obj);
                 case 'mlmr.MRImagingContext'
                     ic = mlmr.MRImagingContext(obj);
                 case 'mlpet.PETImagingContext'
@@ -267,8 +270,8 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
         %% state changes
         
         function f = fourdfp(this)
-            f = this.state_.niftid;
-            f.filesuffix = '.4dfp.hdr';
+            this.filesuffix = '.4dfp.hdr';
+            f = this.state_.fourdfp;
         end
         function f = mgh(this)
             this.filesuffix = '.mgz';
@@ -636,8 +639,12 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
                 return
             end
             if (isa(obj, 'mlfourd.ImagingContext2'))
-                this.state_ = FilenameState(obj.fqfilename, this);
-                return
+                if (lstrfind(obj.filesuffix, '.4dfp'))
+                    import mlfourdfp.*;
+                    this.state_ = FourdfpState(Fourdfp(NIfTId(obj.nifti.getInnerNIfTI)), this);
+                    return
+                end
+                this.state_ = NIfTIdState(NIfTId(obj.nifti), this);
             end
             if (isa(obj, 'mlfourd.ImagingContext')) % copy ctor
                 switch (obj.stateTypeclass)
