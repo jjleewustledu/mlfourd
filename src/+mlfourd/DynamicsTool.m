@@ -1,4 +1,4 @@
-classdef DynamicsTool < handle & mlfourd.AbstractImagingTool
+classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
 	%% DYNAMICSTOOL
 
 	%  $Revision$ 
@@ -84,8 +84,7 @@ classdef DynamicsTool < handle & mlfourd.AbstractImagingTool
         end
         
  		function this = DynamicsTool(h, varargin)
-            this = this@mlfourd.AbstractImagingTool(h, varargin{:});            
-            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
+            this = this@mlfourd.ImagingFormatTool(h, varargin{:}); 
             assert(4 == this.innerImaging_.ndims);
         end 
     end

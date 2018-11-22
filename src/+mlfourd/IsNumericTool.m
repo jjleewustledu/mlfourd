@@ -1,4 +1,4 @@
-classdef IsNumericTool < handle & mlfourd.AbstractImagingTool
+classdef IsNumericTool < handle & mlfourd.ImagingFormatTool
 	%% ISNUMERICTOOL  
 
 	%  $Revision$

@@ -44,11 +44,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         imgrec
         innerTypeclass
         logger
-        stateTypeclass
         viewer
+        
+        stateTypeclass
     end
     
     methods (Static)
+        
+        %% Typeclass utilities
+        
         function im   = imagingType(typ, obj)
             %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
             %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
@@ -249,8 +253,8 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             assert(ischar(v));
             this.state_.viewer = v;
         end
-    
-        %% get some ImagingFormatContext 
+        
+        %% various casting of mlfourd.ImagingFormatContext
         
         function ifc = fourdfp(this)
             ifc = this.state_.fourdfp;
@@ -290,7 +294,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         function selectRegistrationTool(this)
             this.state_.selectRegistrationTool(this);
-        end
+        end    
         
         %% mlpatterns.HandleNumerical
         
@@ -706,21 +710,25 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% mfourdfp.RegistrationTool
         
-        %%
+        %% mlfourd.ImagingFormatTool
         
         function      addImgrec(this, varargin)
+            this.selectImagingFormatTool;
             this.state_.addImgrec(varargin{:});
         end
         function      addLog(this, varargin)
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
+            this.selectImagingFormatTool;
             this.state_.addLog(varargin{:});
         end
         function c  = char(this)
+            this.selectImagingFormatTool;
             c = this.state_.char;
         end
         function d  = double(this)
+            this.selectImagingFormatTool;
             d = this.state_.double;
         end
         function      ensureSaved(this)
@@ -731,46 +739,57 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             end
         end
         function      freeview(this, varargin)
+            this.selectImagingFormatTool;
             this.state_.freeview(varargin{:});
         end
         function      fslview(this, varargin)
+            this.selectImagingFormatTool;
             this.state_.fslview(varargin{:});
         end
         function      fsleyes(this, varargin)
+            this.selectImagingFormatTool;
             this.state_.fsleyes(varargin{:});
         end
         function      hist(this, varargin)
+            this.selectImagingFormatTool;
             this.state_.hist(varargin{:});
         end
         function tf = isempty(this)
             %% ISEMPTY
             %  @return tf is boolean for state emptiness
             
+            this.selectImagingFormatTool;
             tf = this.state_.isempty;
         end
         function l  = length(this)
             %% LENGTH
             %  @return l is the length of a composite imaging state
             
+            this.selectImagingFormatTool;
             l = this.state_.length;
         end
         function l  = logical(this)
+            this.selectImagingFormatTool;
             l = this.state_.logical;
         end
         function s  = mat2str(this, varargin)
+            this.selectImagingFormatTool;
             s = this.state_.mat2str(varargin{:});
         end
         function n  = ndims(this)
+            this.selectImagingFormatTool;
             n = this.state_.ndims;
         end
         function r  = rank(this)
             %% DEPRECATED; use ndims.
             
+            this.selectImagingFormatTool;
             r = this.ndims;
         end
         function      save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
+            this.selectImagingFormatTool;
             this.state_.save;
         end
         function      saveas(this, varargin)
@@ -778,12 +797,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param filename is a string that is compatible with requirements of the filesystem;
             %  it replaces internal filename & filesystem information.
 
+            this.selectImagingFormatTool;
             this.state_.saveas(varargin{:});
         end   
         function s  = single(this)
+            this.selectImagingFormatTool;
             s = this.state_.single;
         end  
         function s  = size(this, varargin)
+            this.selectImagingFormatTool;
             s = this.state_.size(varargin{:});
         end 
         function tf = sizeEq(this, ic)
@@ -791,6 +813,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for equal size
 
+            this.selectImagingFormatTool;
             tf = this.state_.sizeEq(ic);
         end
         function tf = sizeGt(this, ic)
@@ -798,6 +821,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for > size
 
+            this.selectImagingFormatTool;
             tf = this.state_.sizeGt(ic);
         end
         function tf = sizeLt(this, ic)
@@ -805,7 +829,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for < size
 
+            this.selectImagingFormatTool;
             tf = this.state_.sizeLt(ic);
+        end
+        function      updateImagingFormatTool(this, u)
+            %  first call {fourdfp,mgz,nifti}, make adjustments, then call updateImagingFormatTool for fine-grained aufbau.
+            %  @param u is mlfourd.ImagingFormatContext.
+            
+            this.selectImagingFormatTool;
+            this.state_.updateInnerImaging(u);
         end
         function      view(this, varargin)
             %% VIEW
@@ -813,8 +845,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  which will be saved to the filesystem as needed.
             %  @return new window with a view of the imaging state
             
+            this.selectImagingFormatTool;
             this.state_.view(varargin{:});
         end
+        
+        %%
         
         function this = ImagingContext2(obj)
             %% ImagingContext2 
@@ -834,10 +869,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 this.state_ = ImagingFormatTool(this, obj.niftid);
                 return
             end
-%             if (ischar(obj)) 
-%                 this.state_ = FilesystemTool(this, obj);
-%                 return
-%             end
+            if (ischar(obj))
+                this.state_ = FilesystemTool(this, obj);
+                return
+            end
             this.state_ = ImagingFormatTool(this, obj);
         end
         function that = clone(this)
@@ -875,11 +910,14 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
 
     methods (Static, Hidden)
         function ic = recastImagingContext(obj, oriClass)
+            %% provides support for legacy objects.
+
+            obj = mlfourd.ImagingContext2(obj);
             switch (oriClass)
                 case 'mlfourd.ImagingContext'
                     ic = mlfourd.ImagingContext(obj);
                 case 'mlfourd.ImagingContext2'
-                    ic = mlfourd.ImagingContext2(obj);
+                    ic = obj;
                 case 'mlmr.MRImagingContext'
                     ic = mlmr.MRImagingContext(obj);
                 case 'mlpet.PETImagingContext'
@@ -892,14 +930,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     end
     
     methods (Hidden)
-        function g   = getLog(this)
-            g = this.logger;
-        end
         function ifc = niftid(this)
+            this.selectImagingFormatTool;
             ifc = this.nifti;
         end
-        function this = numericalNiftid(this)
+        function ifc = numericalNiftid(this)
             this.selectNumericalTool;
+            ifc = this.nifti;
         end 
     end  
     

@@ -1,4 +1,4 @@
-classdef BlurringTool < handle & mlfourd.AbstractImagingTool
+classdef BlurringTool < handle & mlfourd.ImagingFormatTool
 	%% BLURRINGTOOL is a concrete ImagingTool.  The blur must be provided as fwhh in mm.
 
 	%  $Revision$ 
@@ -201,8 +201,7 @@ classdef BlurringTool < handle & mlfourd.AbstractImagingTool
         end
         
  		function this = BlurringTool(h, varargin)
-            this = this@mlfourd.AbstractImagingTool(h, varargin{:});
-            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
+            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
         end   
     end 
     

@@ -1,4 +1,4 @@
-classdef MaskingTool < handle & mlfourd.AbstractImagingTool
+classdef MaskingTool < handle & mlfourd.ImagingFormatTool
 	%% MASKINGTOOL
     %
     
@@ -164,8 +164,7 @@ classdef MaskingTool < handle & mlfourd.AbstractImagingTool
         end
         
         function this = MaskingTool(h, varargin)
-            this = this@mlfourd.AbstractImagingTool(h, varargin{:});     
-            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
+            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
         end
         
     end

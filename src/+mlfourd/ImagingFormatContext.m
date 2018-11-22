@@ -430,8 +430,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
-            if (ischar(obj) && ...
-                ImagingFormatContext.supportedFileformExists(obj))
+            if (ischar(obj)) % && ImagingFormatContext.supportedFileformExists(obj))
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
@@ -620,6 +619,16 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             this.innerNIfTI_.untouch      = s.untouch;
         end
     end 
+    
+    %% HIDDEN
+    
+    methods (Hidden) 
+        function g = getInnerNIfTI(this)
+            %% allows ImagingContext to import ImagingContext2 without accessing the filesystem.
+            
+            g = this.innerNIfTI_;
+        end
+    end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy
  end

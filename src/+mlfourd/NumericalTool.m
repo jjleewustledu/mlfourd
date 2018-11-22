@@ -1,4 +1,4 @@
-classdef NumericalTool < handle & mlfourd.AbstractImagingTool & mlpatterns.HandleNumerical & mlpatterns.HandleDipNumerical
+classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleNumerical & mlpatterns.HandleDipNumerical
 	%% NUMERICALTOOL extends NIfTId implementations with bsxfun and other numerical functionality.
     
 	%  $Revision$
@@ -277,7 +277,7 @@ classdef NumericalTool < handle & mlfourd.AbstractImagingTool & mlpatterns.Handl
                 this.innerImaging_ = ImagingFormatContext( ...
                     this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b)));
                 this.innerImaging_.addLog( ...
-                    sprintf('NumericalTool:  %s %s %g', func2str(funh), this.fileprefix, b));
+                    sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, mat2str(b)));
                 return
             end
             if (isa(b, 'mlfourd.ImagingContext2'))
@@ -296,8 +296,7 @@ classdef NumericalTool < handle & mlfourd.AbstractImagingTool & mlpatterns.Handl
         end
         
         function this = NumericalTool(h, varargin)
-            this = this@mlfourd.AbstractImagingTool(h, varargin{:});
-            this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
+            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
         end
     end 
     
