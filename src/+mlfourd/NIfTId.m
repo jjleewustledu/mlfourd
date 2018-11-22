@@ -190,6 +190,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.NIfTIIO & mlfourd.Jim
                 inn = obj.innerNIfTI_; % copy ctor
                 return
             end
+            if (isa(obj, 'mlfourd.ImagingFormatContext'))
+                obj = obj.getInnerNIfTI;
+            end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
                 inn = obj;
                 return
@@ -225,6 +228,9 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.NIfTIIO & mlfourd.Jim
             if (isa(obj, 'mlfourd.NIfTId'))
                 inn = obj.innerNIfTI_; 
                 return
+            end
+            if (isa(obj, 'mlfourd.ImagingFormatContext'))
+                obj = obj.getInnerNIfTI;
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
                 inn = obj;
