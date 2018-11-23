@@ -494,24 +494,96 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% mlpatterns.HandleDipNumerical
          
-%         dipiqr(this)
-%         dipisfinite(this)
-%         dipisinf(this)
-%         dipisnan(this)
-%         dipisreal(this)
-%         diplogprod(this)
-%         dipmad(this)
-%         dipmax(this)
-%         dipmean(this)
-%         dipmedian(this)
-%         dipmin(this)
-%         dipmode(this)
-%         dipprctile(this)
-%         dipprod(this)
-%         dipquantile(this)
-%         dipstd(this)
-%         dipsum(this)
-%         diptrimmean(this)
+        function d = dipiqr(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipiqr;
+        end
+        function d = dipisfinite(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipisfinite;
+        end
+        function d = dipisinf(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipisinf;
+        end
+        function d = dipisnan(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipisnan;
+        end
+        function d = dipisreal(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipisreal;
+        end
+        function d = diplogprod(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.diplogprod;
+        end
+        function d = dipmad(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmad;
+        end        
+        function d = dipmax(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmax;
+        end
+        function d = dipmean(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmean;
+        end
+        function d = dipmedian(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmedian;
+        end
+        function d = dipmin(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmin;
+        end
+        function d = dipmode(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipmode;
+        end
+        function d = dipprctile(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipprctile(b);
+        end
+        function d = dipprod(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipprod;
+        end
+        function d = dipquantile(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipquantile(b);
+        end
+        function d = dipstd(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipstd;
+        end
+        function d = dipsum(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.dipsum;
+        end
+        function d = diptrimmean(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            d = that.state_.diptrimmean(b);
+        end
         
         %% BlurringTool
         

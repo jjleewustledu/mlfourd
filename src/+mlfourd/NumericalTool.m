@@ -155,59 +155,77 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
                 
         %% implementations of mlpatterns.HandleDipNumerical
         
-        function dipiqr(this)
+        function d = dipiqr(this)
             this.usxfun(@dipiqr);
+            d = this.getInnerImaging.img;
         end
-        function dipisfinite(this)
+        function d = dipisfinite(this)
             this.usxfun(@dipisfinite);
+            d = this.getInnerImaging.img;
         end
-        function dipisinf(this)
+        function d = dipisinf(this)
             this.usxfun(@dipisinf);
+            d = this.getInnerImaging.img;
         end
-        function dipisnan(this)
+        function d = dipisnan(this)
             this.usxfun(@dipisnan);
+            d = this.getInnerImaging.img;
         end
-        function dipisreal(this)
+        function d = dipisreal(this)
             this.usxfun(@dipisreal);
+            d = this.getInnerImaging.img;
         end
-        function diplogprod(this)
+        function d = diplogprod(this)
             this.usxfun(@diplogprod);
+            d = this.getInnerImaging.img;
         end
-        function dipmad(this)
+        function d = dipmad(this)
             this.usxfun(@dipmad);
+            d = this.getInnerImaging.img;
         end        
-        function dipmax(this)
+        function d = dipmax(this)
             this.usxfun(@dipmax);
+            d = this.getInnerImaging.img;
         end        
-        function dipmean(this)
+        function d = dipmean(this)
             this.usxfun(@dipmean);
+            d = this.getInnerImaging.img;
         end        
-        function dipmedian(this)
+        function d = dipmedian(this)
             this.usxfun(@dipmedian);
+            d = this.getInnerImaging.img;
         end        
-        function dipmin(this)
+        function d = dipmin(this)
             this.usxfun(@dipmin);
+            d = this.getInnerImaging.img;
         end   
-        function dipmode(this)
+        function d = dipmode(this)
             this.usxfun(@dipmode);
+            d = this.getInnerImaging.img;
         end
-        function dipprctile(this, b)
+        function d = dipprctile(this, b)
             this.bsxfun(@dipprctile, b);
+            d = this.getInnerImaging.img;
         end
-        function dipprod(this)
+        function d = dipprod(this)
             this.usxfun(@dipprod);
+            d = this.getInnerImaging.img;
         end        
-        function dipquantile(this, b)
+        function d = dipquantile(this, b)
             this.bsxfun(@dipquantile, b);
+            d = this.getInnerImaging.img;
         end
-        function dipstd(this)
+        function d = dipstd(this)
             this.usxfun(@dipstd);
+            d = this.getInnerImaging.img;
         end                
-        function dipsum(this)
+        function d = dipsum(this)
             this.usxfun(@dipsum);
+            d = this.getInnerImaging.img;
         end 
-        function diptrimmean(this, b)
+        function d = diptrimmean(this, b)
             this.bsxfun(@diptrimmean, b);
+            d = this.getInnerImaging.img;
         end
                 
         %% 
