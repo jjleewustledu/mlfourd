@@ -115,6 +115,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
     
     methods (Hidden)        
         function save__(this)
+            assert(strcmp(this.filesuffix, '.nii') || strcmp(this.filesuffix, '.nii.gz'))
             this.save_nii;
         end
     end
