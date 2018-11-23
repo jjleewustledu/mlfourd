@@ -124,7 +124,7 @@ classdef ImagingFormatTool < handle & mlfourd.AbstractImagingTool
         %% delegate to ImagingFormatTool
         
         function        addImgrec(this, varargin)
-            this.innerImaging_.addImgrec(varargin{:});
+            this.innerImaging_.getInnerNIfTI.addImgrec(varargin{:}); % imgrec is a handle logger
         end
         function        addLog(this, varargin)
             this.innerImaging_.addLog(varargin{:});
