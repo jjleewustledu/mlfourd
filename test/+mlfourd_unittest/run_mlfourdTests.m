@@ -10,7 +10,8 @@ run(mlfourd_unittest.Test_NumericalNIfTId)
 run(mlfourd_unittest.Test_MaskingNIfTId)
 run(mlfourd_unittest.Test_BlurringNIfTId)
 run(mlfourd_unittest.Test_DynamicNIfTId)
-run(mlfourd_unittest.Test_ImagingContext) % long
+%run(mlfourd_unittest.Test_ImagingContext) % long
+run(mlfourd_unittest.Test_ImagingContext2)
 run(mlfourd_unittest.Test_InnerCellComposite)
 run(mlpatterns_unittest.Test_CellComposite)
 run(mlpipeline_unittest.Test_Logger)

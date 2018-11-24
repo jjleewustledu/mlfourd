@@ -34,6 +34,7 @@ classdef InnerNIfTIc < mlfourd.InnerNIfTIcIO & mlfourd.JimmyShenInterface & mlfo
         pixdim
         seriesNumber
         
+        imagingInfo
         logger
         separator % for descrip & label properties, not for filesystem behaviors
         stack
@@ -219,6 +220,9 @@ classdef InnerNIfTIc < mlfourd.InnerNIfTIcIO & mlfourd.JimmyShenInterface & mlfo
         end
         function this = sum(this)
             this.innerCellComp_ = this.innerCellComp_.fevalThis('sum');
+        end
+        function fqfn = tempFqfilename(this)
+            fqfn = sprintf('%s_tempFqfilename_D%s.nii.gz', class(this), datestr(now,30));
         end
                 
         %% mlpatterns.Composite

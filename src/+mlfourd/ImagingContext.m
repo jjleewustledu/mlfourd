@@ -10,7 +10,7 @@ classdef ImagingContext < handle & mlfourd.ImagingContext2
     
     methods
         function this = ImagingContext(varargin)
-            this = mlfourd.ImagingContext2(varargin{:});
+            this = this@mlfourd.ImagingContext2(varargin{:});
         end
         function c    = clone(this)
             %% CLONE simplifies calling the copy constructor.
