@@ -864,9 +864,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             this.state_.save;
         end
-        function      saveas(this, varargin)
+        function this = saveas(this, varargin)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
             %  @param filename is a string that is compatible with requirements of the filesystem;
+            %  @return this for compatibility with non-handle interfaces.
             %  it replaces internal filename & filesystem information.
 
             this.selectImagingFormatTool;
