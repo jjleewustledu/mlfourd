@@ -40,7 +40,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             
             this.innerImaging_.img = this.innerImaging_.img(:,:,:,T);
             this.innerImaging_.img = sum(this.innerImaging_.img, 4);
-            if (all(T == 1:size(this.innerImaging_,4)))
+            if (isempty(varargin))
                 this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
             else
                 this.fileprefix = sprintf('%s%s%g-%g', this.fileprefix, this.SUMT_SUFFIX, T(1), T(end));
