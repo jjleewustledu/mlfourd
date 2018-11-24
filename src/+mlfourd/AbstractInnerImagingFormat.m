@@ -1,4 +1,4 @@
-classdef AbstractInnerImagingFormat < handle & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
+classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
 	%% ABSTRACTINNERIMAGINGFORMAT supports imaging formats through concrete subclasses such as InnerNIfTI,  
     %  mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  Altering property filesuffix is a convenient way to change states 
     %  for formats.
@@ -1073,6 +1073,22 @@ classdef AbstractInnerImagingFormat < handle & mlfourd.InnerNIfTIIO & mlfourd.Ha
             this.img = im;
             this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
             this.hdr = this.recalculateHdrHistOriginator(this.hdr);
+        end
+        
+        function that = copyElement(this)
+            %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
+            
+            that = copyElement@matlab.mixin.Copyable(this);
+            %that.creationDate_ = copy(this.creationDate_);
+            %that.img_ = copy(this.img_);
+            %that.label_ = copy(this.label_);
+            that.logger_ = copy(this.logger_);
+            %that.orient_ = copy(this.orient_);
+            %that.originalType_ = copy(this.originalType_);
+            %that.seriesNumber_ = copy(this.seriesNumber_);
+            %that.separator_ = copy(this.separator_);
+            %that.stack_ = copy(this.stack_);
+            %that.viewer_ = copy(this.viewer_);
         end
     end
 

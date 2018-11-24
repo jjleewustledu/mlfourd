@@ -871,7 +871,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  it replaces internal filename & filesystem information.
 
             this.selectImagingFormatTool;
-            this.state_.saveas(varargin{:});
+            this.state_ = this.state_.saveas(varargin{:});
         end   
         function s  = single(this)
             this.selectImagingFormatTool;

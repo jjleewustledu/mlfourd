@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractImagingTool < handle & matlab.mixin.Copyable & mlio.HandleIOInterface
+classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
 	%% ABSTRACTIMAGINGTOOL is the state and ImagingContext2 is the context forming a state design pattern for
     %  imaging tools.
 
@@ -91,11 +91,12 @@ classdef (Abstract) AbstractImagingTool < handle & matlab.mixin.Copyable & mlio.
     end
     
     methods (Access = protected)         
-        function that = copyElement(this)
-            %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
-            
-            that = copyElement@matlab.mixin.Copyable(this);
-        end
+%         function that = copyElement(this)
+%             %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
+%             
+%             that = copyElement@matlab.mixin.Copyable(this);
+%             that.contexth_ = this.contexth_;
+%         end
         
  		function this = AbstractImagingTool(h)
             assert(all(isvalid(h)));

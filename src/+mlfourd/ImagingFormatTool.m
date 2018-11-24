@@ -1,4 +1,4 @@
-classdef ImagingFormatTool < handle & mlfourd.AbstractImagingTool
+classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractImagingTool
 	%% IMAGINGFORMATTOOL and mlfourd.ImagingContext form a hierarchical state design pattern. 
 
 	%  $Revision$
@@ -184,8 +184,8 @@ classdef ImagingFormatTool < handle & mlfourd.AbstractImagingTool
         function        save(this)
             this.innerImaging_.save;
         end
-        function        saveas(this, f)
-            this.innerImaging_.saveas(f);
+        function this = saveas(this, f)
+            this.innerImaging_ = this.innerImaging_.saveas(f);
         end
         function s    = single(this)
             s = single(this.innerImaging_.img);

@@ -105,9 +105,7 @@ classdef (Sealed) FilesystemTool < handle & mlfourd.AbstractImagingTool
         end
     end
     
-    %% PRIVATE
-    
-    properties (Access = private)
+    properties (Access = protected)
         filepath_
         fileprefix_
         filesuffix_

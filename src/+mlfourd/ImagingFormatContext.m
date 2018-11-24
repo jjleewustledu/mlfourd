@@ -474,6 +474,15 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         innerNIfTI_
     end
     
+    methods (Access = protected)
+        function that = copyElement(this)
+            %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
+            
+            that = copyElement@matlab.mixin.Copyable(this);
+            that.innerNIfTI_ = copy(this.innerNIfTI_);
+        end
+    end
+    
     %% PRIVATE    
     
     methods (Static, Access = private)

@@ -41,7 +41,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             hdr.hk.regular = 'r';
             hdr.dime.dim(1) = 3; % hdr2 is more NIfTI compliant
             hdr.dime.pixdim(6:8) = [1 1 1];
-            hdr.hist.descrip = '';
+            hdr.hist.descrip = hdr2.hist.descrip;
             hdr.hist.sform_code = 1;
             hdr.hist.qoffset_x = hdr2.hist.qoffset_x;
             hdr.hist.qoffset_y = hdr2.hist.qoffset_y;
@@ -241,10 +241,11 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             img = ones(2,2,2,4);
 
             import mlfourd.*;            
-            ic = ImagingContext2(img);            
+            ic  = ImagingContext2(img);  
+            ic_ = ImagingContext2(img);            
             ic2 = ic.timeContracted([2 3]);
             this.verifyEqual(double(ic2), 2*ones(2,2,2));
-            ic3 = ic.timeContracted;
+            ic3 = ic_.timeContracted;
             this.verifyEqual(double(ic3), 4*ones(2,2,2));
         end
         function test_volumeAveraged(this)
@@ -392,6 +393,22 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         end
         function test_close(this)
             
+        end
+        
+        function test_ifh(this)
+            pwd0_ = pushd(this.TmpDir);
+            
+            this.assertTrue(lexist([this.t1 '.4dfp.hdr'], 'file'));
+            testfp = sprintf('test_ifh');
+            deleteExisting([testfp '*']);
+            ic2 = mlfourd.ImagingContext2([this.t1 '.4dfp.hdr']);
+            ic2.saveas([testfp '.4dfp.hdr']);
+            ifh = mlfourdfp.IfhParser.load([testfp '.4dfp.ifh']);
+            this.verifyEqual( ...            
+                ic2.fourdfp.imagingInfo.ifh.nameOfDataFile, ...
+                ifh.nameOfDataFile);
+            
+            popd(pwd0_);
         end
 	end
 
