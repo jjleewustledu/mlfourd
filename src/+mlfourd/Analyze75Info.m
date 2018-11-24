@@ -159,7 +159,9 @@ classdef Analyze75Info < mlfourd.ImagingInfo
             g = this.info_.AuxFile;
         end
         function g = get.Orientation(this)
-            g = this.info_.Orientation;
+            in_ = analyze75info(this.fqfilename); % Matlab's native 
+            in_ = this.permuteInfo(in_); % KLUDGE   
+            g = in_.Orientation;
         end
         function g = get.Originator(this)
             g = this.info_.Originator;

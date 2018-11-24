@@ -1,4 +1,4 @@
-classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
+classdef AbstractInnerImagingFormat < handle & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
 	%% ABSTRACTINNERIMAGINGFORMAT supports imaging formats through concrete subclasses such as InnerNIfTI,  
     %  mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  Altering property filesuffix is a convenient way to change states 
     %  for formats.
@@ -62,7 +62,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function tf   = get.noclobber(this)
             tf = this.filesystemRegistry_.noclobber;
         end
-        function this = set.noclobber(this, nc)
+        function        set.noclobber(this, nc)
             nc = logical(nc);
             this.filesystemRegistry_.noclobber = nc;
         end
@@ -70,13 +70,13 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function g    = get.ext(this)
             g = this.imagingInfo_.ext;
         end
-        function this = set.ext(this, s)
+        function        set.ext(this, s)
             this.imagingInfo_.ext = s;
         end
         function f    = get.filetype(this)
             f = this.imagingInfo_.filetype;
         end
-        function this = set.filetype(this, ft)
+        function        set.filetype(this, ft)
             switch (ft)
                 case {0 1}
                     this.imagingInfo_.filetype = ft;
@@ -95,14 +95,14 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 h.hist.originator = zeros(1,3); % KLUDGE for mlniftitools.save_nii_hdr line28
             end
         end 
-        function this = set.hdr(this, h) % KLUDGE
+        function        set.hdr(this, h) % KLUDGE
             assert(isstruct(h));
             this.imagingInfo_.hdr = h;
         end
         function im   = get.img(this)
             im = this.img_;
         end        
-        function this = set.img(this, im)
+        function        set.img(this, im)
             %% SET.IMG sets new image state. 
             %  @param im is the incoming imaging array; converted to single if data bandwidth is appropriate.
             %  @return updates img, datatype, bitpix, dim.
@@ -135,12 +135,12 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                           'InnerNIfTI.get.bitpix could not recognize the class(img)->%s', class(this.img_));
             end
         end
-        function this = set.bitpix(this, bp)
+        function        set.bitpix(this, bp)
             assert(isnumeric(bp));
             if (bp >= 64)
-                this = this.ensureDouble; 
+                this = this.ensureDouble;  %#ok<NASGU>
             else
-                this = this.ensureSingle; 
+                this = this.ensureSingle;  %#ok<NASGU>
             end
         end
         function cdat = get.creationDate(this)
@@ -165,30 +165,30 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                           'InnerNIfTI.get.datatype could not recognize the class(img)->%s', class(this.img_));
             end
         end
-        function this = set.datatype(this, dt)
+        function        set.datatype(this, dt)
             if (ischar(dt))
                 switch (strtrim(dt))
                     case {'uchar', 'uint8'} 
-                        this = this.ensureUint8;
+                        this = this.ensureUint8; %#ok<NASGU>
                     case {'int16'}
-                        this = this.ensureInt16;
+                        this = this.ensureInt16; %#ok<NASGU>
                     case {'int32', 'int'} 
-                        this = this.ensureInt32;                        
+                        this = this.ensureInt32; %#ok<NASGU>                      
                     case {'single', 'float32', 'float'}
-                        this = this.ensureSingle;
+                        this = this.ensureSingle; %#ok<NASGU>
                     case {'int64'}
-                        this = this.ensureInt64;  
+                        this = this.ensureInt64; %#ok<NASGU>
                     case {'double', 'float64'}
-                        this = this.ensureDouble;
+                        this = this.ensureDouble; %#ok<NASGU>
                     otherwise
                         error('mlfourd:unknownSwitchCase', ...
                               'InnerNIfTI.set.datatype could not recognize dt->%s', strtrim(dt));
                 end
             elseif (isnumeric(dt))
                 if (dt < 64)
-                    this = this.ensureSingle;
+                    this = this.ensureSingle; %#ok<NASGU>
                 else
-                    this = this.ensureDouble;
+                    this = this.ensureDouble; %#ok<NASGU>
                 end
             else
                 error('mlfourd:unsupportedDatatype', 'InnerNIfTI.set.datatype does not support class(dt)->%s', class(dt));
@@ -197,7 +197,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function d    = get.descrip(this)
             d = this.hdr.hist.descrip;
         end        
-        function this = set.descrip(this, s)
+        function        set.descrip(this, s)
             %% SET.DESCRIP
             %  @param s:  do not add separators such as ";" or ","
             
@@ -217,7 +217,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             end
             d = this.label_;
         end     
-        function this = set.label(this, s)
+        function        set.label(this, s)
             assert(ischar(s));
             this.label_ = strtrim(s);
         end
@@ -230,7 +230,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
                 mpp = mpp(1:3);
             end
         end        
-        function this = set.mmppix(this, mpp)
+        function        set.mmppix(this, mpp)
             %% SET.MMPPIX sets voxel-time dimensions in mm, s.
             
             this.pixdim = mpp;
@@ -244,7 +244,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function pd   = get.pixdim(this)
             pd = this.hdr.dime.pixdim(2:this.rank+1);
         end        
-        function this = set.pixdim(this, pd)
+        function        set.pixdim(this, pd)
             %% SET.PIXDIM sets voxel-time dimensions in mm, s.
             
             this.imagingInfo_.hdr.dime.pixdim(2:this.rank+1) = pd;
@@ -252,7 +252,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function s    = get.seriesNumber(this)
             s = this.seriesNumber_;
         end
-        function this = set.seriesNumber(this, s)
+        function        set.seriesNumber(this, s)
             assert(isnumeric(s));
             this.seriesNumber_ = s;
         end
@@ -260,7 +260,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function ii   = get.imagingInfo(this)
             ii = this.imagingInfo_;
         end
-        function this = set.imagingInfo(this, s)
+        function        set.imagingInfo(this, s)
             assert(isa(s, 'mlfourd.ImagingInfo'));
             this.imagingInfo_ = s;
         end
@@ -271,7 +271,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
             end
             g = this.imagingInfo_.imgrec;
         end
-        function this = set.imgrec(this, s)
+        function        set.imgrec(this, s)
             if (~isprop(this.imagingInfo_, 'imgrec'))
                 return
             end
@@ -284,14 +284,14 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function g    = get.N(this)
             g = this.imagingInfo_.N;
         end
-        function this = set.N(this, s)
+        function        set.N(this, s)
             assert(islogical(s));
             this.imagingInfo_.N = s;
         end
         function s    = get.separator(this)
             s = this.separator_;
         end
-        function this = set.separator(this, s)
+        function        set.separator(this, s)
             if (ischar(s))
                 this.separator_ = s;
             end
@@ -302,7 +302,7 @@ classdef AbstractInnerImagingFormat < mlfourd.InnerNIfTIIO & mlfourd.INIfTI
         function v    = get.viewer(this)
             v = this.viewer_;
         end
-        function this = set.viewer(this, v)
+        function        set.viewer(this, v)
             this.viewer_ = v;
         end
         

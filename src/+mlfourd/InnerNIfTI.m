@@ -1,4 +1,4 @@
-classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInterface
+classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.HandleJimmyShenInterface
 	%% INNERNIFTI supplies decorated INIfTI objects to AbstractNIfTIComponent.  It also forms a composite
     %  design pattern with composites InnerNIfTIc, which supplies composite INIfTI objects to AbstractNIfTIComponent.
     
@@ -43,7 +43,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
         
         %% GET/SET
                       
-        function x    = get.hdxml(this)
+        function x = get.hdxml(this)
             if (~lexist(this.fqfilename, 'file'))
                 x = '';
                 return
@@ -51,7 +51,7 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
             [~,x] = mlbash(['fslhd -x ' this.fqfileprefix]);
             x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
         end
-        function o    = get.orient(this)
+        function o = get.orient(this)
             if (~isempty(this.orient_))
                 o = this.orient_;
                 return
@@ -63,10 +63,10 @@ classdef InnerNIfTI < mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInte
             end
             o = '';
         end 
-        function u    = get.untouch(this)
+        function u = get.untouch(this)
             u = this.imagingInfo_.untouch;
         end
-        function this = set.untouch(this, s)
+        function     set.untouch(this, s)
             this.imagingInfo_.untouch = logical(s);
         end
          

@@ -80,7 +80,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             else
                 this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX upper(M.fileprefix(1)) M.fileprefix(2:end)];
             end
-            this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);
+            this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
         end
         
  		function this = DynamicsTool(h, varargin)

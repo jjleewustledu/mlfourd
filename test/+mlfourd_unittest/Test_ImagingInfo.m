@@ -71,18 +71,18 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             this.verifyEqual(finfo.hdr.hist.originator, [3.588367338180542e+02 3.588367338180542e+02 1.289843750000000e+02], 'RelTol', 1e-6);
             
             this.verifyEqual(fnii_.hdr.dime.dim, [3 344 344 127 1 1 1 1]);
-            this.verifyEqual(fnii_.hdr.dime.pixdim, [0 2.086260080337524 2.086260080337524 2.031250000000000 1 1 1 1], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.dime.pixdim, [1 2.086260080337524 2.086260080337524 2.031250000000000 1 1 1 1], 'RelTol', 1e-6);
             this.verifyEqual(fnii_.hdr.hist.qform_code, 0);
             this.verifyEqual(fnii_.hdr.hist.sform_code, 1);
             this.verifyEqual(fnii_.hdr.hist.quatern_b, 0);
             this.verifyEqual(fnii_.hdr.hist.quatern_c, 0);
             this.verifyEqual(fnii_.hdr.hist.quatern_d, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_x, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_y, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_z, 0);
-            this.verifyEqual(fnii_.hdr.hist.srow_x, [0 0 -2.031250000000000 2.599682617187500e+02], 'RelTol', 1e-6);
-            this.verifyEqual(fnii_.hdr.hist.srow_y, [-2.086260080337524 0 0 7.465404930429711e+02], 'RelTol', 1e-6);
-            this.verifyEqual(fnii_.hdr.hist.srow_z, [0 -2.086260080337524 0 7.465404930429711e+02], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_x, -746.540493042971, 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_y, -746.540493042971, 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_z, -259.96826171875, 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.srow_x, [2.08626008033752 0 0 -746.540493042971], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.srow_y, [0 2.08626008033752 0 -746.540493042971], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.srow_z, [0 0 2.03125 -259.96826171875], 'RelTol', 1e-6);
             this.verifyEqual(fnii_.hdr.hist.originator, [3.588367338180542e+02 3.588367338180542e+02 1.289843750000000e+02]);
  		end
 		function test_loadMprage(this)
@@ -118,18 +118,18 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             this.verifyEqual(finfo.raw.sform_code, 1);
             
             this.verifyEqual(fnii_.hdr.dime.dim, [3 176 248 256 1 1 1 1]);
-            this.verifyEqual(fnii_.hdr.dime.pixdim, [0 0.999997496604919 1 1 1 1 1 1], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.dime.pixdim, [1 0.999997496604919 1 1 1 1 1 1], 'RelTol', 1e-6);
             this.verifyEqual(fnii_.hdr.hist.qform_code, 0);
             this.verifyEqual(fnii_.hdr.hist.sform_code, 1);
             this.verifyEqual(fnii_.hdr.hist.quatern_b, 0);
             this.verifyEqual(fnii_.hdr.hist.quatern_c, 0);
             this.verifyEqual(fnii_.hdr.hist.quatern_d, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_x, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_y, 0);
-            this.verifyEqual(fnii_.hdr.hist.qoffset_z, 0);
-            this.verifyEqual(fnii_.hdr.hist.srow_x, [0 0 -1 127], 'RelTol', 1e-6);
-            this.verifyEqual(fnii_.hdr.hist.srow_y, [-0.999997019767761 0 0 86.999478460139812], 'RelTol', 1e-6);
-            this.verifyEqual(fnii_.hdr.hist.srow_z, [0 -1 0 123], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_x, -86.999478460139812, 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_y, -123);
+            this.verifyEqual(fnii_.hdr.hist.qoffset_z, -127);
+            this.verifyEqual(fnii_.hdr.hist.srow_x, [0.999997019767761 0 0 -86.999478460139812], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.srow_y, [0 1 0 -123], 'RelTol', 1e-6);
+            this.verifyEqual(fnii_.hdr.hist.srow_z, [0 0 1 -127], 'RelTol', 1e-6);
             this.verifyEqual(fnii_.hdr.hist.originator, [87.999737739562988 124 128], 'RelTol', 1e-6);
  		end
 		function test_loadSurfMprage(this)
@@ -166,16 +166,15 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
 	end
 
  	methods (TestClassSetup)
-		function setupImagingInfo(this)
- 			import mlfourd.*;
- 			this.testObj_ = ImagingInfo('notafile.nii.gz');
+		function setupImagingInfo(this) %#ok<MANU>
  		end
 	end
 
  	methods (TestMethodSetup)
 		function setupImagingInfoTest(this)
+ 			import mlfourd.*;
+ 			this.testObj = ImagingInfo('notafile.nii.gz');
             this.pwd0 = pushd(this.TmpDir);
- 			this.testObj = this.testObj_;
  			this.addTeardown(@this.cleanTestMethod);
  		end
     end
@@ -183,7 +182,6 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
     %% PRIVATE
 
 	properties (Access = private)
- 		testObj_
         refMpr_
         refFdgSumt_
     end

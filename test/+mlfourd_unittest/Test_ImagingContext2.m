@@ -253,10 +253,11 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             mimg(1,1,1) = 1;
 
             import mlfourd.*;            
-            ic = ImagingContext2(img);            
+            ic  = ImagingContext2(img);   
+            ic_ = ImagingContext2(img);        
             ic2 = ic.volumeAveraged(mimg);
             this.verifyEqual(double(ic2), [1 1 1 1]);
-            ic3 = ic.volumeAveraged;
+            ic3 = ic_.volumeAveraged;
             this.verifyEqual(double(ic3), [1 1 1 1]);
         end
         function test_volumeContracted(this)
@@ -264,11 +265,12 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             mimg = zeros(2,2,2);
             mimg(1,1,1) = 1;
 
-            import mlfourd.*; %#ok<NSTIMP>
-            ic = ImagingContext2(img);            
+            import mlfourd.*; 
+            ic  = ImagingContext2(img);  
+            ic_ = ImagingContext2(img);
             ic2 = ic.volumeContracted(mimg);
             this.verifyEqual(double(ic2), [1 1 1 1]);
-            ic3 = ic.volumeContracted;
+            ic3 = ic_.volumeContracted;
             this.verifyEqual(double(ic3), [8 8 8 8]);
             
 %             h = @improperMask;

@@ -1,4 +1,4 @@
-classdef InnerNIfTIIO < mlfourd.NIfTIIO
+classdef InnerNIfTIIO < handle & mlfourd.HandleNIfTIIO
 	%% INNERNIFTIIO
     %  yet abstract:  noclobber
     
@@ -34,14 +34,14 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
         
         %% SET/GET
         
-        function this = set.filename(this, fn)
+        function        set.filename(this, fn)
             assert(ischar(fn));
             [this.filepath,this.fileprefix,this.filesuffix] = myfileparts(fn);
         end
         function fn   = get.filename(this)
             fn = [this.fileprefix this.filesuffix];
         end
-        function this = set.filepath(this, pth)
+        function        set.filepath(this, pth)
             assert(ischar(pth));
             if (~isempty(this.imagingInfo.filepath))
                 this.untouch = false;
@@ -56,7 +56,7 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
             end
             pth = this.imagingInfo.filepath;
         end
-        function this = set.fileprefix(this, fp)
+        function        set.fileprefix(this, fp)
             assert(ischar(fp));
             assert(~isempty(fp));
             if (~isempty(this.imagingInfo.fileprefix))
@@ -68,7 +68,7 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
         function fp   = get.fileprefix(this)
             fp = this.imagingInfo.fileprefix;
         end
-        function this = set.filesuffix(this, fs)
+        function        set.filesuffix(this, fs)
             assert(ischar(fs));
             if (~isempty(fs) && ~strcmp('.', fs(1)))
                 fs = ['.' fs];
@@ -86,7 +86,7 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
                 this.imagingInfo.filesuffix = ['.' this.imagingInfo.filesuffix]; end
             fs = this.imagingInfo.filesuffix;
         end
-        function this = set.fqfilename(this, fqfn)
+        function        set.fqfilename(this, fqfn)
             assert(ischar(fqfn));
             [p,f,e] = myfileparts(fqfn);
             if (~isempty(p))
@@ -102,7 +102,7 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
         function fqfn = get.fqfilename(this)
             fqfn = [this.fqfileprefix this.filesuffix];
         end
-        function this = set.fqfileprefix(this, fqfp)
+        function        set.fqfileprefix(this, fqfp)
             assert(ischar(fqfp));
             [p,f] = fileprefixparts(fqfp);            
             if (~isempty(p))
@@ -115,13 +115,13 @@ classdef InnerNIfTIIO < mlfourd.NIfTIIO
         function fqfp = get.fqfileprefix(this)
             fqfp = fullfile(this.filepath, this.fileprefix);
         end
-        function this = set.fqfn(this, f)
+        function        set.fqfn(this, f)
             this.fqfilename = f;
         end
         function f    = get.fqfn(this)
             f = this.fqfilename;
         end
-        function this = set.fqfp(this, f)
+        function        set.fqfp(this, f)
             this.fqfileprefix = f;
         end
         function f    = get.fqfp(this)

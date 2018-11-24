@@ -399,7 +399,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             tf = isvector(this.img);
         end   
         function tf   = lexist(this)
-            tf = this.innerNIfTI_.lexist;
+            tf = lexist(this.innerNIfTI_.fqfilename);
         end   
         function niid = makeSimilar(this, varargin)
             %% MAKESIMILAR 
@@ -473,8 +473,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             end
         end      
  		function this = AbstractNIfTIComponent(inner)
-            assert(isa(inner, 'mlfourd.InnerNIfTIIO') && ...
-                   isa(inner, 'mlfourd.INIfTI'));
+            assert(isa(inner, 'mlfourd.INIfTI') || isa(inner, 'mlfourd.HandleINIfTI'));
             this.innerNIfTI_ = inner;
  		end
     end 
