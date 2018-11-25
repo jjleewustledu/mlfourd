@@ -589,19 +589,11 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             for p = 1:length(ip.Parameters)
                 if (~ismember(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
-                        case 'datatype'
+                        case 'circshiftK'
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
-                        case 'ext'
-                            this.innerNIfTI_.ext = ip.Results.ext;
-                        case 'hdr'
-                            this.innerNIfTI_.imagingInfo.hdr = ip.Results.hdr;
-                        case 'img'
-                            this.innerNIfTI_.img_ = ip.Results.img;
                         case 'obj'
-                        case 'circshiftK'
-                        case 'N'
-                        otherwise
+                        otherwise % adjust programmatically
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
                     end
                 end

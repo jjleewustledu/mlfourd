@@ -174,7 +174,7 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
         end
         function hdr = recalculateHdrHistOriginator(~, hdr)
         end
-       function this = zoom(this, rmin, rsize)
+        function this = zoom(this, rmin, rsize)
            shift = this.AffMats*[rmin(1:3) 0]';
            
            this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
