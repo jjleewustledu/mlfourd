@@ -1,4 +1,4 @@
-classdef (Sealed) FilesystemTool < handle & mlfourd.AbstractImagingTool
+classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.AbstractImagingTool
 	%% FILESYSTEMTOOL  
 
 	%  $Revision$
@@ -94,7 +94,12 @@ classdef (Sealed) FilesystemTool < handle & mlfourd.AbstractImagingTool
     
     %% PROTECTED
     
-    methods (Access = protected)        
+    methods (Access = protected)     
+        function that = copyElement(this)
+            %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
+            
+            that = copyElement@matlab.mixin.Copyable(this);
+        end   
         function iimg = getInnerImaging(this, varargin)
             ip = inputParser;
             addOptional(ip, 'suff', this.filesuffix, @ischar);
