@@ -90,14 +90,7 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
         contexth_
     end
     
-    methods (Access = protected)         
-%         function that = copyElement(this)
-%             %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
-%             
-%             that = copyElement@matlab.mixin.Copyable(this);
-%             that.contexth_ = this.contexth_;
-%         end
-        
+    methods (Access = protected)                 
  		function this = AbstractImagingTool(h)
             assert(all(isvalid(h)));
             this.contexth_ = h;
