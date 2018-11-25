@@ -56,8 +56,8 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             ifc = mlfourd.ImagingFormatContext(fullfile(this.dataDir, 'fdgcent.4dfp.hdr'));
             ifc.saveas(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.hdr'));
             ifh = mlfourdfp.IfhParser.load(fullfile(this.TmpDir, 'fdgcent_dbg.4dfp.ifh'), 'N', true); 
-            this.verifyEqual(ifc.imagingInfo.ifh.mmppix, [2.0863   -2.0863   -2.0312], 'RelTol', 1e-4);
-            this.verifyEqual(ifc.imagingInfo.ifh.center, [179.4184 -181.5046 -130.0000], 'RelTol', 1e-6);   
+            this.verifyEqual(ifc.imagingInfo.ifh.mmppix, [], 'RelTol');
+            this.verifyEqual(ifc.imagingInfo.ifh.center, [], 'RelTol');
             this.verifyEmpty(ifh.center); 
             if (this.doview)
                 mlbash(sprintf('fsleyes %s/fdgcent.4dfp.img fdgcent_dbg.4dfp.img', this.dataDir));

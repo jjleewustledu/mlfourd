@@ -592,6 +592,8 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                         case 'circshiftK'
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
+                        case 'N'
+                            this.innerNIfTI_.N = this.innerNIfTI_.N;
                         case 'obj'
                         otherwise % adjust programmatically
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
