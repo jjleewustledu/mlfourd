@@ -412,6 +412,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             addParameter(ip, 'fqfilename',   '', @ischar);
             addParameter(ip, 'fqfileprefix', '', @ischar);
             addParameter(ip, 'hdr',  struct([]), @isstruct);
+            addParameter(ip, 'hist', struct([]), @isstruct);
             addParameter(ip, 'img',          [], @(x) isnumeric(x) || islogical(x));
             addParameter(ip, 'label',        '', @ischar);
             addParameter(ip, 'mmppix',       [], @isnumeric);
@@ -592,6 +593,8 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                         case 'circshiftK'
                         case 'descrip'
                             this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
+                        case 'hist'
+                            this.innerNIfTI_.hdr.hist = ip.Results.hist;
                         case 'N'
                             this.innerNIfTI_.N = this.innerNIfTI_.N;
                         case 'obj'

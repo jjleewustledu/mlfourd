@@ -12,7 +12,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
  	
 	properties
         doview = false
-        doview_mutate = false % slow
+        doview_mutate = true % slow
         noDelete = false
         pwd0
         ref
@@ -270,13 +270,12 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             if (this.doview); niih.fsleyes; end
         end            
         function test_mutateInnerImagingFormatByFilesuffix(this) 
-            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.     
-            %  loading t1_dcm2niix.mgz and saving as t1_dcm2niix.4dfp.hdr FAILS.
+            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.4dfp.hdr'.   
             
             if (~this.doview_mutate); return; end
  			import mlfourd.*;                               
             fpOri = myfileprefix(this.ref.dicomAsNiigz);
-            xs = {'.nii.gz' '.mgz' '.4dfp.hdr'};
+            xs = {'.nii.gz' '.4dfp.hdr'};
             
             for ix = 1:length(xs)
                 fprintf('test_mutateInnerImagingFormatByFilesuffix:  loading %s%s\n', fpOri, xs{ix});
@@ -293,25 +292,51 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             end            
         end          
         function test_mutateInnerImagingFormatByFilesuffix_mgz_4dfp(this) 
-            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.     
-            %  loading t1_dcm2niix.mgz and saving as t1_dcm2niix.4dfp.hdr FAILS.
+            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.    
             
             if (~this.doview_mutate); return; end
  			import mlfourd.*;                               
-            fpOri = myfileprefix(this.ref.dicomAsNiigz);
-            xs = {'.nii.gz' '.mgz' '.4dfp.hdr'};
+            fpOri  = myfileprefix(this.ref.dicomAsNiigz) %#ok<NOPRT>
+            fpTmp  = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix_mgz_4dfp')); 
+            fpTmp_ = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix_mgz_4dfp_')); 
             
-            ix = 2;
-            fprintf('test_mutateInnerImagingFormatByFilesuffix:  loading %s%s\n', fpOri, xs{ix});
-            ifc_ = ImagingFormatContext([fpOri xs{ix}]);
-            fpTmp = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix'));            
-            jx = 3;
-            ifc = copy(ifc_);
-            ifc.saveas([fpTmp xs{jx}]);
-            fprintf('test_mutateInnerImagingFormatByFilesuffix:  saving as %s%s\n', fpOri, xs{jx});
-            this.verifyTrue(lexist(ifc.fqfilename, 'file'));
+            % mgz -> 4dfp
+            ifc = ImagingFormatContext([fpOri '.mgz']);
+            ifc.saveas([fpTmp '.4dfp.hdr']);
+            this.verifyEqual(fpTmp, ifc.fqfileprefix);
             mlbash(sprintf('fsleyes %s', ifc.fqfilename));
+            
+            % 4dfp -> mgz
+            ifc_ = ImagingFormatContext(ifc.fqfilename, 'hist', ifc.hdr.hist);
+            ifc_.saveas([fpTmp_ '.mgz']);
+            this.verifyEqual(fpTmp_, ifc_.fqfileprefix);
+            mlbash(sprintf('fsleyes %s', ifc_.fqfilename));
+            
             this.deleteExisting([fpTmp '.*']);
+            this.deleteExisting([fpTmp_ '.*']);
+        end     
+        function test_mutateInnerImagingFormatByFilesuffix_T1_mgz_4dfp(this) 
+            %% starts with this.ref.dicomAsNiigz; calls saveas with '.nii.gz', '.mgz', '.4dfp.hdr'.   
+            
+            if (~this.doview_mutate); return; end
+ 			import mlfourd.*;     
+            fpTmp  = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix_T1_mgz_4dfp')); 
+            fpTmp_ = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix_T1_mgz_4dfp_')); 
+            
+            % mgz -> 4dfp
+            ifc = ImagingFormatContext('T1.mgz');
+            ifc.saveas([fpTmp '.4dfp.hdr']);
+            this.verifyEqual(fpTmp, ifc.fqfileprefix);
+            mlbash(sprintf('fsleyes %s', ifc.fqfilename));            
+            
+            % 4dfp -> mgz
+            ifc_ = ImagingFormatContext(ifc.fqfilename, 'hist', ifc.hdr.hist);
+            ifc_.saveas([fpTmp_ '.mgz']);
+            this.verifyEqual(fpTmp_, ifc_.fqfileprefix);
+            mlbash(sprintf('fsleyes %s', ifc_.fqfilename));
+            
+            this.deleteExisting([fpTmp '.*']);
+            this.deleteExisting([fpTmp_ '.*']);
         end     
         function test_set_filesuffix(this)
             if (~this.doview); return; end
@@ -385,8 +410,6 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
 
  	methods (TestClassSetup)
 		function setupImagingFormatContext(this)
- 			import mlfourd.*;
- 			this.testObj_ = ImagingFormatContext([]);
             this.ref = mlfourd.ReferenceMprage;
             this.ref.copyfiles(this.TmpDir);
             fp = myfileprefix(this.ref.dicomAsNiigz); 
@@ -398,8 +421,9 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
 
  	methods (TestMethodSetup)
 		function setupImagingFormatContextTest(this)
+ 			import mlfourd.*;
+ 			this.testObj = ImagingFormatContext([]);
             this.pwd0 = pushd(this.TmpDir);
- 			this.testObj = this.testObj_;
  			this.addTeardown(@this.cleanTestMethod);
  		end
     end
@@ -407,7 +431,6 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
     %% PRIVATE
 
 	properties (Access = private)
- 		testObj_
  	end
 
 	methods (Access = private)
