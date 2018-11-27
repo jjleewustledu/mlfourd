@@ -351,6 +351,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             
             r = this.ndims(varargin{:});
         end
+        function this = roi(this, varargin)
+            this = this.zoom(varargin{:});
+        end
         function        save(this)
             this.innerNIfTI_.save;
         end

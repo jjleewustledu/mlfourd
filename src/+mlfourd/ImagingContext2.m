@@ -721,6 +721,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.msktgen(varargin{:});
         end
+        function that = roi(this, varargin)
+            that = this.zoomed(varargin{:});
+        end
         function that = thresh(this, varargin)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)

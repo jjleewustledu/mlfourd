@@ -688,7 +688,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         end
         function fn   = defaultFqfilename(this)
             fn = sprintf('instance_%s_%s%s', ...
-                strrep(class(this), '.', '_'), ...
+                myclass(this), ...
                 datestr(now, 30), ...
                 mlfourd.ImagingInfo.defaultFilesuffix);
         end
@@ -764,6 +764,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end 
             
             this.logger_ = mlpipeline.Logger(this.fqfileprefix, this);
+            this.addLog(evalc('disp(this)'));
             if (~isempty(this.descrip))
                 this.addLog(this.descrip);
             end                   

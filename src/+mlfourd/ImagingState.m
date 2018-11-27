@@ -126,19 +126,25 @@ classdef (Abstract) ImagingState < handle & mlfourd.HandleNIfTIIO
         end        
     
         %% state changes
-        
-        function f = fourdfp(~)
-            f = [];
+         
+        function f = fourdfp(this)
+            this.contexth_.changeState( ...
+                mlfourd.FourdfpState(this.concreteObj_, this.contexth_));
+            f = this.contexth_.fourdfp;
         end
-        function f = mgh(~)
-            f = [];
+        function g = mgh(this)
+            this.contexth_.changeState( ...
+                mlfourd.MGHState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.mgh;
         end
-        function f = niftid(~)
-            f = [];
-        end
-        function f = numericalNiftid(~)
-            f = [];
-        end        
+        function g = niftid(this)
+            g = this.concreteObj_;
+        end   
+        function g = numericalNiftid(this)
+            this.contexth_.changeState( ...
+                mlfourd.NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            g = this.contexth_.numericalNiftid;
+        end      
         
         %%
         

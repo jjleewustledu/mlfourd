@@ -93,12 +93,9 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             this.addLog('MaskingTool.maskedByZ range %s', mat2str(rng));
         end
         function this = roi(this, varargin)
-            %% ROI emulates fslroi
-            %  @param required xmin xsize ymin ysize zmin zsize
-            %  @param required tmin tsize
-            %  @returns this
+            %% ROI emulates fslroi; see also zoomed.
 
-            this.innerImaging_ = this.innerImaging_.roi(varargin);
+            this = this.zoomed(varargin{:});
         end
         function this = thresh(this, t)
             %% THRESH
@@ -160,7 +157,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param tsize is optional.            
             %  @returns this
 
-            this.innerImaging_ = this.innerImaging_.zoom(varargin{:});
+            this.innerImaging_ = this.innerImaging_.zoomed(varargin{:});
         end
         
         function this = MaskingTool(h, varargin)

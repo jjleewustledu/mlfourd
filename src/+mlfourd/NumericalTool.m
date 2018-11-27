@@ -293,7 +293,7 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             import mlfourd.*;
             if (isnumeric(b))
                 this.innerImaging_ = ImagingFormatContext( ...
-                    this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b)));
+                    this.innerImaging_, 'img', double(bsxfun(funh, double(this.innerImaging_.img), double(b))));
                 this.innerImaging_.addLog( ...
                     sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, mat2str(b)));
                 return
@@ -301,14 +301,14 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             if (isa(b, 'mlfourd.ImagingContext2'))
                 b = b.nifti;
                 this.innerImaging_ = ImagingFormatContext( ...
-                    this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b.img)));
+                    this.innerImaging_, 'img', double(bsxfun(funh, double(this.innerImaging_.img), double(b.img))));
                 this.innerImaging_.addLog( ...
                     sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
                 return
             end
             b = ImagingFormatContext(b);
             this.innerImaging_ = ImagingFormatContext( ...
-                this.innerImaging_, 'img', double(bsxfun(funh, this.innerImaging_.img, b.img)));
+                this.innerImaging_, 'img', double(bsxfun(funh, double(this.innerImaging_.img), double(b.img))));
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
         end

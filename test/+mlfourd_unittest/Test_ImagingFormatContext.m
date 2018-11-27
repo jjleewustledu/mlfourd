@@ -12,7 +12,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
  	
 	properties
         doview = false
-        doview_mutate = true % slow
+        doview_mutate = false % slow
         noDelete = false
         pwd0
         ref
@@ -280,6 +280,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             for ix = 1:length(xs)
                 fprintf('test_mutateInnerImagingFormatByFilesuffix:  loading %s%s\n', fpOri, xs{ix});
                 ifc_ = ImagingFormatContext([fpOri xs{ix}]);
+                mlbash(sprintf('fsleyes %s', ifc_.fqfilename));
                 fpTmp = tempFqfilename(fullfile(pwd, 'test_mutateInnerImagingFormatByFilesuffix'));
                 for jx = 1:length(xs) 
                     ifc = copy(ifc_);
