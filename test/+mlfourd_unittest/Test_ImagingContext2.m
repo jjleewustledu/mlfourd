@@ -12,7 +12,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
  	
 	properties
         do_legacy = true
-        do_view = false
+        do_view = true
         fdg = 'fdgv1r1_sumt'
         fslroi = 't1_dcm2niix_fslroi'
         fslroi_xmin  =  65
@@ -32,12 +32,13 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
     
     properties (Dependent)
         dataDir
+        dataDir2
         fslroi_zoom
         TmpDir
     end
     
     methods (Static)        
-        function hdr = adjustLegacyHdr(hdr, hdr2)            
+        function hdr = adjustLegacyHdr(hdr, hdr2)
             hdr.hk.regular = 'r';
             hdr.dime.dim(1) = 3; % hdr2 is more NIfTI compliant
             hdr.dime.pixdim(6:8) = [1 1 1];
@@ -46,7 +47,11 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             hdr.hist.qoffset_x = hdr2.hist.qoffset_x;
             hdr.hist.qoffset_y = hdr2.hist.qoffset_y;
             hdr.hist.qoffset_z = hdr2.hist.qoffset_z;
-            hdr.extra = hdr2.extra;
+            if (isprop(hdr2, 'extra'))
+                hdr.extra = hdr2.extra;
+            else
+                hdr.extra = [];
+            end
         end
     end
     
@@ -55,6 +60,9 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         %% GET
     
         function g = get.dataDir(~)
+            g = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', '');
+        end
+        function g = get.dataDir2(~)
             g = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourdfp', 'data', '');
         end
         function g = get.fslroi_zoom(this)
@@ -99,7 +107,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic.updateImagingFormatTool(ffp);
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');    
             this.verifyEqual(ic.fqfilename, fqfn);
-            this.verifyEqual(ic.fourdfp.img, single([1 2 3]));
+            this.verifyEqual(ic.fourdfp.img, single([3 2 1]));
         end
         function test_legacy_ImagingContext(this)
             if (~this.do_legacy); return; end
@@ -169,8 +177,8 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         function test_fourdfp(this)
             this.verifyEqual(this.testObj.stateTypeclass, 'mlfourd.ImagingFormatTool');   
             this.verifyClass(this.testObj.fourdfp, 'mlfourd.ImagingFormatContext');
-            this.verifyClass(this.testObj.fourdfp.imagingInfo, 'mlfourd.NIfTIInfo');
-            this.verifyEqual(this.testObj.fourdfp.innerTypeclass, 'mlfourd.InnerNIfTI');
+            this.verifyClass(this.testObj.fourdfp.imagingInfo, 'mlfourdfp.FourdfpInfo');
+            this.verifyEqual(this.testObj.fourdfp.innerTypeclass, 'mlfourdfp.InnerFourdfp');
             this.verifyEqual(this.testObj.filesuffix, '.4dfp.hdr');
         end
         function test_nifti(this)
@@ -179,6 +187,10 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             this.verifyClass(this.testObj.nifti.imagingInfo, 'mlfourd.NIfTIInfo');
             this.verifyEqual(this.testObj.nifti.innerTypeclass, 'mlfourd.InnerNIfTI');
             this.verifyEqual(this.testObj.filesuffix, '.nii.gz');
+        end
+        function test_fourdfp2nifti(this)
+        end
+        function test_nifti2fourdfp(this)
         end
         
         %% mlpatterns.HandleNumerical
@@ -215,7 +227,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         
         function test_blurred(this)
             import mlfourd.*;
-            fdg_ = ImagingFormatContext(fullfile(this.dataDir, [this.fdg '.4dfp.hdr']));
+            fdg_ = ImagingFormatContext(fullfile(this.dataDir2, [this.fdg '.4dfp.hdr']));
             fdg_.img(:,:,:,2) = fdg_.img;
             
             ic2_ = ImagingContext2(fdg_);
@@ -363,9 +375,9 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic   = mlfourd.ImagingContext2([this.t1 '.nii.gz']);            
 %            icz  = mlfourd.ImagingContext2([this.fslroi '.nii.gz']);            
             
-            zin  = ic.zoomed(44, 88, 62, 124, 1, -1);
+            zin  = ic.zoomed(44, 88, 62, 124, 0, -1);
             zin.save;
-            zout = zin.zoomed(-44, 176, -62, 248, 1, -1);
+            zout = zin.zoomed(-44, 176, -62, 248, 0, -1);
             zout.save
             if (this.do_view)
                 ic.fsleyes(zin.fqfilename, zout.fqfilename); end
@@ -423,13 +435,16 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
  			this.testObj = ImagingContext2(1);
             this.pwd0 = pushd(this.TmpDir);
             if (~lexist_4dfp(this.fdg))
-                copyfile(fullfile(this.dataDir, [this.fdg '.4dfp*']));
+                copyfile(fullfile(this.dataDir2, [this.fdg '.4dfp*']));
             end
             if (~lexist([this.fdg '.nii.gz']))
-                copyfile(fullfile(this.dataDir, [this.fdg '.nii.gz']));
+                copyfile(fullfile(this.dataDir2, [this.fdg '.nii.gz']));
             end
             if (~lexist([this.t1 '.nii.gz']))
                 copyfile(fullfile(this.dataDir, [this.t1 '.nii.gz']));
+            end
+            if (~lexist_4dfp(this.t1))
+                copyfile(fullfile(this.dataDir, [this.t1 '.4dfp.*']));
             end
  			this.addTeardown(@this.cleanTestMethod);
  		end
