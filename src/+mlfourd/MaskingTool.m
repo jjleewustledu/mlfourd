@@ -157,7 +157,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param tsize is optional.            
             %  @returns this
 
-            this.innerImaging_ = this.innerImaging_.zoomed(varargin{:});
+            this.innerImaging_ = this.innerImaging_.zoom(varargin{:});
         end
         
         function this = MaskingTool(h, varargin)

@@ -101,11 +101,20 @@ classdef Viewer
                         return
                     end
                     
+                    % MGZ extension .mgz
+                    if (lstrfind(targ, '.mgz'))
+                        interp = targ;
+                        todel = false;
+                        return
+                    end
+                    
                     % command-line options
                     interp = targ;
                     todel = false;
                 otherwise
-                    if (isa(targ, 'mlfourd.ImagingContext') || isa(targ, 'mlfourd.INIfTI'))
+                    if (isa(targ, 'mlfourd.ImagingContext') || ...
+                        isa(targ, 'mlfourd.ImagingContext2') || ...
+                        isa(targ, 'mlfourd.INIfTI'))
                         if (~lexist(targ.fqfilename))
                             targ.filesuffix = '.nii';
                             targ.save;
