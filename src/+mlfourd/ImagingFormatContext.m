@@ -333,7 +333,10 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         end
         function        hist(this, varargin)
             this.innerNIfTI_.hist(varargin{:});
-        end        
+        end      
+        function tf   = isempty(this)
+            tf = isempty(this.innerNIfTI_.img);
+        end
         function tf   = lexist(this)
             tf = this.innerNIfTI_.lexist;
         end
