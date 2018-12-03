@@ -430,7 +430,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end
         end
         function        hist(this, varargin)
-            hist(reshape(this.img, [1, numel(this.img)]), varargin{:});
+            histogram(reshape(this.img, [1, numel(this.img)]), varargin{:});
         end 
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
