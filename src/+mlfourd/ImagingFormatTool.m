@@ -224,7 +224,6 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function this = ImagingFormatTool(h, varargin)
             this = this@mlfourd.AbstractImagingTool(h);            
             this.innerImaging_ = mlfourd.ImagingFormatContext(varargin{:});
-            assert(~isempty(this.innerImaging_), 'mlfourd:ValueError', 'ImagingFormatTool.ctor');
         end
     end     
     
