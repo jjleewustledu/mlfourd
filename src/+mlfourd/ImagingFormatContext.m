@@ -340,6 +340,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function m    = matrixsize(this)
             m = this.innerNIfTI_.matrixsize;
         end
+        function this = mutateInnerImagingFormatByFilesuffix(this)
+            this.innerNIfTI_ = this.innerNIfTI_.mutateInnerImagingFormatByFilesuffix;
+        end
         function n    = ndims(this, varargin)
             n = this.innerNIfTI_.ndims(varargin{:});
         end

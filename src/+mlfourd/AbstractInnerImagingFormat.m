@@ -17,7 +17,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
     methods (Abstract, Static)
         this = create(fn, varargin) % abstract factory design pattern
         info = createImagingInfo(fn, varargin)
-        s = imagingInfo2struct(fn, varargin)
+        s    = imagingInfo2struct(fn, varargin)
     end
     
     properties (Constant)
@@ -53,7 +53,11 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         separator % for descrip & label properties, not for filesystem behaviors
         stack % add descrip to stack at every call to set.img
         viewer
- 	end
+    end
+    
+    methods (Abstract)
+        this = mutateInnerImagingFormatByFilesuffix(this)
+    end
     
 	methods 
         
@@ -459,13 +463,13 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %  If this.untouch   == true,  it will never overwrite files.
             %  If this.untouch   == false, it may saving imaging data with modified state.
             %  @return saves this to this.fqfilename.  
+            %  @return this may have mutated.
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
             %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
             this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
-            this = this.mutateInnerImagingFormatByFilesuffix;
             this.save__;
             this.saveLogger;
         end 
@@ -473,6 +477,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %% SAVEAS
             %  @param fn updates internal filename
             %  @return this updates internal filename; sets this.untouch to false; serializes object to filename
+            %  @return this may have mutated by this.save.mutateInnerImagingFormatByFilesuffix.
             %  See also:  mlfourd.InnerNIfTI.save
             
             [p,f,e] = myfileparts(fn);
@@ -481,6 +486,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end
             this.fqfilename = fullfile(p, [f e]);
             this.untouch = false;
+            this = this.mutateInnerImagingFormatByFilesuffix; 
             this.save;
         end
         function this = scrubNanInf(this, varargin)
@@ -621,7 +627,14 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 case 6
                     rmin  = [ipr.xmin  ipr.ymin  ipr.zmin ];
                     rsize = [ipr.xsize ipr.ysize ipr.zsize];
-                    this = this.zoom3D(rmin, rsize);
+                    switch (ndims(this))
+                        case 3
+                            this = this.zoom3D(rmin, rsize);
+                        case 4
+                            this = this.zoom4D(rmin, rsize);
+                        otherwise 
+                            error('mlfourd:unsupportedNargin', 'AbstractInnerImagingFormat.zoom');
+                    end
                 case 8
                     rmin  = [ipr.xmin  ipr.ymin  ipr.zmin  ipr.tmin];
                     rsize = [ipr.xsize ipr.ysize ipr.zsize ipr.tsize];
@@ -675,6 +688,19 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end
             this.logger_.add(ensureString(varargin{:}));
         end       
+        function        addLogNoEcho(this, varargin)
+            %% ADDLOG
+            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
+            
+            if (isempty(this.logger_))
+                return
+            end
+            if (ischar(varargin{1}))
+                this.logger_.addNoEcho(varargin{:});
+                return
+            end
+            this.logger_.addNoEcho(ensureString(varargin{:}));
+        end       
         function s    = asStruct(this) 
             info = this.imagingInfo; % updated with make_nii in AbstractInnerImagingFormat.ctor
             s = struct( ...
@@ -712,6 +738,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         end
         function fqfn = fqfileprefix_nii_gz(this)
             fqfn = [this.fqfileprefix '.nii.gz'];
+        end
+        function fqfn = fqfileprefix_mgz(this)
+            fqfn = [this.fqfileprefix '.mgz'];
         end
         
  		function this = AbstractInnerImagingFormat(varargin)
@@ -764,7 +793,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end 
             
             this.logger_ = mlpipeline.Logger(this.fqfileprefix, this);
-            this.addLog(evalc('disp(this)'));
+            this.addLogNoEcho(evalc('disp(this)'));
             if (~isempty(this.descrip))
                 this.addLog(this.descrip);
             end                   
@@ -917,8 +946,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 'mlfourd:initializationOrderError', 'AbstractInnerImagingFormat.initialStack');
             s = {this.imagingInfo_.hdr.hist.descrip};
         end
-        function this = mutateInnerImagingFormatByFilesuffix(this)
-        end
         function this = optimizePrecision(this)
             %return % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
             
@@ -997,15 +1024,17 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function [s,r] = viewExternally(this, app, varargin)
             s = []; r = '';
             try
+                that = copy(this); % avoid side effects
                 assert(0 == mlbash(sprintf('which %s', app)), ...
                     'mlfourd:externalAppNotFound', ...
                     'AbstractInnerImagingFormat.viewExternally could not find %s', app);
-                tmp = this.tempFqfilename;
-                this.saveas(tmp); % always save temp; internal img likely has changed from img on filesystem
+                tmp = that.tempFqfilename;
+                that.fqfilename = tmp;
+                that.save; % always save temp; internal img likely has changed from img on filesystem
                 v = mlfourd.Viewer(app);
                 tmp = [tmp varargin];
                 [s,r] = v.aview(tmp{:});
-                this.deleteExisting(tmp);
+                that.deleteExisting(tmp);
             catch ME
                 dispexcept(ME, 'mlfourd:viewerError', ...
                     'AbstractInnerImagingFormat.viewExternally called mlbash with %s; \nit returned s->%i, r->%s', ...
@@ -1040,7 +1069,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
             this.hdr = this.recalculateHdrHistOriginator(this.hdr);
         end
         function this = zoom4D(this, rmin, rsize)
@@ -1048,7 +1076,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             sz0 = size(this);
             im  = zeros(rsize);
             
-            if (all(rsize < sz0)) % zoom in
+            if (all(rsize == sz0))
+                return
+            elseif (all(rsize <= sz0)) % zoom in
                 for x4 = rmin(4):rmin(4)+rsize(4)-1
                     for x3 = rmin(3):rmin(3)+rsize(3)-1
                         for x2 = rmin(2):rmin(2)+rsize(2)-1
@@ -1058,7 +1088,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                         end
                     end
                 end
-            elseif (all(rsize > sz0)) % zoom out
+            elseif (all(rsize >= sz0)) % zoom out
                 for x4 = 0:sz0(4)-1
                     for x3 = 0:sz0(3)-1
                         for x2 = 0:sz0(2)-1
@@ -1072,7 +1102,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.imagingInfo = this.imagingInfo.zoom(rmin, rsize);
             this.hdr = this.recalculateHdrHistOriginator(this.hdr);
         end
         
@@ -1080,6 +1109,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
             
             that = copyElement@matlab.mixin.Copyable(this);
+            %that.filesystemRegistry_ = copy(this.filesystemRegistry_);
+            %that.imagingInfo_ = copy(this.imagingInfo_);
             %that.creationDate_ = copy(this.creationDate_);
             %that.img_ = copy(this.img_);
             %that.label_ = copy(this.label_);

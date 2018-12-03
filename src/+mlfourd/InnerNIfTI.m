@@ -72,16 +72,6 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
          
         %%         
         
-        function this = InnerNIfTI(varargin)
- 			%  @param imagingInfo is an mlfourd.ImagingInfo object and is required; it may be an aufbau object.
-            
-            this = this@mlfourd.AbstractInnerImagingFormat(varargin{:});
-        end        
-    end
-    
-    %% PROTECTED
-    
-    methods (Access = protected)
         function this = mutateInnerImagingFormatByFilesuffix(this)
             import mlfourd.* mlfourdfp.* mlsurfer.*;  
             hdr_ = this.hdr;
@@ -111,7 +101,18 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
                     error('mlfourd:unsupportedSwitchcase', ...
                         'InnerNIfTI.filesuffix->%s', this.filesuffix);
             end
+        end
+        
+        function this = InnerNIfTI(varargin)
+ 			%  @param imagingInfo is an mlfourd.ImagingInfo object and is required; it may be an aufbau object.
+            
+            this = this@mlfourd.AbstractInnerImagingFormat(varargin{:});
         end        
+    end
+    
+    %% PROTECTED
+    
+    methods (Access = protected)        
     end
     
     %% HIDDEN
