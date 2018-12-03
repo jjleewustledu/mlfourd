@@ -275,28 +275,28 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% select states
         
-        function selectBlurringTool(this)
+        function this = selectBlurringTool(this)
             this.state_.selectBlurringTool(this);
         end
-        function selectDynamicsTool(this)
+        function this = selectDynamicsTool(this)
             this.state_.selectDynamicsTool(this);
         end
-        function selectFilesystemTool(this)
+        function this = selectFilesystemTool(this)
             this.state_.selectFilesystemTool(this);
         end
-        function selectIsNumericTool(this)
+        function this = selectIsNumericTool(this)
             this.state_.selectIsNumericTool(this);
         end
-        function selectImagingFormatTool(this)
+        function this = selectImagingFormatTool(this)
             this.state_.selectImagingFormatTool(this);
         end
-        function selectMaskingTool(this)
+        function this = selectMaskingTool(this)
             this.state_.selectMaskingTool(this);
         end
-        function selectNumericalTool(this)
+        function this = selectNumericalTool(this)
             this.state_.selectNumericalTool(this);
         end
-        function selectRegistrationTool(this)
+        function this = selectRegistrationTool(this)
             this.state_.selectRegistrationTool(this);
         end    
         
@@ -793,81 +793,81 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% mlfourd.ImagingFormatTool
         
-        function      addImgrec(this, varargin)
+        function this = addImgrec(this, varargin)
             this.selectImagingFormatTool;
             this.state_.addImgrec(varargin{:});
         end
-        function      addLog(this, varargin)
+        function this = addLog(this, varargin)
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
             this.selectImagingFormatTool;
             this.state_.addLog(varargin{:});
         end
-        function c  = char(this)
+        function c    = char(this)
             this.selectImagingFormatTool;
             c = this.state_.char;
         end
-        function d  = double(this)
+        function d    = double(this)
             this.selectImagingFormatTool;
             d = this.state_.double;
         end
-        function      ensureSaved(this)
+        function this = ensureSaved(this)
             %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
             
             if (~lexist(this.fqfilename))
                 this.save;
             end
         end
-        function      freeview(this, varargin)
+        function        freeview(this, varargin)
             this.selectImagingFormatTool;
             this.state_.freeview(varargin{:});
         end
-        function      fslview(this, varargin)
+        function        fslview(this, varargin)
             this.selectImagingFormatTool;
             this.state_.fslview(varargin{:});
         end
-        function      fsleyes(this, varargin)
+        function        fsleyes(this, varargin)
             this.selectImagingFormatTool;
             this.state_.fsleyes(varargin{:});
         end
-        function      hist(this, varargin)
+        function        hist(this, varargin)
             this.selectImagingFormatTool;
             this.state_.hist(varargin{:});
         end
-        function tf = isempty(this)
+        function tf   = isempty(this)
             %% ISEMPTY
             %  @return tf is boolean for state emptiness
             
             this.selectImagingFormatTool;
             tf = this.state_.isempty;
         end
-        function l  = length(this)
+        function l    = length(this)
             %% LENGTH
             %  @return l is the length of a composite imaging state
             
             this.selectImagingFormatTool;
             l = this.state_.length;
         end
-        function l  = logical(this)
+        function l    = logical(this)
             this.selectImagingFormatTool;
             l = this.state_.logical;
         end
-        function s  = mat2str(this, varargin)
+        function s    = mat2str(this, varargin)
             this.selectImagingFormatTool;
             s = this.state_.mat2str(varargin{:});
         end
-        function n  = ndims(this)
+        function n    = ndims(this)
             this.selectImagingFormatTool;
             n = this.state_.ndims;
         end
-        function r  = rank(this)
+        function r    = rank(this)
             %% DEPRECATED; use ndims.
             
             this.selectImagingFormatTool;
             r = this.ndims;
         end
-        function      save(this)
+        function        save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
             this.selectImagingFormatTool;
@@ -882,15 +882,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             this.state_ = this.state_.saveas(varargin{:});
         end   
-        function s  = single(this)
+        function s    = single(this)
             this.selectImagingFormatTool;
             s = this.state_.single;
         end  
-        function s  = size(this, varargin)
+        function s    = size(this, varargin)
             this.selectImagingFormatTool;
             s = this.state_.size(varargin{:});
         end 
-        function tf = sizeEq(this, ic)
+        function tf   = sizeEq(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for equal size
@@ -898,7 +898,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             tf = this.state_.sizeEq(ic);
         end
-        function tf = sizeGt(this, ic)
+        function tf   = sizeGt(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for > size
@@ -906,7 +906,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             tf = this.state_.sizeGt(ic);
         end
-        function tf = sizeLt(this, ic)
+        function tf   = sizeLt(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for < size
@@ -914,14 +914,14 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             tf = this.state_.sizeLt(ic);
         end
-        function      updateImagingFormatTool(this, u)
+        function this = updateImagingFormatTool(this, u)
             %  first call {fourdfp,mgz,nifti}, make adjustments, then call updateImagingFormatTool for fine-grained aufbau.
             %  @param u is mlfourd.ImagingFormatContext.
             
             this.selectImagingFormatTool;
             this.state_.updateInnerImaging(u);
         end
-        function      view(this, varargin)
+        function        view(this, varargin)
             %% VIEW
             %  @param are additional filenames and other arguments to pass to the viewer, 
             %  which will be saved to the filesystem as needed.
