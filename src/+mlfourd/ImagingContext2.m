@@ -257,15 +257,19 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         %% various casting of mlfourd.ImagingFormatContext
         
         function ifc = fourdfp(this)
+            this.selectImagingFormatTool;
             ifc = this.state_.fourdfp;
         end
         function ifc = mgh(this)
+            this.selectImagingFormatTool;
             ifc = this.mgz;
         end
         function ifc = mgz(this)
+            this.selectImagingFormatTool;
             ifc = this.state_.mgz;
         end
         function ifc = nifti(this)
+            this.selectImagingFormatTool;
             ifc = this.state_.nifti;
         end
         
@@ -778,6 +782,8 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param tsize is optional.
             %  @returns copy(this)
             
+            error('mlfourd:IncompleteImplementationError', 'ImagingContext2.zoomed');
+            
             this.selectMaskingTool;
             that = copy(this);
             that.state_.zoomed(varargin{:});
@@ -927,13 +933,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %%
         
-        function this = ImagingContext2(obj)
+        function this = ImagingContext2(obj, varargin)
             %% ImagingContext2 
             %  @param obj is imaging data:  ImagingContext2, ImagingContext, char, data supported by ImagingFormatTool.
             %  @return initialized context for a state design pattern.  
             
             import mlfourd.*;
-            if (~exist('obj', 'var')) % must support empty ctor
+            if (0 == nargin) % must support empty ctor
                 this.state_ = ImagingFormatTool(this);
                 return
             end
@@ -942,14 +948,14 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 return
             end            
             if (isa(obj, 'mlfourd.ImagingContext')) % legacy objects
-                this.state_ = ImagingFormatTool(this, obj.niftid);
+                this.state_ = ImagingFormatTool(this, obj.niftid, varargin{:});
                 return
             end
             if (ischar(obj))
                 this.state_ = FilesystemTool(this, obj);
                 return
             end
-            this.state_ = ImagingFormatTool(this, obj);
+            this.state_ = ImagingFormatTool(this, obj, varargin{:});
         end
         function that = clone(this)
             that = copy(this);
