@@ -113,7 +113,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_noExtension(this)
             import mlfourd.*;
             ifc = ImagingFormatContext(myfileprefix(this.ref.dicomAsNiigz));
-            this.verifyEqual(class(ifc.img), 'int16');
+            this.verifyEqual(class(ifc.img), 'single');
             this.verifyEqual(ifc.size, [176 248 256]);
             this.verifyEqual(ifc.filesuffix, '.nii.gz');
             this.verifyClass(ifc.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -131,7 +131,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             
             this.verifyEqual(niih.hdr, niid.hdr);
             this.verifyEqual(niih.img, niid.img);
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(niih.size, [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -145,7 +145,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_t1niigz(this) 
  			import mlfourd.*;           
             niih = ImagingFormatContext(this.ref.dicomAsNiigz); 
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -154,13 +154,16 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         end
         function test_ctor_t14dfp(this)
  			import mlfourd.*;
-            niih = ImagingFormatContext(this.ref.dicomAsFourdfp, 'circshiftK', 0, 'N', true); % sagittal            
+            niih = ImagingFormatContext(this.ref.dicomAsFourdfp); % sagittal            
             this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.4dfp.hdr');
             this.verifyClass(niih.imagingInfo, 'mlfourdfp.FourdfpInfo');   
                
             if (this.doview); niih.fsleyes; end 
+            niih.saveas('test_ctor_t14dfp.4dfp.hdr');
+            mlbash('fsleyes test_ctor_t14dfp.4dfp.hdr');
+            deleteExisting('test_ctor_t14dfp.4dfp.hdr');
         end
         function test_ctor_001mgz(this)
  			import mlfourd.*;
@@ -192,7 +195,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         end
         function test_ctor_0014dfp(this) 
  			import mlfourd.*;
-            niih = ImagingFormatContext(this.ref.surferAsFourdfp, 'circshiftK', 0, 'N', true); % sagittal            
+            niih = ImagingFormatContext(this.ref.surferAsFourdfp); % sagittal            
             this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.4dfp.hdr');
@@ -200,9 +203,13 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             
             tmp = tempFqfilename(fullfile(pwd, 'test_ctor_0014dfp'));
             niih.saveas([tmp '.4dfp.hdr']);
+%            niih.saveas([tmp '.4dfp.hdr']);
             this.verifyTrue(lexist_4dfp(tmp, 'file'));
+            niih.fsleyes;
+            if (this.doview)
+                mlbash(sprintf('fsleyes %s.4dfp.hdr', tmp)); 
+            end
             this.deleteExisting([tmp '.4dfp.*']);
-            if (this.doview); niih.fsleyes; end
         end
         function test_ctor_ana001(this) 
  			import mlfourd.*;
@@ -235,7 +242,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         end
         function test_ctor_T14dfp(this) 
  			import mlfourd.*;            
-            niih = ImagingFormatContext(this.ref.T1AsFourdfp, 'circshiftK', 0, 'N', true);
+            niih = ImagingFormatContext(this.ref.T1AsFourdfp);
             this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [256 256 256]);
             this.verifyEqual(niih.filesuffix, '.4dfp.hdr');
@@ -326,14 +333,19 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             
             % mgz -> 4dfp
             ifc = ImagingFormatContext('T1.mgz');
+            hist = ifc.hdr.hist;
+            %ifc.fsleyes;
             ifc.saveas([fpTmp '.4dfp.hdr']);
             this.verifyEqual(fpTmp, ifc.fqfileprefix);
-            mlbash(sprintf('fsleyes %s', ifc.fqfilename));            
+            %ifc.fsleyes; 
+            mlbash(sprintf('fsleyes %s', ifc.fqfilename));        
             
             % 4dfp -> mgz
-            ifc_ = ImagingFormatContext(ifc.fqfilename, 'hist', ifc.hdr.hist);
+            ifc_ = ImagingFormatContext(ifc.fqfilename, 'hist', hist);
+            %ifc.fsleyes;
             ifc_.saveas([fpTmp_ '.mgz']);
             this.verifyEqual(fpTmp_, ifc_.fqfileprefix);
+            %ifc.fsleyes;
             mlbash(sprintf('fsleyes %s', ifc_.fqfilename));
             
             this.deleteExisting([fpTmp '.*']);
@@ -379,31 +391,48 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         end        
         function test_ctroundtrip(this)
             if (~this.doview); return; end            
-            if (~lexist_4dfp('ct'))
+            if (~lexist_4dfp('ct') || ~lexist('ct.nii.gz'))
                 copyfile(fullfile(this.dataDir, 'ct.*'));
-            end
+            end            
             tmp = tempFqfilename(fullfile(pwd, 'test_ctroundtrip'));  
- 			import mlfourd.*;            
-            ifc_ = ImagingFormatContext('ct.4dfp.hdr');
+ 			import mlfourd.*;   
+            ifcn = ImagingFormatContext('ct.nii.gz');
+            ifc4 = ImagingFormatContext('ct.4dfp.hdr');
             
-            niigz = ifc_.saveas([tmp '.nii.gz']);
-            fdfp  = ifc_.saveas([tmp '.4dfp.hdr']);
-            mlbash(sprintf('fsleyes ct.4dfp.hdr %s %s', niigz.fqfilename, fdfp.fqfilename));
+            out = ifcn.saveas([tmp '_nii.nii.gz']); 
+            disp(out)
+            out = ifcn.saveas([tmp '_nii.4dfp.hdr']);
+            disp(out)
+            out = ifc4.saveas([tmp '_4dfp.4dfp.hdr']);
+            disp(out)
+            out = ifc4.saveas([tmp '_4dfp.nii.gz']);           
+            disp(out)
+            mlbash(sprintf( ...
+                'fsleyes %s_nii.nii.gz %s_nii.4dfp.hdr %s_4dfp.4dfp.hdr %s_4dfp.nii.gz', tmp, tmp, tmp, tmp));
             
             this.deleteExisting([tmp '.*']);
         end
         function test_fdgroundtrip(this)
             if (~this.doview); return; end
-            if (~lexist_4dfp('fdgv1r1_sumt'))
-                copyfile(fullfile(this.dataDir, 'fdgv1r1_sumt.*'));
+            ori = 'fdgv1r1_sumt';
+            if (~lexist_4dfp(ori) || ~lexist([ori '.nii.gz']))
+                copyfile(fullfile(this.dataDir, [ori '.*']));
             end
             tmp = tempFqfilename(fullfile(pwd, 'test_fdgroundtrip'));  
- 			import mlfourd.*;            
-            ifc_ = ImagingFormatContext('fdgv1r1_sumt.4dfp.hdr');
+ 			import mlfourd.*;   
+            ifcn = ImagingFormatContext([ori '.nii.gz']);
+            ifc4 = ImagingFormatContext([ori '.4dfp.hdr']);
             
-            niigz = ifc_.saveas([tmp '.nii.gz']);           
-            fdfp  = ifc_.saveas([tmp '.4dfp.hdr']);
-            mlbash(sprintf('fsleyes fdgv1r1_sumt.4dfp.hdr %s %s', niigz.fqfilename, fdfp.fqfilename));
+            out = ifcn.saveas([tmp '_nii.nii.gz']); 
+            disp(out)
+            out = ifcn.saveas([tmp '_nii.4dfp.hdr']);
+            disp(out)
+            out = ifc4.saveas([tmp '_4dfp.4dfp.hdr']);
+            disp(out)
+            out = ifc4.saveas([tmp '_4dfp.nii.gz']);           
+            disp(out)
+            mlbash(sprintf( ...
+                'fsleyes %s_nii.nii.gz %s_nii.4dfp.hdr %s_4dfp.4dfp.hdr %s_4dfp.nii.gz', tmp, tmp, tmp, tmp));
             
             this.deleteExisting([tmp '.*']);
         end

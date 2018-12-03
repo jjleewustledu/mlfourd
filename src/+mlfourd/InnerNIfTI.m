@@ -78,7 +78,6 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
             switch (this.filesuffix)
                 case FourdfpInfo.SUPPORTED_EXT
                     deleteExisting([this.fqfileprefix '.4dfp.*']);
-                    [this.img,hdr_] = FourdfpInfo.exportFourdfp(this.img, hdr_);
                     info = FourdfpInfo(this.fqfilename, ...
                         'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', hdr_);                    
                     this = InnerFourdfp(info, ...
