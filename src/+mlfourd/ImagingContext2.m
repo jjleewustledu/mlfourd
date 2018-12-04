@@ -782,7 +782,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @param tsize is optional.
             %  @returns copy(this)
             
-            error('mlfourd:IncompleteImplementationError', 'ImagingContext2.zoomed');
+            %error('mlfourd:IncompleteImplementationError', 'ImagingContext2.zoomed');
             
             this.selectMaskingTool;
             that = copy(this);

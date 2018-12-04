@@ -1050,26 +1050,26 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             if (all(rsize == sz0))
                 return
             elseif (all(rsize <= sz0)) % zoom in
+                x1 = rmin(1):rmin(1)+rsize(1)-1;
+                y1 = 1:rsize(1);
                 for x3 = rmin(3):rmin(3)+rsize(3)-1
                     for x2 = rmin(2):rmin(2)+rsize(2)-1
-                        for x1 = rmin(1):rmin(1)+rsize(1)-1
-                            im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
-                        end
+                        im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
                     end
-                end  
+                end
             elseif (all(rsize >= sz0)) % zoom out
+                x1 = 0:sz0(1)-1;
+                y1 = 1-rmin(1):sz0(1)-rmin(1);
                 for x3 = 0:sz0(3)-1
                     for x2 = 0:sz0(2)-1
-                        for x1 = 0:sz0(1)-1
-                            im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
-                        end
+                        im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
                     end
-                end  
+                end
             else
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.hdr = this.recalculateHdrHistOriginator(this.hdr);
+            this.imagingInfo_ = this.imagingInfo_.zoom(rmin, rsize);
         end
         function this = zoom4D(this, rmin, rsize)
             
@@ -1079,22 +1079,22 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             if (all(rsize == sz0))
                 return
             elseif (all(rsize <= sz0)) % zoom in
+                x1 = rmin(1):rmin(1)+rsize(1)-1;
+                y1 = 1:rsize(1);
                 for x4 = rmin(4):rmin(4)+rsize(4)-1
                     for x3 = rmin(3):rmin(3)+rsize(3)-1
                         for x2 = rmin(2):rmin(2)+rsize(2)-1
-                            for x1 = rmin(1):rmin(1)+rsize(1)-1
-                                im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
-                            end
+                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
                         end
                     end
                 end
             elseif (all(rsize >= sz0)) % zoom out
+                x1 = 0:sz0(1)-1;
+                y1 = 1-rmin(1):sz0(1)-rmin(1);
                 for x4 = 0:sz0(4)-1
                     for x3 = 0:sz0(3)-1
                         for x2 = 0:sz0(2)-1
-                            for x1 = 0:sz0(1)-1
-                                im(x1-rmin(1)+1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1);
-                            end
+                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
                         end
                     end
                 end
@@ -1102,7 +1102,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.hdr = this.recalculateHdrHistOriginator(this.hdr);
+            this.imagingInfo_ = this.imagingInfo_.zoom(rmin, rsize);
         end
         
         function that = copyElement(this)

@@ -186,7 +186,7 @@ classdef ImagingInfo < mlio.AbstractIO
             hdr = this.permuteHdr(hdr);
             hdr = this.adjustHistOriginator(hdr);
         end 
-        function nii = load_nii(this)
+        function nii  = load_nii(this)
             nii = mlniftitools.load_nii(this.fqfilename);
         end
         function [h,e,f,m] = load_untouch_header_only(this)
@@ -197,12 +197,130 @@ classdef ImagingInfo < mlio.AbstractIO
             
             [h,e,f,m] = mlniftitools.load_untouch_header_only(this.fqfilename);
         end
-        function s = load_untouch_nii(this)
+        function s    = load_untouch_nii(this)
             % @return s := struct of NIfTI data expected by mlniftitools
             
             s = mlniftitools.load_untouch_nii(this.fqfilename);
+        end        
+        function this = zoom(this, rmin, rsize)
+            shift = this.AffMats*[rmin(1:3) 0]';
+            
+            this.hdr.hist.quatern_b = 0;
+            this.hdr.hist.quatern_c = 0;
+            this.hdr.hist.quatern_d = 0;
+            this.hdr.hist.qoffset_x = 0;
+            this.hdr.hist.qoffset_y = 0;
+            this.hdr.hist.qoffset_z = 0;
+            this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
+            this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
+            this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
+            this.hdr.hist.originator = rsize(1:3)/2;
         end
-        function hdr = recalculateHdrHistOriginator(~, hdr)
+        function xyz  = RMatrixMethod2(this, ijk)
+            %%   RMATRIXMETHOD2 (used when qform_code > 0, which should be the "normal" case):
+            %    -----------------------------------------------------------------------------
+            %    The (x,y,z) coordinates are given by the pixdim[] scales, a rotation
+            %    matrix, and a shift.  This method is intended to represent
+            %    "scanner-anatomical" coordinates, which are often embedded in the
+            %    image header (e.g., DICOM fields (0020,0032), (0020,0037), (0028,0030),
+            %    and (0018,0050)), and represent the nominal orientation and location of
+            %    the data.  This method can also be used to represent "aligned"
+            %    coordinates, which would typically result from some post-acquisition
+            %    alignment of the volume to a standard orientation (e.g., the same
+            %    subject on another day, or a rigid rotation to true anatomical
+            %    orientation from the tilted position of the subject in the scanner).
+            %    The formula for (x,y,z) in terms of header parameters and (i,j,k) is:
+            % 
+            %      [ x ]   [ R11 R12 R13 ] [       pixdim[1] * i ]   [ qoffset_x ]
+            %      [ y ] = [ R21 R22 R23 ] [       pixdim[2]   j ] + [ qoffset_y ]
+            %      [ z ]   [ R31 R32 R33 ] [ qfac  pixdim[3] * k ]   [ qoffset_z ]            
+            % 
+            %    The qoffset_* shifts are in the NIFTI-1 header.  Note that the center
+            %    of the (i,j,k)=(0,0,0) voxel (first value in the dataset array) is
+            %    just (x,y,z)=(qoffset_x,qoffset_y,qoffset_z).
+            % 
+            %    The rotation matrix R is calculated from the quatern_* parameters.
+            %    This calculation is described below.
+            % 
+            %    The scaling factor qfac is either 1 or -1.  The rotation matrix R
+            %    defined by the quaternion parameters is "proper" (has determinant 1).
+            %    This may not fit the needs of the data; for example, if the image
+            %    grid is
+            %      i increases from Left-to-Right
+            %      j increases from Anterior-to-Posterior
+            %      k increases from Inferior-to-Superior
+            %    Then (i,j,k) is a left-handed triple.  In this example, if qfac=1,
+            %    the R matrix would have to be
+            % 
+            %      [  1   0   0 ]
+            %      [  0  -1   0 ]  which is "improper" (determinant = -1).
+            %      [  0   0   1 ]
+            % 
+            %    <b>If we set qfac=-1, then the R matrix would be<\b>
+            % 
+            %      [  1   0   0 ]
+            %      [  0  -1   0 ]  which is proper.
+            %      [  0   0  -1 ]
+            % 
+            %    This R matrix is represented by quaternion [a,b,c,d] = [0,1,0,0]
+            %    (which encodes a 180 degree rotation about the x-axis).    
+            %
+            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            %
+            %    @param  ijk := voxel indices
+            %    @return xyz := Cartesian position
+            
+            assert(this.qform_code > 0, ...
+                'mlfourd:unexpectedInternalParam', 'AbstractNIfTIInfo.RMatrixMethod3.qform_code->%i', this.qform_code);
+            assert(abs(this.qfac) == 1, ...
+                'mlfourd:unexpectedInternalParam', 'AbstractNIfTIInfo.RMatrixMethod3.qfac->%i', this.qfac);
+            
+            i   = ijk(1);
+            j   = ijk(2);
+            k   = ijk(3);
+            d   = this.hdr.dime;
+            h   = this.hdr.hist;
+            xyz = this.RMatq * [d.pixdim(2)*i d.pixdim(3)*j d.pixdim(4)*k*this.qfac]' + ...
+                               [h.qoffset_x   h.qoffset_y   h.qoffset_z  ]';
+            
+        end
+        function R    = RMatq(this)
+            a = 0;
+            b = this.hdr.hist.quatern_b;
+            c = this.hdr.hist.quatern_c;
+            d = this.hdr.hist.quatern_d;
+            R = [ (2*a^2 - 1 + 2*b^2) (2*b*c - 2*d*a)     (2*b*d + 2*c*a); ...
+                  (2*b*c + 2*d*a)     (2*a^2 - 1 + 2*c^2) (2*c*d - 2*b*a); ...
+                  (2*b*d - 2*c*a)     (2*c*d + 2*b*a)     (2*a^2 - 1 + 2*d^2) ];
+        end
+        function xyz  = AffineMethod3(this, ijk)
+            % AFFINEMETHOD3 (used when sform_code > 0):
+            % -----------------------------------------
+            % The (x,y,z) coordinates are given by a general affine transformation
+            % of the (i,j,k) indexes:
+            % 
+            %   x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
+            %   y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
+            %   z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
+            % 
+            % The srow_* vectors are in the NIFTI_1 header.  Note that no use is
+            % made of pixdim[] in this method.
+            %
+            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            %
+            %    @param  ijk := voxel indices
+            %    @return xyz := Cartesian position
+            
+            assert(this.sform_code > 0, ...
+                'mlfourd:unexpectedInternalParam', 'AbstractNIfTIInfo.RMatrixMethod3.sform_code->%i', this.sform_code);
+            
+            xyz = this.AffMats * [ensureColVector(ijk); 1];
+        end
+        function A    = AffMats(this)
+            A      = zeros(3, 4);
+            A(1,:) = this.hdr.hist.srow_x;
+            A(2,:) = this.hdr.hist.srow_y;
+            A(3,:) = this.hdr.hist.srow_z;
         end
         
         function this = ImagingInfo(varargin)
