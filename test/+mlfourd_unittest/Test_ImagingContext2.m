@@ -47,7 +47,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             hdr.hist.qoffset_x = hdr2.hist.qoffset_x;
             hdr.hist.qoffset_y = hdr2.hist.qoffset_y;
             hdr.hist.qoffset_z = hdr2.hist.qoffset_z;
-            if (isprop(hdr2, 'extra'))
+            if (isfield(hdr2, 'extra'))
                 hdr.extra = hdr2.extra;
             else
                 hdr.extra = [];
@@ -107,7 +107,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic.updateImagingFormatTool(ffp);
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');    
             this.verifyEqual(ic.fqfilename, fqfn);
-            this.verifyEqual(ic.fourdfp.img, single([3 2 1]));
+            this.verifyEqual(ic.fourdfp.img, single([1 2 3]));
         end
         function test_legacy_ImagingContext(this)
             if (~this.do_legacy); return; end
@@ -153,7 +153,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             if (~this.do_legacy); return; end
         end
         function test_selectImagingTool(this)
-            ic = mlfourd.ImagingContext2;       
+            ic = mlfourd.ImagingContext2(ones(2,2,2));       
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');   
             ic.selectImagingFormatTool;
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingFormatTool');   
@@ -414,7 +414,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             testfp = sprintf('test_ifh');
             deleteExisting([testfp '*']);
             ic2 = mlfourd.ImagingContext2([this.t1 '.4dfp.hdr']);
-            ic2.saveas([testfp '.4dfp.hdr']);
+            ic2 = ic2.saveas([testfp '.4dfp.hdr']);
             ifh = mlfourdfp.IfhParser.load([testfp '.4dfp.ifh']);
             this.verifyEqual( ...            
                 ic2.fourdfp.imagingInfo.ifh.nameOfDataFile, ...

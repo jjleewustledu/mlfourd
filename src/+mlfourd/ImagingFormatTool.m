@@ -110,17 +110,17 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         
         function ifc  = fourdfp(this)
             this.innerImaging_.filesuffix = '.4dfp.hdr';
-            %this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
+            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
             ifc = this.innerImaging_;
         end
         function ifc  = mgz(this)
             this.innerImaging_.filesuffix = '.mgz';
-            %this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
+            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
             ifc = this.innerImaging_;
         end
         function ifc  = nifti(this)
             this.innerImaging_.filesuffix = '.nii.gz';
-            %this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
+            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
             ifc = this.innerImaging_;
         end
         

@@ -467,6 +467,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
             %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
+            this = this.mutateInnerImagingFormatByFilesuffix; 
             this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
@@ -486,7 +487,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             end
             this.fqfilename = fullfile(p, [f e]);
             this.untouch = false;
-            this = this.mutateInnerImagingFormatByFilesuffix; 
             this.save;
         end
         function this = scrubNanInf(this, varargin)
@@ -1045,7 +1045,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %% indexes starting from 0
             
             sz0 = size(this);
-            im  = zeros(rsize);
+            im  = zeros(rsize, 'like', this.img);
             
             if (all(rsize == sz0))
                 return
@@ -1074,7 +1074,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function this = zoom4D(this, rmin, rsize)
             
             sz0 = size(this);
-            im  = zeros(rsize);
+            im  = zeros(rsize, 'like', this.img);
             
             if (all(rsize == sz0))
                 return
@@ -1084,7 +1084,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 for x4 = rmin(4):rmin(4)+rsize(4)-1
                     for x3 = rmin(3):rmin(3)+rsize(3)-1
                         for x2 = rmin(2):rmin(2)+rsize(2)-1
-                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
+                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1, x4-rmin(4)+1) = ...
+                                this.img(x1+1, x2+1, x3+1, x4+1); % x1-rmin(1)+1
                         end
                     end
                 end
@@ -1094,7 +1095,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 for x4 = 0:sz0(4)-1
                     for x3 = 0:sz0(3)-1
                         for x2 = 0:sz0(2)-1
-                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1) = this.img(x1+1, x2+1, x3+1); % x1-rmin(1)+1
+                            im(y1, x2-rmin(2)+1, x3-rmin(3)+1, x4-rmin(4)+1) = ...
+                                this.img(x1+1, x2+1, x3+1, x4+1); % x1-rmin(1)+1
                         end
                     end
                 end
