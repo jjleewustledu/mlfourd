@@ -6,7 +6,6 @@ classdef NiiBrowser < mlfourd.NIfTI
     %
     % Created by John Lee on 2008-6-5.
     % Copyright (c) 2008 Washington University School of Medicine.  All rights reserved.
-    % Report bugs to bug.jjlee.wustl.edu@gmail.com.
     
     properties (Constant)
         KERNEL_MULTIPLE = 2

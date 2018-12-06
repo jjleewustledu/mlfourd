@@ -4,7 +4,6 @@ classdef PETConverter_2013apr22 < mlfourd.AbstractConverter
     %
     % Created by John Lee on 2008-12-26.
     % Copyright (c) 2008 Washington University School of Medicine. All rights reserved.
-    % Report bugs to bug.jjlee.wustl.edu@gmail.com.
     %
     %       Herscovitch P, Markham J, Raichle ME. Brain blood flow measured
     % with intravenous H2(15)O: I. theory and error analysis.

@@ -4,7 +4,6 @@ classdef NIfTI < mlfourd.AbstractNIfTI
     
     %  Created by John Lee on 2009-9-3.
     %  Copyright (c) 2009 Washington University School of Medicine.  All rights reserved.
-    %  Report bugs to bug.jjlee.wustl.edu@gmail.com.
 
     properties (Constant)
         ISEQUAL_IGNORES      = {'untouch' 'noclobber' 'debugging' 'filesuffix'   'label' ...
