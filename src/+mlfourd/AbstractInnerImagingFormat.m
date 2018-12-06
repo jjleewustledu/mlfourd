@@ -423,10 +423,10 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %  @param [filename[, ...]]
             
             try
-                this.viewExternally('fslview', varargin{:});
+                this.viewExternally('fslview_deprecated', varargin{:});
             catch ME
                 handwarning(ME);
-                this.viewExternally('fslview_deprecated', varargin{:});
+                this.viewExternally('fslview', varargin{:});
             end
         end
         function        hist(this, varargin)
@@ -970,7 +970,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                     end
                 end
             catch ME
-                handerror(ME);
+                dispexcept(ME);
             end
         end
         function hdr  = recalculateHdrHistOriginator(this, hdr)
