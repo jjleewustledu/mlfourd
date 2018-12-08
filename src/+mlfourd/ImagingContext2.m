@@ -887,7 +887,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             s = this.state_.single;
         end  
         function s    = size(this, varargin)
-            this.selectImagingFormatTool;
             s = this.state_.size(varargin{:});
         end 
         function tf   = sizeEq(this, ic)

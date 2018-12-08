@@ -83,6 +83,27 @@ classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.Abst
             ifc = this.getInnerImaging('.nii.gz');
             this.selectImagingFormatTool(this.contexth_);
         end
+        function sz  = size(this, varargin)
+            if (lstrfind(this.filesuffix, mlfourdfp.FourdfpInfo.SUPPORTED_EXT))
+                sz = mlfourdfp.FourdfpVisitor.ifhMatrixSize(this.fqfileprefix);
+                if (~isempty(varargin))
+                    sz = sz(varargin{:});
+                end
+                return
+            end
+            if (lstrfind(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT))
+                [~,r] = mlbash(sprintf('fslhd %s', this.fqfilename));
+                re = regexp(r, ...
+                    'dim1\s+(?<d1>\d+)\s+dim2\s+(?<d2>\d+)\s+dim3\s+(?<d3>\d+)\s+dim4\s+(?<d4>\d+)', 'names');
+                sz = [str2double(re.d1) str2double(re.d2) str2double(re.d3) str2double(re.d4)];
+                if (~isempty(varargin))
+                    sz = sz(varargin{:});
+                end
+                return
+            end    
+            iimg = this.getInnerImaging;
+            sz   = iimg.size(varargin{:});
+        end
         
         %%
 		  
