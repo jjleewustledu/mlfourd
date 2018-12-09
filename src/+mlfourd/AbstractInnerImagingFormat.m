@@ -471,6 +471,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
+            ensuredir(this.filepath);
             this.save__;
             this.saveLogger;
         end 
