@@ -20,6 +20,7 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         end
         function flip(this, b)
             this.bsxfun(@flip, b);
+            this.innerImaging_.fileprefix = sprintf('%s_flip%i', this.innerImaging_.fileprefix, b);
         end
         function rdivide(this, b)
             this.bsxfun(@rdivide, b);
