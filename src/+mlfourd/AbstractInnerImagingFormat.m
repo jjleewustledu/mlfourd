@@ -722,6 +722,94 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function        deleteExisting(~, fn)
             deleteExisting(fn);
         end
+        function this = ensureDouble(this)
+            if (this.hdr.dime.datatype ~= 64)
+                this.imagingInfo_.hdr.dime.datatype = 64;
+            end
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
+            end
+            if (~isa(this.img_, 'double'))
+                this.img_ = double(this.img_);
+            end
+        end 
+        function this = ensureFilesuffix(this)
+            if (isempty(this.filesuffix))
+                this.filesuffix = this.imagingInfo.defaultFilesuffix;
+            end
+        end
+        function this = ensureImg(this)
+            if (isempty(this.img))
+                error('mlfourd:IOError:attemptToSaveEmptyObject', ...
+                    'AbstractInnerImagingFormat.ensureImg:  %s', ...
+                    'the request is incompatible with mlnifittools.save_[untouch]_nii');
+            end
+        end
+        function this = ensureNoclobber(this)
+            %% ENSURENOCLOBBER ensures that there is no clobbering.
+            %  @throws mlfourd:IOError:noclobberPreventedSaving if this.noclobber and lexist(this.fqfilename).
+            
+            if (this.noclobber && lexist(this.fqfilename, 'file'))
+                error('mlfourd:IOError:noclobberPreventedSaving', ...
+                    'AbstractInnerImagingFormat.ensureNoclobber->%i but the file %s already exists; please check intentions', ...
+                    this.noclobber, this.fqfilename);
+            end
+        end
+        function this = ensureSingle(this)
+            if (this.hdr.dime.datatype ~= 16)
+                this.imagingInfo_.hdr.dime.datatype = 16;
+            end
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
+            end
+            if (~isa(this.img_, 'single'))
+                this.img_ = single(this.img_);
+            end
+        end 
+        function this = ensureUint8(this)
+            if (this.hdr.dime.datatype ~= 2)
+                this.imagingInfo_.hdr.dime.datatype = 2;
+            end
+            if (this.hdr.dime.bitpix ~= 8)
+                this.imagingInfo_.hdr.dime.bitpix = 8;
+            end
+            if (~isa(this.img_, 'uint8'))
+                this.img_ = uint8(this.img_);
+            end
+        end
+        function this = ensureInt16(this)
+            if (this.hdr.dime.datatype ~= 4)
+                this.imagingInfo_.hdr.dime.datatype = 4;
+            end
+            if (this.hdr.dime.bitpix ~= 16)
+                this.imagingInfo_.hdr.dime.bitpix = 16;
+            end
+            if (~isa(this.img_, 'int16'))
+                this.img_ = int16(this.img_);
+            end
+        end
+        function this = ensureInt32(this)
+            if (this.hdr.dime.datatype ~= 8)
+                this.imagingInfo_.hdr.dime.datatype = 8;
+            end
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
+            end
+            if (~isa(this.img_, 'int32'))
+                this.img_ = int32(this.img_);
+            end
+        end
+        function this = ensureInt64(this)
+            if (this.hdr.dime.datatype ~= 1024)
+                this.imagingInfo_.hdr.dime.datatype = 1024;
+            end
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
+            end
+            if (~isa(this.img_, 'int64'))
+                this.img_ = int64(this.img_);
+            end
+        end
         function fqfn = fqfileprefix_4dfp_hdr(this)
             fqfn = [this.fqfileprefix '.4dfp.hdr'];
         end
@@ -851,94 +939,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
         end   
-        function this = ensureDouble(this)
-            if (this.hdr.dime.datatype ~= 64)
-                this.imagingInfo_.hdr.dime.datatype = 64;
-            end
-            if (this.hdr.dime.bitpix ~= 64)
-                this.imagingInfo_.hdr.dime.bitpix = 64;
-            end
-            if (~isa(this.img_, 'double'))
-                this.img_ = double(this.img_);
-            end
-        end 
-        function this = ensureFilesuffix(this)
-            if (isempty(this.filesuffix))
-                this.filesuffix = this.imagingInfo.defaultFilesuffix;
-            end
-        end
-        function this = ensureImg(this)
-            if (isempty(this.img))
-                error('mlfourd:IOError:attemptToSaveEmptyObject', ...
-                    'AbstractInnerImagingFormat.ensureImg:  %s', ...
-                    'the request is incompatible with mlnifittools.save_[untouch]_nii');
-            end
-        end
-        function this = ensureNoclobber(this)
-            %% ENSURENOCLOBBER ensures that there is no clobbering.
-            %  @throws mlfourd:IOError:noclobberPreventedSaving if this.noclobber and lexist(this.fqfilename).
-            
-            if (this.noclobber && lexist(this.fqfilename, 'file'))
-                error('mlfourd:IOError:noclobberPreventedSaving', ...
-                    'AbstractInnerImagingFormat.ensureNoclobber->%i but the file %s already exists; please check intentions', ...
-                    this.noclobber, this.fqfilename);
-            end
-        end
-        function this = ensureSingle(this)
-            if (this.hdr.dime.datatype ~= 16)
-                this.imagingInfo_.hdr.dime.datatype = 16;
-            end
-            if (this.hdr.dime.bitpix ~= 32)
-                this.imagingInfo_.hdr.dime.bitpix = 32;
-            end
-            if (~isa(this.img_, 'single'))
-                this.img_ = single(this.img_);
-            end
-        end 
-        function this = ensureUint8(this)
-            if (this.hdr.dime.datatype ~= 2)
-                this.imagingInfo_.hdr.dime.datatype = 2;
-            end
-            if (this.hdr.dime.bitpix ~= 8)
-                this.imagingInfo_.hdr.dime.bitpix = 8;
-            end
-            if (~isa(this.img_, 'uint8'))
-                this.img_ = uint8(this.img_);
-            end
-        end
-        function this = ensureInt16(this)
-            if (this.hdr.dime.datatype ~= 4)
-                this.imagingInfo_.hdr.dime.datatype = 4;
-            end
-            if (this.hdr.dime.bitpix ~= 16)
-                this.imagingInfo_.hdr.dime.bitpix = 16;
-            end
-            if (~isa(this.img_, 'int16'))
-                this.img_ = int16(this.img_);
-            end
-        end
-        function this = ensureInt32(this)
-            if (this.hdr.dime.datatype ~= 8)
-                this.imagingInfo_.hdr.dime.datatype = 8;
-            end
-            if (this.hdr.dime.bitpix ~= 32)
-                this.imagingInfo_.hdr.dime.bitpix = 32;
-            end
-            if (~isa(this.img_, 'int32'))
-                this.img_ = int32(this.img_);
-            end
-        end
-        function this = ensureInt64(this)
-            if (this.hdr.dime.datatype ~= 1024)
-                this.imagingInfo_.hdr.dime.datatype = 1024;
-            end
-            if (this.hdr.dime.bitpix ~= 64)
-                this.imagingInfo_.hdr.dime.bitpix = 64;
-            end
-            if (~isa(this.img_, 'int64'))
-                this.img_ = int64(this.img_);
-            end
-        end
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, {'.hdr' '.nii' '.nii.gz'});
         end
