@@ -684,6 +684,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 return
             end
             if (ischar(varargin{1}))
+                if (lstrfind(varargin{1}, 'InnerNIfTIIO'))
+                    this.addImgRec(varargin{:});
+                end
                 this.logger_.add(varargin{:});
                 return
             end
@@ -697,6 +700,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 return
             end
             if (ischar(varargin{1}))
+                if (lstrfind(varargin{1}, 'InnerNIfTIIO'))
+                    this.addImgRec(varargin{:});
+                end
                 this.logger_.addNoEcho(varargin{:});
                 return
             end
