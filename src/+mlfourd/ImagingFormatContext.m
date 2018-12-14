@@ -313,6 +313,12 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function this = prepend_fileprefix(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
         end
+        function        ensureDouble(this)
+            this.innerNIfTI_.ensureDouble;
+        end
+        function        ensureSingle(this)
+            this.innerNIfTI_.ensureSingle;
+        end
         function f    = fov(this)
             f = this.innerNIfTI_.fov;
         end

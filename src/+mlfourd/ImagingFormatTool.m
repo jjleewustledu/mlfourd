@@ -138,6 +138,12 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function d    = double(this)
             d = double(this.innerImaging_.img);
         end
+        function        ensureDouble(this)
+            this.innerImaging_.ensureDouble;
+        end
+        function        ensureSingle(this)
+            this.innerImaging_.ensureSingle;
+        end
         function        freeview(this, varargin)
             this.innerImaging_.freeview(varargin{:});
         end

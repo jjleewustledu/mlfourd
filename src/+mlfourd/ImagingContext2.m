@@ -812,12 +812,20 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             d = this.state_.double;
         end
-        function this = ensureSaved(this)
+        function        ensureDouble(this)
+            this.selectImagingFormatTool;
+            this.state_.ensureDouble;
+        end
+        function        ensureSaved(this)
             %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
             
             if (~lexist(this.fqfilename))
                 this.save;
             end
+        end
+        function        ensureSingle(this)
+            this.selectImagingFormatTool;
+            this.state_.ensureSingle;
         end
         function        freeview(this, varargin)
             this.selectImagingFormatTool;
