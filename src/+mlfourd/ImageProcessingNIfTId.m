@@ -143,11 +143,13 @@ classdef ImageProcessingNIfTId < mlfourd.NIfTIdecoratorProperties
             %  cf. imtool
             
             assert(logical(exist('slice', 'var')));
+            error('mlfourd:NotImplementedError', 'ImageProcessingNIfTId.imtool');
+            
             switch (length(slice))
                 case 1
-                    himg = imtool(flip4d(this.img(:,:,slice), 'xt'), varargin{:});
+                    %himg = imtool(flip4d(this.img(:,:,slice), 'xt'), varargin{:});
                 case 2
-                    himg = imtool(flip4d(this.img(:,:,slice(1),slice(2)), 'xt'), varargin{:});
+                    %himg = imtool(flip4d(this.img(:,:,slice(1),slice(2)), 'xt'), varargin{:});
                 otherwise
                     paramError(this, 'slice #', num2str(slice));
             end
