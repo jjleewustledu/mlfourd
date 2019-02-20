@@ -645,7 +645,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
     
     methods (Hidden) 
         function g = getInnerNIfTI(this)
-            %% allows ImagingContext to import ImagingContext2 without accessing the filesystem.
+            %% allows ImagingContext2 to import ImagingContext without accessing the filesystem.
             
             g = this.innerNIfTI_;
         end

@@ -112,8 +112,17 @@ classdef Viewer
                     interp = targ;
                     todel = false;
                 otherwise
-                    if (isa(targ, 'mlfourd.ImagingContext') || ...
-                        isa(targ, 'mlfourd.ImagingContext2') || ...
+                    if false % (~isdeployed)
+                        if (isa(targ, 'mlfourd.ImagingContext')) %#ok<UNRCH>
+                            if (~lexist(targ.fqfilename))
+                                targ.filesuffix = '.nii';
+                                targ.save;
+                            end
+                            [interp,todel] = this.interpretTarget(targ.fqfilename);
+                            return
+                        end
+                    end
+                    if (isa(targ, 'mlfourd.ImagingContext2') || ...
                         isa(targ, 'mlfourd.INIfTI'))
                         if (~lexist(targ.fqfilename))
                             targ.filesuffix = '.nii';

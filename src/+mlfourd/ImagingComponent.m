@@ -19,9 +19,11 @@ classdef ImagingComponent <  mlfourd.AbstractImagingComponent
             import mlfourd.*;
             this = [];
             try
-                if (isa(objs, 'mlfourd.ImagingContext'))
-                    this = objs.composite;
-                    return
+                if false % (~isdeployed)                    
+                    if (isa(objs, 'mlfourd.ImagingContext')) %#ok<UNRCH>
+                        this = objs.composite;
+                        return
+                    end
                 end
                 if (isa(objs, 'mlfourd.INIfTI'))
                     this = ImagingComponent(objs, varargin{:});

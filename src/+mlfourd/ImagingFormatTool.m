@@ -1,5 +1,5 @@
 classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractImagingTool
-	%% IMAGINGFORMATTOOL and mlfourd.ImagingContext form a hierarchical state design pattern. 
+	%% IMAGINGFORMATTOOL and mlfourd.ImagingContext2 form a hierarchical state design pattern. 
 
 	%  $Revision$
  	%  was created 10-Aug-2018 02:14:04 by jjlee,

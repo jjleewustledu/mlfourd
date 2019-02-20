@@ -116,8 +116,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                     im = obj.fqfilename;
                 case {'fqfileprefix' 'fqfp' 'fdfp' '4dfp'}
                     im = obj.fqfileprefix;
-                case {'ImagingContext' 'mlfourd.ImagingContext'}
-                    im = mlfourd.ImagingContext(obj);
                 case {'ImagingContext2' 'mlfourd.ImagingContext2'}
                     im = mlfourd.ImagingContext2(obj);
                 case {'mgz' '.mgz'}
@@ -145,6 +143,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 otherwise
                     error('mlfourd:insufficientSwitchCases', ...
                           'ImagingContext2.imagingType.obj->%s not recognized', obj);
+            end            
+            if false % (~isdeployed)
+                if (strcmp(typ, 'ImagingContext') || strcmp(typ, 'mlfourd.ImagingContext')) %#ok<UNRCH>
+                    im = mlfourd.ImagingContext(obj);
+                end
             end
         end
         function tf   = isImagingType(t)
@@ -954,13 +957,15 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 this = copy(obj);
                 return
             end            
-            if (isa(obj, 'mlfourd.ImagingContext')) % legacy objects
-                this.state_ = ImagingFormatTool(this, obj.niftid, varargin{:});
-                return
-            end
             if (ischar(obj))
                 this.state_ = FilesystemTool(this, obj);
                 return
+            end
+            if false %(~isdeployed)                
+                if (isa(obj, 'mlfourd.ImagingContext')) %#ok<UNRCH> % legacy objects
+                    this.state_ = ImagingFormatTool(this, obj.niftid, varargin{:});
+                    return
+                end
             end
             this.state_ = ImagingFormatTool(this, obj, varargin{:});
         end
@@ -1002,18 +1007,21 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% provides support for legacy objects.
 
             obj = mlfourd.ImagingContext2(obj);
-            switch (oriClass)
-                case 'mlfourd.ImagingContext'
-                    ic = mlfourd.ImagingContext(obj);
-                case 'mlfourd.ImagingContext2'
-                    ic = obj;
-                case 'mlmr.MRImagingContext'
-                    ic = mlmr.MRImagingContext(obj);
-                case 'mlpet.PETImagingContext'
-                    ic = mlpet.PETImagingContext(obj);
-                otherwise
-                    error('mlfourd:unsupportedSwitchCase', ....
-                          'ImagingContext2.recastImagingContext.oriClass->%s is not supported', oriClass);
+            if (strcmp(oriClass, 'mlfourd.ImagingContext2'))
+                ic = obj;
+            end
+            if false %(~isdeployed)
+                switch (oriClass) %#ok<UNRCH>
+                    case 'mlfourd.ImagingContext'
+                        ic = mlfourd.ImagingContext(obj);
+                    case 'mlmr.MRImagingContext'
+                        ic = mlmr.MRImagingContext(obj);
+                    case 'mlpet.PETImagingContext'
+                        ic = mlpet.PETImagingContext(obj);
+                    otherwise
+                        error('mlfourd:unsupportedSwitchCase', ....
+                              'ImagingContext2.recastImagingContext.oriClass->%s is not supported', oriClass);
+                end
             end
         end
     end
