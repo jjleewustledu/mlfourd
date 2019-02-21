@@ -187,7 +187,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.NIfTIIO & mlfourd.Jim
         function inn  = createInner1(obj)   
             import mlfourd.* mlfourdfp.* mlsurfer.*;     
             if (isa(obj, 'mlfourd.NIfTId'))
-                inn = obj.innerNIfTI_; % copy ctor
+                inn = copy(obj.innerNIfTI_); % copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.ImagingFormatContext'))

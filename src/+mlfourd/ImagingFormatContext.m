@@ -531,7 +531,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function inn  = createInner1(obj)
             import mlfourd.* mlfourdfp.* mlsurfer.*;     
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = obj.innerNIfTI_; % copy ctor
+                inn = copy(obj.innerNIfTI_); % copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
