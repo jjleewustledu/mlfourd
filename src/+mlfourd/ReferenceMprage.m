@@ -20,7 +20,7 @@ classdef ReferenceMprage
 
 	methods (Static)
         function copyfiles(dest, varargin)
-            assert(isdir(dest));
+            assert(isfolder(dest));
             import mlfourd.*;
             suf = {'.nii.gz' '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec'};
             for s = 1:length(suf)

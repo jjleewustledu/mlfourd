@@ -43,8 +43,8 @@ classdef DicomSorter < mlpipeline.DicomSorter
             %  @returns canonFp, a fileprefix determined by this.canonicalName.
             
             assert(isstruct(info) && ~isempty(info))
-            assert(isdir(parentDcmPth));
-            assert(isdir(destPth));
+            assert(isfolder(parentDcmPth));
+            assert(isfolder(destPth));
 
             canonFp = this.canonicalName(info);
             mlbash(sprintf('dcm2niix -f %s -o %s/ -z i %s', canonFp, destPth, this.studyData.seriesDicom(parentDcmPth)));

@@ -56,7 +56,7 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
             %  See also mlfourd.ImagingContext
             
             import mlfourd.*;
-            if (ischar(obj) && isdir(obj))
+            if (ischar(obj) && isfolder(obj))
                 im = ImagingContext.locationType(typ, obj);
                 return
             end
@@ -171,22 +171,6 @@ classdef ImagingContext < handle & mlfourd.HandleNIfTIIO
                 otherwise
                     error('mlfourd:insufficientSwitchCases', ...
                           'ImagingContext.locationType.loc0->%s not recognized', loc0);
-            end
-        end
-        function ic   = recastImagingContext(obj, oriClass)
-            obj = mlfourd.ImagingContext(obj);
-            switch (oriClass)
-                case 'mlfourd.ImagingContext'
-                    ic = obj;
-                case 'mlfourd.ImagingContext2'
-                    ic = mlfourd.ImagingContext2(obj);
-                case 'mlmr.MRImagingContext'
-                    ic = mlmr.MRImagingContext(obj);
-                case 'mlpet.PETImagingContext'
-                    ic = mlpet.PETImagingContext(obj);
-                otherwise
-                    error('mlfourd:unsupportedSwitchCase', ....
-                          'ImagingContext.recastImagingContext.oriClass->%s is not supported', oriClass);
             end
         end
     end
