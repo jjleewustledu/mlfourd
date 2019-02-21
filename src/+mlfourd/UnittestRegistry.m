@@ -73,10 +73,10 @@ classdef UnittestRegistry < mlpatterns.Singleton
             g = fullfile(this.fslPath, [this.smallT1_fp '.nii.gz']);
         end
         function g = get.smallT1Cntxt(this)
-            g = mlfourd.ImagingContext.load(this.smallT1_fqfn);
+            g = mlfourd.ImagingContext2(this.smallT1_fqfn);
         end
         function g = get.subjectsDir(~)
-            g = fullfile('/data', 'cvl', 'np755', '');
+            g = fullfile('/data', 'nil-bluearc', 'cvl', 'np755', '');
         end
     end
     

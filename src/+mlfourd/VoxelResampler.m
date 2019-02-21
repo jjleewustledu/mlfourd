@@ -28,8 +28,8 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             sa = s.component;
             sa.img = s.specificActivity;
             this = VoxelResampler( ...
-                'dynamic', ImagingContext(sa), ...
-                'mask', ImagingContext(s.mask), ...
+                'dynamic', ImagingContext2(sa), ...
+                'mask', ImagingContext2(s.mask), ...
                 varargin{:});
         end
     end
@@ -79,7 +79,7 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             d = this.dynamic;
             d = d.niftid;
             d.img = s;
-            this.dynamic_ = mlfourd.ImagingContext(d);
+            this.dynamic_ = mlfourd.ImagingContext2(d);
         end
         function g = get.mask(this)
             g = this.mask_;
@@ -113,8 +113,8 @@ classdef VoxelResampler < mlfourd.AbstractResampler
  			this = this@mlfourd.AbstractResampler(varargin{:});
             ip = inputParser;
             ip.KeepUnmatched = true;
-            addParameter(ip, 'dynamic', @(x) isa(x, 'mlfourd.ImagingContext'));
-            addParameter(ip, 'mask',    @(x) isa(x, 'mlfourd.ImagingContext'));
+            addParameter(ip, 'dynamic', @(x) isa(x, 'mlfourd.ImagingContext2'));
+            addParameter(ip, 'mask',    @(x) isa(x, 'mlfourd.ImagingContext2'));
             addParameter(ip, 'doEnlargeMask', @islogical)
             addParameter(ip, 'blur', 0, @isnumeric);
             addParameter(ip, 'fileprefix', tmpFileprefix, @ischar);
@@ -142,9 +142,9 @@ classdef VoxelResampler < mlfourd.AbstractResampler
     
     methods (Access = protected)        
         function ic   = downsampleIC(this, ic)
-            %  @param ic    is an mlfourd.ImagingContext.
+            %  @param ic    is an mlfourd.ImagingContext2.
             
-            ic = mlfourd.ImagingContext(this.downsampleNii(ic.niftid));
+            ic = mlfourd.ImagingContext2(this.downsampleNii(ic.niftid));
         end
         function nii  = downsampleNii(~, nii)
             assert(isa(nii, 'mlfourd.INIfTI'), ...
@@ -160,12 +160,12 @@ classdef VoxelResampler < mlfourd.AbstractResampler
         end
         function m    = enlargeMask(this, m, varargin)
             %% ENLARGEMASK blurs and binarizes.
-            %  @param m is an mlfourd.ImagingContext.
+            %  @param m is an mlfourd.ImagingContext2.
             %  @param optional blur is numeric; default is this.preferredBlur.
-            %  @return m is an mlfourd.ImagingContext.
+            %  @return m is an mlfourd.ImagingContext2.
             
             ip = inputParser;
-            addRequired(ip, 'm', @(x) isa(x, 'mlfourd.ImagingContext'));
+            addRequired(ip, 'm', @(x) isa(x, 'mlfourd.ImagingContext2'));
             addOptional(ip, 'blur', this.preferredBlur, @isnumeric);
             parse(ip, m, varargin{:});
             
@@ -173,13 +173,13 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             m = m.binarized;
         end
         function ic   = upsampleIC(this, ic, icRef)
-            %  @param ic    is an mlfourd.ImagingContext.
-            %  @param icRef is an mlfourd.ImagingContext and provides the ref to flirt.
+            %  @param ic    is an mlfourd.ImagingContext2.
+            %  @param icRef is an mlfourd.ImagingContext2 and provides the ref to flirt.
             
-            assert(isa(ic,    'mlfourd.ImagingContext'));
-            assert(isa(icRef, 'mlfourd.ImagingContext'));
+            assert(isa(ic,    'mlfourd.ImagingContext2'));
+            assert(isa(icRef, 'mlfourd.ImagingContext2'));
 
-            ic = mlfourd.ImagingContext(this.upsampleNii(ic.niftid, icRef.niftid));
+            ic = mlfourd.ImagingContext2(this.upsampleNii(ic.niftid, icRef.niftid));
         end
         function nii  = upsampleNii(~, nii, niiRef)
             assert(isa(nii, 'mlfourd.INIfTI'), ...

@@ -32,7 +32,7 @@ classdef ImgRecorder < mlpipeline.Logger
         function fqfn = obj2fqfn(obj)
             
             import mlfourd.*;
-            if (isa(obj, 'mlfourd.ImagingContext'))
+            if (isa(obj, 'mlfourd.ImagingContext2'))
                 obj  = obj.clone;
                 fqfn = [obj.fqfileprefix ImgRecorder.IMGREC_EXT];
                 return
