@@ -28,9 +28,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
 	properties (Dependent)
         noclobber
         
-        ext      % KLUDGE for mlfourd.ImagingContext
-        filetype % KLUDGE for mlfourd.ImagingContext
-        hdr      % See also:  mlfourd.ImagingInfo
+        ext
+        filetype
+        hdr          % See also:  mlfourd.ImagingInfo
         img
         
         bitpix

@@ -701,7 +701,7 @@ classdef NiiBrowser < mlfourd.NIfTI
             %         gimg = this.gaussSigma(img, fwhh_vec3, 'mm', mlpet.PETBuilder.petPointSpread)
             %  See also:  NiiBrowser.gaussFullwidth
             %
-            import mlfourd.*;
+            import mlfourd.*; %#ok<NSTIMP>
             switch (nargin)
                 case 2
                     metric  = 'voxel';

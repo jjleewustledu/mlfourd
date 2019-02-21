@@ -374,7 +374,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
 
             EXTS = { '.nii.gz' '.nii' }; 
             fstr = stripexts(fstr, EXTS);
-            import mlfourd.* mlfsl.*;
+            import mlfourd.* mlfsl.*; %#ok<*NSTIMP>
             try
                 [~,datType] = mlbash(['fslinfo  ' fstr ' | grep data_type']);
                 if (~lstrfind(datType, upper(AbstractConverter.ODT))) 

@@ -214,7 +214,7 @@ classdef CoulombBlurringNIfTId < mlfourd.NIfTIdecoratorProperties
     end
     
     methods (Static, Access = private)
-        function img   = chargesToScalarPotential(img, width, metric, metppix, height)
+        function img   = chargesToScalarPotential(img, width, metric, metppix, height) %#ok<INUSD>
             %% CHARGESTOSCALARPOTENTIAL
             %  Usage: img = CoulombBlurringNIfTId.chargesToScalarPotential(img, width, metric, metppix, height)
             %         img:       numeric object
@@ -271,7 +271,7 @@ classdef CoulombBlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             %         gimg = this.gaussSigma(img, fwhh_vec3, 'mm', mlpet.PETBuilder.petPointSpread)
             %  See also:  gaussFullwidth
             
-            import mlfourd.*;
+            import mlfourd.*; %#ok<NSTIMP>
             KERNEL_MULTIPLE = 3;
             switch (nargin)
                 case 2

@@ -113,7 +113,7 @@ classdef PETConverter < mlfourd.AbstractConverter
             cd(cossPth);
             fprintf('mlfourd.PETConverter.coss2fsl:  working in filesystem location %s\n', cossPth);
             
-            import mlfourd.* mlpet.*;
+            import mlfourd.* mlpet.*; %#ok<NSTIMP>
             try
                  mlbash('for h in *.4dfp.hdr; do fslchfiletype NIFTI_GZ $h; done');
             catch ME

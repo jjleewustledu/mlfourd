@@ -12,7 +12,7 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
  
     properties (Constant)
         EQUALN_IGNORES = ...
-            {'bitpix' 'creationDate' 'datatype' 'descrip' 'glmax' 'hdr' 'hdxml' 'imagingInfo' 'imgrec' 'label' 'logger' 'originalType' 'regular' 'stack' 'untouch'}
+            {'bitpix' 'creationDate' 'datatype' 'descrip' 'glmax' 'hdr' 'hdxml' 'imagingInfo' 'imgrec' 'label' 'logger' 'orient' 'originalType' 'regular' 'stack' 'untouch'}
     end
     
 	properties (Dependent) 

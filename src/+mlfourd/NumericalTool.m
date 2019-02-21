@@ -1,5 +1,5 @@
 classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleNumerical & mlpatterns.HandleDipNumerical
-	%% NUMERICALTOOL extends NIfTId implementations with bsxfun and other numerical functionality.
+	%% NUMERICALTOOL extends INIfTI implementations with bsxfun and other numerical functionality.
     
 	%  $Revision$
  	%  was created 10-Jan-2016 13:16:45

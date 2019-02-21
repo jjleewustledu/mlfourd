@@ -10,35 +10,6 @@ classdef FourdRegistry < mlpatterns.Singleton
  	
 
     methods (Static)
-        function tf   = isSupportedImageType(typ)
-            imagingTypes = { ...
-                'ImagingContext2' 'ImagingContext' ...
-                'NIfTIc' 'NIfTId' 'NumericalNIfTId' 'DynamicNIfTId' 'MaskingNIfTId' 'BlurringNIfTId' 'LoggingNIfTId' 'MGH'};
-            legacyTypes = {'ImagingComponent'  'ImagingComposite' 'ImagingSeries' 'NIfTI' 'NiiBrowser' 'NIfTI_mask'};
-            otherTypes = {'PETImagingContext' 'MRImagingContext' 'mlpet.PETImagingContext' 'mlmr.MRImagingContext' };
-            parserTypes = {'filename' 'fileprefix' 'fqfilename' 'fqfileprefix'};
-            builtinTypes = [numeric_types 'char'];
-            tf = ismember(typ, [ ...
-                imagingTypes mlfourdTypes(imagingTypes) ...
-                legacyTypes mlfourdTypes(legacyTypes) ...
-                otherTypes parserTypes builtinTypes]);
-            
-            function c = mlfourdTypes(c)
-                c = cellfun(@(x) ['mlfourd.' x], c, 'UniformOutput', false);
-            end
-        end
-        function tf   = isSupportedImage(obj)
-            if (isa(obj, 'mlfourd.INIfTI') || ...
-                isa(obj, 'mlfourd.ImagingContext') || ...
-                isa(obj, 'mlfourd.ImagingContext2') || ...
-                isnumeric(obj) || ...
-                ischar(obj) || ...
-                iscell(obj))
-                tf = true;
-                return
-            end
-            tf = false;
-        end
         function this = instance(qualifier)
             
             %% INSTANCE uses string qualifiers to implement registry behavior that

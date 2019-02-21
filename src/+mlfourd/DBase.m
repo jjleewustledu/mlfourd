@@ -675,8 +675,8 @@ classdef (Sealed) DBase < mlfourd.CvlDBase
             
             if (nargin > 1); this.pid = mlfourd.DBase.ensurePnum(pid); end
            	for i = 1:length(    this.pnumNp797) %#ok<FORFLG>
-                if (strcmpi(pid, this.pnumNp797{i})) %#ok<PFBNS>
-                    fn0 = this.jessyFilenameStem{i}; %#ok<PFTUS>
+                if (strcmpi(pid, this.pnumNp797{i})) 
+                    fn0 = this.jessyFilenameStem{i}; 
                     return;
                 end
             end
@@ -688,8 +688,8 @@ classdef (Sealed) DBase < mlfourd.CvlDBase
             
             %% QCBF_FOLDER
             if (nargin > 1); this.pid = mlfourd.DBase.ensurePnum(pid); end
-           	idx  = strmatch(pid, this.pnumNp797);
-            fold = [this.prefixNp797{idx} this.pnumNp797{idx} this.suffixNp797{idx}];
+           	tf = startsWith(this.pnumNp797, pid);
+            fold = [this.prefixNp797{tf} this.pnumNp797{tf} this.suffixNp797{tf}];
         end % private qcbf_folder
     end % private methods 
 end % classdef DBase

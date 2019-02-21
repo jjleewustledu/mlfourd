@@ -46,7 +46,7 @@ classdef ImagingParser
             %                                                               'block'      requires block-label
             %                                                       '                            ^ 'fp', 'betted', ...
             
-            import mlfourd.*;
+            import mlfourd.*; %#ok<NSTIMP>
             fname = imcast(fname, 'fqfilename');
             sname = struct('path', '', 'stem', '', 'ext', '');
             [sname.path,sname.stem,sname.ext] = filepartsx(fname, mlfourd.NIfTId.FILETYPE_EXT);
@@ -220,11 +220,9 @@ classdef ImagingParser
             obj = this.h15o_;
         end
         function this = set.imageObjType(this, typ)
-            assert(mlfourd.FourdRegistry.isSupportedImageType(typ)); 
             this.imageObjType_ = typ;
         end
         function typ  = get.imageObjType(this)
-            assert(mlfourd.FourdRegistry.isSupportedImageType(this.imageObjType_)); % paranoia
             typ = this.imageObjType_;
         end
         function this = set.o15o(this, obj)
