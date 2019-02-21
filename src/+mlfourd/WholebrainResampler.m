@@ -16,8 +16,8 @@ classdef WholebrainResampler < mlfourd.VoxelResampler
             sa = s.component;
             sa.img = s.specificActivity;
             this = WholebrainResampler( ...
-                'dynamic', ImagingContext(sa), ...
-                'mask', ImagingContext(s.mask), ...
+                'dynamic', ImagingContext2(sa), ...
+                'mask', ImagingContext2(s.mask), ...
                 varargin{:});
         end
     end
@@ -30,8 +30,8 @@ classdef WholebrainResampler < mlfourd.VoxelResampler
             this.dynamic_.fileprefix = [this.dynamic_.fileprefix '_wb_downsmpl'];
         end 
         function this = upsample(this)
-            msk = this.mask.niftid.img/this.mask.numericalNiftid.dipmax;
-            img = this.dynamic_.niftid.img;
+            msk = this.mask.nifti.img/dipmax(this.mask.nifti.img);
+            img = this.dynamic_.nifti.img;
             
             sz = size(msk);
             img1 = zeros(sz(1),sz(2),sz(3),length(img));
@@ -43,10 +43,10 @@ classdef WholebrainResampler < mlfourd.VoxelResampler
                 end
             end
             
-            nii = this.dynamic_.niftid;
+            nii = this.dynamic_.nifti;
             nii.img = img1;
             nii.fileprefix = [this.dynamicOri_.fileprefix '_wb_upsmpl'];
-            this.dynamic_ = mlfourd.ImagingContext(nii);
+            this.dynamic_ = mlfourd.ImagingContext2(nii);
         end
  		function this = WholebrainResampler(varargin)
  			%% WHOLEBRAINRESAMPLER

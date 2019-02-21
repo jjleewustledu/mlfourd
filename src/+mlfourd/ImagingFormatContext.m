@@ -189,7 +189,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         end
         
         function bp   = get.bitpix(this) 
-            %% BIPPIX returns a datatype code as described by the NIfTId specificaitons
+            %% BIPPIX returns a datatype code as described by the INIfTI specificaitons
             
             bp = this.innerNIfTI_.bitpix;
         end
@@ -200,7 +200,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             cdat = this.innerNIfTI_.creationDate;
         end
         function dt   = get.datatype(this)
-            %% DATATYPE returns a datatype code as described by the NIfTId specificaitons
+            %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
             dt = this.innerNIfTI_.datatype;
         end    
@@ -468,7 +468,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
-            if (isa(obj, 'mlfourd.INIfTId')) 
+            if (isa(obj, 'mlfourd.INIfTI')) 
                 %% legacy support
                 if (isa(obj, 'mlfourd.INIfTIdecorator'))
                     obj = obj.component;
@@ -509,7 +509,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 isa(obj, 'mlfourd.AbstractInnerImagingFormat') || ...
                 isa(obj, 'mlfourd.ImagingInfo') || ...
                 ischar(obj) ||  ...
-                isa(obj, 'mlfourd.INIfTId') || ...
+                isa(obj, 'mlfourd.INIfTI') || ...
                 isa(obj, 'mlio.IOInterface') || isa(obj, 'mlio.HandleIOInterface') || ...
                 isstruct(obj) || ...
                 isnumeric(obj), ...

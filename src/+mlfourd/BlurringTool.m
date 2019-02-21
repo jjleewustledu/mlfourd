@@ -247,7 +247,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
             %  e.g.  >> sz = BlurringTool.embedVecInSitu([2 2 30], [18 18 31 100])
             %        sz = 
             %            2 2 30 100
-            %        >> sz = NIfTId.embedVecInSitu([18 18 31 100], [2 2 30])
+            %        >> sz = BlurringTool.embedVecInSitu([18 18 31 100], [2 2 30])
             %        sz = 
             %            18 18 31
             

@@ -21,7 +21,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             'v' 'v.hdr' 'v.mhdr' 'mhdr' ...
             '4dfp.hdr' '4dfp.ifh' '4dfp.img' '4dfp.img.rec' ...
             '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec' ...
-            'mrImagingContext' 'mlmr.MRImagingContext' 'petImagingContext' 'mlpet.PETImagingContext' ...
             'folder' 'path'}
     end
     
@@ -63,7 +62,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  See also mlfourd.ImagingContext2
             
             import mlfourd.*;
-            if (ischar(obj) && isdir(obj))
+            if (ischar(obj) && isfolder(obj))
                 im = ImagingContext2.locationType(typ, obj);
                 return
             end
@@ -695,7 +694,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         function that = masked(this, varargin)
             %% MASKED
-            %  @param INIfTId of a mask with values [0 1], not required to be binary.
+            %  @param INIfTI of a mask with values [0 1], not required to be binary.
             %  @return internal image is masked.
             %  @warning mflourd:possibleMaskingError
             
@@ -705,7 +704,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         function that = maskedMaths(this, varargin)
             %% MASKEDMATHS
-            %  @param INIfTId of a mask with values [0 1], not required to be binary.
+            %  @param INIfTI of a mask with values [0 1], not required to be binary.
             %  @return internal image is masked.
             %  @warning mflourd:possibleMaskingError
             
@@ -1001,30 +1000,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     end
     
     %% DEPRECATED
-
-    methods (Static, Hidden)
-        function ic = recastImagingContext(obj, oriClass)
-            %% provides support for legacy objects.
-
-            obj = mlfourd.ImagingContext2(obj);
-            if (strcmp(oriClass, 'mlfourd.ImagingContext2'))
-                ic = obj;
-            end
-            if false %(~isdeployed)
-                switch (oriClass) %#ok<UNRCH>
-                    case 'mlfourd.ImagingContext'
-                        ic = mlfourd.ImagingContext(obj);
-                    case 'mlmr.MRImagingContext'
-                        ic = mlmr.MRImagingContext(obj);
-                    case 'mlpet.PETImagingContext'
-                        ic = mlpet.PETImagingContext(obj);
-                    otherwise
-                        error('mlfourd:unsupportedSwitchCase', ....
-                              'ImagingContext2.recastImagingContext.oriClass->%s is not supported', oriClass);
-                end
-            end
-        end
-    end
     
     methods (Hidden)
         function ifc = niftid(this)
