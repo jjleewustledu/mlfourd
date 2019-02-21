@@ -11,8 +11,8 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
-        do_legacy = true
-        do_view = true
+        do_legacy = false
+        do_view = false
         fdg = 'fdgv1r1_sumt'
         fslroi = 't1_dcm2niix_fslroi'
         fslroi_xmin  =  65
@@ -418,7 +418,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ifh = mlfourdfp.IfhParser.load([testfp '.4dfp.ifh']);
             this.verifyEqual( ...            
                 ic2.fourdfp.imagingInfo.ifh.nameOfDataFile, ...
-                ifh.nameOfDataFile);
+                ifh.nameOfDataFile); %% TODO:  fix not passing
             
             popd(pwd0_);
         end

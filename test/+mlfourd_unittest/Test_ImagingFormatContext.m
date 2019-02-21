@@ -11,8 +11,8 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
-        doview = true
-        doview_mutate = true % slow
+        doview = false
+        doview_mutate = false % slow
         noDelete = false
         pwd0
         ref
@@ -113,7 +113,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_noExtension(this)
             import mlfourd.*;
             ifc = ImagingFormatContext(myfileprefix(this.ref.dicomAsNiigz));
-            this.verifyEqual(class(ifc.img), 'int16');
+            this.verifyEqual(class(ifc.img), 'single');
             this.verifyEqual(ifc.size, [176 248 256]);
             this.verifyEqual(ifc.filesuffix, '.nii.gz');
             this.verifyClass(ifc.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -131,7 +131,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             
             this.verifyEqual(niih.hdr, niid.hdr);
             this.verifyEqual(niih.img, niid.img);
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(niih.size, [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -145,7 +145,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_t1niigz(this) 
  			import mlfourd.*;           
             niih = ImagingFormatContext(this.ref.dicomAsNiigz); 
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [176 248 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -459,8 +459,9 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             this.ref = mlfourd.ReferenceMprage;
             this.ref.copyfiles(this.TmpDir);
             fp = myfileprefix(this.ref.dicomAsNiigz); 
-            if (~lexist([fp '.mgz']))
-                mlbash(sprintf('mri_convert %s.nii.gz %s.mgz', fp, fp));
+            fqfp = fullfile(this.TmpDir, fp);
+            if (~lexist([fqfp '.mgz']))
+                mlbash(sprintf('mri_convert %s.nii.gz %s.mgz', fqfp, fqfp));
             end
  		end
 	end
