@@ -109,19 +109,19 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         %% cast then return this.innerImaging_ which is ImagingFormatContext
         
         function ifc  = fourdfp(this)
-            this.innerImaging_.filesuffix = '.4dfp.hdr';
-            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
-            ifc = this.innerImaging_;
+            ifc = copy(this.innerImaging_);
+            ifc.filesuffix = '.4dfp.hdr';
+            ifc = ifc.mutateInnerImagingFormatByFilesuffix;
         end
         function ifc  = mgz(this)
-            this.innerImaging_.filesuffix = '.mgz';
-            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
-            ifc = this.innerImaging_;
+            ifc = copy(this.innerImaging_);            
+            ifc.filesuffix = '.mgz';
+            ifc = ifc.mutateInnerImagingFormatByFilesuffix;
         end
         function ifc  = nifti(this)
-            this.innerImaging_.filesuffix = '.nii.gz';
-            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix;
-            ifc = this.innerImaging_;
+            ifc = copy(this.innerImaging_);
+            ifc.filesuffix = '.nii.gz';
+            ifc = ifc.mutateInnerImagingFormatByFilesuffix;
         end
         
         %% delegate to ImagingFormatTool
@@ -165,7 +165,7 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function l    = logical(this)
             l = logical(this.innerImaging_.img);
         end
-        function this = makeSimilar(this, varargin)
+        function that = makeSimilar(this, varargin)
             %% MAKESIMILAR provides a legacy interface
             
             ip = inputParser;
@@ -174,11 +174,12 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
             addParameter(ip, 'descrip', [class(this) '.madeSimilar'], @ischar);
             parse(ip, varargin{:});    
 
-            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+            that = copy(this);
+            that.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, ...
                 'img', ip.Results.img,  ...
                 'fileprefix', ip.Results.fileprefix, 'descrip', ip.Results.descrip);
-            this.innerImaging_.addLog( ...
+            that.innerImaging_.addLog( ...
                 sprintf('MaskingTool:  %s', ip.Results.descrip));
         end
         function s    = mat2str(this, varargin)
