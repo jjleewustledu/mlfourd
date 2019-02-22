@@ -15,7 +15,8 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @return inner image is numerical and binary: 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            this.innerImaging_.img  = double(this.innerImaging_.img ~= 0);    
+            this.innerImaging_.img  = double(this.innerImaging_.img ~= 0);
+            this.innerImaging_ = this.innerImaging_.reset_scl;
             this.warnLargeVolumeFraction;
             this.fileprefix = [this.fileprefix '_binarized'];  
             this.addLog('MaskingTool.binarized');
@@ -113,7 +114,11 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             
-            bin  = this.innerImaging_.img > dipprctile(this.innerImaging_.img, p);
+            if p > 1
+                p = p/100;
+            end
+            img  = this.innerImaging_.img;
+            bin  = img > p*dipiqr(img(img > 0.01*dipmax(img)));
             this = this.makeSimilar( ...
                    'img', double(this.innerImaging_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
@@ -136,7 +141,11 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to upper-threshold current image (zero anything above the number)
             
-            bin  = this.innerImaging_.img < dipprctile(this.innerImaging_.img, p);
+            if p > 1
+                p = p/100;
+            end
+            img  = this.innerImaging_.img;
+            bin  = img < p*dipiqr(img(img > 0.01*dipmax(img)));
             this = this.makeSimilar( ...
                    'img', double(this.innerImaging_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
