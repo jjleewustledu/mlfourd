@@ -216,6 +216,10 @@ classdef ImagingInfo < mlio.AbstractIO
             this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
             this.hdr.hist.originator = rsize(1:3)/2;
         end
+        function this = reset_scl(this)
+            this.hdr_.dime.scl_slope = 1;
+            this.hdr_.dime.scl_inter = 0;
+        end
         function xyz  = RMatrixMethod2(this, ijk)
             %%   RMATRIXMETHOD2 (used when qform_code > 0, which should be the "normal" case):
             %    -----------------------------------------------------------------------------

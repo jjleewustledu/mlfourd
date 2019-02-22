@@ -150,18 +150,46 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
 		  
         %%
         
+        function nii  = apply_scl(~, nii)
+            dime = nii.hdr.dime;
+            if (dime.scl_slope == 1 && dime.scl_inter == 0) 
+                return
+            end
+            maxi = rescl(dime, dipmax(nii.img));
+            if (abs(maxi) < realmax('single'))
+                nii.img = rescl(dime, single(nii.img));
+                nii.hdr.dime.scl_slope = 1;
+                nii.hdr.dime.scl_inter = 0;
+                nii.hdr.dime.glmax = dipmax(single(nii.img));
+                nii.hdr.dime.datatype = 16;
+                nii.hdr.dime.bitpix = 32;
+                return
+            else % (abs(maxi) < realmax('double'))
+                nii.img = rescl(dime, double(nii.img));
+                nii.hdr.dime.scl_slope = 1;
+                nii.hdr.dime.scl_inter = 0;
+                nii.hdr.dime.glmax = dipmax(double(nii.img));
+                nii.hdr.dime.datatype = 64;
+                nii.hdr.dime.bitpix = 64;
+                return                
+            end
+            
+            function x = rescl(dime, x)
+                x = dime.scl_slope*x + dime.scl_inter;
+            end
+        end
         function fqfn = fqfileprefix_nii(this)
             fqfn = [this.fqfileprefix '.nii'];
         end
         function fqfn = fqfileprefix_nii_gz(this)
             fqfn = [this.fqfileprefix '.nii.gz'];
-        end
-        
+        end        
         function nii = make_nii(this)
             [X,untouch,hdr] = niftiread(this);
             nii.img = this.ensureDatatype(X, this.datatype_);
             nii.hdr = hdr;
             nii.untouch = untouch;
+            nii = this.apply_scl(nii);
         end
         function [V,untouch,hdr] = niftiread(this)
             %% calls mlniftitools.load_untouch_nii
@@ -193,10 +221,6 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
         spaceUnits_ = 'Millimeter'
         timeOffset_ = 0
         timeUnits_ = 'Second'
-    end
-    
-    methods (Access = protected)
-            
     end
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

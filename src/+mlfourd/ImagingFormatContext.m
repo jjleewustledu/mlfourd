@@ -358,6 +358,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function this = prod(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
         end
+        function this = reset_scl(this)
+            this.innerNIfTI_ = this.innerNIfTI_.reset_scl;
+        end
         function r    = rank(this, varargin)
             %% DEPRECATED; use ndims
             

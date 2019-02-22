@@ -454,6 +454,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             
             r = this.ndims(varargin{:});
         end
+        function this = reset_scl(this)
+            this.imagingInfo_ = this.imagingInfo_.reset_scl;
+        end
         function this = roi(this, varargin)
         end
         function        save(this)
