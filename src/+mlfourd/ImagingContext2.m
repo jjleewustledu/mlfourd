@@ -417,32 +417,32 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that.state_.usxfun(pfun);
         end        
         
-        function that = eq(this, b)
+        function that = numeq(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.eq(b);
         end
-        function that = ne(this, b)
+        function that = numne(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.ne(b);
         end
-        function that = lt(this, b)
+        function that = numlt(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.lt(b);
         end
-        function that = le(this, b)
+        function that = numle(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.le(b);
         end
-        function that = gt(this, b)
+        function that = numgt(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.gt(b);
         end
-        function that = ge(this, b)
+        function that = numge(this, b)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.ge(b);
