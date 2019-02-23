@@ -417,8 +417,8 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             ic2 = ic2.saveas([testfp '.4dfp.hdr']);
             ifh = mlfourdfp.IfhParser.load([testfp '.4dfp.ifh']);
             this.verifyEqual( ...            
-                ic2.fourdfp.imagingInfo.ifh.nameOfDataFile, ...
-                ifh.nameOfDataFile); %% TODO:  fix not passing
+                ic2.fourdfp.imagingInfo.ifh.fileprefix, ...
+                ifh.fileprefix); %% TODO:  fix not passing
             
             popd(pwd0_);
         end
