@@ -152,7 +152,7 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
         
         function nii  = apply_scl(~, nii)
             dime = nii.hdr.dime;
-            if (dime.scl_slope == 1 && dime.scl_inter == 0) 
+            if (dime.scl_slope == 0 || (dime.scl_slope == 1 && dime.scl_inter == 0)) 
                 return
             end
             maxi = rescl(dime, dipmax(nii.img));
