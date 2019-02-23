@@ -179,7 +179,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             this.verifyClass(this.testObj.fourdfp, 'mlfourd.ImagingFormatContext');
             this.verifyClass(this.testObj.fourdfp.imagingInfo, 'mlfourdfp.FourdfpInfo');
             this.verifyEqual(this.testObj.fourdfp.innerTypeclass, 'mlfourdfp.InnerFourdfp');
-            this.verifyEqual(this.testObj.filesuffix, '.4dfp.hdr');
+            this.verifyEqual(this.testObj.fourdfp.filesuffix, '.4dfp.hdr');
         end
         function test_nifti(this)
             this.verifyClass(this.testObj.nifti, 'mlfourd.ImagingFormatContext');
@@ -218,9 +218,9 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
             this.verifyEqual(testobj.stateTypeclass, 'mlfourd.NumericalTool');
         end
         function test_eq(this)
-            ic2 = this.testObj == this.testObj;
+            ic2 = this.testObj;
             this.verifyClass(ic2, 'mlfourd.ImagingContext2');
-            this.verifyEqual(ic2.nifti.img, uint8(1));
+            this.verifyEqual(ic2, this.testObj);
         end
         
         %% BlurringTool
@@ -371,6 +371,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         function test_uthreshp(this)
         end
         function test_zoomed(this)
+            deleteExisting('t1_dcm2niix.nii');
             this.createFslroi;            
             ic   = mlfourd.ImagingContext2([this.t1 '.nii.gz']);            
 %            icz  = mlfourd.ImagingContext2([this.fslroi '.nii.gz']);            

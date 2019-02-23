@@ -197,7 +197,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             import mlfourd.*;
             pwd0_ = pushd(this.TmpDir);
             niid = NIfTId(this.ref.dicomAsNiigz);            
-            this.verifyEqual(class(niid.img), 'int16');
+            this.verifyEqual(class(niid.img), 'single');
             this.verifyEqual(size(niid.img),  [176 248 256]);
             this.verifyEqual(niid.filesuffix, '.nii.gz');
             this.verifyClass(niid.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -816,7 +816,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             addOptional(ip, 'suff', '.nii.gz', @ischar);
             parse(ip, varargin{:});
             
-            this.verifyEqual(class(niid.img), 'int16');
+            this.verifyEqual(class(niid.img), 'single');
             this.verifyEqual(size(niid.img),  [176 248 256]);
             this.verifyEqual(niid.originalType, 'char');
             this.verifyEqual(niid.entropy, 0.143003055853027, 'RelTol', 1e-3);
@@ -826,9 +826,9 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hk.sizeof_hdr, 348);
             this.verifyEqual(niid.hdr.hk.extents, 0);
             this.verifyEqual(niid.hdr.dime.dim, [3 176 248 256 1 1 1 1]);
-            this.verifyEqual(niid.hdr.dime.datatype, 4);
-            this.verifyEqual(niid.hdr.dime.bitpix, 16);
-            this.verifyEqual(niid.hdr.dime.pixdim, [1 0.999997496604919 1 1 2.400000095367432 0 0 0], 'RelTol', 1e-3);
+            this.verifyEqual(niid.hdr.dime.datatype, 16);
+            this.verifyEqual(niid.hdr.dime.bitpix, 32);
+            this.verifyEqual(niid.hdr.dime.pixdim, [1 0.999997496604919 1 1 2.400000095367432 1 1 1], 'RelTol', 1e-3);
             this.verifyEqual(niid.hdr.dime.vox_offset, 352);
             this.verifyEqual(niid.hdr.dime.xyzt_units, 10);
             this.verifyEqual(niid.hdr.dime.glmax, 1296);
@@ -846,7 +846,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(niid.hdr.hist.srow_z, [0.029666183516383 0 0.999559879302979 -1.379176177978516e+02], 'RelTol', 1e-3);
             this.verifyEqual(niid.hdr.hist.originator, [87.999779701232910 124 128], 'RelTol', 1e-3);
             this.verifyEqual(niid.machine, 'ieee-le'); 
-            this.verifyEqual(sum(sum(sum(niid.img))), 1.1281257e+09, 'RelTol', 1e-3);
+            this.verifyEqual(sum(sum(sum(niid.img))), single(1.1281257e+09), 'RelTol', 1e-3);
         end
         function verifyEqualNIfTId(this, n1, n2)
             toignore = [mlfourd.NIfTId.EQUALN_IGNORES ...

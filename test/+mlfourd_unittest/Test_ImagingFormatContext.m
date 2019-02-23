@@ -168,7 +168,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_001mgz(this)
  			import mlfourd.*;
             niih = ImagingFormatContext(this.ref.surferAsMgz); % sagittal            
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [248 256 176]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlsurfer.MGHInfo');
@@ -182,7 +182,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_001niigz(this)
  			import mlfourd.*;
             niih = ImagingFormatContext(this.ref.surferAsNiigz); % sagittal            
-            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [248 256 176]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
@@ -223,7 +223,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_T1mgz(this)
  			import mlfourd.*;
             niih = ImagingFormatContext(this.ref.T1AsMgz);
-            this.verifyEqual(class(niih.img), 'uint8');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [256 256 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlsurfer.MGHInfo');
@@ -233,7 +233,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
         function test_ctor_T1niigz(this)
  			import mlfourd.*;            
             niih = ImagingFormatContext(this.ref.T1AsNiigz);
-            this.verifyEqual(class(niih.img), 'uint8');
+            this.verifyEqual(class(niih.img), 'single');
             this.verifyEqual(size(niih.img),  [256 256 256]);
             this.verifyEqual(niih.filesuffix, '.nii.gz');
             this.verifyClass(niih.imagingInfo, 'mlfourd.NIfTIInfo');
