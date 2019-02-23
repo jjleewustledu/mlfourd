@@ -69,7 +69,7 @@ classdef Analyze75Info < mlfourd.ImagingInfo
         %% GET/SET
         
         function g = get.Filename(this)
-            g = this.info_.Filename;
+            g = this.filename;
         end
         function g = get.FileModDate(this)
             g = this.info_.FileModDate;

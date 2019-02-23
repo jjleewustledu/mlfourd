@@ -489,8 +489,11 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             if (isempty(e))
                 e = this.imagingInfo.defaultFilesuffix;
             end
-            this.fqfilename = fullfile(p, [f e]);
-            this.untouch = false;
+            this.imagingInfo.fqfilename = fullfile(p, [f e]);
+            this.imagingInfo.untouch = false;
+            this.imagingInfo.ifh.fqfileprefix = fullfile(p, f);
+            this.imagingInfo.imgrec.fqfileprefix = fullfile(p, f);
+            this.logger.fqfileprefix = fullfile(p, f);
             this.save;
         end
         function this = scrubNanInf(this, varargin)
