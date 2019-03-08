@@ -224,7 +224,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
             this.filesuffix_             = mlfourd.NIfTIInterface.FILETYPE_EXT;
             
             this.img                     = zeros(2,2,2);
-            this.fileprefix              = ['NIfTI_D' datestr(now,30)];
+            this.fileprefix              = ['NIfTI_' mydatetimestr(now)];
             this.hdr.hist                = struct;
             this.hdr.hist.descrip        = ['NIfTI(' num2str(nargin) ' argin)'];
             this.hdr.hist.originator     = [0 0 0];
@@ -427,7 +427,7 @@ classdef NIfTI < mlfourd.AbstractNIfTI
                 assert(lstrfind(fieldnames(obj.hdr),      'hist'));
                 assert(lstrfind(fieldnames(obj.hdr.hist), 'descrip'));
                 obj = ensurefield(obj,                            'fileprefix', @ischar, {}, ...
-                                ['from_mlfourd_NIfTI_ensureNIfTI_' datestr(now,30)]);
+                                ['from_mlfourd_NIfTI_ensureNIfTI_' mydatetimestr(now)]);
                 obj = ensurefield(obj,                            'img',  @isnumeric, {}, []);
 
                 %% Check field values

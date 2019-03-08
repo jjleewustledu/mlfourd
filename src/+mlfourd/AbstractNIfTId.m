@@ -675,7 +675,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
             end
         end 
         function fn = tempFqfilename(this)
-            fn = sprintf('%s_%s%s', this.fqfileprefix, datestr(now, 30), mlfourd.NIfTIInfo.NIFTI_EXT);
+            fn = sprintf('%s_%s%s', this.fqfileprefix, mydatetimestr(now), mlfourd.NIfTIInfo.NIFTI_EXT);
         end
     end
     

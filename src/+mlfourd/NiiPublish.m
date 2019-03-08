@@ -288,7 +288,7 @@ classdef NiiPublish
             
             switch (nargin)
                 case 1
-                    filename = ['print_nii_' datestr(now, 30)];
+                    filename = ['print_nii_' mydatetimestr(now)];
                 case 2
                     assert(ischar(filename));
                 case 3

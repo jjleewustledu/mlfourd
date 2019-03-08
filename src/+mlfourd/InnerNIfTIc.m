@@ -222,7 +222,7 @@ classdef InnerNIfTIc < mlfourd.InnerNIfTIcIO & mlfourd.JimmyShenInterface & mlfo
             this.innerCellComp_ = this.innerCellComp_.fevalThis('sum');
         end
         function fqfn = tempFqfilename(this)
-            fqfn = sprintf('%s_tempFqfilename_D%s.nii.gz', class(this), datestr(now,30));
+            fqfn = sprintf('%s_tempFqfilename_D%s.nii.gz', class(this), mydatetimestr(now));
         end
                 
         %% mlpatterns.Composite
