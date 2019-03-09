@@ -39,7 +39,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             T = ip.Results.T;
             
             this.innerImaging_.img = this.innerImaging_.img(:,:,:,T);
-            this.innerImaging_.img = sum(this.innerImaging_.img, 4);
+            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
             if (isempty(varargin))
                 this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
             else
@@ -51,7 +51,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             %  @param optional M is a mask, max(mask) == 1, understood by ImagingContext2.
             
             [this,M] = this.volumeContracted(varargin{:});            
-            this.innerImaging_.img = this.innerImaging_.img / sum(sum(sum(M.nifti.img)));
+            this.innerImaging_.img = this.innerImaging_.img / sum(sum(sum(M.nifti.img, 'omitnan'), 'omitnan'), 'omitnan');
             this.fileprefix = [this.fileprefix '_avg'];
             this.addLog('DynamicsTool.volumeAveraged');
         end
@@ -74,7 +74,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.innerImaging_.img = ...
                 ensureRowVector( ...
                     squeeze( ...
-                        sum(sum(sum(this.innerImaging_.img, 1), 2), 3)));
+                        sum(sum(sum(this.innerImaging_.img, 1, 'omitnan'), 2, 'omitnan'), 3, 'omitnan')));
             if (lstrfind(M.fileprefix, 'rand'))
                 this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX];
             else
