@@ -105,7 +105,7 @@ classdef Test_ImagingFormatContext < matlab.unittest.TestCase
             this.verifyClass(ifc.imagingInfo, 'mlfourd.NIfTIInfo');
             this.verifyEqual(ifc.innerTypeclass, 'mlfourd.InnerNIfTI');
             
-            ifc = ImagingFormatContext(sprintf('nonexistentfile_D%s.4dfp.hdr', datestr(now,30)));
+            ifc = ImagingFormatContext(sprintf('nonexistentfile_%s.4dfp.hdr', datestr(now,30)));
             this.verifyTrue(~lexist(ifc.fqfilename, 'file'));
             this.verifyClass(ifc.imagingInfo, 'mlfourdfp.FourdfpInfo');
             this.verifyEqual(ifc.innerTypeclass, 'mlfourdfp.InnerFourdfp');            

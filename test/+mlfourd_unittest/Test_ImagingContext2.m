@@ -89,7 +89,7 @@ classdef Test_ImagingContext2 < matlab.unittest.TestCase
         end
         function test_ctor_aufbau(this)
  			import mlfourd.*;
-            fqfn = fullfile(this.TmpDir, sprintf('test_ctor_trivial_D%s.4dfp.hdr', datestr(now, 30)));
+            fqfn = fullfile(this.TmpDir, sprintf('test_ctor_trivial_%s.4dfp.hdr', datestr(now, 30)));
             
             ic = ImagingContext2(fqfn); % trivial ctor with fqfn not on filesystem
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilesystemTool');
