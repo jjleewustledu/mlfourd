@@ -353,6 +353,15 @@ classdef (Abstract) ImagingState < handle & mlfourd.HandleNIfTIIO
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.timeSummed(varargin{:});
         end
+        function s    = timeAveraged(this, varargin)
+            %% TIMEAVERAGED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            s = this.contexth_.timeAveraged(varargin{:});
+        end
         function s    = timeContracted(this, varargin)
             %% TIMECONTRACTED
             %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
@@ -394,6 +403,15 @@ classdef (Abstract) ImagingState < handle & mlfourd.HandleNIfTIIO
             this.contexth_.changeState( ...
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             s = this.contexth_.volumeSummed(varargin{:});
+        end
+        function s    = volumeAveraged(this, varargin)
+            %% VOLUMEAVERAGED
+            %  @param [varargin] are passed to NumericalNIfTIdState after a state-change
+            
+            import mlfourd.*;
+            this.contexth_.changeState( ...
+                NumericalNIfTIdState(this.concreteObj_, this.contexth_));
+            s = this.contexth_.volumeAveraged(varargin{:});
         end
         function s    = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED

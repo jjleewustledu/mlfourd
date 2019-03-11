@@ -10,6 +10,8 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
  	%  $Id$  	 
 
     properties (Constant)
+        AVGT_SUFFIX = '_sumt'
+        AVGXYZ_SUFFIX = '_sumxyz'
         SUMT_SUFFIX = '_sumt'
         SUMXYZ_SUFFIX = '_sumxyz'
     end
@@ -45,13 +47,21 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
             this = this.append_descrip('decorated by DynamicNIfTId');
             
             p = inputParser;
+            addParameter(p, 'timeAvg',   [], @islogical);
             addParameter(p, 'timeSum',   [], @islogical);
+            addParameter(p, 'volumeAvg', [], @islogical);
             addParameter(p, 'volumeSum', [], @islogical);
             addParameter(p, 'blur',      [], @isnumeric);
             addParameter(p, 'mcflirt',   [], @islogical);
             addParameter(p, 'mask',      [], @(x) isa(x, 'mlfourd.INIfTI'));
             parse(p, varargin{:});             
             
+            if (~isempty(p.Results.timeAvg) && p.Results.timeAvg)
+                this = this.timeAveraged;
+            end
+            if (~isempty(p.Results.volumeAvg) && p.Results.volumeAvg)
+                this = this.volumeAveraged;
+            end
             if (~isempty(p.Results.timeSum) && p.Results.timeSum)
                 this = this.timeSummed;
             end
@@ -101,21 +111,6 @@ classdef DynamicNIfTId < mlfourd.NIfTIdecoratorProperties
                    'img', maskedImg, ...
                    'descrip', sprintf('DynamicNIfTI.masked(%s)', niidMask.fileprefix), ...
                    'fileprefix', [this.fileprefix '_masked']);
-        end
-        function this = timeSummed(this)
-            %% TIMESUMMED integrates over imaging dimension 4. 
-            %  @return dynamic image reduced to summed volume.
-            
-            this.img = sum(this.img, 4);
-            this = this.append_fileprefix(this.SUMT_SUFFIX);
-        end        
-        function this = volumeSummed(this)
-            %% VOLUMESUMMED integrates over imaging dimensions 1:3. 
-            %  @return dynamic image reduced to time series.
-            
-            this.img = sum(sum(sum(this.img, 1), 2), 3);
-            this.img = squeeze(this.img);
-            this = this.append_fileprefix(this.SUMXYZ_SUFFIX);
         end
         
         %  @deprecated functionality belongs better in mlfsl.RegistrationFacade

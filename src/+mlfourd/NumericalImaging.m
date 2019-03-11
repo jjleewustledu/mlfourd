@@ -286,6 +286,15 @@ classdef NumericalImaging < handle & mlfourd.ImagingFormatContext & mlpatterns.H
             ic = ic.timeSummed;
             this = ic.nifti;
         end
+        function this = timeAveraged(this, varargin)
+            %% TIMEAVERAGED 
+            %  @param T is a closed interval for contracting times, [t0 tF]; defaults to all times.
+            %  @return this contracted in time.
+            
+            ic = this.numericalTool;
+            ic = ic.timeAveraged(varargin{:});
+            this = ic.nifti;
+        end
         function this = timeContracted(this, varargin)
             %% TIMECONTRACTED
             %  @param T is a closed interval for contracting times, [t0 tF]; defaults to all times.
@@ -311,7 +320,7 @@ classdef NumericalImaging < handle & mlfourd.ImagingFormatContext & mlpatterns.H
             this = ic.nifti;
         end        
         function [this,msk] = volumeAveraged(this, varargin)   
-            %% VOLUMEAVERAGED calls this.volumeContracted, then divides the data by the number of masked inclusions.
+            %% VOLUMEAVERAGED 
             %  @param per this.volumeContracted.
             %  @return this contracted and averaged by masked inclusions.
             

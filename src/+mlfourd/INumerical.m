@@ -11,10 +11,12 @@ classdef (Abstract) INumerical
        masked(this)
        thresh(this, t)
        threshp(this, p)
+       timeAveraged(this)
        timeContracted(this, varargin)
        timeSummed(this)
        uthresh(this, u)
        uthreshp(this, p)
+       volumeAveraged(this)
        volumeContracted(this, varargin)
        volumeSummed(this)
  	end 

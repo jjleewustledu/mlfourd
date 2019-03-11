@@ -315,6 +315,28 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             d = d.timeSummed;
             this = NumericalNIfTId(d.component);
         end
+        function this = timeAveraged(this, varargin)
+            %% TIMEAVERAGED
+            %  @param T is a closed interval for contracting times, [t0 tF]; defaults to all times.
+            %  @return this contracted in time.
+            
+            NT = size(this, 4);
+            ip = inputParser;
+            addOptional(ip, 'T',  1:NT, @isnumeric);
+            addParameter(ip, 'taus', ones(1, NT), @isnumeric);
+            parse(ip, varargin{:});
+            T = ip.Results.T;
+            taus = ip.Results.taus;
+            wtaus = taus/sum(taus);
+            assert(length(T) == length(taus))
+            
+            for iT = T
+                this.component.img(:,:,:,iT) = wtaus(iT) .* this.component.img(:,:,:,iT);
+            end
+            this.component.img = sum(this.component.img, 4, 'omitnan');
+            this.fileprefix = sprintf('%s_avgt', this.fileprefix);
+            this.addLog('DynamicsTool.timeAveraged waited by %s', mat2str(1./taus));
+        end
         function this = timeContracted(this, varargin)
             %% TIMECONTRACTED
             %  @param T is a closed interval for contracting times, [t0 tF]; defaults to all times.
@@ -328,7 +350,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             fp = this.fileprefix;
             this.component.img = this.component.img(:,:,:,T(1):T(2));
             this = this.timeSummed;
-            this.fileprefix = sprintf('%s_times%gto%g', fp, T(1), T(2));
+            this.fileprefix = sprintf('%s_sumt%g-%g', fp, T(1), T(2));
         end
         function this = uthresh(this, varargin)
             import mlfourd.*;

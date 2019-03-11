@@ -10,6 +10,8 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
  	%  $Id$  	 
 
     properties (Constant)
+        AVGT_SUFFIX   = '_avgt'
+        AVGXYZ_SUFFIX = '_avgxyz'
         SUMT_SUFFIX   = '_sumt'
         SUMXYZ_SUFFIX = '_sumxyz'
     end
@@ -18,16 +20,24 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
         function this = timeAveraged(this, varargin)
             %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
+            %  @param taus are frame durations in sec; default := 1:size(this.innerImaging_, 4)
             
+            NT = size(this.innerImaging_, 4);
             ip = inputParser;
-            addOptional(ip, 'T',  1:size(this.innerImaging_,4), @isnumeric);
+            addOptional(ip, 'T',  1:NT, @isnumeric);
+            addParameter(ip, 'taus', ones(1, NT), @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
+            taus = ip.Results.taus;
+            wtaus = taus/sum(taus);
+            assert(length(T) == length(taus))
             
-            this = this.timeContracted(varargin{:});
-            this.innerImaging_.img = this.innerImaging_.img / (T(end) - T(1) + 1);
-            this.fileprefix = [this.fileprefix '_avg'];
-            this.addLog('DynamicsTool.timeAveraged over %s', mat2str(T));
+            for iT = T
+                this.innerImaging_.img(:,:,:,iT) = wtaus(iT) .* this.innerImaging_.img(:,:,:,iT);
+            end
+            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
+            this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
+            this.addLog('DynamicsTool.timeAveraged waited by %s', mat2str(1./taus));
         end
         function this = timeContracted(this, varargin)
             %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
@@ -52,7 +62,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             
             [this,M] = this.volumeContracted(varargin{:});            
             this.innerImaging_.img = this.innerImaging_.img / sum(sum(sum(M.nifti.img, 'omitnan'), 'omitnan'), 'omitnan');
-            this.fileprefix = [this.fileprefix '_avg'];
+            this.fileprefix = [this.fileprefix this.AVGXYZ_SUFFIX];
             this.addLog('DynamicsTool.volumeAveraged');
         end
         function [this,M] = volumeContracted(this, varargin)
