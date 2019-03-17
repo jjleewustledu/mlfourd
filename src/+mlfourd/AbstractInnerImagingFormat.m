@@ -854,7 +854,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             addParameter(ip, 'creationDate', datestr(now), @ischar);
             addParameter(ip, 'img', [], @isnumeric);
             addParameter(ip, 'label', '', @ischar);
-            addParameter(ip, 'logger', mlpipeline.Logger(this.defaultFqfilename), @(x) isa(x, 'mlpipeline.AbstractLogger'));
+            addParameter(ip, 'logger', mlpipeline.Logger(this.defaultFqfilename), @(x) isa(x, 'mlpipeline.ILogger'));
             addParameter(ip, 'orient', '');
             addParameter(ip, 'originalType', class(this), @ischar);
             addParameter(ip, 'seriesNumber', nan, @isnumeric);
