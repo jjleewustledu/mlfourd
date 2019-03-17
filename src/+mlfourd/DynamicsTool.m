@@ -28,16 +28,17 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             addParameter(ip, 'taus', ones(1, NT), @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
-            taus = ip.Results.taus;
+            taus = ip.Results.taus(T);
             wtaus = taus/sum(taus);
-            assert(length(T) == length(taus))
+            assert(~isempty(T));
+            assert(~isempty(taus));
             
             for iT = T
                 this.innerImaging_.img(:,:,:,iT) = wtaus(iT) .* this.innerImaging_.img(:,:,:,iT);
             end
             this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
             this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
-            this.addLog('DynamicsTool.timeAveraged waited by %s', mat2str(1./taus));
+            this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(1./taus));
         end
         function this = timeContracted(this, varargin)
             %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
