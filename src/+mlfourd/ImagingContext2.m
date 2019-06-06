@@ -87,28 +87,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                     im = obj.fileprefix;
                 case {'filename' 'fn'}
                     im = obj.filename;
-                case {'fn.4dfp.hdr'}
-                    im = [obj.fileprefix '.4dfp.hdr'];
-                case {'fn.4dfp.ifh'}
-                    im = [obj.fileprefix '.4dfp.ifh'];
-                case {'fn.4dfp.img'}
-                    im = [obj.fileprefix '.4dfp.img'];
-                case {'fn.4dfp.img.rec'}
-                    im = [obj.fileprefix '.4dfp.img.rec'];
-                case {'fn.mgz'}
-                    im = [obj.fileprefix '.mgz'];
-                case {'fn.mhdr'}
-                    im = [obj.fileprefix '.mhdr'];
-                case {'fn.nii'}
-                    im = [obj.fileprefix '.nii'];
-                case {'fn.nii.gz'}
-                    im = [obj.fileprefix '.nii.gz'];
-                case {'fn.v'}
-                    im = [obj.fileprefix '.v'];
-                case {'fn.v.hdr'}
-                    im = [obj.fileprefix '.v.hdr'];
-                case {'fn.v.mhdr'}
-                    im = [obj.fileprefix '.v.mhdr'];
                 case {'fourdfp' 'Fourdfp' 'mlfourdfp.Fourdfp'}
                     im = obj.fourdfp;
                 case {'fqfilename' 'fqfn'}
@@ -142,11 +120,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 otherwise
                     error('mlfourd:insufficientSwitchCases', ...
                           'ImagingContext2.imagingType.obj->%s not recognized', obj);
-            end            
-            if false % (~isdeployed)
-                if (strcmp(typ, 'ImagingContext') || strcmp(typ, 'mlfourd.ImagingContext')) %#ok<UNRCH>
-                    im = mlfourd.ImagingContext(obj);
-                end
             end
         end
         function tf   = isImagingType(t)
