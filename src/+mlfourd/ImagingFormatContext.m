@@ -638,9 +638,13 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             this.innerNIfTI_.filetype     = s.filetype;
             this.innerNIfTI_.fqfilename   = s.fileprefix; % Jimmy Shen's fileprefix includes filepath, filesuffix
             % this.innerNIfTI_.machine is set at run-time
-            this.innerNIfTI_.ext          = s.ext;
+            if isfield(s, 'ext')
+                this.innerNIfTI_.ext      = s.ext;
+            end
             this.innerNIfTI_.img_         = s.img;
-            this.innerNIfTI_.untouch      = s.untouch;
+            if isfield(s, 'untouch')
+                this.innerNIfTI_.untouch  = s.untouch;
+            end
         end
     end 
     

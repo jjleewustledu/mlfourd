@@ -482,6 +482,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.ones(varargin{:});
         end
+        function that = reshape(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.reshape(varargin{:});
+        end
         function that = scrubNanInf(this)
             this.selectNumericalTool;
             that = copy(this);
@@ -959,12 +964,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             if (ischar(obj))
                 this.state_ = FilesystemTool(this, obj);
                 return
-            end
-            if false %(~isdeployed)                
-                if (isa(obj, 'mlfourd.ImagingContext')) %#ok<UNRCH> % legacy objects
-                    this.state_ = ImagingFormatTool(this, obj.niftid, varargin{:});
-                    return
-                end
+            end              
+            if (isa(obj, 'mlfourd.ImagingContext')) % legacy objects
+                this.state_ = ImagingFormatTool(this, struct(obj.niftid), varargin{:});
+                return
             end
             this.state_ = ImagingFormatTool(this, obj, varargin{:});
         end

@@ -132,6 +132,12 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  ones %s', this.fileprefix)); 
         end
+        function reshape(this, varargin)
+            this.innerImaging_ = mlfourd.ImagingFormatContext( ...
+                this.innerImaging_, 'img', reshape(this.innerImaging_.img, varargin{:}));
+            this.innerImaging_.addLog( ...
+                sprintf('NumericalTool:  reshape %s', mat2str(size(this.innerImaging_.img)))); 
+        end
         function scrubNanInf(this)
             img_ = this.innerImaging_.img;
             img_(isnan(img_)) = 0;
