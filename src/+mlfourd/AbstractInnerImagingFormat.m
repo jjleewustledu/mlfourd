@@ -861,8 +861,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             addParameter(ip, 'separator', ';', @ischar);
             addParameter(ip, 'stack', {}, @iscell);
             addParameter(ip, 'viewer', this.VIEWER, @ischar);  
-            addParameter(ip, 'circshiftK', 0, @isnumeric);                        % see also mlfourd.ImagingInfo
-            addParameter(ip, 'N', mlpet.Resources.instance.defaultN, @islogical); % 
+            addParameter(ip, 'circshiftK', 0, @isnumeric);                                       % see also mlfourd.ImagingInfo
+            addParameter(ip, 'N', mlpipeline.ResourcesRegistry.instance().defaultN, @islogical); % 
             parse(ip, varargin{:});
             
             this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;

@@ -338,7 +338,7 @@ classdef ImagingInfo < mlio.AbstractIO
             addParameter(ip, 'datatype', [], @isnumeric); % 16
             addParameter(ip, 'ext', []);
             addParameter(ip, 'filetype', []);
-            addParameter(ip, 'N', mlpet.Resources.instance.defaultN, @islogical);
+            addParameter(ip, 'N', mlpipeline.ResourcesRegistry.instance().defaultN, @islogical);
             addParameter(ip, 'untouch', true, @islogical);
             addParameter(ip, 'hdr', this.initialHdr, @isstruct);
             parse(ip, varargin{:});
