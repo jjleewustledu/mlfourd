@@ -62,13 +62,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  See also mlfourd.ImagingContext2
             
             import mlfourd.*;
-            if (ischar(obj) && isfolder(obj))
+            if ischar(obj) && isfolder(obj)
                 im = ImagingContext2.locationType(typ, obj);
                 return
             end
             
             obj = ImagingContext2(obj);
-            switch (typ)
+            switch typ
                 case {'4dfp.hdr' '.4dfp.hdr'}
                     im = [obj.fqfileprefix '.4dfp.hdr'];
                 case {'4dfp.ifh' '.4dfp.ifh'}
@@ -135,7 +135,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @returns loc is the location data loc0 cast as the requested representation.
             
             assert(ischar(loc0));
-            switch (typ)
+            switch typ
                 case 'folder'
                     [~,loc] = fileparts(loc0);
                 case 'path'
@@ -926,21 +926,23 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @return initialized context for a state design pattern.  
             
             import mlfourd.*;
-            if (0 == nargin) % must support empty ctor
+            if 0 == nargin % must support empty ctor
                 this.state_ = ImagingFormatTool(this);
                 return
             end
-            if (isa(obj, 'mlfourd.ImagingContext2')) % copy ctor for legacy behavior
+            if isa(obj, 'mlfourd.ImagingContext2')
                 this = copy(obj);
                 return
             end            
-            if (ischar(obj))
+            if ischar(obj)
                 this.state_ = FilesystemTool(this, obj);
                 return
-            end              
-            if (isa(obj, 'mlfourd.ImagingContext')) % legacy objects
-                this.state_ = ImagingFormatTool(this, struct(obj.niftid), varargin{:});
-                return
+            end
+            if ~isdeployed
+                if isa(obj, 'mlfourd.ImagingContext') % legacy objects
+                    this.state_ = ImagingFormatTool(this, struct(obj.niftid), varargin{:});
+                    return
+                end
             end
             this.state_ = ImagingFormatTool(this, obj, varargin{:});
         end
