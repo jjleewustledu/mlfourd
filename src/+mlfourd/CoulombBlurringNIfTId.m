@@ -133,7 +133,7 @@ classdef CoulombBlurringNIfTId < mlfourd.NIfTIdecoratorProperties
             
             import mlfourd.* mlpet.*;
             ip = inputParser;
-            addOptional(ip, 'blur', mlpet.PETRegistry.instance.petPointSpread, ...
+            addOptional(ip, 'blur', mlsiemens.ECATRegistry.instance.petPointSpread, ...
                                        @(x) isnumeric(x) && length(x) <= min(this.rank, 3));
             addOptional(ip, 'mask', 1, @(x) isnumeric(x) || isa(x, 'mlfourd.INIfTI'));
             parse(ip, varargin{:});
