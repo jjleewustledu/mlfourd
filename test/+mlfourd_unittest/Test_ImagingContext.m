@@ -114,7 +114,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         end        
         function test_imagingType(this)
             import mlraichle.*;
-            obj = fullfile(mlraichle.RaichleRegistry.instance.subjectsDir, 'HYGLY24', 'V1', 'mpr.4dfp.img');
+            obj = fullfile(mlraichle.StudyRegistry.instance.subjectsDir, 'HYGLY24', 'V1', 'mpr.4dfp.img');
             this.verifyEqual(imagingType('fn', obj),             basename(obj));
             this.verifyEqual(imagingType('fqfn', obj),           obj);
             this.verifyEqual(imagingType('fp', obj),             'mpr');
@@ -126,7 +126,7 @@ classdef Test_ImagingContext < matlab.unittest.TestCase
         end
         function test_locationType(this)
             import mlraichle.*;
-            loc = fullfile(mlraichle.RaichleRegistry.instance.subjectsDir, 'HYGLY24', 'V1', '');
+            loc = fullfile(mlraichle.StudyRegistry.instance.subjectsDir, 'HYGLY24', 'V1', '');
             this.verifyEqual(locationType('path', loc), loc);
             this.verifyEqual(locationType('folder', loc), 'V1');
         end
