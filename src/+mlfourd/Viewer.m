@@ -68,6 +68,9 @@ classdef Viewer
             switch (class(targ))
                 case 'cell'
                     [interp,todel] = cellfun(@(x) this.interpretTarget(x), targ, 'UniformOutput', false);
+                    if iscell(todel)
+                        todel = cell2mat(todel);
+                    end
                 case {'char' 'string'}
                     
                     % 4dfp extensions
