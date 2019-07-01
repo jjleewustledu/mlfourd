@@ -50,6 +50,21 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     
     methods (Static)
         
+        %% For use in static workspaces (e.g., while debugging static functions)
+        
+        function this = static_fsleyes(varargin)
+            this = mlfourd.ImagingContext2(varargin{:});
+            this.fsleyes;
+        end
+        function this = static_fslview(varargin)
+            this = mlfourd.ImagingContext2(varargin{:});
+            this.fslview;
+        end
+        function this = static_freeview(varargin)
+            this = mlfourd.ImagingContext2(varargin{:});
+            this.freeview;
+        end
+        
         %% Typeclass utilities
         
         function im   = imagingType(typ, obj)
