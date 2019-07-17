@@ -470,13 +470,13 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
             %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
+            this.saveLogger;
             this = this.mutateInnerImagingFormatByFilesuffix; 
             this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
             ensuredir(this.filepath);
             this.save__;
-            this.saveLogger;
         end 
         function this = saveas(this, fn)
             %% SAVEAS
@@ -688,9 +688,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 return
             end
             if (ischar(varargin{1}))
-                if (lstrfind(varargin{1}, 'InnerNIfTIIO'))
-                    this.addImgrec(varargin{:});
-                end
+                this.addImgrec(varargin{:});
                 this.logger_.add(varargin{:});
                 return
             end
@@ -704,9 +702,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 return
             end
             if (ischar(varargin{1}))
-                if (lstrfind(varargin{1}, 'InnerNIfTIIO'))
-                    this.addImgrec(varargin{:});
-                end
+                this.addImgrec(varargin{:});
                 this.logger_.addNoEcho(varargin{:});
                 return
             end

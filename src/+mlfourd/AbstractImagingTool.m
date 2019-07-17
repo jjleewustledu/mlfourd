@@ -34,12 +34,16 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
                 h.changeState( ...
                     mlfourd.BlurringTool(h, this.getInnerImaging));
             end
+            this.addLog('selectBlurringTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectDynamicsTool(this, h)
             if (~isa(this, 'mlfourd.DynamicsTool'))
                 h.changeState( ...
                     mlfourd.DynamicsTool(h, this.getInnerImaging));
             end
+            this.addLog('selectDynamicsTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectFilesystemTool(this, h)
             if (~isa(this, 'mlfourd.FilesystemTool'))
@@ -53,31 +57,48 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
                 h.changeState( ...
                     mlfourd.IsNumericTool(h, this.getInnerImaging));
             end
+            this.addLog('selectIsNumericTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectImagingFormatTool(this, h)
             if (~isa(this, 'mlfourd.ImagingFormatTool'))
                 h.changeState( ...
                     mlfourd.ImagingFormatTool(h, this.getInnerImaging));
             end
+            this.addLog('selectImagingFormatTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectMaskingTool(this, h)
             if (~isa(this, 'mlfourd.MaskingTool'))
                 h.changeState( ...
                     mlfourd.MaskingTool(h, this.getInnerImaging));
             end
+            this.addLog('selectMaskingTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectNumericalTool(this, h)
             if (~isa(this, 'mlfourd.NumericalTool'))
                 h.changeState( ...
                     mlfourd.NumericalTool(h, this.getInnerImaging));
             end
+            this.addLog('selectNumericalTool')
+            this.addLog(evalc('disp(this)'))
         end
         function selectRegistrationTool(this, h)
             if (~isa(this, 'mlfourd.RegistrationTool'))
                 h.changeState( ...
                     mlfourdfp.RegistrationTool(h, this.getInnerImaging));
             end
+            this.addLog('selectRegistrationTool')
+            this.addLog(evalc('disp(this)'))
         end             
+        
+        %%
+        
+        function addLog(~, varargin)
+        end
+        function addLogNoEcho(~, varargin)
+        end
     end
     
     %% PROTECTED   

@@ -132,6 +132,9 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function        addLog(this, varargin)
             this.innerImaging_.addLog(varargin{:});
         end
+        function        addLogNoEcho(this, varargin)
+            this.innerImaging_.addLogNoEcho(varargin{:});
+        end
         function c    = char(this)
             c = this.innerImaging_.char;
         end
@@ -192,6 +195,7 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
             r = this.ndims;
         end
         function        save(this)
+            this.addLog('mlfourd.ImagingFormatTool.save %s', this.fqfilename)
             this.innerImaging_.save;
         end
         function this = saveas(this, f)

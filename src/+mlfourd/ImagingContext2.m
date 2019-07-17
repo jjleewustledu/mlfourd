@@ -796,9 +796,18 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
-            this.selectImagingFormatTool;
-            this.state_.addLog(varargin{:});
+            if ~isempty(this.state_.logger)
+                this.state_.logger.add(varargin{:});
+            end
         end
+        function this = addLogNoEcho(this, varargin)
+            %% ADDLOGNOECHO
+            %  @param varargin are log entries for the imaging state
+            
+            if ~isempty(this.state_.logger)
+                this.state_.logger.addNoEcho(varargin{:});
+            end
+        end  
         function c    = char(this)
             this.selectImagingFormatTool;
             c = this.state_.char;

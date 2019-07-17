@@ -189,7 +189,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 this.innerImaging_.img = this.blurredImg(this.innerImaging_.img);
             end            
             this.fileprefix = this.blurredFileprefix;
-            this.innerImaging_.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
+            this.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
             this.blurCount_ = this.blurCount_ + 1;
         end
         function r = ndimsEuclid(this)
