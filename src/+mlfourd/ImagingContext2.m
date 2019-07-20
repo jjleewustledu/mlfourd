@@ -321,7 +321,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.ldivide(b);
-        end
+        end        
         function that = hypot(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -603,6 +603,52 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% DynamicsTool
         
+        function that = del2(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.del2(varargin{:});
+        end
+        function that = diff(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.diff(varargin{:});
+        end
+        function that = gradient(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.gradient(varargin{:});
+        end
+        function that = mean(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.mean(varargin{:});
+        end
+        function that = median(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.median(varargin{:});
+        end
+        function that = mode(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.mode(varargin{:});
+        end
+        function that = Q(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.Q(varargin{:});
+        end
+        function that = std(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.std(varargin{:});
+        end
+        function that = var(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.var(varargin{:});
+        end
+        
         function that = volumeAveraged(this, varargin)
             %% VOLUMEAVERAGED
             %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
@@ -846,6 +892,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         function        hist(this, varargin)
             this.selectImagingFormatTool;
             this.state_.hist(varargin{:});
+        end
+        function h    = histogram(this, varargin)
+            this.selectImagingFormatTool;
+            h = this.state_.histogram(varargin{:});
         end
         function tf   = isempty(this)
             %% ISEMPTY

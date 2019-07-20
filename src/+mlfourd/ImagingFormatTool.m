@@ -158,6 +158,9 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         end
         function        hist(this, varargin)
             this.innerImaging_.hist(varargin{:});
+        end        
+        function h    = histogram(this, varargin)
+            h = histogram(this.innerImaging_.img, varargin{:});
         end
         function tf   = isempty(this)
             tf = isempty(this.innerImaging_.img);
