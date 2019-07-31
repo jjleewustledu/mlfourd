@@ -106,7 +106,13 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             addParameter(ip, 'taus', ones(1, NT), @isnumeric);
             parse(ip, varargin{:});
             T = ip.Results.T;
-            taus = ip.Results.taus(T);
+            try                
+                taus = ip.Results.taus(T);
+            catch ME
+                handwarning(ME)
+                T = T - 1 ;
+                taus = ip.Results.taus(T);
+            end
             wtaus = taus/sum(taus);
             assert(~isempty(T));
             assert(~isempty(taus));
