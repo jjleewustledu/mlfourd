@@ -109,9 +109,12 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             try                
                 taus = ip.Results.taus(T);
             catch ME
-                handwarning(ME)
-                T = T - 1 ;
-                taus = ip.Results.taus(T);
+                handwarning(ME, ...
+                    'mlfourd:RuntimeError', ...
+                    'DynamicsTool.timeAveraged:  supplied taus may be inconsistent:  %s', num2str(ip.Results.taus))
+                taus = ones(1, NT) * ip.Results.taus(end);
+                NT1 = length(ip.Results.taus);
+                taus(1:NT1) = ip.Results.taus;
             end
             wtaus = taus/sum(taus);
             assert(~isempty(T));
