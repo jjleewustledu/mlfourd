@@ -47,7 +47,7 @@ classdef InnerNIfTIIO < handle & mlfourd.HandleNIfTIIO
                 this.untouch = false;
             end
             this.imagingInfo.filepath = pth;
-            this.addLog('InnerNIfTIIO.set.filepath<-%s', pth);
+            %this.addLog('InnerNIfTIIO.set.filepath<-%s', pth);
         end
         function pth  = get.filepath(this)
             if (isempty(this.imagingInfo.filepath))
@@ -63,7 +63,7 @@ classdef InnerNIfTIIO < handle & mlfourd.HandleNIfTIIO
                 this.untouch = false;
             end
             this.imagingInfo.fileprefix = fp;
-            this.addLog('InnerNIfTIIO.set.fileprefix<-%s', fp);
+            %this.addLog('InnerNIfTIIO.set.fileprefix<-%s', fp);
         end
         function fp   = get.fileprefix(this)
             fp = this.imagingInfo.fileprefix;
@@ -77,7 +77,7 @@ classdef InnerNIfTIIO < handle & mlfourd.HandleNIfTIIO
                 this.untouch = false;
             end
             [~,~,this.imagingInfo.filesuffix] = myfileparts(fs);
-            this.addLog('InnerNIfTIIO.set.filesuffix<-%s', fs);
+            %this.addLog('InnerNIfTIIO.set.filesuffix<-%s', fs);
         end
         function fs   = get.filesuffix(this)
             if (isempty(this.imagingInfo.filesuffix))
