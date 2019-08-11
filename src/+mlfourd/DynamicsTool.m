@@ -105,27 +105,29 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             addOptional(ip, 'T',  1:NT, @isnumeric);
             addParameter(ip, 'taus', ones(1, NT), @isnumeric);
             parse(ip, varargin{:});
-            T = ip.Results.T;
+            ipr = ip.Results;
             try                
-                taus = ip.Results.taus(T);
+                taus = ipr.taus(ipr.T);
             catch ME
                 handwarning(ME, ...
                     'mlfourd:RuntimeError', ...
-                    'DynamicsTool.timeAveraged:  supplied taus may be inconsistent:  %s', num2str(ip.Results.taus))
-                taus = ones(1, NT) * ip.Results.taus(end);
-                NT1 = length(ip.Results.taus);
-                taus(1:NT1) = ip.Results.taus;
+                    'DynamicsTool.timeAveraged:  supplied taus may be inconsistent:  %s', num2str(ipr.taus))
+                taus = ones(1, NT) * ipr.taus(end);
+                NT1 = length(ipr.taus);
+                taus(1:NT1) = ipr.taus;
             end
             wtaus = taus/sum(taus);
-            assert(~isempty(T));
-            assert(~isempty(taus));
             
-            for iT = T
-                this.innerImaging_.img(:,:,:,iT) = wtaus(iT) .* this.innerImaging_.img(:,:,:,iT);
+            for iT = ipr.T
+                this.innerImaging_.img(:,:,:,iT) = wtaus(iT-ipr.T(1)+1) .* this.innerImaging_.img(:,:,:,iT);
             end
             this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
-            this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
-            this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(1./taus));
+            if length(ipr.T) == NT
+                this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
+            else                
+                this.fileprefix = [this.fileprefix this.AVGT_SUFFIX sprintf('%i-%i', ipr.T(1), ipr.T(end))];
+            end
+            %this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(1./taus));
         end
         function this = timeContracted(this, varargin)
             %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
@@ -143,7 +145,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             else
                 this.fileprefix = sprintf('%s%s%g-%g', this.fileprefix, this.SUMT_SUFFIX, T(1), T(end));
             end
-            this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
+            %this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
         end  
         function this = var(this, varargin)
             %% applies Matlab var over time samples
