@@ -335,7 +335,7 @@ classdef NumericalNIfTId < mlfourd.NIfTIdecoratorProperties & mlpatterns.Numeric
             end
             this.component.img = sum(this.component.img, 4, 'omitnan');
             this.fileprefix = sprintf('%s_avgt', this.fileprefix);
-            this.addLog('DynamicsTool.timeAveraged waited by %s', mat2str(1./taus));
+            this.addLog('DynamicsTool.timeAveraged waited by %s', mat2str(taus/sum(taus)));
         end
         function this = timeContracted(this, varargin)
             %% TIMECONTRACTED
