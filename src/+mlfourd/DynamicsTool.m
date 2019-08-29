@@ -77,14 +77,13 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
         end
         
         function this = Q(this, varargin)
-            %% Q is the sum of squares := \Sigma_t [this_t - ref_t]^2
+            %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
             
             assert(4 == this.ndims)
-            if 4 == ref.ndims
-                for iT = 1:size(this.innerImaging_, 4)
-                    this.innerImaging_.img(:,:,:,iT) = this.innerImaging_.img(:,:,:,iT).^2;
-                end
+            for iT = 1:size(this.innerImaging_, 4)
+                this.innerImaging_.img(:,:,:,iT) = this.innerImaging_.img(:,:,:,iT).^2;
             end
+            this.innerImaging_.img = sum(this.innerImaging_, 4, 'omitnan');
             this.addLog('DynamicsTool.Q')
         end
         function this = std(this, varargin)
@@ -96,41 +95,64 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.addLog('DynamicsTool.std');
         end
         function this = timeAveraged(this, varargin)
-            %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
+            %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
-            %  @param taus are frame durations in sec; default := 1:size(this.innerImaging_, 4)
+            %  @param weights for each time \in T.
+            %  @param taus => weights := taus / sum(taus), superceding other requests for weights.
             
-            NT = size(this.innerImaging_, 4);
+            Nt = size(this.innerImaging_, 4);
             ip = inputParser;
-            addOptional(ip, 'T',  1:NT, @isnumeric);
-            addParameter(ip, 'taus', ones(1, NT), @isnumeric);
+            addOptional(ip, 'T',  1:Nt, @isnumeric);
+            addParameter(ip, 'weights', [], @isnumeric)
+            addParameter(ip, 'taus', [], @isnumeric);
             parse(ip, varargin{:});
             ipr = ip.Results;
-            try                
-                taus = ipr.taus(ipr.T);
-            catch ME
-                handwarning(ME, ...
-                    'mlfourd:RuntimeError', ...
-                    'DynamicsTool.timeAveraged:  supplied taus may be inconsistent:  %s', num2str(ipr.taus))
-                taus = ones(1, NT) * ipr.taus(end);
-                NT1 = length(ipr.taus);
-                taus(1:NT1) = ipr.taus;
+            if ~isempty(ipr.weights)
+                try                
+                    ipr.weights = ipr.weights(ipr.T);                
+                catch ME
+                    handexcept(ME, ...
+                        'mlfourd:RuntimeError', ...
+                        'DynamicsTool.timeAveraged:  supplied weights may be inconsistent:  %s', num2str(ipr.weights))
+                end 
             end
-            wtaus = taus/sum(taus);
             
-            for iT = ipr.T
-                this.innerImaging_.img(:,:,:,iT) = wtaus(iT-ipr.T(1)+1) .* this.innerImaging_.img(:,:,:,iT);
+            if ~isempty(ipr.taus)
+                try                    
+                    ipr.weights = ipr.taus / sum(ipr.taus);
+                    ipr.weights = ipr.weights(ipr.T);                
+                catch ME
+                    handexcept(ME, ...
+                        'mlfourd:RuntimeError', ...
+                        'DynamicsTool.timeAveraged:  supplied weights may be inconsistent:  %s', num2str(ipr.weights))
+                end 
             end
-            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
-            if length(ipr.T) == NT
+            
+            if isempty(ipr.weights)               
+                this.innerImaging_.img = sum(this.innerImaging_.img(:,:,:,ipr.T), 4, 'omitnan') / length(ipr.T);
+                namesAndLogging()
+                return
+            end
+                       
+            this.innerImaging_.img = this.innerImaging_.img(:,:,:,ipr.T); % truncate series
+            for it = 1:length(ipr.T)
+                this.innerImaging_.img(:,:,:,it) = ipr.weights(it) * this.innerImaging_.img(:,:,:,it); % weight series
+            end
+            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan'); % sum series
+            namesAndLogging()
+            
+                        
+            
+            function namesAndLogging()
                 this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
-            else                
-                this.fileprefix = [this.fileprefix this.AVGT_SUFFIX sprintf('%i-%i', ipr.T(1), ipr.T(end))];
+                if length(ipr.T) ~= Nt
+                    this.fileprefix = [this.fileprefix sprintf('%i-%i', ipr.T(1), ipr.T(end))];
+                end
+                this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(ipr.taus/sum(ipr.taus)));
             end
-            %this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(1./taus));
         end
         function this = timeContracted(this, varargin)
-            %  @param optional T \in \mathbb{N}^n, n := length(T), masks by time indices; 
+            %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
             
             ip = inputParser;
@@ -140,12 +162,13 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             
             this.innerImaging_.img = this.innerImaging_.img(:,:,:,T);
             this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
-            if (isempty(varargin))
-                this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
-            else
-                this.fileprefix = sprintf('%s%s%g-%g', this.fileprefix, this.SUMT_SUFFIX, T(1), T(end));
+            
+            % names & logging
+            this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
+            if ~isempty(varargin)
+                this.fileprefix = sprintf('%s%g-%g', this.fileprefix, T(1), T(end));
             end
-            %this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
+            this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
         end  
         function this = var(this, varargin)
             %% applies Matlab var over time samples
@@ -156,37 +179,42 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.addLog('DynamicsTool.var');
         end        
         function [this,M] = volumeAveraged(this, varargin)
-            %  @param optional M is a mask, max(mask) == 1, understood by ImagingContext2.
+            %  @param optional mask | max(mask) == 1, understood by ImagingContext2.
             
-            [this,M] = this.volumeContracted(varargin{:});            
-            this.innerImaging_.img = this.innerImaging_.img / sum(sum(sum(M.nifti.img, 'omitnan'), 'omitnan'), 'omitnan');
+            [this,M] = this.volumeContracted(varargin{:});    
+            boolM = M.logical;
+            dbleM = double(boolM);
+            this.innerImaging_.img = this.innerImaging_.img / sum(dbleM(dbleM > 0), 'omitnan');
+            
+            % names & logging
             this.fileprefix = [this.fileprefix this.AVGXYZ_SUFFIX];
             this.addLog('DynamicsTool.volumeAveraged');
         end
         function [this,M] = volumeContracted(this, varargin)
-            %  @param optional M is a mask, max(mask) == 1, understood by ImagingContext2.
+            %  @param optional  mask | max(mask) == 1, understood by ImagingContext2.
             
             sz = this.innerImaging_.size;
-            ones_ = ones(sz(1:3));
             ip = inputParser;
-            addOptional(ip, 'M', ones_);
+            addOptional(ip, 'M', ones(sz(1:3)));
             parse(ip, varargin{:});
-            this.verifyMaxMaskIsUnity(ip.Results.M);
             M = mlfourd.ImagingContext2(ip.Results.M);
+            boolM = M.logical;
             
-            ming = M.nifti.img;
-            for t = 1:sz(4)
-                this.innerImaging_.img(:,:,:,t) =  ...
-                    this.innerImaging_.img(:,:,:,t) .* ming;
-            end            
-            this.innerImaging_.img = ...
-                ensureRowVector( ...
-                    squeeze( ...
-                        sum(sum(sum(this.innerImaging_.img, 1, 'omitnan'), 2, 'omitnan'), 3, 'omitnan')));
-            if (lstrfind(M.fileprefix, 'rand'))
-                this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX];
+            if 4 == length(sz)
+                img = zeros(1,sz(4));
+                for t = 1:sz(4)
+                    iiimg = this.innerImaging_.img(:,:,:,t);
+                    img(t) = sum(iiimg(boolM), 'omitnan');
+                end
+                this.innerImaging_.img = img;
             else
-                this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX upper(M.fileprefix(1)) M.fileprefix(2:end)];
+                this.innerImaging_.img = sum(this.innerImaging_.img(boolM), 'omitnan');
+            end
+            
+            % names & logging
+            this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX];
+            if (lstrfind(M.fileprefix, 'rand'))
+                this.fileprefix = [this.fileprefix upper(M.fileprefix(1)) M.fileprefix(2:end)];
             end
             this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
         end
@@ -195,19 +223,6 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this = this@mlfourd.ImagingFormatTool(h, varargin{:}); 
             assert(4 == this.innerImaging_.ndims);
         end 
-    end
-    
-    %% PRIVATE
-    
-    methods (Access = private)
-        function verifyMaxMaskIsUnity(this, M)
-            M = mlfourd.ImagingContext2(M);
-            ming = M.nifti.img;
-            if (1 ~= dipmax(ming))
-                this.addLog('DynamicsTool.verifyMaxMaskIsUnity dipmax(ming) == %g', dipmax(ming));
-                warning('mlfourd:failedToVerify', 'DynamicsTool.verifyMaxMaskIsUnity');
-            end
-        end
     end
       
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
