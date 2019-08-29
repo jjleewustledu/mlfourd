@@ -1033,19 +1033,20 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             try
                 that = copy(this); % avoid side effects
                 assert(0 == mlbash(sprintf('which %s', app)), ...
-                    'mlfourd:externalAppNotFound', ...
+                    'mlfourd:RuntimeError', ...
                     'AbstractInnerImagingFormat.viewExternally could not find %s', app);
-                tmp = that.tempFqfilename;
-                that.fqfilename = tmp;
+
+                that.fqfilename = that.tempFqfilename;
+                that.filepath = tempdir;
                 that.save; % always save temp; internal img likely has changed from img on filesystem
                 v = mlfourd.Viewer(app);
-                tmp = [tmp varargin];
-                [s,r] = v.aview(tmp{:});
-                that.deleteExisting(tmp);
+                files = [that.fqfilename varargin];
+                [s,r] = v.aview(files{:});
+                that.deleteExisting(files);
             catch ME
-                dispexcept(ME, 'mlfourd:viewerError', ...
-                    'AbstractInnerImagingFormat.viewExternally called mlbash with %s; \nit returned s->%i, r->%s', ...
-                    app, s, r);
+                dispexcept(ME, 'mlfourd:RuntimeError', ...
+                    'AbstractInnerImagingFormat.viewExternally called mlbash with %s; \nit returned r->%s', ...
+                    app, r);
             end
         end  
         function this = zoom3D(this, rmin, rsize)
