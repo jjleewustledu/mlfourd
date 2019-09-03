@@ -87,7 +87,12 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
             g = this.innerImaging_.imagingInfo;
         end
         function g    = get.imgrec(this)
+            if ~isprop(this.innerImaging_, 'imgrec')
+                g = [];
+                return
+            end
             g = this.innerImaging_.imgrec;
+                
         end 
         function g    = get.innerTypeclass(this)
             g = this.innerImaging_.innerTypeclass;
