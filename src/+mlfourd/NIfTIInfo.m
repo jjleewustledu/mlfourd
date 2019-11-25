@@ -11,7 +11,7 @@ classdef NIfTIInfo < mlfourd.AbstractNIfTIInfo
         FILETYPE      = 'NIFTI_GZ'
         FILETYPE_EXT  = '.nii.gz'
         NIFTI_EXT     = '.nii.gz'
-        SUPPORTED_EXT = {'.nii' '.nii.gz'}
+        SUPPORTED_EXT = {'.nii' '.nii.gz' '.hdr'}
     end
     
 	methods 
