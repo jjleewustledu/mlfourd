@@ -43,6 +43,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         mmppix
         negentropy
         orient % RADIOLOGICAL, NEUROLOGICAL
+        originator
         pixdim
         seriesNumber
         
@@ -247,6 +248,14 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function o    = get.orient(this)
             o = this.innerNIfTI_.orient;
         end
+        function o    = get.originator(this)
+            o = this.innerNIfTI_.originator;
+        end        
+        function        set.originator(this, o)
+            %% SET.ORIGINATOR sets originator position in mm.
+            
+            this.innerNIfTI_.originator = o;
+        end  
         function pd   = get.pixdim(this)
             pd = this.innerNIfTI_.pixdim;
         end        
