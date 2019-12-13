@@ -259,9 +259,10 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             pd = this.hdr.dime.pixdim(2:this.rank+1);
         end        
         function        set.pixdim(this, pd)
-            %% SET.PIXDIM sets voxel-time dimensions in mm, s.
+            %% SET.PIXDIM sets voxel-time dimensions in mm, s; and this.N := false.
             
-            this.imagingInfo_.hdr.dime.pixdim(2:this.rank+1) = pd;
+            this.imagingInfo_.hdr.dime.pixdim(2:length(pd)+1) = pd;
+            this.N = false;
         end 
         function s    = get.seriesNumber(this)
             s = this.seriesNumber_;
