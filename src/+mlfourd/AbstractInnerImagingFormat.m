@@ -43,6 +43,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         mmppix       % [mm mm mm]
         negentropy
         originalType % useful for AbstractInnerImagingFormat that is a state or strategy
+        originator
         pixdim       % [mm mm mm sec]
         seriesNumber
         
@@ -241,6 +242,15 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         end  
         function E    = get.negentropy(this)
             E = -this.entropy;
+        end
+        function o    = get.originator(this)
+            o = this.hdr.hist.originator;
+        end
+        function        set.originator(this, o)
+            %% SET.ORIGINATOR sets originator position in mm and this.N := false.
+            
+            this.hdr.hist.originator = o;
+            this.N = false;
         end
         function o    = get.originalType(this)
             o = this.originalType_;
