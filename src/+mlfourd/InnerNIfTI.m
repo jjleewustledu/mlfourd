@@ -118,7 +118,9 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
     
     methods (Hidden)        
         function save__(this)
-            assert(strcmp(this.filesuffix, '.nii') || strcmp(this.filesuffix, '.nii.gz'))
+            assert(strcmp(this.filesuffix, '.nii') || ...
+                   strcmp(this.filesuffix, '.nii.gz') || ...
+                   strcmp(this.filesuffix, '.hdr'))
             this.save_nii;
         end
     end
