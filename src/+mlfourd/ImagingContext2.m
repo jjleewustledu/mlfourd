@@ -152,7 +152,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             assert(ischar(loc0));
             switch typ
                 case 'folder'
-                    [~,loc] = fileparts(loc0);
+                    loc = mybasename(loc0);
                 case 'path'
                     loc = loc0;
                 otherwise
