@@ -50,6 +50,88 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     
     methods (Static)
         
+        function this = fread(varargin)
+            ip = inputParser;
+            addRequired(ip, 'filename', @isfile)
+            addOptional(ip, 'size', [], @isnumeric)
+            addOptional(ip, 'precision', 'single', @ischar)
+            addParameter(ip, 'hdr', [], @isstruct)
+            addParameter(ip, 'format', 'luckett', @ischar) 
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            fid = fopen(ipr.filename, 'r');            
+            img = single(fread(fid, ipr.precision));
+            fclose(fid);
+            
+            hk = {348; ''; ''; 0; 0; 'r'; 0};
+            hkHeadings = {'sizeof_hdr', 'data_type', 'db_name', 'extents', 'session_error', 'regular', 'dim_info'};
+            dime = {[3 48 64 48 1 1 1 1]; ...
+                     0; 0 ;0; 0; 16; ...
+                     32; 0; [1 3 3 3 1 1 1 1]; 352; 0; ...
+                     0; 0; 0; 10; 0; ...
+                     0; 0; 0; 3649; 0};
+            dimeHeadings = {'dim', ...
+                            'intent_p1', 'intent_p2', 'intent_p3', 'intent_code', 'datatype', ...
+                            'bitpix', 'slice_start', 'pixdim', 'vox_offset', 'scl_slope', ...
+                            'scl_inter', 'slice_end', 'slice_code', 'xyzt_units', 'cal_max', ...
+                            'cal_min', 'slice_duration', 'toffset', 'glmax', 'glmin'};
+            hist = {''; ''; 0; 1; 0; ...
+                    0; 0; -71; -95; -71; ...
+                    [3 0 0 -71]; [0 3 0 -95]; [0 0 3 -71]; ''; 'n+1'; ...
+                    [72 96 72]};
+            histHeadings = {'descrip', 'aux_file', 'qform_code', 'sform_code', 'quatern_b', ...
+                            'quatern_c', 'quatern_d', 'qoffset_x', 'qoffset_y', 'qoffset_z', ...
+                            'srow_x', 'srow_y', 'srow_z', 'intent_name', 'magic', ... 
+                            'originator'};
+            extra = { ...
+                'DT_FLOAT32'; 'NIFTI_INTENT_NONE'; ''; 'NIFTI_XFORM_SCANNER_ANAT'; 'NIFTI_XFORM_UNKNOWN'; ...
+                'NIFTI_UNITS_MM'; 'NIFTI_UNITS_SEC'; 'NIFTI_UNITS_UNKNOWN'; 0; 0; ...
+                0; 'NIFTI_SLICE_UNKNOWN'; 0; 0; 0};
+            extraHeadings = { ...
+                'NIFTI_DATATYPES', 'NIFTI_INTENT_CODES', 'NIFTI_INTENT_NAMES', 'NIFTI_SFORM_CODES', 'NIFTI_QFORM_CODES', ...
+                'NIFTI_SPACE_UNIT', 'NIFTI_TIME_UNIT', 'NIFTI_SPECTRAL_UNIT', 'NIFTI_FREQ_DIM', 'NIFTI_PHASE_DIM', ...
+                'NIFTI_SLICE_DIM', 'NIFTI_SLICE_ORDER', 'NIFTI_VERSION', 'NIFTI_ONEFILE', 'NIFTI_5TH_DIM'};
+
+            switch numel(img)
+                case 48*64*48
+                    img = reshape(img, [48 64 48]);
+                    ipr.hdr = struct( ...
+                        'hk', cell2struct(hk, hkHeadings, 1), ...
+                        'dime', cell2struct(dime, dimeHeadings, 1), ...
+                        'hist', cell2struct(hist, histHeadings, 1), ...
+                        'extra', cell2struct(extra, extraHeadings, 1));
+                case 128*128*75
+                    img = reshape(img, [128 128 75]);
+                case 176*208*176
+                    img = reshape(img, [176 208 176]);
+                case 256*256*256
+                    img = reshape(img, [256 256 256]);
+                otherwise
+            end
+
+            ifc = mlfourd.ImagingFormatContext(img);
+            [p,f] = myfileparts(ipr.filename);
+            switch ipr.format
+                case 'nifti'
+                    ipr.filename = fullfile(p, [f '.nii.gz']);
+                case 'fourdfp'
+                    ipr.filename = fullfile(p, [f '.4dfp.hdr']);
+                case 'luckett'
+                    ifc.img = flip(ifc.img, 2);
+                    ipr.filename = fullfile(p, [f '.4dfp.hdr']);
+                case 'mgz'
+                    ipr.filename = fullfile(p, [f '.mgz']);
+                otherwise
+                    error('mlfourd:ValueError', 'ImagingContext2.fread() does not support format %s', ipr.format)
+            end
+            ifc.filename = ipr.filename;
+            if ~isempty(ipr.hdr)
+                ifc.hdr = ipr.hdr;
+            end
+            this = mlfourd.ImagingContext2(ifc);
+        end
+        
         %% For use in static workspaces (e.g., while debugging static functions)
         
         function this = static_fsleyes(varargin)

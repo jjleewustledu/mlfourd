@@ -173,6 +173,10 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function h    = get.hdr(this)
             h = this.innerNIfTI_.hdr;
         end 
+        function        set.hdr(this, s)
+            assert(isstruct(s))
+            this.innerNIfTI_.hdr = s;
+        end        
         function im   = get.img(this)
             im = this.innerNIfTI_.img;
         end        
