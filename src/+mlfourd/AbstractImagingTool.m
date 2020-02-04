@@ -65,8 +65,8 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
                 h.changeState( ...
                     mlfourd.ImagingFormatTool(h, this.getInnerImaging));
             end
-            this.addLog('selectImagingFormatTool')
-            this.addLog(evalc('disp(this)'))
+            this.addLog('selectImagingFormatTool');
+            this.addLog(evalc('disp(this)'));
         end
         function selectMaskingTool(this, h)
             if (~isa(this, 'mlfourd.MaskingTool'))
