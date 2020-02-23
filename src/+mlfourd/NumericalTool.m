@@ -18,6 +18,9 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function atan2(this, b)
             this.bsxfun(@atan2, b);
         end
+        function atanh(this)
+            this.usxfun(@atanh);
+        end
         function flip(this, b)
             this.bsxfun(@flip, b);
 %            this.innerImaging_.fileprefix = sprintf('%s_flip%i', this.innerImaging_.fileprefix, b);
@@ -64,11 +67,14 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function rem(this, b)
             this.bsxfun(@rem, b);
         end
-        function sum(this, varargin)  
+        function sum(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', sum(this.innerImaging_.img, varargin{:}));
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  sum %s %s', this.fileprefix, mat2str(varargin{:}))); 
+        end
+        function tanh(this)
+            this.usxfun(@tanh);
         end
         function times(this, b)
             this.bsxfun(@times, b);

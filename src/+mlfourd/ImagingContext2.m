@@ -384,6 +384,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.atan2(b);            
         end
+        function that = atanh(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.atanh();            
+        end
         function that = bsxfun(this, pfun, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -465,6 +470,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.rem(b);
+        end
+        function that = tanh(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.tanh();            
         end
         function that = times(this, b)
             this.selectNumericalTool;

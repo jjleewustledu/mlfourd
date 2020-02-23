@@ -250,6 +250,12 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %% SET.ORIGINATOR sets originator position in mm and this.N := false.
             
             this.hdr.hist.originator = o;
+            this.imagingInfo_.hdr.hist.qoffset_x = 1 - o(1);
+            this.imagingInfo_.hdr.hist.qoffset_y = 1 - o(2);
+            this.imagingInfo_.hdr.hist.qoffset_z = 1 - o(3);
+            this.imagingInfo_.hdr.hist.srow_x(4) = 1 - o(1);
+            this.imagingInfo_.hdr.hist.srow_y(4) = 1 - o(2);
+            this.imagingInfo_.hdr.hist.srow_z(4) = 1 - o(3);
             this.N = false;
         end
         function o    = get.originalType(this)
@@ -262,6 +268,9 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             %% SET.PIXDIM sets voxel-time dimensions in mm, s; and this.N := false.
             
             this.imagingInfo_.hdr.dime.pixdim(2:length(pd)+1) = pd;
+            this.imagingInfo_.hdr.hist.srow_x(1) = pd(1);
+            this.imagingInfo_.hdr.hist.srow_y(2) = pd(2);
+            this.imagingInfo_.hdr.hist.srow_z(3) = pd(3);
             this.N = false;
         end 
         function s    = get.seriesNumber(this)
@@ -1053,7 +1062,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 v = mlfourd.Viewer(app);
                 files = [that.fqfilename varargin];
                 [s,r] = v.aview(files{:});
-                that.deleteExisting(files);
+                that.deleteExisting(that.fqfilename);
             catch ME
                 dispexcept(ME, 'mlfourd:RuntimeError', ...
                     'AbstractInnerImagingFormat.viewExternally called mlbash with %s; \nit returned r->%s', ...
