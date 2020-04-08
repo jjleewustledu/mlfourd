@@ -22,10 +22,10 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.addLog('DynamicsTool.del2');
         end
         function this = diff(this, varargin)
-            %% applies Matlab diff over time samples, time dimension will be smaller by 1.
+            %% DIFF applies Matlab diff over time samples, time dimension will be smaller by 1.
+            %  See also:  Matlab diff.
             
-            assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
+            img = shiftdim(this.innerImaging_.img, this.ndims-1); % t is leftmost
             img = diff(img, varargin{:});
             this.innerImaging_.img = shiftdim(img, 1);
             this.addLog('DynamicsTool.diff');
@@ -169,6 +169,21 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
                 this.fileprefix = sprintf('%s%g-%g', this.fileprefix, T(1), T(end));
             end
             this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
+        end  
+        function [times,this] = timeShifted(this, times, Dt)
+            %% TIMESHIFTED
+            %  @param required times is numeric, possibly nonuniform.
+            %  @param required Dt is scalar.
+            %  @return times & this shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
+            
+            assert(isnumeric(times))
+            assert(isscalar(Dt))
+            
+            [times,this.innerImaging_.img] = shiftNumeric(times, this.innerImaging_.img, Dt);
+            
+            % names & logging
+            this.fileprefix = sprintf('%s_timeShifted%g', this.fileprefix, Dt);
+            this.addLog('DynamicsTool.timeShifted by %g', Dt);
         end  
         function this = var(this, varargin)
             %% applies Matlab var over time samples

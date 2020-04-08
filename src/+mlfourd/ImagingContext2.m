@@ -784,6 +784,16 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.timeContracted(varargin{:});
         end
+        function [times,that] = timeShifted(this, times, Dt)
+            %% TIMESHIFTED
+            %  @param required times is numeric, possibly nonuniform.
+            %  @param required Dt is scalar.
+            %  @return times & copy(this) shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            [times,that] = that.state_.timeShifted(times, Dt);
+        end
         function that = timeSummed(this, varargin)
             %% TIMESUMMED 
             %  @param optional closed interval T \in {\Bbb R}.
