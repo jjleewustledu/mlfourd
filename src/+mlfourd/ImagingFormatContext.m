@@ -303,7 +303,12 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         %%
         
         function        addLog(this, varargin)
-            this.innerNIfTI_.addLog(varargin{:});
+            inst = mlpipeline.PipelineRegistry.instance();
+            if inst.verbose
+                this.innerNIfTI_.addLog(varargin{:});
+            else
+                this.innerNIfTI_.addLogNoEcho(varargin{:});
+            end
         end
         function c    = char(this, varargin)
             c = this.innerNIfTI_.char(varargin{:});
