@@ -124,21 +124,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function bp   = get.bitpix(this) 
             %% BITPIX returns a datatype code as described by the INIfTI specifications
             
-            switch (class(this.img_))
-                case {'uchar', 'uint8'};    bp = 8;
-                case  'int16';              bp = 16;
-                case  'int32';              bp = 32;
-                case {'single', 'float32'}; bp = 32;
-                case {'double', 'float64'}; bp = 64;
-                case  'schar';              bp = 8;
-                case  'uint16';             bp = 16;
-                case  'uint32';             bp = 32;
-                case  'int64';              bp = 64;
-                case  'uint64';             bp = 64;
-                otherwise
-                    error('mlfourd:unknownSwitchCase', ...
-                          'InnerNIfTI.get.bitpix could not recognize the class(img)->%s', class(this.img_));
-            end
+            bp = this.hdr.dime.bitpix;
         end
         function        set.bitpix(this, bp)
             assert(isnumeric(bp));
@@ -154,21 +140,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function dt   = get.datatype(this)
             %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
-            switch (class(this.img_))
-                case {'uchar', 'uint8'};    dt = 2;
-                case  'int16';              dt = 4;
-                case  'int32';              dt = 8;
-                case {'single', 'float32'}; dt = 16;
-                case {'double', 'float64'}; dt = 64;
-                case  'schar';              dt = 256;
-                case  'uint16';             dt = 512;
-                case  'uint32';             dt = 768;
-                case  'int64';              dt = 1024;
-                case  'uint64';             dt = 1280;
-                otherwise
-                    error('mlfourd:unknownSwitchCase', ...
-                          'InnerNIfTI.get.datatype could not recognize the class(img)->%s', class(this.img_));
-            end
+            dt = this.hdr.dime.datatype;
         end
         function        set.datatype(this, dt)
             if (ischar(dt))
@@ -857,6 +829,41 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
         function fqfn = fqfileprefix_mgz(this)
             fqfn = [this.fqfileprefix '.mgz'];
         end
+        function this = optimizePrecision(this)
+            % ensures bitpix, datatype
+            % @return possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
+
+            if isempty(this.img_)
+                this = this.ensureDouble;
+                return
+            end
+            switch class(this.img_)
+                case 'logical'
+                    this = this.ensureUint8;
+                case 'uint8'
+                    this = this.ensureUint8;
+                case 'int16'
+                    this = this.ensureInt16;
+                case 'int32'
+                    this = this.ensureInt32;
+                case 'int64'
+                    this = this.ensureInt64;
+                case 'single'
+                    this = this.ensureSingle;
+                case 'double'
+                    this = this.ensureDouble;
+                    if (isempty(this.img_(this.img_ ~= 0)))
+                        return
+                    end
+                    if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
+                        (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
+                        this = this.ensureSingle;
+                    end
+                otherwise
+                    error('mlfourd:NotImplementedError', ...
+                        'class(AbstractImagingFormat.optimizePrecision.this.img_) is %s', class(this.img_))
+            end
+        end
         
  		function this = AbstractInnerImagingFormat(varargin)
  			%% ABSTRACTINNERIMAGINGFORMAT
@@ -972,33 +979,6 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             assert(isfield(this.imagingInfo_.hdr.hist, 'descrip'), ...
                 'mlfourd:initializationOrderError', 'AbstractInnerImagingFormat.initialStack');
             s = {this.imagingInfo_.hdr.hist.descrip};
-        end
-        function this = optimizePrecision(this)
-            %return % possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
-            
-            try 
-                if (isempty(this.img_))
-                    this = this.ensureDouble;
-                    return
-                end
-                if (islogical(this.img_)) % ensures numerical operations on this.img_
-                    this = this.ensureUint8;
-                    return
-                end
-                if (isa(this.img_, 'double'))
-                    this = this.ensureDouble; % ensures bitpix, datatype
-                    if (isempty(this.img_(this.img_ ~= 0)))
-                        return
-                    end
-                    if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
-                        (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
-                        this = this.ensureSingle;
-                        return
-                    end
-                end
-            catch ME
-                dispexcept(ME);
-            end
         end
         function hdr  = recalculateHdrHistOriginator(this, hdr)
             hdr = this.imagingInfo_.recalculateHdrHistOriginator(hdr);

@@ -331,11 +331,23 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function this = prepend_fileprefix(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
         end
-        function        ensureDouble(this)
-            this.innerNIfTI_.ensureDouble;
+        function this = ensureDouble(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureDouble;
         end
-        function        ensureSingle(this)
-            this.innerNIfTI_.ensureSingle;
+        function this = ensureSingle(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureSingle;
+        end
+        function this = ensureUint8(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureUint8;
+        end
+        function this = ensureInt16(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureInt16;
+        end
+        function this = ensureInt32(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureInt32;
+        end
+        function this = ensureInt64(this)
+            this.innerNIfTI_ = this.innerNIfTI_.ensureInt64;
         end
         function f    = fov(this)
             f = this.innerNIfTI_.fov;
@@ -372,6 +384,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         end
         function n    = ndims(this, varargin)
             n = this.innerNIfTI_.ndims(varargin{:});
+        end
+        function this = optimizePrecision(this)
+            this.innerNIfTI_ = this.innerNIfTI_.optimizePrecision();
         end
         function this = prod(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
