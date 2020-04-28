@@ -113,7 +113,7 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
     
     methods (Access = protected)                 
  		function this = AbstractImagingTool(h)
-            assert(all(isvalid(h)));
+%            assert(all(isvalid(h)));
             this.contexth_ = h;
  		end
     end 
