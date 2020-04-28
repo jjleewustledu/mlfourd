@@ -41,6 +41,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         label
         machine
         mmppix
+        N
         negentropy
         orient % RADIOLOGICAL, NEUROLOGICAL
         originator
@@ -246,6 +247,13 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             
             this.innerNIfTI_.mmppix = mpp;
         end  
+        function g    = get.N(this)
+            g = this.innerNIfTI_.N;
+        end
+        function        set.N(this, s)
+            assert(islogical(s))
+            this.innerNIfTI_.N = s;
+        end
         function E    = get.negentropy(this)
             E = this.innerNIfTI_.negentropy;
         end
@@ -648,7 +656,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                         case 'hist'
                             this.innerNIfTI_.hdr.hist = ip.Results.hist;
                         case 'N'
-                            this.innerNIfTI_.N = this.innerNIfTI_.N;
+                            this.innerNIfTI_.N = ip.Results.N;
                         case 'obj'
                         otherwise % adjust programmatically
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
