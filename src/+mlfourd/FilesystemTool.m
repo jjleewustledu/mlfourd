@@ -34,11 +34,23 @@ classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.Abst
         function pth  = get.filepath(this)
             pth = this.filepath_;
         end
+        function        set.filepath(this, s)
+            assert(isfolder(s))
+            this.filepath_ = s;
+        end
         function fp   = get.fileprefix(this)
             fp = this.fileprefix_;
         end
+        function        set.fileprefix(this, s)
+            assert(ischar(s))
+            this.fileprefix_ = s;
+        end
         function fs   = get.filesuffix(this)
             fs = this.filesuffix_;
+        end
+        function        set.filesuffix(this, s)
+            assert(ischar(s))
+            this.filesuffix_ = s;
         end
         function fqfn = get.fqfilename(this)
             fqfn = [this.fqfileprefix this.filesuffix];
@@ -96,6 +108,7 @@ classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.Abst
                 re = regexp(r, ...
                     'dim1\s+(?<d1>\d+)\s+dim2\s+(?<d2>\d+)\s+dim3\s+(?<d3>\d+)\s+dim4\s+(?<d4>\d+)', 'names');
                 sz = [str2double(re.d1) str2double(re.d2) str2double(re.d3) str2double(re.d4)];
+                sz = sz(sz ~= 1);
                 if (~isempty(varargin))
                     sz = sz(varargin{:});
                 end
