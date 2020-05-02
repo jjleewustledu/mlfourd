@@ -236,7 +236,6 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
         
  		function this = DynamicsTool(h, varargin)
             this = this@mlfourd.ImagingFormatTool(h, varargin{:}); 
-            assert(4 == this.innerImaging_.ndims);
         end 
     end
       

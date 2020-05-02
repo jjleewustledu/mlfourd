@@ -98,6 +98,7 @@ classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.Abst
         function sz  = size(this, varargin)
             if (lstrfind(this.filesuffix, mlfourdfp.FourdfpInfo.SUPPORTED_EXT))
                 sz = mlfourdfp.FourdfpVisitor.ifhMatrixSize(this.fqfileprefix);
+                sz = sz(sz ~= 1);
                 if (~isempty(varargin))
                     sz = sz(varargin{:});
                 end
