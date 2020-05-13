@@ -471,7 +471,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.rem(b);
         end
-        function that = tanh(this, b)
+        function that = tanh(this)
             this.selectNumericalTool;
             that = copy(this);
             that.state_.tanh();            

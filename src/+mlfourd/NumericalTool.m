@@ -15,11 +15,20 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function abs(this)
             this.usxfun(@abs);
         end
+        function acosh(this)
+            this.usxfun(@acosh);
+        end
+        function asinh(this)
+            this.usxfun(@asinh);
+        end
         function atan2(this, b)
             this.bsxfun(@atan2, b);
         end
         function atanh(this)
             this.usxfun(@atanh);
+        end
+        function cosh(this)
+            this.usxfun(@cosh);
         end
         function flip(this, b)
             this.bsxfun(@flip, b);
@@ -66,6 +75,9 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         end
         function rem(this, b)
             this.bsxfun(@rem, b);
+        end
+        function sinh(this)
+            this.usxfun(@sinh);
         end
         function sum(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
