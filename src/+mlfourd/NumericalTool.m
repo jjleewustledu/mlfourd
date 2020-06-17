@@ -122,6 +122,15 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function and(this, b)
             this.lbsxfun(@and, b);
         end
+        function isfinite(this)
+            this.lusxfun(@isfinite);
+        end 
+        function isinf(this)
+            this.lusxfun(@isinf);
+        end 
+        function isnan(this)
+            this.lusxfun(@isnan);
+        end 
         function or(this, b)
             this.lbsxfun(@or, b);
         end

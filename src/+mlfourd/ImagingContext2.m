@@ -532,6 +532,21 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.and(b);
         end
+        function that = isfinite(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.isfinite;
+        end
+        function that = isinf(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.isinf;
+        end
+        function that = isnan(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.isnan;
+        end
         function that = or(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -545,7 +560,8 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.not;
-        end
+        end        
+        
         
         function that = false(this, varargin)
             this.selectNumericalTool;
