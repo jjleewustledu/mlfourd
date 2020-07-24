@@ -189,7 +189,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                 case {'fqfilename' 'fqfn'}
                     im = obj.fqfilename;
                 case {'fqfileprefix' 'fqfp' 'fdfp' '4dfp'}
-                    im = obj.fqfileprefix;
+                    im = obj.fqfileprefix;                  
                 case {'ImagingContext2' 'mlfourd.ImagingContext2'}
                     im = mlfourd.ImagingContext2(obj);
                 case {'mgz' '.mgz'}

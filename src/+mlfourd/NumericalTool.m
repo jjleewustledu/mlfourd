@@ -196,18 +196,22 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function d = dipisfinite(this)
             this.usxfun(@dipisfinite);
             d = this.getInnerImaging.img;
+            d = logical(d);
         end
         function d = dipisinf(this)
             this.usxfun(@dipisinf);
             d = this.getInnerImaging.img;
+            d = logical(d);
         end
         function d = dipisnan(this)
             this.usxfun(@dipisnan);
             d = this.getInnerImaging.img;
+            d = logical(d);
         end
         function d = dipisreal(this)
             this.usxfun(@dipisreal);
             d = this.getInnerImaging.img;
+            d = logical(d);
         end
         function d = diplogprod(this)
             this.usxfun(@diplogprod);

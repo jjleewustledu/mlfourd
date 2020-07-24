@@ -202,7 +202,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.innerImaging_.img = this.innerImaging_.img / sum(dbleM(dbleM > 0), 'omitnan');
             
             % names & logging
-            this.fileprefix = [this.fileprefix this.AVGXYZ_SUFFIX];
+            this.fileprefix = strrep(this.fileprefix, this.SUMXYZ_SUFFIX, this.AVGXYZ_SUFFIX);
             this.addLog('DynamicsTool.volumeAveraged');
         end
         function [this,M] = volumeContracted(this, varargin)
@@ -228,7 +228,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             
             % names & logging
             this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX];
-            if (lstrfind(M.fileprefix, 'rand'))
+            if (~lstrfind(M.fileprefix, 'rand'))
                 this.fileprefix = [this.fileprefix upper(M.fileprefix(1)) M.fileprefix(2:end)];
             end
             this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
