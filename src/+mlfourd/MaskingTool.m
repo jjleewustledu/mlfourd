@@ -5,7 +5,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
     %% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2017 John Joowon Lee.
         
     properties (Constant)
-        MASKEDBY = '_mskb'
+        MASKEDBY = '_maskedby'
         MAX_VOLUME_FRACTION = 0.5
     end
     
@@ -51,7 +51,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
                     error('mlfourd:unsupportedSwitchcase', 'MaskingTool.masked.ndims->%i', this.ndims);
             end
             this.warnLargeVolumeFraction;
-            this.fileprefix = sprintf('%s%s%s%s', this.fileprefix, this.MASKEDBY, upper(M.fileprefix(1)), M.fileprefix(2:end));
+            this.fileprefix = sprintf('%s%s_%s', this.fileprefix, this.MASKEDBY, M.fileprefix);
             this.addLog('MaskingTool.masked by %s', M.fileprefix);
         end
         function this = maskedMaths(this, M, funch, varargin)
@@ -67,8 +67,8 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             
             v = this.innerImaging_.img(M.nifti.img == 1);
             this.innerImaging_.img = funch(v, varargin{:});
-            this.fileprefix = sprintf('%s_msk%s%s_%s', ...
-                this.fileprefix, upper(M.fileprefix(1)), M.fileprefix(2:end), func2str(funch));
+            this.fileprefix = sprintf('%s_maskedMaths_%s_%s', ...
+                this.fileprefix, M.fileprefix, func2str(funch));
             this.addLog('MaskingTool.maskedMaths %s %s', M.fileprefix, func2str(funch));
         end
         function this = maskedByZ(this, rng)
@@ -88,9 +88,11 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             end
             
             warning('off', 'mlfourd:possibleMaskingError');
+            fp = this.fileprefix;
             this = this.masked(zimg);
+            this.fileprefix = fp;
             warning('on',  'mlfourd:possibleMaskingError');
-            this.fileprefix = sprintf('%s_mskz%i-%i', this.fileprefix, rng(1), rng(2));
+            this.fileprefix = sprintf('%s_maskedbyz%i-%i', this.fileprefix, rng(1), rng(2));
             this.addLog('MaskingTool.maskedByZ range %s', mat2str(rng));
         end
         function this = roi(this, varargin)
