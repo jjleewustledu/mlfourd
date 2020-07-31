@@ -295,27 +295,35 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         
         function set.filename(this, f)
+            this.selectImagingFormatTool();
             this.state_.filename = f;
         end
         function set.filepath(this, f)
+            this.selectImagingFormatTool();
             this.state_.filepath = f;
         end        
         function set.fileprefix(this, f)
+            this.selectImagingFormatTool();
             this.state_.fileprefix = f;
         end        
         function set.filesuffix(this, f)
+            this.selectImagingFormatTool();
             this.state_.filesuffix = f;
         end        
         function set.fqfilename(this, f)
+            this.selectImagingFormatTool();
             this.state_.fqfilename = f;
         end        
         function set.fqfileprefix(this, f)
+            this.selectImagingFormatTool();
             this.state_.fqfileprefix = f;
         end        
         function set.fqfn(this, f)
+            this.selectImagingFormatTool();
             this.state_.fqfn = f;
         end        
         function set.fqfp(this, f)
+            this.selectImagingFormatTool();
             this.state_.fqfp = f;
         end
         function set.noclobber(this, f)
