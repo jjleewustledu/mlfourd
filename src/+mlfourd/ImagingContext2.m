@@ -192,6 +192,8 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                     im = obj.fqfileprefix;                  
                 case {'ImagingContext2' 'mlfourd.ImagingContext2'}
                     im = mlfourd.ImagingContext2(obj);
+                case {'ImagingFormatContext' 'mlfourd.ImagingFormatContext'}
+                    im = mlfourd.ImagingFormatContext(obj);
                 case {'mgz' '.mgz'}
                     im = [obj.fqfileprefix '.mgz'];
                 case {'mhdr' '.mhdr'}
