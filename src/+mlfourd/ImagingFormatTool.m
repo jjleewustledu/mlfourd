@@ -152,6 +152,10 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function        ensureSingle(this)
             this.innerImaging_.ensureSingle;
         end
+        function        export(this, varargin)
+            this.addLog('mlfourd.ImagingFormatTool.export %s', this.fqfilename)
+            this.innerImaging_.export(varargin{:});            
+        end
         function        freeview(this, varargin)
             this.innerImaging_.freeview(varargin{:});
         end

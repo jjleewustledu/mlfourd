@@ -578,6 +578,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.false(varargin{:});
         end
+        function that = find(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.find(varargin{:});
+        end
         function that = nan(this, varargin)
             this.selectNumericalTool;
             that = copy(this);
@@ -1004,6 +1009,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         function        ensureSingle(this)
             this.selectImagingFormatTool;
             this.state_.ensureSingle;
+        end
+        function        export(this, varargin)
+            this.selectImagingFormatTool;
+            this.state_.export(varargin{:});
         end
         function        freeview(this, varargin)
             this.selectImagingFormatTool;

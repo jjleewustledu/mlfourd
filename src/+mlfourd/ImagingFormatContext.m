@@ -357,6 +357,42 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function this = ensureInt64(this)
             this.innerNIfTI_ = this.innerNIfTI_.ensureInt64;
         end
+        function        export(this, varargin)
+            %% supports .mat
+            %  @param required fqfilename.
+            %  @param ndims is numeric.
+            
+            suffixes = {'.mat'};
+            ip = inputParser;
+            addRequired(ip, 'fqfilename', @(x) contains(suffixes, x))
+            addParameter(ip, 'ndims', 2, @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            if ~strcmp(this.innerTypeclass, 'mlfourdfp.InnerFourdfp')
+                this.img = flip(this.img, 2);
+            end            
+            switch ipr.ndims
+                case 2
+                    sz = size(this);
+                    if length(sz) < 4
+                        sz_ = sz;
+                        sz = ones(1,4);
+                        sz(1:length(sz_)) = sz_;
+                    end
+                    img = reshape(this.img, [prod(sz(1:3)) sz(4)]); %#ok<PROPLC>
+                otherwise
+                    error('mlfourd:RuntimeError', 'ImagingFormatContext.export.ipr.ndims->%g', ipr.ndims)
+            end
+            [~,~,x] = myfileparts(ipr.fqfilename);
+            switch x
+                case '.mat'
+                    save(ipr.fqfilename, 'img');
+                    clear('img')
+                otherwise
+                    error('mlfourd:RuntimeError', 'ImagingFormatContext.export.x->%s', x)
+            end
+        end
         function f    = fov(this)
             f = this.innerNIfTI_.fov;
         end
