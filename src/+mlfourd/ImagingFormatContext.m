@@ -358,20 +358,19 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             this.innerNIfTI_ = this.innerNIfTI_.ensureInt64;
         end
         function        export(this, varargin)
-            %% supports .mat
+            %% supports .mat with conventions from Patrick Luckett
             %  @param required fqfilename.
             %  @param ndims is numeric.
             
-            suffixes = {'.mat'};
             ip = inputParser;
-            addRequired(ip, 'fqfilename', @(x) contains(suffixes, x))
+            addRequired(ip, 'fqfilename', @ischar)
             addParameter(ip, 'ndims', 2, @isnumeric)
             parse(ip, varargin{:})
             ipr = ip.Results;
             
             if ~strcmp(this.innerTypeclass, 'mlfourdfp.InnerFourdfp')
                 this.img = flip(this.img, 2);
-            end            
+            end
             switch ipr.ndims
                 case 2
                     sz = size(this);
