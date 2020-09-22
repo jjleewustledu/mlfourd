@@ -203,6 +203,9 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function n    = ndims(this)
             n = this.innerImaging_.ndims;
         end
+        function n    = numel(this)
+            n = this.innerImaging_.numel;
+        end
         function r    = rank(this)
             r = this.ndims;
         end

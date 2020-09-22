@@ -428,6 +428,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
         function n    = ndims(this, varargin)
             n = this.innerNIfTI_.ndims(varargin{:});
         end
+        function n    = numel(this, varargin)
+            n = this.innerNIfTI_.numel(varargin{:});
+        end
         function this = optimizePrecision(this)
             this.innerNIfTI_ = this.innerNIfTI_.optimizePrecision();
         end

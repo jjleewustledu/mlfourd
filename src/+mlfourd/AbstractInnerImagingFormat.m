@@ -434,6 +434,13 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                 img = this.img_; end
             n = ndims(img);
         end
+        function n    = numel(this, img)
+            %% NUMEL
+            
+            if (nargin < 2)
+                img = this.img_; end
+            n = numel(img);
+        end
         function this = prod(this, varargin)
             %% PROD overloads prod for INIfTI
             

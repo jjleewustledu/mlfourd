@@ -1060,6 +1060,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectImagingFormatTool;
             n = this.state_.ndims;
         end
+        function n    = numel(this)
+            this.selectImagingFormatTool;
+            n = this.state_.numel;
+        end
         function r    = rank(this)
             %% DEPRECATED; use ndims.
             
