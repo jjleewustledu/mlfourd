@@ -849,6 +849,12 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
                     this = this.ensureUint8;
                 case 'uint8'
                     this = this.ensureUint8;
+                case 'uint16'
+                    this = this.ensureSingle;
+                case 'uint32'
+                    this = this.ensureSingle;
+                case 'uint64'
+                    this = this.ensureDouble;
                 case 'int16'
                     this = this.ensureInt16;
                 case 'int32'
