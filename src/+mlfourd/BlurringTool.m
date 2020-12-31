@@ -293,6 +293,10 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
     
     methods (Access = protected)
         function fp  = blurredFileprefix(this)
+            if this.blur_ < 1
+                fp = sprintf('%s_b0%g', this.fileprefix, round(10*max(this.blur_)));                
+                return
+            end
             fp = sprintf('%s_b%g', this.fileprefix, round(10*max(this.blur_)));
         end
         function img = blurredImg(this, img)

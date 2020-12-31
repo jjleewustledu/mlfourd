@@ -21,7 +21,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             'v' 'v.hdr' 'v.mhdr' 'mhdr' ...
             '4dfp.hdr' '4dfp.ifh' '4dfp.img' '4dfp.img.rec' ...
             '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec' ...
-            'folder' 'path'}
+            'folder' 'path' 'double' 'single'}
     end
     
     properties 
@@ -216,6 +216,26 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
                     im = [obj.fqfileprefix '.v.hdr'];
                 case {'v.mhdr' '.v.mhdr'}
                     im = [obj.fqfileprefix '.v.mhdr'];
+                case 'double'
+                    if contains(obj.filesuffix, '4dfp')
+                        im = double(obj.fourdfp.img);
+                    elseif contains(obj.filesuffix, 'mgh')
+                        im = double(obj.mgh.img);
+                    elseif contains(obj.filesuffix, 'mgz')
+                        im = double(obj.mgz.img);
+                    else
+                        im = double(obj.nifti.img);
+                    end
+                case 'single'
+                    if contains(obj.filesuffix, '4dfp')
+                        im = single(obj.fourdfp.img);
+                    elseif contains(obj.filesuffix, 'mgh')
+                        im = single(obj.mgh.img);
+                    elseif contains(obj.filesuffix, 'mgz')
+                        im = single(obj.mgz.img);
+                    else
+                        im = single(obj.nifti.img);
+                    end
                 otherwise
                     error('mlfourd:insufficientSwitchCases', ...
                           'ImagingContext2.imagingType.obj->%s not recognized', obj);
