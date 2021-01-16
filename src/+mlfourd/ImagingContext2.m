@@ -792,30 +792,12 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that.state_.var(varargin{:});
         end
         
-        function that = volumeAveraged(this, varargin)
-            %% VOLUMEAVERAGED
-            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
-            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t) / \int_{\Omega} \text{mask}.
+        function that = makima(this, varargin)
+            %% MAKIMA
             
             this.selectDynamicsTool;
             that = copy(this);
-            that.state_.volumeAveraged(varargin{:});
-        end
-        function that = volumeContracted(this, varargin)
-            %% VOLUMECONTRACTED
-            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
-            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
-            
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.volumeContracted(varargin{:});
-        end
-        function that = volumeSummed(this, varargin)
-            %% VOLUMESUMMED 
-            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
-            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
-            
-            that = this.volumeContracted(varargin{:});
+            that.state_.makima(varargin{:});
         end
         function that = timeAveraged(this, varargin)
             %% TIMEAVERAGED
@@ -851,6 +833,31 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @return ic := \int_T \text{this.state\_}(t).
             
             that = this.timeContracted(varargin{:});
+        end
+        function that = volumeAveraged(this, varargin)
+            %% VOLUMEAVERAGED
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t) / \int_{\Omega} \text{mask}.
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.volumeAveraged(varargin{:});
+        end
+        function that = volumeContracted(this, varargin)
+            %% VOLUMECONTRACTED
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.volumeContracted(varargin{:});
+        end
+        function that = volumeSummed(this, varargin)
+            %% VOLUMESUMMED 
+            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
+            
+            that = this.volumeContracted(varargin{:});
         end
         
         %% MaskingTool

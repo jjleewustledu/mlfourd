@@ -74,8 +74,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
             this.innerImaging_.img = squeeze(mode(img, varargin{:}));
             this.addLog('DynamicsTool.mode');
-        end
-        
+        end        
         function this = Q(this, varargin)
             %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
             
@@ -93,6 +92,37 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
             this.innerImaging_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
+        end
+        
+        function this = makima(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'times0', @isnumeric)
+            addRequired(ip, 'times1', @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            img = this.innerImaging_.img;
+            sz = size(img);
+            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
+            img = makima(ipr.times0, img, ipr.times1);
+            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.innerImaging_.img = img;            
+            this.fileprefix = [this.fileprefix '_makima'];
+        end
+        function this = pchip(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'times0', @isnumeric)
+            addRequired(ip, 'times1', @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            img = this.innerImaging_.img;
+            sz = size(img);
+            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
+            img = pchip(ipr.times0, img, ipr.times1);
+            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.innerImaging_.img = img;            
+            this.fileprefix = [this.fileprefix '_makima'];
         end
         function this = timeAveraged(this, varargin)
             %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
