@@ -17,6 +17,12 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
     end
     
 	methods 
+        function this = coeffvar(this, varargin)
+            s = std(copy(this), varargin{:});
+            m = mean(copy(this), varargin{:});
+            this.innerImaging_.img = s.innerImaging_.img ./ m.innerImaging_.img;
+            this.addLog('DynamicsTool.coeffvar');
+        end
         function this = del2(this, varargin)
             this.innerImaging_.img = del2(this.innerImaging_.img, varargin{:});
             this.addLog('DynamicsTool.del2');
@@ -51,6 +57,21 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             error('mlfourd:RuntimeError', 'DynamicsTool.gradient.ndims->%i', this.ndims)
         end
+        function this = makima(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'times0', @isnumeric)
+            addRequired(ip, 'times1', @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            img = this.innerImaging_.img;
+            sz = size(img);
+            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
+            img = makima(ipr.times0, img, ipr.times1);
+            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.innerImaging_.img = img;            
+            this.fileprefix = [this.fileprefix '_makima'];
+        end
         function this = mean(this, varargin)
             %% applies Matlab mean over time samples
             
@@ -74,7 +95,22 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
             this.innerImaging_.img = squeeze(mode(img, varargin{:}));
             this.addLog('DynamicsTool.mode');
-        end        
+        end   
+        function this = pchip(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'times0', @isnumeric)
+            addRequired(ip, 'times1', @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            img = this.innerImaging_.img;
+            sz = size(img);
+            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
+            img = pchip(ipr.times0, img, ipr.times1);
+            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.innerImaging_.img = img;            
+            this.fileprefix = [this.fileprefix '_makima'];
+        end  
         function this = Q(this, varargin)
             %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
             
@@ -93,38 +129,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.innerImaging_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
         end
-        
-        function this = makima(this, varargin)
-            ip = inputParser;
-            addRequired(ip, 'times0', @isnumeric)
-            addRequired(ip, 'times1', @isnumeric)
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-            
-            img = this.innerImaging_.img;
-            sz = size(img);
-            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
-            img = makima(ipr.times0, img, ipr.times1);
-            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.innerImaging_.img = img;            
-            this.fileprefix = [this.fileprefix '_makima'];
-        end
-        function this = pchip(this, varargin)
-            ip = inputParser;
-            addRequired(ip, 'times0', @isnumeric)
-            addRequired(ip, 'times1', @isnumeric)
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-            
-            img = this.innerImaging_.img;
-            sz = size(img);
-            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
-            img = pchip(ipr.times0, img, ipr.times1);
-            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.innerImaging_.img = img;            
-            this.fileprefix = [this.fileprefix '_makima'];
-        end
-        function this = timeAveraged(this, varargin)
+        function [this,T] = timeAveraged(this, varargin)
             %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
             %  @param weights for each time \in T.
@@ -137,9 +142,10 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             addParameter(ip, 'taus', [], @isnumeric);
             parse(ip, varargin{:});
             ipr = ip.Results;
+            T = ipr.T;
             if ~isempty(ipr.weights)
                 try                
-                    ipr.weights = ipr.weights(ipr.T);                
+                    ipr.weights = ipr.weights(T);                
                 catch ME
                     handexcept(ME, ...
                         'mlfourd:RuntimeError', ...
@@ -150,7 +156,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             if ~isempty(ipr.taus)
                 try                    
                     ipr.weights = ipr.taus / sum(ipr.taus);
-                    ipr.weights = ipr.weights(ipr.T);                
+                    ipr.weights = ipr.weights(T);                
                 catch ME
                     handexcept(ME, ...
                         'mlfourd:RuntimeError', ...
@@ -159,29 +165,27 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             
             if isempty(ipr.weights)               
-                this.innerImaging_.img = sum(this.innerImaging_.img(:,:,:,ipr.T), 4, 'omitnan') / length(ipr.T);
+                this.innerImaging_.img = sum(this.innerImaging_.img(:,:,:,T), 4, 'omitnan') / length(T);
                 namesAndLogging()
                 return
             end
                        
-            this.innerImaging_.img = this.innerImaging_.img(:,:,:,ipr.T); % truncate series
-            for it = 1:length(ipr.T)
+            this.innerImaging_.img = this.innerImaging_.img(:,:,:,T); % truncate series
+            for it = 1:length(T)
                 this.innerImaging_.img(:,:,:,it) = ipr.weights(it) * this.innerImaging_.img(:,:,:,it); % weight series
             end
             this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan'); % sum series
-            namesAndLogging()
-            
-                        
+            namesAndLogging()                        
             
             function namesAndLogging()
                 this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
-                if length(ipr.T) ~= Nt
-                    this.fileprefix = [this.fileprefix sprintf('%i-%i', ipr.T(1), ipr.T(end))];
+                if length(T) ~= Nt
+                    this.fileprefix = [this.fileprefix sprintf('%i-%i', T(1), T(end))];
                 end
                 this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(ipr.taus/sum(ipr.taus)));
             end
         end
-        function this = timeContracted(this, varargin)
+        function [this,T] = timeContracted(this, varargin)
             %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
             

@@ -746,6 +746,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% DynamicsTool
         
+        function that = coeffvar(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.coeffvar(varargin{:});
+        end
         function that = del2(this, varargin)
             this.selectDynamicsTool;
             that = copy(this);
@@ -760,6 +765,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectDynamicsTool;
             that = copy(this);
             that.state_.gradient(varargin{:});
+        end
+        function that = makima(this, varargin)
+            %% MAKIMA
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.makima(varargin{:});
         end
         function that = mean(this, varargin)
             this.selectDynamicsTool;
@@ -776,6 +788,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.mode(varargin{:});
         end
+        function that = pchip(this, varargin)
+            %% PCHIP
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.pchip(varargin{:});
+        end
         function that = Q(this, varargin)
             this.selectDynamicsTool;
             that = copy(this);
@@ -785,20 +804,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectDynamicsTool;
             that = copy(this);
             that.state_.std(varargin{:});
-        end
-        function that = var(this, varargin)
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.var(varargin{:});
-        end
-        
-        function that = makima(this, varargin)
-            %% MAKIMA
-            
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.makima(varargin{:});
-        end
+        end        
         function that = timeAveraged(this, varargin)
             %% TIMEAVERAGED
             %  @param optional closed interval T \in {\Bbb R}.
@@ -833,6 +839,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             %  @return ic := \int_T \text{this.state\_}(t).
             
             that = this.timeContracted(varargin{:});
+        end
+        function that = var(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.var(varargin{:});
         end
         function that = volumeAveraged(this, varargin)
             %% VOLUMEAVERAGED
