@@ -766,6 +766,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.gradient(varargin{:});
         end
+        function that = interp1(this, varargin)
+            %% MAKIMA
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.interp1(varargin{:});
+        end
         function that = makima(this, varargin)
             %% MAKIMA
             

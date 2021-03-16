@@ -57,6 +57,21 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             error('mlfourd:RuntimeError', 'DynamicsTool.gradient.ndims->%i', this.ndims)
         end
+        function this = interp1(this, varargin)
+            ip = inputParser;
+            addRequired(ip, 'times0', @isnumeric)
+            addRequired(ip, 'times1', @isnumeric)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            
+            img = this.innerImaging_.img;
+            sz = size(img);
+            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
+            img = interp1(ipr.times0, img, ipr.times1);
+            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.innerImaging_.img = img;            
+            this.fileprefix = [this.fileprefix '_interp1'];
+        end
         function this = makima(this, varargin)
             ip = inputParser;
             addRequired(ip, 'times0', @isnumeric)
@@ -109,7 +124,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = pchip(ipr.times0, img, ipr.times1);
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
             this.innerImaging_.img = img;            
-            this.fileprefix = [this.fileprefix '_makima'];
+            this.fileprefix = [this.fileprefix '_pchip'];
         end  
         function this = Q(this, varargin)
             %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
