@@ -29,6 +29,19 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         end
         function cosh(this)
             this.usxfun(@cosh);
+        end        
+        function dice(this, b, varargin)
+            this.bsxfun(@dice_, b);            
+            function d = dice_(img1, img2)
+                if ~isempty(varargin)
+                    msk = logical(varargin{:});
+                    img1 = img1(msk);
+                    img2 = img2(msk);
+                end
+                img1(isnan(img1)) = 0;
+                img2(isnan(img2)) = 0;
+                d = dice(logical(img1), logical(img2));
+            end
         end
         function flip(this, b)
             this.bsxfun(@flip, b);
@@ -43,14 +56,55 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function hypot(this, b)
             this.bsxfun(@hypot, b);
         end
+        function jsdiv(this, b, varargin)
+            this.bsxfun(@jsdiv_, b);
+            function d = jsdiv_(img1, img2)                
+                if ~isempty(varargin)
+                    msk = logical(varargin{:});
+                    img1 = img1(msk);
+                    img2 = img2(msk);
+                end
+                img1(isnan(img1)) = eps;
+                img1(img1 < eps) = eps;
+                img1 = img1 / dipsum(img1);
+                img2(isnan(img2)) = eps;
+                img2(img2 < eps) = eps;
+                img2 = img2 / dipsum(img2);                
+                logImgQ = log2((img1 + img2)/2);
+                d = 0.5 * ( ...
+                    dipsum(img1 .* (log2(img1) - logImgQ)) + ...
+                    dipsum(img2 .* (log2(img2) - logImgQ))); 
+            end
+        end
+        function kldiv(this, b, varargin)
+            this.bsxfun(@kldiv_, b);            
+            function d = kldiv_(img1, img2)
+                if ~isempty(varargin)
+                    msk = logical(varargin{:});
+                    img1 = img1(msk);
+                    img2 = img2(msk);
+                end
+                img1(isnan(img1)) = eps;
+                img1(img1 < eps) = eps;
+                img1 = img1 / dipsum(img1);
+                img2(isnan(img2)) = eps;
+                img2(img2 < eps) = eps;
+                img2 = img2 / dipsum(img2);
+                d = dipsum(img1 .* (log2(img1) - log2(img2)));
+            end
+        end
         function max(this, b)
             this.bsxfun(@max, b);
         end
         function min(this, b)
             this.bsxfun(@min, b);
         end
-        function minus(this, b)
-            this.bsxfun(@minus, b);
+        function minus(this, varargin)
+            if ~isempty(varargin)
+                this.bsxfun(@minus, varargin{:});
+            else
+                this.uminus(varargin{:});
+            end
         end
         function mod(this, b)
             this.bsxfun(@mod, b);
