@@ -49,7 +49,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
     end
     
     methods (Static)
-        
         function this = fread(varargin)
             ip = inputParser;
             addRequired(ip, 'filename', @isfile)
@@ -439,6 +438,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.bsxfun(pfun, b);
+        end   
+        function that = dice(this, b, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.dice(b, varargin{:});
         end
         function that = flip(this, adim)
             this.selectNumericalTool;
@@ -459,7 +463,17 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.hypot(b);
+        end              
+        function that = jsdiv(this, b, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.jsdiv(b, varargin{:});
         end
+        function that = kldiv(this, b, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.kldiv(b, varargin{:});
+        end        
         function that = max(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -470,10 +484,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.min(b);
         end
-        function that = minus(this, b)
+        function that = minus(this, varargin)
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.minus(b);
+            that.state_.minus(varargin{:});
         end
         function that = mod(this, b)
             this.selectNumericalTool;
@@ -536,6 +550,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.transpose;
+        end        
+        function that = uminus(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.uminus();
         end
         function that = usxfun(this, pfun)
             this.selectNumericalTool;
