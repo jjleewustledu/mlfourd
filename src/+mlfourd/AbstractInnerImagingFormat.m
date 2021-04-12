@@ -930,7 +930,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.I
             this.logger_ = mlpipeline.Logger(this.fqfileprefix, this);
             this.addLogNoEcho(evalc('disp(this)'));
             if (~isempty(this.descrip))
-                this.addLog(this.descrip);
+                this.addLogNoEcho(['descrip:  ' this.descrip]);
             end                   
  		end
  	end 
