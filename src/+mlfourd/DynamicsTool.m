@@ -66,8 +66,11 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             
             img = this.innerImaging_.img;
             sz = size(img);
-            img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
-            img = interp1(ipr.times0, img, ipr.times1);
+            Nxyz = sz(1)*sz(2)*sz(3);
+            img = reshape(img, [Nxyz sz(4)]);
+            for x = 1:Nxyz
+                img(x,:) = interp1(ipr.times0, img(x,:), ipr.times1, 'linear', 'extrap');
+            end
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
             this.innerImaging_.img = img;            
             this.fileprefix = [this.fileprefix '_interp1'];
