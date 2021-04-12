@@ -17,6 +17,75 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
     end
     
 	methods 
+        function this = corrcoef(this, varargin)
+            %% CORRCOEF finds the corrcoef for time-series.
+            %  @param mask is interpretable by the ctor and is 3D;
+            %         default := fullfil(getenv(), 'gm3d.nii.gz').
+            %  @param rsn_labels is interpretable by the ctor and is 3D; 
+            %         default := fullfile(getenv('REFDIR'), 'Yeo2011_7Networks_333.nii.gz').
+            
+            mask_ = mlfourd.ImagingContext2( ...
+                fullfile(getenv('REFDIR'), 'N21_aparc+aseg_GMctx_on_711-2V_333_avg_zlt0.5_gAAmask_v1_binarized.nii.gz'));
+                % 'gm3d.nii.gz'
+            rsn_labels_ = mlfourd.ImagingContext2( ...
+                fullfile(getenv('REFDIR'), 'Yeo', 'Yeo2011_7Networks_333.nii.gz'));            
+            persistent xfm_
+            
+            ip = inputParser;
+            addParameter(ip, 'mask', mask_)
+            addParameter(ip, 'rsn_labels', rsn_labels_)            
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+            ipr.mask = mlfourd.ImagingContext2(ipr.mask);
+            ipr.rsn_labels = mlfourd.ImagingContext2(ipr.rsn_labels);
+            
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_corrcoef'];
+            this.innerImaging_.filesuffix = '.nii.gz';
+            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix();
+            sz = size(this.innerImaging_);
+            Nxyz = prod(sz(1:3));
+            Nt = sz(4);
+                        
+            found = find(reshape(ipr.mask.nifti.img, [Nxyz 1]));
+            if ~isempty(varargin)
+                xfm_ = [];
+            end
+            if isempty(xfm_)
+                xfm_ = xfm();
+            end
+            found = xfm_ * found;            
+            
+            bold = reshape(this.innerImaging_.img, [Nxyz Nt])'; % Nt x Nxyz
+            this.innerImaging_.img = corrcoef(bold(:, found), 'Rows', 'complete'); % Nfound x Nfound            
+            
+            function m = xfm()
+                Nrsn = dipmax(ipr.rsn_labels) + 1;
+                
+                msk = ipr.mask.nifti;
+                msk_vec_ = reshape(msk.img, [1 Nxyz]);
+                msk_vec = msk_vec_;
+                msk_vec(msk_vec == 0) = nan;
+                Nmsk = sum(msk_vec_, 'omitnan');
+                found_msk = find(msk_vec_);
+
+                rsn = ipr.rsn_labels.nifti;
+                rsn_vec = reshape(rsn.img, [1 Nxyz]);
+                rsn_vec = rsn_vec .* msk_vec;
+                rsn_vec(rsn_vec == 0) = Nrsn;
+                rsn_vec(isnan(rsn_vec)) = 0;
+
+                found_rsn = [];
+                for irsn = 1:Nrsn
+                    found_rsn = [found_rsn find(rsn_vec == irsn)]; %#ok<*AGROW>
+                end
+                assert(numel(found_rsn) == Nmsk)
+
+                m = zeros(Nmsk, Nmsk);
+                for n = 1:Nmsk
+                    m(found_rsn == found_msk(n), n) = 1;
+                end
+            end            
+        end
         function this = coeffvar(this, varargin)
             s = std(copy(this), varargin{:});
             m = mean(copy(this), varargin{:});

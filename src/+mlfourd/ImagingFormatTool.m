@@ -172,6 +172,18 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
             msk = this.innerImaging_.img ~= 0;
             h = histogram(this.innerImaging_.img(msk), varargin{:});
         end
+        function [h,h1] = imagesc(this, varargin)
+            figure
+            this.innerImaging_.img(logical(eye(size(this.innerImaging_.img, 1)))) = nan;
+            max_img = dipmax(this.innerImaging_.img);
+            h = imagesc(this.innerImaging_.img, varargin{:});
+            colormap('jet')
+            h1 = colorbar('FontSize', 20);
+            caxis([-max_img max_img])
+            set(get(h1,'label'),'string', 'functional connectivity', 'FontSize', 28)
+            axis('off')
+            title(this.innerImaging_.fileprefix, 'FontSize', 24, 'Interpreter', 'none')
+        end
         function tf   = isempty(this)
             tf = isempty(this.innerImaging_.img);
         end

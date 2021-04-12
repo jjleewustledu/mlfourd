@@ -781,6 +781,18 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         
         %% DynamicsTool
         
+        function that = corrcoef(this, varargin)
+            %% CORRCOEF finds the corrcoef for time-series.
+            %  @param mask is interpretable by the ctor and is 3D;
+            %         default := fullfil(getenv(), 'gm3d.nii.gz').
+            %  @param rsn_labels is interpretable by the ctor and is 3D; 
+            %         default := fullfile(getenv('REFDIR'), 'Yeo2011_7Networks_333.nii.gz').
+            %  See also imagesc.
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.corrcoef(varargin{:});
+        end
         function that = coeffvar(this, varargin)
             this.selectDynamicsTool;
             that = copy(this);
@@ -1113,6 +1125,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         function h    = histogram(this, varargin)
             this.selectImagingFormatTool;
             h = this.state_.histogram(varargin{:});
+        end
+        function h    = imagesc(this, varargin)
+            this.selectImagingFormatTool;
+            h = this.state_.imagesc(varargin{:});
         end
         function tf   = isempty(this)
             %% ISEMPTY
