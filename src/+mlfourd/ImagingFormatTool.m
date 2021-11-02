@@ -219,6 +219,15 @@ classdef ImagingFormatTool < handle & matlab.mixin.Copyable & mlfourd.AbstractIm
         function n    = numel(this)
             n = this.innerImaging_.numel;
         end
+        function p    = pointCloud(this)
+            img = this.innerImaging_.img;            
+            idx = find(img);
+            [X,Y,Z] = ind2sub(size(img), idx);             
+            C(:,1) = X; % C are ints cast as double
+            C(:,2) = Y;
+            C(:,3) = Z;
+            p = pointCloud(C, 'Intensity', img(idx));
+        end
         function r    = rank(this)
             r = this.ndims;
         end
