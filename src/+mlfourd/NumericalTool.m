@@ -43,6 +43,9 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
                 d = dice(logical(img1), logical(img2));
             end
         end
+        function exp(this)
+            this.usxfun(@exp);
+        end
         function flip(this, b)
             this.bsxfun(@flip, b);
 %            this.innerImaging_.fileprefix = sprintf('%s_flip%i', this.innerImaging_.fileprefix, b);
@@ -92,6 +95,12 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
                 img2 = img2 / dipsum(img2);
                 d = dipsum(img1 .* (log2(img1) - log2(img2)));
             end
+        end        
+        function log(this)
+            this.usxfun(@log);
+        end
+        function log10(this)
+            this.usxfun(@log10);
         end
         function max(this, b)
             this.bsxfun(@max, b);
