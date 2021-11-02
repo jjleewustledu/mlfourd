@@ -444,6 +444,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.dice(b, varargin{:});
         end
+        function that = exp(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.exp();            
+        end
         function that = flip(this, adim)
             this.selectNumericalTool;
             that = copy(this);
@@ -473,7 +478,17 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.kldiv(b, varargin{:});
-        end        
+        end            
+        function that = log(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.log();            
+        end
+        function that = log10(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.log10();            
+        end
         function that = max(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -778,6 +793,62 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.blurred(varargin{:});
         end 
+        function that = bwskel(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.bwskel(varargin{:});
+        end
+        function that = bwperim(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.bwperim(varargin{:});
+        end 
+        function that = imbothat(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imbothat(varargin{:});
+        end 
+        function that = imclose(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imclose(varargin{:});
+        end 
+        function that = imdilate(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imdilate(varargin{:});
+        end 
+        function that = imerode(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imerode(varargin{:});
+        end 
+        function that = imopen(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imopen(varargin{:});
+        end 
+        function that = imtophat(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imtophat(varargin{:});
+        end 
         
         %% DynamicsTool
         
@@ -1016,7 +1087,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         end
         function that = uthresh(this, varargin)
             %% UTHRESH
-            %  @param u:  use t to upper-threshold current image (zero anything above the number)
+            %  @param u:  use u to upper-threshold current image (zero anything above the number)
             %  @returns u, the modified imaging context
             %  @return copy(this) if u == 0 or u is empty
             
@@ -1159,6 +1230,30 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
         function n    = numel(this)
             this.selectImagingFormatTool;
             n = this.state_.numel;
+        end        
+        function p    = pointCloud(this, varargin)
+            ip = inputParser;
+            addParameter(ip, 'thresh', [], @isscalar)
+            addParameter(ip, 'uthresh', [], @isscalar)
+            addParameter(ip, 'threshp', [], @isnscalar)
+            addParameter(ip, 'uthreshp', [], @isscalar)
+            parse(ip, varargin{:})
+            ipr = ip.Results;            
+            if ~isempty(ipr.thresh)
+                this = this.thresh(ipr.thresh);
+            end
+            if ~isempty(ipr.uthresh)
+                this = this.uthresh(ipr.uthresh);
+            end
+            if ~isempty(ipr.threshp)
+                this = this.threshp(ipr.threshp);
+            end
+            if ~isempty(ipr.uthreshp)
+                this = this.uthreshp(ipr.uthreshp);
+            end
+            
+            this.selectImagingFormatTool;
+            p = this.state_.pointCloud;
         end
         function r    = rank(this)
             %% DEPRECATED; use ndims.
@@ -1248,6 +1343,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             if ischar(obj)
                 this.state_ = FilesystemTool(this, obj);
                 return
+            end
+            if islogical(obj)
+                obj = single(obj);
             end
             if ~isdeployed
                 if isa(obj, 'mlfourd.ImagingContext') % legacy objects
