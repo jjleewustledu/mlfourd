@@ -192,6 +192,30 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
             this.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
             this.blurCount_ = this.blurCount_ + 1;
         end
+        function imbothat(this, varargin)
+            this.morphologic(@imbothat, varargin{:})
+        end
+        function bwskel(this, varargin)
+            this.morphologic(@bwskel, varargin{:})
+        end
+        function bwperim(this, varargin)
+            this.morphologic(@bwperim, varargin{:})
+        end
+        function imclose(this, varargin)
+            this.morphologic(@imclose, varargin{:})
+        end
+        function imdilate(this, varargin)
+            this.morphologic(@imdilate, varargin{:})
+        end
+        function imerode(this, varargin)
+            this.morphologic(@imerode, varargin{:})
+        end
+        function imopen(this, varargin)
+            this.morphologic(@imopen, varargin{:})
+        end
+        function imtophat(this, varargin)
+            this.morphologic(@imtophat, varargin{:})
+        end
         function r = ndimsEuclid(this)
             r = min(this.ndims, 3);
         end
@@ -308,6 +332,18 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 'height', this.height_, ...
                 'metppix', this.innerImaging_.mmppix, ...
                 'krnlMult', this.kernelMultiple_);
+        end
+        function morphologic(this, fhandle, varargin)
+            if (4 == this.ndims)
+                for t = 1:size(this,4)
+                    this.innerImaging_.img(:,:,:,t) = ...
+                        fhandle(this.innerImaging_.img(:,:,:,t));
+                end
+            else
+                this.innerImaging_.img = fhandle(this.innerImaging_.img, varargin{:});
+            end            
+            this.fileprefix = sprintf('%s_%s', this.fileprefix, func2str(fhandle));
+            this.addLog(sprintf('BlurringTool:  %s', func2str(fhandle)));
         end
     end
     
