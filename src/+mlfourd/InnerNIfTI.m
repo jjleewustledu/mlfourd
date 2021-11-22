@@ -77,7 +77,7 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
             hdr_ = this.hdr;
             switch (this.filesuffix)
                 case FourdfpInfo.SUPPORTED_EXT
-                    deleteExisting([this.fqfileprefix '.4dfp.*']);
+                    %deleteExisting([this.fqfileprefix '.4dfp.*']);
                     info = FourdfpInfo(this.fqfilename, ...
                         'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', hdr_);                    
                     this = InnerFourdfp(info, ...
@@ -87,8 +87,8 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
                     this.imagingInfo.hdr = hdr_;
                 case [NIfTIInfo.SUPPORTED_EXT]
                 case MGHInfo.SUPPORTED_EXT 
-                    deleteExisting([this.fqfileprefix '.mgz']);
-                    deleteExisting([this.fqfileprefix '.mgh']);
+                    %deleteExisting([this.fqfileprefix '.mgz']);
+                    %deleteExisting([this.fqfileprefix '.mgh']);
                     info = MGHInfo(this.fqfilename, ...
                         'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', this.hdr);
                     this = InnerMGH(info, ...
