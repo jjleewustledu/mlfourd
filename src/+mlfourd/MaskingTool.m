@@ -27,6 +27,13 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             
             n = dipsum(this.innerImaging_.img ~= 0);
         end
+        function this = imfill(this, varargin)
+            %% IMFILL calls Matlab's imfill.
+
+            this.innerImaging_.img = imfill(logical(this.innerImaging_.img), varargin{:});
+            this.fileprefix = [this.fileprefix '_imfill'];  
+            this.addLog('MaskingTool.imfill');
+        end
         function this = masked(this, M)
             %% MASKED
             %  @param M is understood by ImagingContext2.  It need not be binary; if max(M) > 1, M will be rescaled such that max(M) == 1.

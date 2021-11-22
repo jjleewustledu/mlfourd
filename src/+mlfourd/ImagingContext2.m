@@ -1022,6 +1022,13 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectMaskingTool;
             c = this.state_.count;
         end
+        function that = imfill(this, varargin)
+            %% IMFILL binarizes, then calls Matlab's imfill.
+
+            this.selectMaskingTool;
+            that = copy(this);
+            that.state_.imfill(varargin{:});
+        end
         function that = maskBlended(this, varargin)
             this.selectMaskingTool;
             that = copy(this);
@@ -1235,7 +1242,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             ip = inputParser;
             addParameter(ip, 'thresh', [], @isscalar)
             addParameter(ip, 'uthresh', [], @isscalar)
-            addParameter(ip, 'threshp', [], @isnscalar)
+            addParameter(ip, 'threshp', [], @isscalar)
             addParameter(ip, 'uthreshp', [], @isscalar)
             parse(ip, varargin{:})
             ipr = ip.Results;            
