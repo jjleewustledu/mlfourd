@@ -386,8 +386,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.state_.selectFilesystemTool(this);
         end
         function this = selectFourdfp(this)
+            %% mutates state to be 4dfp
+
             that = mlfourd.ImagingContext2(this.fourdfp);
             this.state_ = copy(that.state_);
+            this.addLog('mlfourd.ImagingContext2.selectFourdfp mutated state')
         end
         function this = selectIsNumericTool(this)
             this.state_.selectIsNumericTool(this);
@@ -399,16 +402,25 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.state_.selectMaskingTool(this);
         end
         function this = selectMgh(this)
+            %% mutates state to be mgh
+            
             that = mlfourd.ImagingContext2(this.mgh);
             this.state_ = copy(that.state_);
+            this.addLog('mlfourd.ImagingContext2.selectMgh mutated state')
         end
         function this = selectMgz(this)
+            %% mutates state to be mgz
+            
             that = mlfourd.ImagingContext2(this.mgz);
             this.state_ = copy(that.state_);
+            this.addLog('mlfourd.ImagingContext2.selectMgz mutated state')
         end
         function this = selectNifti(this)
+            %% mutates state to be NIfTI
+            
             that = mlfourd.ImagingContext2(this.nifti);
             this.state_ = copy(that.state_);
+            this.addLog('mlfourd.ImagingContext2.selectNifti mutated state')
         end
         function this = selectNumericalTool(this)
             this.state_.selectNumericalTool(this);
