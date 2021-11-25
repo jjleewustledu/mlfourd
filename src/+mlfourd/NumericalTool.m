@@ -15,17 +15,29 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function abs(this)
             this.usxfun(@abs);
         end
+        function acos(this)
+            this.usxfun(@acos);
+        end
         function acosh(this)
             this.usxfun(@acosh);
         end
+        function asin(this)
+            this.usxfun(@asin);
+        end
         function asinh(this)
             this.usxfun(@asinh);
+        end
+        function atan(this, b)
+            this.bsxfun(@atan, b);
         end
         function atan2(this, b)
             this.bsxfun(@atan2, b);
         end
         function atanh(this)
             this.usxfun(@atanh);
+        end
+        function cos(this)
+            this.usxfun(@cos);
         end
         function cosh(this)
             this.usxfun(@cosh);
@@ -139,14 +151,26 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function rem(this, b)
             this.bsxfun(@rem, b);
         end
+        function sin(this)
+            this.usxfun(@sin);
+        end
         function sinh(this)
             this.usxfun(@sinh);
         end
         function sum(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', sum(this.innerImaging_.img, varargin{:}));
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_sum' tag];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  sum %s %s', this.fileprefix, mat2str(varargin{:}))); 
+        end
+        function tan(this)
+            this.usxfun(@tan);
         end
         function tanh(this)
             this.usxfun(@tanh);
@@ -185,6 +209,12 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function and(this, b)
             this.lbsxfun(@and, b);
         end
+        function isequal(this, b)
+            this.lbsxfun(@isequal, b);
+        end 
+        function isequaln(this, b)
+            this.lbsxfun(@isequaln, b);
+        end 
         function isfinite(this)
             this.lusxfun(@isfinite);
         end 

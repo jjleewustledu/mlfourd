@@ -436,6 +436,31 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.abs;
         end
+        function that = acos(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.acos(b);            
+        end
+        function that = acosh(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.acosh();            
+        end
+        function that = asin(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.asin(b);            
+        end
+        function that = asinh(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.asinh();            
+        end
+        function that = atan(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.atan(b);            
+        end
         function that = atan2(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -445,6 +470,16 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.atanh();            
+        end
+        function that = cos(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.cos();            
+        end
+        function that = cosh(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.cosh();            
         end
         function that = bsxfun(this, pfun, b)
             this.selectNumericalTool;
@@ -558,6 +593,26 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             that = copy(this);
             that.state_.rem(b);
         end
+        function that = sin(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.sin();            
+        end
+        function that = sinh(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.sinh();            
+        end
+        function that = sum(this, varargin)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.sum(varargin{:});            
+        end
+        function that = tan(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.tan();            
+        end
         function that = tanh(this)
             this.selectNumericalTool;
             that = copy(this);
@@ -623,6 +678,16 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTII
             this.selectNumericalTool;
             that = copy(this);
             that.state_.and(b);
+        end
+        function that = isequal(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.isequal(b);
+        end
+        function that = isequaln(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.isequaln(b);
         end
         function that = isfinite(this)
             this.selectNumericalTool;
