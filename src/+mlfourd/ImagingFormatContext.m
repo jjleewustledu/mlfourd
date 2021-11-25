@@ -618,7 +618,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = obj;
+                inn = copy(obj);
                 return
             end
             if (isa(obj, 'mlfourd.ImagingInfo'))
@@ -649,11 +649,11 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             obj = varargin{1};
             v_  = varargin(2:end);
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = obj.innerNIfTI_; % copy ctor
+                inn = copy(obj.innerNIfTI_); % copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = obj;
+                inn = copy(obj);
                 return
             end
             if (isa(obj, 'mlfourd.ImagingInfo'))
