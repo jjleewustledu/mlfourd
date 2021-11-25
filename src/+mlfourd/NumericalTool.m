@@ -237,30 +237,35 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function false(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', false(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_false'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  false %s', this.fileprefix)); 
         end
         function find(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', find(this.innerImaging_.img, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_find'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  find %s', this.fileprefix)); 
         end
         function nan(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', nan(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_nan'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  nan %s', this.fileprefix)); 
         end
         function ones(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', ones(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_ones'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  ones %s', this.fileprefix)); 
         end
         function reshape(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', reshape(this.innerImaging_.img, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_reshape'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  reshape %s', mat2str(size(this.innerImaging_.img)))); 
         end
@@ -270,18 +275,21 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             img_(~isfinite(img_)) = 0;
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', img_);
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_scrubNanInf'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  scrubNanInf %s', this.fileprefix)); 
         end
         function true(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', true(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_true'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  true %s', this.fileprefix)); 
         end
         function zeros(this, varargin)
             this.innerImaging_ = mlfourd.ImagingFormatContext( ...
                 this.innerImaging_, 'img', zeros(this.innerImaging_.size, varargin{:}));
+            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_zeros'];
             this.innerImaging_.addLog( ...
                 sprintf('NumericalTool:  zeros %s', this.fileprefix)); 
         end
