@@ -3,6 +3,7 @@ classdef MGHState < mlfourd.ImagingState
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState,
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
     %  TODO:   setting filenames should not change state to FilenameState.
+    %  @deprecated
 
 	%  $Revision$ 
  	%  was created $Date$ 

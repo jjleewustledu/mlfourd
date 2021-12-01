@@ -1,5 +1,6 @@
 classdef (Abstract) HandleINIfTI < handle
-	%% INIFTI provide a minimal set of imaging properties, methods
+	%% INIFTI provide a minimal set of imaging properties, methods.
+    %  @deprecated
 
 	%  $Revision$
  	%  was created 20-Oct-2015 19:28:49
