@@ -1,4 +1,4 @@
-classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTIIO
+classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlio.HandleIOInterface
 	%% ImagingContext2 is the context and AbstractImagingTool is the state forming a state design pattern for imaging
     %  tools.  It's intent is to improve the expressivity of tools for imaging objects, much as state-dependent tools
     %  for editing graphical objects improve expressivity of grpahics workflows.  See also AbstactImagingTool.

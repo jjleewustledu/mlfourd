@@ -1,4 +1,4 @@
-classdef (Abstract) ImagingState < handle & mlfourd.HandleNIfTIIO
+classdef (Abstract) ImagingState < handle & mlio.HandleIOInterface
 	%% IMAGINGSTATE is the parent class for all internal states used by ImagingContext in a state design pattern.
     %  See also:  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.

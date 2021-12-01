@@ -1,4 +1,4 @@
-classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleNIfTIIO & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI 
+classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI & mlio.HandleIOInterface
 	%% IMAGINGFORMATCONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported 
     %  states include mlfourd.InnerNIfTI, mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  The state is configured by field  
     %  imagingInfo which is an mlfourd.{ImagingInfo,Analyze75Info,NIfTIInfo}, mlfourdfp.FourdfpInfo, mlsurfer.MGHInfo.  
@@ -618,7 +618,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = copy(obj);
+                inn = obj;
                 return
             end
             if (isa(obj, 'mlfourd.ImagingInfo'))
@@ -649,11 +649,11 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleN
             obj = varargin{1};
             v_  = varargin(2:end);
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = copy(obj.innerNIfTI_); % copy ctor
+                inn = obj.innerNIfTI_; % not copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
-                inn = copy(obj);
+                inn = obj;
                 return
             end
             if (isa(obj, 'mlfourd.ImagingInfo'))

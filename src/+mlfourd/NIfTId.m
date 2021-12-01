@@ -1,4 +1,4 @@
-classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTId
+classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & mlfourd.INIfTId & mlio.IOInterface
     %% NIFTID specifies imaging data using img, fileprefix, hdr.hist.descrip, hdr.dime.pixdim as
     %  described by Jimmy Shen's entries at http://www.mathworks.com/matlabcentral/fileexchange/authors/20638.
     

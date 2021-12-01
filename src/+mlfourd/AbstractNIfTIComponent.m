@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.NIfTIIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI
+classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlio.IOInterface
 	%% ABSTRACTNIFTICOMPONENT supports a composite design pattern using InnerNIfTI, InnerNIfTIc and common interface
     %  INIfTI.  See also concrete implementations mlfourd.NIfTId and mlfourd.NIfTIc.
     %  See also:  mlfourdfp.InnerFourdfp and mlsurfer.InnerMGH.

@@ -1,4 +1,4 @@
-classdef InnerNIfTIcIO < mlfourd.NIfTIIO
+classdef InnerNIfTIcIO < mlio.IOInterface
 	%% InnerNIfTIcIO  
     %  yet abstract:  noclobber
 

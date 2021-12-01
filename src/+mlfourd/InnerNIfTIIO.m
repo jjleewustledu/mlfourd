@@ -1,4 +1,4 @@
-classdef InnerNIfTIIO < handle & mlfourd.HandleNIfTIIO
+classdef InnerNIfTIIO < handle & mlio.HandleIOInterface
 	%% INNERNIFTIIO
     %  yet abstract:  noclobber
     
