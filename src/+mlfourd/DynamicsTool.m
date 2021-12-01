@@ -39,10 +39,10 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             ipr.mask = mlfourd.ImagingContext2(ipr.mask);
             ipr.rsn_labels = mlfourd.ImagingContext2(ipr.rsn_labels);
             
-            this.innerImaging_.fileprefix = [this.innerImaging_.fileprefix '_corrcoef'];
-            this.innerImaging_.filesuffix = '.nii.gz';
-            this.innerImaging_ = this.innerImaging_.mutateInnerImagingFormatByFilesuffix();
-            sz = size(this.innerImaging_);
+            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_corrcoef'];
+            this.imagingFormat_.filesuffix = '.nii.gz';
+            this.imagingFormat_ = this.imagingFormat_.mutateInnerImagingFormatByFilesuffix();
+            sz = size(this.imagingFormat_);
             Nxyz = prod(sz(1:3));
             Nt = sz(4);
                         
@@ -55,8 +55,8 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             found = xfm_ * found;            
             
-            bold = reshape(this.innerImaging_.img, [Nxyz Nt])'; % Nt x Nxyz
-            this.innerImaging_.img = corrcoef(bold(:, found), 'Rows', 'complete'); % Nfound x Nfound            
+            bold = reshape(this.imagingFormat_.img, [Nxyz Nt])'; % Nt x Nxyz
+            this.imagingFormat_.img = corrcoef(bold(:, found), 'Rows', 'complete'); % Nfound x Nfound            
             
             function m = xfm()
                 Nrsn = dipmax(ipr.rsn_labels) + 1;
@@ -89,38 +89,38 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
         function this = coeffvar(this, varargin)
             s = std(copy(this), varargin{:});
             m = mean(copy(this), varargin{:});
-            this.innerImaging_.img = s.innerImaging_.img ./ m.innerImaging_.img;
+            this.imagingFormat_.img = s.imagingFormat_.img ./ m.imagingFormat_.img;
             this.addLog('DynamicsTool.coeffvar');
         end
         function this = del2(this, varargin)
-            this.innerImaging_.img = del2(this.innerImaging_.img, varargin{:});
+            this.imagingFormat_.img = del2(this.imagingFormat_.img, varargin{:});
             this.addLog('DynamicsTool.del2');
         end
         function this = diff(this, varargin)
             %% DIFF applies Matlab diff over time samples, time dimension will be smaller by 1.
             %  See also:  Matlab diff.
             
-            img = shiftdim(this.innerImaging_.img, this.ndims-1); % t is leftmost
+            img = shiftdim(this.imagingFormat_.img, this.ndims-1); % t is leftmost
             img = diff(img, varargin{:});
-            this.innerImaging_.img = shiftdim(img, 1);
+            this.imagingFormat_.img = shiftdim(img, 1);
             this.addLog('DynamicsTool.diff');
         end
         function this = gradient(this, varargin)
             %% replaces img in R^n with img in R^(n+1) such that last dim contains gradient components.
             %  E.g.,  for input in R^4, return R^5 with last dim containing gradient components [e_x e_y e_z e_t].
             
-            imgz = zeros([size(this.innerImaging_.img) this.ndims]);
+            imgz = zeros([size(this.imagingFormat_.img) this.ndims]);
             if (4 == this.ndims)
-                img = this.innerImaging_.img;
+                img = this.imagingFormat_.img;
                 [imgz(:,:,:,:,1),imgz(:,:,:,:,2),imgz(:,:,:,:,3),imgz(:,:,:,:,4)] = gradient(img, varargin{:});
-                this.innerImaging_.img = imgz;
+                this.imagingFormat_.img = imgz;
                 this.addLog('DynamicsTool.gradient');
                 return
             end
             if (3 == this.ndims)
-                img = this.innerImaging_.img;
+                img = this.imagingFormat_.img;
                 [imgz(:,:,:,1),imgz(:,:,:,2),imgz(:,:,:,3)] = gradient(img, varargin{:});
-                this.innerImaging_.img = imgz;
+                this.imagingFormat_.img = imgz;
                 this.addLog('DynamicsTool.gradient');
                 return
             end
@@ -133,7 +133,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             parse(ip, varargin{:})
             ipr = ip.Results;
             
-            img = this.innerImaging_.img;
+            img = this.imagingFormat_.img;
             sz = size(img);
             Nxyz = sz(1)*sz(2)*sz(3);
             img = reshape(img, [Nxyz sz(4)]);
@@ -141,7 +141,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
                 img(x,:) = interp1(ipr.times0, img(x,:), ipr.times1, 'linear', 'extrap');
             end
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.innerImaging_.img = img;            
+            this.imagingFormat_.img = img;            
             this.fileprefix = [this.fileprefix '_interp1'];
         end
         function this = makima(this, varargin)
@@ -151,36 +151,36 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             parse(ip, varargin{:})
             ipr = ip.Results;
             
-            img = this.innerImaging_.img;
+            img = this.imagingFormat_.img;
             sz = size(img);
             img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
             img = makima(ipr.times0, img, ipr.times1);
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.innerImaging_.img = img;            
+            this.imagingFormat_.img = img;            
             this.fileprefix = [this.fileprefix '_makima'];
         end
         function this = mean(this, varargin)
             %% applies Matlab mean over time samples
             
             assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
-            this.innerImaging_.img = squeeze(mean(img, varargin{:}));
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(mean(img, varargin{:}));
             this.addLog('DynamicsTool.mean');
         end
         function this = median(this, varargin)
             %% applies Matlab median over time samples
             
             assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
-            this.innerImaging_.img = squeeze(median(img, varargin{:}));
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(median(img, varargin{:}));
             this.addLog('DynamicsTool.median');
         end
         function this = mode(this, varargin)
             %% applies Matlab mode over time samples
             
             assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
-            this.innerImaging_.img = squeeze(mode(img, varargin{:}));
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(mode(img, varargin{:}));
             this.addLog('DynamicsTool.mode');
         end   
         function this = pchip(this, varargin)
@@ -190,30 +190,30 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             parse(ip, varargin{:})
             ipr = ip.Results;
             
-            img = this.innerImaging_.img;
+            img = this.imagingFormat_.img;
             sz = size(img);
             img = reshape(img, [sz(1)*sz(2)*sz(3) sz(4)]);
             img = pchip(ipr.times0, img, ipr.times1);
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.innerImaging_.img = img;            
+            this.imagingFormat_.img = img;            
             this.fileprefix = [this.fileprefix '_pchip'];
         end  
         function this = Q(this, varargin)
             %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
             
             assert(4 == this.ndims)
-            for iT = 1:size(this.innerImaging_, 4)
-                this.innerImaging_.img(:,:,:,iT) = this.innerImaging_.img(:,:,:,iT).^2;
+            for iT = 1:size(this.imagingFormat_, 4)
+                this.imagingFormat_.img(:,:,:,iT) = this.imagingFormat_.img(:,:,:,iT).^2;
             end
-            this.innerImaging_.img = sum(this.innerImaging_, 4, 'omitnan');
+            this.imagingFormat_.img = sum(this.imagingFormat_, 4, 'omitnan');
             this.addLog('DynamicsTool.Q')
         end
         function this = std(this, varargin)
             %% applies Matlab std over time samples
             
             assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
-            this.innerImaging_.img = squeeze(std(img, varargin{:}));
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
         end
         function [this,T] = timeAveraged(this, varargin)
@@ -222,7 +222,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             %  @param weights for each time \in T.
             %  @param taus => weights := taus / sum(taus), superceding other requests for weights.
             
-            Nt = size(this.innerImaging_, 4);
+            Nt = size(this.imagingFormat_, 4);
             ip = inputParser;
             addOptional(ip, 'T',  1:Nt, @isnumeric);
             addParameter(ip, 'weights', [], @isnumeric)
@@ -252,16 +252,16 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             
             if isempty(ipr.weights)               
-                this.innerImaging_.img = sum(this.innerImaging_.img(:,:,:,T), 4, 'omitnan') / length(T);
+                this.imagingFormat_.img = sum(this.imagingFormat_.img(:,:,:,T), 4, 'omitnan') / length(T);
                 namesAndLogging()
                 return
             end
                        
-            this.innerImaging_.img = this.innerImaging_.img(:,:,:,T); % truncate series
+            this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,T); % truncate series
             for it = 1:length(T)
-                this.innerImaging_.img(:,:,:,it) = ipr.weights(it) * this.innerImaging_.img(:,:,:,it); % weight series
+                this.imagingFormat_.img(:,:,:,it) = ipr.weights(it) * this.imagingFormat_.img(:,:,:,it); % weight series
             end
-            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan'); % sum series
+            this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan'); % sum series
             namesAndLogging()                        
             
             function namesAndLogging()
@@ -277,12 +277,12 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
             
             ip = inputParser;
-            addOptional(ip, 'T', 1:size(this.innerImaging_,4), @isnumeric);
+            addOptional(ip, 'T', 1:size(this.imagingFormat_,4), @isnumeric);
             parse(ip, varargin{:});            
             T = ip.Results.T;
             
-            this.innerImaging_.img = this.innerImaging_.img(:,:,:,T);
-            this.innerImaging_.img = sum(this.innerImaging_.img, 4, 'omitnan');
+            this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,T);
+            this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan');
             
             % names & logging
             this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
@@ -300,7 +300,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             assert(isnumeric(times))
             assert(isscalar(Dt))
             
-            [times,this.innerImaging_.img] = shiftNumeric(times, this.innerImaging_.img, Dt);
+            [times,this.imagingFormat_.img] = shiftNumeric(times, this.imagingFormat_.img, Dt);
             
             % names & logging
             this.fileprefix = sprintf('%s_timeShifted%g', this.fileprefix, Dt);
@@ -310,8 +310,8 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             %% applies Matlab var over time samples
             
             assert(4 == this.ndims)
-            img = shiftdim(this.innerImaging_.img, 3); % t is leftmost
-            this.innerImaging_.img = squeeze(var(img, varargin{:}));
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(var(img, varargin{:}));
             this.addLog('DynamicsTool.var');
         end        
         function [this,M] = volumeAveraged(this, varargin)
@@ -320,7 +320,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             [this,M] = this.volumeContracted(varargin{:});    
             boolM = M.logical;
             dbleM = double(boolM);
-            this.innerImaging_.img = this.innerImaging_.img / sum(dbleM(dbleM > 0), 'omitnan');
+            this.imagingFormat_.img = this.imagingFormat_.img / sum(dbleM(dbleM > 0), 'omitnan');
             
             % names & logging
             this.fileprefix = strrep(this.fileprefix, this.SUMXYZ_SUFFIX, this.AVGXYZ_SUFFIX);
@@ -329,7 +329,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
         function [this,M] = volumeContracted(this, varargin)
             %  @param optional  mask | max(mask) == 1, understood by ImagingContext2.
             
-            sz = this.innerImaging_.size;
+            sz = this.imagingFormat_.size;
             ip = inputParser;
             addOptional(ip, 'M', ones(sz(1:3)));
             parse(ip, varargin{:});
@@ -339,12 +339,12 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             if 4 == length(sz)
                 img = zeros(1,sz(4));
                 for t = 1:sz(4)
-                    iiimg = this.innerImaging_.img(:,:,:,t);
+                    iiimg = this.imagingFormat_.img(:,:,:,t);
                     img(t) = sum(iiimg(boolM), 'omitnan');
                 end
-                this.innerImaging_.img = img;
+                this.imagingFormat_.img = img;
             else
-                this.innerImaging_.img = sum(this.innerImaging_.img(boolM), 'omitnan');
+                this.imagingFormat_.img = sum(this.imagingFormat_.img(boolM), 'omitnan');
             end
             
             % names & logging

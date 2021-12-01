@@ -1,4 +1,4 @@
-classdef (Sealed) FilesystemTool < handle & matlab.mixin.Copyable & mlfourd.AbstractImagingTool
+classdef (Sealed) FilesystemTool < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlfourd.AbstractImagingTool
 	%% FILESYSTEMTOOL  
 
 	%  $Revision$

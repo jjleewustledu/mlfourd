@@ -15,8 +15,8 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @return inner image is numerical and binary: 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
-            this.innerImaging_.img  = double(this.innerImaging_.img ~= 0);
-            this.innerImaging_ = this.innerImaging_.reset_scl;
+            this.imagingFormat_.img  = double(this.imagingFormat_.img ~= 0);
+            this.imagingFormat_ = this.imagingFormat_.reset_scl;
             this.warnLargeVolumeFraction;
             this.fileprefix = [this.fileprefix '_binarized'];  
             this.addLog('MaskingTool.binarized');
@@ -25,12 +25,12 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %% COUNT 
             %  @return N = nonzero elements in the inner imaging.
             
-            n = dipsum(this.innerImaging_.img ~= 0);
+            n = dipsum(this.imagingFormat_.img ~= 0);
         end
         function this = imfill(this, varargin)
             %% IMFILL calls Matlab's imfill.
 
-            this.innerImaging_.img = imfill(logical(this.innerImaging_.img), varargin{:});
+            this.imagingFormat_.img = imfill(logical(this.imagingFormat_.img), varargin{:});
             this.fileprefix = [this.fileprefix '_imfill'];  
             this.addLog('MaskingTool.imfill');
         end
@@ -72,8 +72,8 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             parse(ip, M, funch);
             M = mlfourd.ImagingContext2(M);
             
-            v = this.innerImaging_.img(M.nifti.img == 1);
-            this.innerImaging_.img = funch(v, varargin{:});
+            v = this.imagingFormat_.img(M.nifti.img == 1);
+            this.imagingFormat_.img = funch(v, varargin{:});
             this.fileprefix = sprintf('%s_maskedMaths_%s_%s', ...
                 this.fileprefix, M.fileprefix, func2str(funch));
             this.addLog('MaskingTool.maskedMaths %s %s', M.fileprefix, func2str(funch));
@@ -112,9 +112,9 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param t:  use t to threshold current image (zero anything below the number)
 
             assert(isscalar(t));
-            bin  = this.innerImaging_.img >= t;
+            bin  = this.imagingFormat_.img >= t;
             this = this.makeSimilar( ...
-                   'img', double(this.innerImaging_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskingTool.thresh(%g)', t));
             this.addLog('MaskingTool.thresh(%g)', t);
@@ -126,10 +126,10 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             if p > 1
                 p = p/100;
             end
-            img  = this.innerImaging_.img;
+            img  = this.imagingFormat_.img;
             bin  = img >= p*dipiqr(img(img > 0.01*dipmax(img)));
             this = this.makeSimilar( ...
-                   'img', double(this.innerImaging_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
             this.addLog('MaskingTool.threshp(%g)', p);
@@ -139,9 +139,9 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param t:  use t to upper-threshold current image (zero anything above the number)
             
             assert(isscalar(t));
-            bin  = this.innerImaging_.img <= t;
+            bin  = this.imagingFormat_.img <= t;
             this = this.makeSimilar( ...
-                   'img', double(this.innerImaging_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskingTool.uthresh(%g)', t));
             this.addLog('MaskingTool.uthresh(%g)', t);
@@ -153,10 +153,10 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             if p > 1
                 p = p/100;
             end
-            img  = this.innerImaging_.img;
+            img  = this.imagingFormat_.img;
             bin  = img <= p*dipiqr(img(img > 0.01*dipmax(img)));
             this = this.makeSimilar( ...
-                   'img', double(this.innerImaging_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
             this.addLog('MaskingTool.uthreshp(%g)', p);
@@ -175,7 +175,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param tsize is optional.            
             %  @returns this
 
-            this.innerImaging_ = this.innerImaging_.zoom(varargin{:});
+            this.imagingFormat_ = this.imagingFormat_.zoom(varargin{:});
         end
         
         function this = MaskingTool(h, varargin)
@@ -231,25 +231,25 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
     
     methods (Access = private)
         function this = masked2d(this, mimg)
-            this.innerImaging_.img = this.innerImaging_.img .* mimg;
+            this.imagingFormat_.img = this.imagingFormat_.img .* mimg;
         end
         function this = masked3d(this, mimg)
             if (ismatrix(mimg))
                 mimg = this.repz(mimg, size(this,3));
             end            
-            this.innerImaging_.img = this.innerImaging_.img .* mimg;
+            this.imagingFormat_.img = this.imagingFormat_.img .* mimg;
         end
         function this = masked4d(this, mimg)
             if (3 == ndims(mimg))
                 mimg = this.reptimes(mimg, size(this, 4));
             end
-            this.innerImaging_.img = this.innerImaging_.img .* mimg;
+            this.imagingFormat_.img = this.imagingFormat_.img .* mimg;
         end
         function warnLargeVolumeFraction(this)
             if (1 == this.MAX_VOLUME_FRACTION)
                 return
             end
-            volFrac = this.count/numel(this.innerImaging_.img);
+            volFrac = this.count/numel(this.imagingFormat_.img);
             if (volFrac > this.MAX_VOLUME_FRACTION)
                 warning('mlfourd:possibleMaskingError', ...
                         'MaskingTool encountered a masked image with a large volume-fraction:  %g', ...

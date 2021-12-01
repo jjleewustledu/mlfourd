@@ -182,11 +182,11 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
             end
             if (4 == this.ndims)
                 for t = 1:size(this,4)
-                    this.innerImaging_.img(:,:,:,t) = ...
-                        this.blurredImg(this.innerImaging_.img(:,:,:,t));
+                    this.imagingFormat_.img(:,:,:,t) = ...
+                        this.blurredImg(this.imagingFormat_.img(:,:,:,t));
                 end
             else
-                this.innerImaging_.img = this.blurredImg(this.innerImaging_.img);
+                this.imagingFormat_.img = this.blurredImg(this.imagingFormat_.img);
             end            
             this.fileprefix = this.blurredFileprefix;
             this.addLog(sprintf('BlurringTool:  blur->%s', mat2str(this.blur)));
@@ -220,7 +220,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
             r = min(this.ndims, 3);
         end
         function s = sizeEuclid(this)
-            s = this.innerImaging_.size;
+            s = this.imagingFormat_.size;
             s = s(1:this.ndimsEuclid);
         end
         
@@ -330,17 +330,17 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 img .* this.mask_, ...
                 this.blur_, ...
                 'height', this.height_, ...
-                'metppix', this.innerImaging_.mmppix, ...
+                'metppix', this.imagingFormat_.mmppix, ...
                 'krnlMult', this.kernelMultiple_);
         end
         function morphologic(this, fhandle, varargin)
             if (4 == this.ndims)
                 for t = 1:size(this,4)
-                    this.innerImaging_.img(:,:,:,t) = ...
-                        fhandle(this.innerImaging_.img(:,:,:,t));
+                    this.imagingFormat_.img(:,:,:,t) = ...
+                        fhandle(this.imagingFormat_.img(:,:,:,t));
                 end
             else
-                this.innerImaging_.img = fhandle(this.innerImaging_.img, varargin{:});
+                this.imagingFormat_.img = fhandle(this.imagingFormat_.img, varargin{:});
             end            
             this.fileprefix = sprintf('%s_%s', this.fileprefix, func2str(fhandle));
             this.addLog(sprintf('BlurringTool:  %s', func2str(fhandle)));

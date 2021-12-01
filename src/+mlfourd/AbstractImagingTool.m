@@ -1,5 +1,5 @@
 classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
-	%% ABSTRACTIMAGINGTOOL is the state and ImagingContext2 is the context forming a state design pattern for
+	%% ABSTRACTIMAGINGTOOL is the state and ImagingContext2 is the context, together forming a state design pattern for
     %  imaging tools.
 
 	%  $Revision$

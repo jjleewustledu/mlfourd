@@ -1,4 +1,4 @@
-classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI & mlio.HandleIOInterface
+classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlfourd.HandleJimmyShenInterface & mlfourd.HandleINIfTI & mlio.HandleIOInterface
 	%% IMAGINGFORMATCONTEXT and mlfourd.AbstractInnerImagingFormat together form a state design pattern.  Supported 
     %  states include mlfourd.InnerNIfTI, mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  The state is configured by field  
     %  imagingInfo which is an mlfourd.{ImagingInfo,Analyze75Info,NIfTIInfo}, mlfourdfp.FourdfpInfo, mlsurfer.MGHInfo.  
