@@ -111,40 +111,40 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
         %% SET/GET
         
         function        set.filename(this, fn)
-            this.innerNIfTI_.filename = fn;
+            this.innerImagingFormat_.filename = fn;
         end
         function fn   = get.filename(this)
-            fn = this.innerNIfTI_.filename;
+            fn = this.innerImagingFormat_.filename;
         end
         function        set.filepath(this, pth)
-            this.innerNIfTI_.filepath = pth;
+            this.innerImagingFormat_.filepath = pth;
         end
         function pth  = get.filepath(this)
-            pth = this.innerNIfTI_.filepath;
+            pth = this.innerImagingFormat_.filepath;
         end
         function        set.fileprefix(this, fp)
-            this.innerNIfTI_.fileprefix = fp;
+            this.innerImagingFormat_.fileprefix = fp;
         end
         function fp   = get.fileprefix(this)
-            fp = this.innerNIfTI_.fileprefix;
+            fp = this.innerImagingFormat_.fileprefix;
         end
         function        set.filesuffix(this, fs)
-            this.innerNIfTI_.filesuffix = fs;
+            this.innerImagingFormat_.filesuffix = fs;
         end
         function fs   = get.filesuffix(this)
-            fs = this.innerNIfTI_.filesuffix;
+            fs = this.innerImagingFormat_.filesuffix;
         end        
         function        set.fqfilename(this, fqfn)
-            this.innerNIfTI_.fqfilename = fqfn;
+            this.innerImagingFormat_.fqfilename = fqfn;
         end
         function fqfn = get.fqfilename(this)
-            fqfn = this.innerNIfTI_.fqfilename;
+            fqfn = this.innerImagingFormat_.fqfilename;
         end
         function        set.fqfileprefix(this, fqfp)
-            this.innerNIfTI_.fqfileprefix = fqfp;
+            this.innerImagingFormat_.fqfileprefix = fqfp;
         end
         function fqfp = get.fqfileprefix(this)
-            fqfp = this.innerNIfTI_.fqfileprefix;
+            fqfp = this.innerImagingFormat_.fqfileprefix;
         end
         function        set.fqfn(this, f)
             this.fqfilename = f;
@@ -159,153 +159,153 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             f = this.fqfileprefix;
         end        
         function        set.noclobber(this, nc)
-            this.innerNIfTI_.noclobber = nc;
+            this.innerImagingFormat_.noclobber = nc;
         end            
         function nc   = get.noclobber(this)
-            nc = this.innerNIfTI_.noclobber;
+            nc = this.innerImagingFormat_.noclobber;
         end    
         
         function e    = get.ext(this)
-            e = this.innerNIfTI_.ext;
+            e = this.innerImagingFormat_.ext;
         end
         function f    = get.filetype(this)
-            f = this.innerNIfTI_.filetype;
+            f = this.innerImagingFormat_.filetype;
         end
         function h    = get.hdr(this)
-            h = this.innerNIfTI_.hdr;
+            h = this.innerImagingFormat_.hdr;
         end 
         function        set.hdr(this, s)
             assert(isstruct(s))
-            this.innerNIfTI_.hdr = s;
+            this.innerImagingFormat_.hdr = s;
         end        
         function im   = get.img(this)
-            im = this.innerNIfTI_.img;
+            im = this.innerImagingFormat_.img;
         end        
         function        set.img(this, im)
             %% SET.IMG sets new image state. 
             %  @param im is numeric; it updates datatype, bitpix, dim
             
-            this.innerNIfTI_.img = im;
+            this.innerImagingFormat_.img = im;
         end
         function o    = get.originalType(this)
-            o = this.innerNIfTI_.originalType_;
+            o = this.innerImagingFormat_.originalType_;
         end
         function u    = get.untouch(this)
-            u = this.innerNIfTI_.untouch;
+            u = this.innerImagingFormat_.untouch;
         end
         
         function bp   = get.bitpix(this) 
             %% BIPPIX returns a datatype code as described by the INIfTI specificaitons
             
-            bp = this.innerNIfTI_.bitpix;
+            bp = this.innerImagingFormat_.bitpix;
         end
         function        set.bitpix(this, bp) 
-            this.innerNIfTI_.bitpix = bp;
+            this.innerImagingFormat_.bitpix = bp;
         end
         function cdat = get.creationDate(this)
-            cdat = this.innerNIfTI_.creationDate;
+            cdat = this.innerImagingFormat_.creationDate;
         end
         function dt   = get.datatype(this)
             %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
-            dt = this.innerNIfTI_.datatype;
+            dt = this.innerImagingFormat_.datatype;
         end    
         function        set.datatype(this, dt)
-            this.innerNIfTI_.datatype = dt;
+            this.innerImagingFormat_.datatype = dt;
         end
         function d    = get.descrip(this)
-            d = this.innerNIfTI_.descrip;
+            d = this.innerImagingFormat_.descrip;
         end        
         function        set.descrip(this, s)
             %% SET.DESCRIP
             %  do not add separators such as ";" or ","
             
-            this.innerNIfTI_.descrip = s;
+            this.innerImagingFormat_.descrip = s;
         end   
         function E    = get.entropy(this)
-            E = this.innerNIfTI_.entropy;
+            E = this.innerImagingFormat_.entropy;
         end
         function x    = get.hdxml(this)
             %% GET.HDXML writes the xml file if this objects exists on disk
             
-            x = this.innerNIfTI_.hdxml;
+            x = this.innerImagingFormat_.hdxml;
         end 
         function d    = get.label(this)
-            d = this.innerNIfTI_.label;
+            d = this.innerImagingFormat_.label;
         end     
         function        set.label(this, s)
-            this.innerNIfTI_.label = s;
+            this.innerImagingFormat_.label = s;
         end
         function ma   = get.machine(this)
-            ma = this.innerNIfTI_.machine;
+            ma = this.innerImagingFormat_.machine;
         end
         function mpp  = get.mmppix(this)
-            mpp = this.innerNIfTI_.mmppix;
+            mpp = this.innerImagingFormat_.mmppix;
         end        
         function        set.mmppix(this, mpp)
             %% SET.MMPPIX sets voxel-time dimensions in mm, s.
             
-            this.innerNIfTI_.mmppix = mpp;
+            this.innerImagingFormat_.mmppix = mpp;
         end  
         function g    = get.N(this)
-            g = this.innerNIfTI_.N;
+            g = this.innerImagingFormat_.N;
         end
         function        set.N(this, s)
             assert(islogical(s))
-            this.innerNIfTI_.N = s;
+            this.innerImagingFormat_.N = s;
         end
         function E    = get.negentropy(this)
-            E = this.innerNIfTI_.negentropy;
+            E = this.innerImagingFormat_.negentropy;
         end
         function o    = get.orient(this)
-            o = this.innerNIfTI_.orient;
+            o = this.innerImagingFormat_.orient;
         end
         function o    = get.originator(this)
-            o = this.innerNIfTI_.originator;
+            o = this.innerImagingFormat_.originator;
         end        
         function        set.originator(this, o)
             %% SET.ORIGINATOR sets originator position in mm.
             
-            this.innerNIfTI_.originator = o;
+            this.innerImagingFormat_.originator = o;
         end  
         function pd   = get.pixdim(this)
-            pd = this.innerNIfTI_.pixdim;
+            pd = this.innerImagingFormat_.pixdim;
         end        
         function        set.pixdim(this, pd)
             %% SET.PIXDIM sets voxel-time dimensions in mm, s.
             
-            this.innerNIfTI_.pixdim = pd;
+            this.innerImagingFormat_.pixdim = pd;
         end  
         function num  = get.seriesNumber(this)
-            num = this.innerNIfTI_.seriesNumber;
+            num = this.innerImagingFormat_.seriesNumber;
         end
         
         function ii   = get.imagingInfo(this)
-            ii = this.innerNIfTI_.imagingInfo;
+            ii = this.innerImagingFormat_.imagingInfo;
         end        
         function tc   = get.innerTypeclass(this)
-            tc = class(this.innerNIfTI_);
+            tc = class(this.innerImagingFormat_);
         end
         function im   = get.logger(this)
-            im = this.innerNIfTI_.logger;
+            im = this.innerImagingFormat_.logger;
         end
         function s    = get.separator(this)
-            s = this.innerNIfTI_.separator;
+            s = this.innerImagingFormat_.separator;
         end
         function        set.separator(this, s)
-            this.innerNIfTI_.separator = s;
+            this.innerImagingFormat_.separator = s;
         end
         function s    = get.stack(this)
             %% GET.STACK
             %  See also:  doc('dbstack')
             
-            s = this.innerNIfTI_.stack;
+            s = this.innerImagingFormat_.stack;
         end
         function v    = get.viewer(this)
-            v = this.innerNIfTI_.viewer;
+            v = this.innerImagingFormat_.viewer;
         end
         function        set.viewer(this, v)
-            this.innerNIfTI_.viewer = v;
+            this.innerImagingFormat_.viewer = v;
         end    
         
         %%
@@ -313,49 +313,49 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
         function        addLog(this, varargin)
             inst = mlpipeline.PipelineRegistry.instance();
             if inst.verbose
-                this.innerNIfTI_.addLog(varargin{:});
+                this.innerImagingFormat_.addLog(varargin{:});
             else
-                this.innerNIfTI_.addLogNoEcho(varargin{:});
+                this.innerImagingFormat_.addLogNoEcho(varargin{:});
             end
         end
         function c    = char(this, varargin)
-            c = this.innerNIfTI_.char(varargin{:});
+            c = this.innerImagingFormat_.char(varargin{:});
         end
         function this = append_descrip(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.append_descrip(varargin{:});
         end
         function this = prepend_descrip(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prepend_descrip(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.prepend_descrip(varargin{:});
         end
         function d    = double(this)
-            d = this.innerNIfTI_.double;
+            d = this.innerImagingFormat_.double;
         end
         function d    = duration(this)
-            d = this.innerNIfTI_.duration;
+            d = this.innerImagingFormat_.duration;
         end
         function this = append_fileprefix(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.append_fileprefix(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.append_fileprefix(varargin{:});
         end
         function this = prepend_fileprefix(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prepend_fileprefix(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.prepend_fileprefix(varargin{:});
         end
         function this = ensureDouble(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureDouble;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureDouble;
         end
         function this = ensureSingle(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureSingle;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureSingle;
         end
         function this = ensureUint8(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureUint8;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureUint8;
         end
         function this = ensureInt16(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureInt16;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureInt16;
         end
         function this = ensureInt32(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureInt32;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureInt32;
         end
         function this = ensureInt64(this)
-            this.innerNIfTI_ = this.innerNIfTI_.ensureInt64;
+            this.innerImagingFormat_ = this.innerImagingFormat_.ensureInt64;
         end
         function        export(this, varargin)
             %% supports .mat with conventions from Patrick Luckett
@@ -393,52 +393,52 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             end
         end
         function f    = fov(this)
-            f = this.innerNIfTI_.fov;
+            f = this.innerImagingFormat_.fov;
         end
         function        freeview(this, varargin)
-            this.innerNIfTI_.freeview(varargin{:});
+            this.innerImagingFormat_.freeview(varargin{:});
         end
         function e    = fslentropy(this)
-            e = this.innerNIfTI_.fslentropy;
+            e = this.innerImagingFormat_.fslentropy;
         end
         function E    = fslEntropy(this)
-            E = this.innerNIfTI_.fslEntropy;
+            E = this.innerImagingFormat_.fslEntropy;
         end
         function        fsleyes(this, varargin)
-            this.innerNIfTI_.fsleyes(varargin{:});
+            this.innerImagingFormat_.fsleyes(varargin{:});
         end
         function        fslview(this, varargin)
-            this.innerNIfTI_.fslview(varargin{:});
+            this.innerImagingFormat_.fslview(varargin{:});
         end
         function        hist(this, varargin)
-            this.innerNIfTI_.hist(varargin{:});
+            this.innerImagingFormat_.hist(varargin{:});
         end      
         function tf   = isempty(this)
-            tf = isempty(this.innerNIfTI_.img);
+            tf = isempty(this.innerImagingFormat_.img);
         end
         function tf   = lexist(this)
-            tf = this.innerNIfTI_.lexist;
+            tf = this.innerImagingFormat_.lexist;
         end
         function m    = matrixsize(this)
-            m = this.innerNIfTI_.matrixsize;
+            m = this.innerImagingFormat_.matrixsize;
         end
         function this = mutateInnerImagingFormatByFilesuffix(this)
-            this.innerNIfTI_ = this.innerNIfTI_.mutateInnerImagingFormatByFilesuffix;
+            this.innerImagingFormat_ = this.innerImagingFormat_.mutateInnerImagingFormatByFilesuffix;
         end
         function n    = ndims(this, varargin)
-            n = this.innerNIfTI_.ndims(varargin{:});
+            n = this.innerImagingFormat_.ndims(varargin{:});
         end
         function n    = numel(this, varargin)
-            n = this.innerNIfTI_.numel(varargin{:});
+            n = this.innerImagingFormat_.numel(varargin{:});
         end
         function this = optimizePrecision(this)
-            this.innerNIfTI_ = this.innerNIfTI_.optimizePrecision();
+            this.innerImagingFormat_ = this.innerImagingFormat_.optimizePrecision();
         end
         function this = prod(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.prod(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.prod(varargin{:});
         end
         function this = reset_scl(this)
-            this.innerNIfTI_ = this.innerNIfTI_.reset_scl;
+            this.innerImagingFormat_ = this.innerImagingFormat_.reset_scl;
         end
         function r    = rank(this, varargin)
             %% DEPRECATED; use ndims
@@ -449,28 +449,28 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             this = this.zoom(varargin{:});
         end
         function        save(this)
-            this.innerNIfTI_.save;
+            this.innerImagingFormat_.save;
         end
         function this = saveas(this, fqfn)
-            this.innerNIfTI_ = this.innerNIfTI_.saveas(fqfn);
+            this.innerImagingFormat_ = this.innerImagingFormat_.saveas(fqfn);
         end
         function this = scrubNanInf(this)
-            this.innerNIfTI_ = this.innerNIfTI_.scrubNanInf;
+            this.innerImagingFormat_ = this.innerImagingFormat_.scrubNanInf;
         end
         function s    = single(this)
-            s = this.innerNIfTI_.single;
+            s = this.innerImagingFormat_.single;
         end
         function s    = size(this, varargin)
-            s = this.innerNIfTI_.size(varargin{:});
+            s = this.innerImagingFormat_.size(varargin{:});
         end
         function c    = string(this, varargin)
-            c = this.innerNIfTI_.string(varargin{:});
+            c = this.innerImagingFormat_.string(varargin{:});
         end
         function this = sum(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.sum(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.sum(varargin{:});
         end
         function fqfn = tempFqfilename(this)
-            fqfn = this.innerNIfTI_.tempFqfilename;
+            fqfn = this.innerImagingFormat_.tempFqfilename;
         end
         function        view(this, varargin)
             %% VIEW 
@@ -482,11 +482,11 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
                 plot(this.img, varargin{:});
                 return
             end
-            this.innerNIfTI_.viewer = this.viewer;
-            this.innerNIfTI_.view(varargin{:});
+            this.innerImagingFormat_.viewer = this.viewer;
+            this.innerImagingFormat_.view(varargin{:});
         end
         function this = zoom(this, varargin)
-            this.innerNIfTI_ = this.innerNIfTI_.zoom(varargin{:});
+            this.innerImagingFormat_ = this.innerImagingFormat_.zoom(varargin{:});
         end
         
  		function this = ImagingFormatContext(varargin)
@@ -497,7 +497,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             %  fqfileprefix, hdr, img, label, mmppix, noclobber, pixdim, separator.
 
             import mlfourd.*;            
-            this.innerNIfTI_ = ImagingFormatContext.createInner(varargin{:}); 
+            this.innerImagingFormat_ = ImagingFormatContext.createInner(varargin{:}); 
             
             ip = inputParser;
             addOptional( ip, 'obj',          [], @ImagingFormatContext.assertCtorObj);
@@ -525,7 +525,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             parse(ip, varargin{:});
             obj = ip.Results.obj;
             
-            this.innerNIfTI_.originalType_ = class(obj);
+            this.innerImagingFormat_.originalType_ = class(obj);
             if (isa(obj, 'mlfourd.ImagingFormatContext') || ...
                 isa(obj, 'mlfourd.AbstractInnerImagingFormat') || ...
                 isa(obj, 'mlfourd.ImagingInfo'))
@@ -573,7 +573,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
     %% PROTECTED    
     
     properties (Access = protected)
-        innerNIfTI_
+        innerImagingFormat_
     end
     
     methods (Access = protected)
@@ -581,7 +581,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
             
             that = copyElement@matlab.mixin.Copyable(this);
-            that.innerNIfTI_ = copy(this.innerNIfTI_);
+            that.innerImagingFormat_ = copy(this.innerImagingFormat_);
         end
     end
     
@@ -617,7 +617,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
         function inn  = createInner1(obj)
             import mlfourd.* mlfourdfp.* mlsurfer.*;     
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = copy(obj.innerNIfTI_); % copy ctor
+                inn = copy(obj.innerImagingFormat_); % copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
@@ -652,7 +652,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
             obj = varargin{1};
             v_  = varargin(2:end);
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                inn = obj.innerNIfTI_; % not copy ctor
+                inn = obj.innerImagingFormat_; % not copy ctor
                 return
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
@@ -686,18 +686,18 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
 
     methods (Access = private)
         function this = adjustFieldsFromInputParser(this, ip)
-            %% ADJUSTFIELDSFROMINPUTPARSER updates this.innerNIfTI_ with ip.Results from ctor.
+            %% ADJUSTFIELDSFROMINPUTPARSER updates this.innerImagingFormat_ with ip.Results from ctor.
             
             for p = 1:length(ip.Parameters)
                 if (~ismember(ip.Parameters{p}, ip.UsingDefaults))
                     switch (ip.Parameters{p})
                         case 'circshiftK'
                         case 'descrip'
-                            this.innerNIfTI_ = this.innerNIfTI_.append_descrip(ip.Results.descrip);
+                            this.innerImagingFormat_ = this.innerImagingFormat_.append_descrip(ip.Results.descrip);
                         case 'hist'
-                            this.innerNIfTI_.hdr.hist = ip.Results.hist;
+                            this.innerImagingFormat_.hdr.hist = ip.Results.hist;
                         case 'N'
-                            this.innerNIfTI_.N = ip.Results.N;
+                            this.innerImagingFormat_.N = ip.Results.N;
                         case 'obj'
                         otherwise % adjust programmatically
                             this.(ip.Parameters{p}) = ip.Results.(ip.Parameters{p});
@@ -707,26 +707,26 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
         end
         function this = adjustInnerNIfTIWithNumeric(this, num)
             lensize                                                   = length(size(num));
-            this.innerNIfTI_.img_                                     = num;
-            this.innerNIfTI_.imagingInfo.hdr.dime.pixdim(2:lensize+1) = ones(1,lensize);
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim                 = ones(1,8);
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim(1)              = lensize;
-            this.innerNIfTI_.imagingInfo.hdr.dime.dim(2:lensize+1)    = size(num);
-            this.innerNIfTI_.imagingInfo.hdr.dime.datatype            = 64;
-            this.innerNIfTI_.imagingInfo.hdr.dime.bitpix              = 64;
+            this.innerImagingFormat_.img_                                     = num;
+            this.innerImagingFormat_.imagingInfo.hdr.dime.pixdim(2:lensize+1) = ones(1,lensize);
+            this.innerImagingFormat_.imagingInfo.hdr.dime.dim                 = ones(1,8);
+            this.innerImagingFormat_.imagingInfo.hdr.dime.dim(1)              = lensize;
+            this.innerImagingFormat_.imagingInfo.hdr.dime.dim(2:lensize+1)    = size(num);
+            this.innerImagingFormat_.imagingInfo.hdr.dime.datatype            = 64;
+            this.innerImagingFormat_.imagingInfo.hdr.dime.bitpix              = 64;
         end
         function this = adjustInnerNIfTIWithStruct(this, s)
             % as described by mlniftitools.load_untouch_nii
-            this.innerNIfTI_.hdr          = s.hdr;
-            this.innerNIfTI_.filetype     = s.filetype;
-            this.innerNIfTI_.fqfilename   = s.fileprefix; % Jimmy Shen's fileprefix includes filepath, filesuffix
-            % this.innerNIfTI_.machine is set at run-time
+            this.innerImagingFormat_.hdr          = s.hdr;
+            this.innerImagingFormat_.filetype     = s.filetype;
+            this.innerImagingFormat_.fqfilename   = s.fileprefix; % Jimmy Shen's fileprefix includes filepath, filesuffix
+            % this.innerImagingFormat_.machine is set at run-time
             if isfield(s, 'ext')
-                this.innerNIfTI_.ext      = s.ext;
+                this.innerImagingFormat_.ext      = s.ext;
             end
-            this.innerNIfTI_.img_         = s.img;
+            this.innerImagingFormat_.img_         = s.img;
             if isfield(s, 'untouch')
-                this.innerNIfTI_.untouch  = s.untouch;
+                this.innerImagingFormat_.untouch  = s.untouch;
             end
         end
     end 
@@ -734,10 +734,10 @@ classdef ImagingFormatContext < handle & matlab.mixin.Heterogeneous & matlab.mix
     %% HIDDEN
     
     methods (Hidden) 
-        function g = getInnerNIfTI(this)
+        function g = getInnerImagingFormat(this)
             %% allows ImagingContext2 to import ImagingContext without accessing the filesystem.
             
-            g = this.innerNIfTI_;
+            g = this.innerImagingFormat_;
         end
     end
 

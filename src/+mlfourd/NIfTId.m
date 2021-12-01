@@ -191,7 +191,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                 return
             end
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                obj = obj.getInnerNIfTI;
+                obj = obj.getInnerImagingFormat;
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
                 inn = obj;
@@ -230,7 +230,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                 return
             end
             if (isa(obj, 'mlfourd.ImagingFormatContext'))
-                obj = obj.getInnerNIfTI;
+                obj = obj.getInnerImagingFormat;
             end
             if (isa(obj, 'mlfourd.AbstractInnerImagingFormat'))
                 inn = obj;

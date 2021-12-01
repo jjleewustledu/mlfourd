@@ -629,7 +629,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             if (isa(obj, 'mlfourd.ImagingContext2'))
                 if (lstrfind(obj.filesuffix, '.4dfp'))
                     import mlfourdfp.*;
-                    this.state_ = FourdfpdState(Fourdfp(NIfTId(obj.nifti.getInnerNIfTI)), this);
+                    this.state_ = FourdfpdState(Fourdfp(NIfTId(obj.nifti.getInnerImagingFormat)), this);
                     return
                 end
                 this.state_ = NIfTIdState(NIfTId(obj.nifti), this);

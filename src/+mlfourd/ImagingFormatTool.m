@@ -132,7 +132,7 @@ classdef ImagingFormatTool < handle & matlab.mixin.Heterogeneous & matlab.mixin.
         %% delegate to ImagingFormatTool
         
         function        addImgrec(this, varargin)
-            this.imagingFormat_.getInnerNIfTI.addImgrec(varargin{:}); % imgrec is a handle logger
+            this.imagingFormat_.getInnerImagingFormat.addImgrec(varargin{:}); % imgrec is a handle logger
         end
         function        addLog(this, varargin)
             this.imagingFormat_.addLog(varargin{:});
