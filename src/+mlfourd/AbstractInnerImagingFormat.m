@@ -1,4 +1,4 @@
-classdef AbstractInnerImagingFormat < handle & matlab.mixin.Copyable & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
+classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
 	%% ABSTRACTINNERIMAGINGFORMAT supports imaging formats through concrete subclasses such as InnerNIfTI,  
     %  mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  Altering property filesuffix is a convenient way to change states 
     %  for formats.
