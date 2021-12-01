@@ -131,8 +131,10 @@ classdef InnerNIfTIIO < handle & mlio.HandleIOInterface
     
     methods
         function c = char(this, varargin)
-            c = this.fqfilename;
-            c = c(varargin{:});
+            c = char(this.fqfilename, varargin{:});
+        end
+        function s = string(this, varargin)
+            s = string(this.fqfilename, varargin{:});
         end
     end
     

@@ -370,8 +370,8 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
         
         %% 
         
-        function c    = char(this)
-            c = this.innerNIfTI_.char;
+        function c    = char(this, varargin)
+            c = this.innerNIfTI_.char(varargin{:});
         end
         function f    = false(this, varargin)
             p = inputParser;
@@ -423,6 +423,9 @@ classdef (Abstract) AbstractNIfTIComponent < mlfourd.RootNIfTIComponent & mlfour
             addOptional(p, 'fp',   [this.fileprefix '_ones'], @ischar);
             parse(p, varargin{:});
             o = this.makeSimilar('img', ones(this.size), 'descrip', p.Results.desc, 'fileprefix', p.Results.fp);
+        end
+        function s    = string(this, varargin)
+            s = this.innerNIfTI_.string(varargin{:});
         end
         function t    = true(this, varargin)
             p = inputParser;

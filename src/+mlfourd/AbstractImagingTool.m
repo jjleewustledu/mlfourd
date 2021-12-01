@@ -23,8 +23,11 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
         
         %% mlio.HandleIOInterface
         
-        function c = char(this)
-            c = this.fqfilename;
+        function c = char(this, varargin)
+            c = char(this.fqfilename, varargin{:});
+        end
+        function s = string(this, varargin)
+            s = string(this.fqfilename, varargin{:});
         end
         
         %% select states
@@ -113,7 +116,6 @@ classdef (Abstract) AbstractImagingTool < handle & mlio.HandleIOInterface
     
     methods (Access = protected)                 
  		function this = AbstractImagingTool(h)
-%            assert(all(isvalid(h)));
             this.contexth_ = h;
  		end
     end 

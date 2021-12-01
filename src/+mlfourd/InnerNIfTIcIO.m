@@ -70,6 +70,14 @@ classdef InnerNIfTIcIO < mlio.IOInterface
             f = this.fqfileprefix;
         end
     end 
+    methods
+        function c = char(this, varargin)
+            c = char(this.fqfilename, varargin{:});
+        end
+        function s = string(this, varargin)
+            s = string(this.fqfilename, varargin{:});
+        end
+    end
 
     %% HIDDEN
     

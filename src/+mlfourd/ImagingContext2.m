@@ -1234,9 +1234,9 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlio.HandleIOInterfa
                 this.state_.logger.addNoEcho(varargin{:});
             end
         end  
-        function c    = char(this)
+        function c    = char(this, varargin)
             this.selectImagingFormatTool;
-            c = this.state_.char;
+            c = this.state_.char(varargin{:});
         end
         function d    = double(this)
             this.selectImagingFormatTool;
@@ -1390,6 +1390,10 @@ classdef ImagingContext2 < handle & matlab.mixin.Copyable & mlio.HandleIOInterfa
 
             this.selectImagingFormatTool;
             tf = this.state_.sizeLt(ic);
+        end
+        function c    = string(this, varargin)
+            this.selectImagingFormatTool;
+            c = this.state_.string(varargin{:});
         end
         function this = updateImagingFormatTool(this, u)
             %  first call {fourdfp,mgz,nifti}, make adjustments, then call updateImagingFormatTool for fine-grained aufbau.
