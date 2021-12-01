@@ -1,5 +1,6 @@
 classdef NIfTIcState < mlfourd.ImagingState
 	%% NIFTICSTATE  
+    %  @deprecated
 
 	%  $Revision$
  	%  was created 15-Jan-2016 23:01:37
@@ -46,11 +47,6 @@ classdef NIfTIcState < mlfourd.ImagingState
             this.contexth_.changeState( ...
                 mlfourd.NIfTIdState(this.concreteObj_.get(1), this.contexth_));
             g = this.contexth_.numericalNiftid;     
-        end
-        function f = get.petNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.PETNIfTIdState(this.concreteObj_.get(1), this.contexth_));
-            f = this.contexth_.petNiftid;
         end
     end
     

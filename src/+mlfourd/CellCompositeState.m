@@ -2,6 +2,7 @@ classdef CellCompositeState < mlfourd.ImagingState
 	%% CellCompositeState   
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
     %             mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
+    %  @deprecated
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -50,11 +51,6 @@ classdef CellCompositeState < mlfourd.ImagingState
                 mlfourd.NumericalNIfTIdState(this.concreteObj_.get(1), this.contexth_));
             g = this.contexth_.numericalNiftid;
         end
-        function f = get.petNiftid(this)
-            this.contexth_.changeState( ...
-                mlfourd.PETNIfTIdState(this.concreteObj_.get(1), this.contexth_));
-            f = this.contexth_.petNiftid;
-        end  
     end 
     
     methods 

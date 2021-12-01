@@ -8,6 +8,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
     %  When adding methods, see also:  mlfourd.ImagingState, mlfourd.NumericalNIfTIdState, mlfourd.NumericalNIfTId,
     %                                  mlfourd.MaskingNIfTId, mlpet.PETImagingContext, mlmr.MRImagingContext;
     %                                  or comparable mlfourd.*State, mlfourd.*NIfTId.
+    %  @deprecated
     
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -331,8 +332,8 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             this.numericalNiftid;
             b = mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
-        function f  = char(this)
-            f = char(this.state_);
+        function c  = char(this, varargin)
+            c = this.state_.char(varargin{:});
         end
         function      close(this)
             this.state_.close;
@@ -489,6 +490,9 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
 
             tf = this.state_.sizeLt(ic);
         end
+        function s  = string(this, varargin)
+            s = this.state_.string(varargin{:});
+        end
         function t  = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
@@ -625,7 +629,7 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
             if (isa(obj, 'mlfourd.ImagingContext2'))
                 if (lstrfind(obj.filesuffix, '.4dfp'))
                     import mlfourdfp.*;
-                    this.state_ = FourdfpState(Fourdfp(NIfTId(obj.nifti.getInnerNIfTI)), this);
+                    this.state_ = FourdfpdState(Fourdfp(NIfTId(obj.nifti.getInnerNIfTI)), this);
                     return
                 end
                 this.state_ = NIfTIdState(NIfTId(obj.nifti), this);

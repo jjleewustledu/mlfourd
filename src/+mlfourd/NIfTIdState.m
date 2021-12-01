@@ -2,6 +2,7 @@ classdef NIfTIdState < mlfourd.ImagingState
 	%% NIFTIDSTATE has-an mlfourd.CellCompositeState 
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.MGHState, 
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState
+    %  @deprecated
 
 	%  $Revision$
  	%  was created 21-Oct-2015 00:44:09

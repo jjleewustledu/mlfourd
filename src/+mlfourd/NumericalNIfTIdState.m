@@ -1,5 +1,6 @@
 classdef NumericalNIfTIdState < mlfourd.ImagingState
 	%% NumericalNIfTIdState  
+    %  @deprecated
 
 	%  $Revision$
  	%  was created 16-Jan-2016 09:19:03

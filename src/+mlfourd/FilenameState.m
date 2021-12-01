@@ -2,7 +2,8 @@ classdef FilenameState < mlfourd.ImagingState
 	%% FILENAMESTATE 
     %  See also:  mlfourd.ImagingState,  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
     %             mlfourd.CellCompositeState, mlpatterns.State, mlfourd.DoubleState.
-    %  TODO:      setting filenames should not change state to FilenameState.  
+    %  TODO:      setting filenames should not change state to FilenameState. 
+    %  @deprecated 
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 

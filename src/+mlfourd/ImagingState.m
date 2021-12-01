@@ -2,6 +2,7 @@ classdef (Abstract) ImagingState < handle & mlio.HandleIOInterface
 	%% IMAGINGSTATE is the parent class for all internal states used by ImagingContext in a state design pattern.
     %  See also:  mlfourd.ImagingContext, mlfourd.NIfTIState, mlfourd.NIfTIdState, mlfourd.MGHState, 
     %             mlfourd.CellCompositeState, mlfourd.FilenameState, mlpatterns.State, mlfourd.DoubleState.
+    %  @deprecated
 
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -193,8 +194,8 @@ classdef (Abstract) ImagingState < handle & mlio.HandleIOInterface
                 NumericalNIfTIdState(this.concreteObj_, this.contexth_));
             b = this.contexth_.blurred(varargin{:});
         end
-        function c    = char(this)
-            c = char(this.concreteObj_);
+        function c    = char(this, varargin)
+            c = this.concreteObj_.char(varargin{:});
         end
         function        close(this)
             if (~lexist(this.fqfilename, 'file'))
@@ -325,6 +326,9 @@ classdef (Abstract) ImagingState < handle & mlio.HandleIOInterface
             this.contexth_.changeState( ...
                 NIfTIdState(this.concreteObj_, this.contexth_));
             tf = this.contexth_.sizeLt(varargin{:});
+        end
+        function s    = string(this, varargin)
+            s = this.concreteObj_.string(varargin{:});
         end
         function t    = thresh(this, varargin)
             %% THRESH
