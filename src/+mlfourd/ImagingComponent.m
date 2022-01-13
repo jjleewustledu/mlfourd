@@ -1,5 +1,6 @@
 classdef ImagingComponent <  mlfourd.AbstractImagingComponent
 	%% IMAGINGCOMPONENT is the root interface for a composite design pattern.
+    %  Todo:  trace use of property cachedNext.
     
 	%  Version $Revision: 2642 $ was created $Date: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ by $Author: jjlee $,  
  	%  last modified $LastChangedDate: 2013-09-21 17:58:30 -0500 (Sat, 21 Sep 2013) $ and checked into svn repository 

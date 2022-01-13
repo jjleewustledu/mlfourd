@@ -1,4 +1,4 @@
-classdef Analyze75Info < mlfourd.ImagingInfo
+classdef Analyze75Info < handle & mlfourd.ImagingInfo
 	%% ANALYZE75INFO  
 
 	%  $Revision$
@@ -213,10 +213,10 @@ classdef Analyze75Info < mlfourd.ImagingInfo
         %%        
 		  
         function fqfn = fqfileprefix_hdr(this)
-            fqfn = [this.fqfileprefix '.hdr'];
+            fqfn = strcat(this.fqfileprefix, '.hdr');
         end
         function fqfn = fqfileprefix_img(this)
-            fqfn = [this.fqfileprefix '.img'];
+            fqfn = strcat(this.fqfileprefix, '.img');
         end
         
         function [X,untouch,hdr] = analyze75read(this)
@@ -271,42 +271,39 @@ classdef Analyze75Info < mlfourd.ImagingInfo
  			
             this = this@mlfourd.ImagingInfo(varargin{:});                
             
-            if (~lexist(this.fqfilename))
+            if (~isfile(this.fqfilename))
                 return
             end
             
             this.info_ = analyze75info(this.fqfilename); % Matlab's native 
-            this.info_ = this.permuteInfo(this.info_); % KLUDGE            
-            this.raw_.sizeof_hdr = this.HdrFileSize;
-            this.raw_.descrip = this.Descriptor;
-            this.raw_.aux_file = this.AuxFile;
-            this.anaraw_.ByteOrder = this.ByteOrder;
-            this.anaraw_.Extents = this.Extents;
-            this.anaraw_.ImgDataType = this.ImgDataType;
-            this.anaraw_.GlobalMax = this.GlobalMax;
-            this.anaraw_.GlobalMin = this.GlobalMin;   
-            this.anaraw_.OMax = this.OMax;
-            this.anaraw_.OMin = this.OMin;
-            this.anaraw_.SMax = this.SMax;
-            this.anaraw_.SMin = this.SMin;
+            this.info_ = this.permuteInfo(this.info_); % KLUDGE
             
             % from mlniftitools
             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-            this.hdr_ = this.adjustHdr(this.hdr_);            
-            this.raw_.dim = this.hdr_.dime.dim;
-            this.raw_.datatype = this.hdr_.dime.datatype;
-            this.raw_.bitpix = this.hdr_.dime.bitpix;
-            this.raw_.pixdim = this.hdr_.dime.pixdim;
-            this.raw_.vox_offset = this.hdr_.dime.vox_offset;
-            this.raw_.cal_max = this.hdr_.dime.cal_max;
-            this.raw_.cal_min = this.hdr_.dime.cal_min;
- 		end
+            this.hdr_ = this.adjustHdr(this.hdr_); 
+        end
     end 
     
     %% PROTECTED
     
     properties (Access = protected)
         info_
+    end
+
+    methods (Access = protected)
+        function a = anarawLocal(this)
+            assert(~isempty(this.hdr_));
+            a = struct( ...
+                'ByteOrder', this.ByteOrder, ...
+                'Extents', this.Extents, ...
+                'ImgDataType', this.ImgDataType, ...
+                'GlobalMax', this.GlobalMax, ...
+                'GlobalMin', this.GlobalMin, ...
+                'OMax', this.OMax, ...
+                'Omin', this.OMin, ...
+                'SMax', this.SMax, ...
+                'SMin', this.SMin); 
+        end
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

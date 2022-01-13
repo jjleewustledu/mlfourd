@@ -1,4 +1,4 @@
-classdef InnerNIfTIIO < handle & mlio.HandleIOInterface
+classdef InnerNIfTIIO < handle & mlio.IOInterface
 	%% INNERNIFTIIO
     %  yet abstract:  noclobber
     
@@ -15,6 +15,10 @@ classdef InnerNIfTIIO < handle & mlio.HandleIOInterface
         untouch        
     end
     
+    properties (Abstract, Access = protected)
+        imagingInfo_ % See also mlfourd.ImagingInfo        
+    end
+
     methods (Abstract)
         addLog(this, lg)
     end
@@ -59,14 +63,14 @@ classdef InnerNIfTIIO < handle & mlio.HandleIOInterface
         function        set.fileprefix(this, fp)
             assert(ischar(fp));
             assert(~isempty(fp));
-            if (~isempty(this.imagingInfo.fileprefix))
+            if (~isempty(this.imagingInfo_.fileprefix))
                 this.untouch = false;
             end
-            this.imagingInfo.fileprefix = fp;
+            this.imagingInfo_.fileprefix = fp;
             %this.addLog('InnerNIfTIIO.set.fileprefix<-%s', fp);
         end
         function fp   = get.fileprefix(this)
-            fp = this.imagingInfo.fileprefix;
+            fp = this.imagingInfo_.fileprefix;
         end
         function        set.filesuffix(this, fs)
             assert(ischar(fs));

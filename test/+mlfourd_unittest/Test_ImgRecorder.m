@@ -47,7 +47,7 @@ classdef Test_ImgRecorder < matlab.unittest.TestCase
             mlbash(sprintf('rm %s', this.testObj.fqfilename));
             this.testObj.save;
             this.verifyTrue(lexist(this.testObj.fqfilename, 'file'));
-            c = mlsystem.FilesystemRegistry.textfileToCell(this.testObj.fqfilename);
+            c = mlio.FilesystemRegistry.textfileToCell(this.testObj.fqfilename);
             this.verifyEqual(c{4}, 'test_string_1');
         end
         function test_saveas(this)
@@ -55,7 +55,7 @@ classdef Test_ImgRecorder < matlab.unittest.TestCase
             mlbash(sprintf('rm %s', newFqfn));
             this.testObj.saveas(newFqfn);
             this.verifyTrue(lexist(newFqfn, 'file'));
-            c = mlsystem.FilesystemRegistry.textfileToCell(newFqfn);
+            c = mlio.FilesystemRegistry.textfileToCell(newFqfn);
             this.verifyEqual(c{4}, 'test_string_1');
         end
  	end
@@ -71,7 +71,7 @@ classdef Test_ImgRecorder < matlab.unittest.TestCase
  	end
 
  	methods (TestMethodSetup)
- 		function setup(this)   
+ 		function setup(this)
  			import mlfourd.*;         
  			this.testObj = ImgRecorder(this.niid);
             this.testObj.add('test_string_1');

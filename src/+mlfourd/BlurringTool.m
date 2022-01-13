@@ -1,5 +1,5 @@
-classdef BlurringTool < handle & mlfourd.ImagingFormatTool
-	%% BLURRINGTOOL is a concrete ImagingTool.  The blur must be provided as fwhh in mm.
+classdef BlurringTool < handle & mlfourd.ImagingTool
+	%% BLURRINGTOOL is a concrete ImagingTool.  It includes Matlab's morphology tools.  The blur must be provided as fwhh in mm.
 
 	%  $Revision$ 
  	%  was created $Date$ 
@@ -111,7 +111,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                     fheight = 0.5;
                 case 2 
                 otherwise
-                    error('mlfourd:InputParamsErr', help('BlurringTool.sigma2width'));
+                    error('mlfourd:InputParamsErr', 'BlurringTool.sigma2width');
             end
             width = 2*sqrt(2*log(1/fheight)*sigma.^2);
         end 
@@ -135,7 +135,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                     fheight = 0.5;
                 case 2
                 otherwise
-                    error('mlfourd:InputParamsErr', help('BlurringTool.width2sigma'));
+                    error('mlfourd:InputParamsErr', 'BlurringTool.width2sigma');
             end
             sigma = abs(sqrt((width/2).^2/(2*log(1/fheight))));
         end  
@@ -224,8 +224,8 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
             s = s(1:this.ndimsEuclid);
         end
         
- 		function this = BlurringTool(h, varargin)
-            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
+        function this = BlurringTool(varargin)
+            this = this@mlfourd.ImagingTool(varargin{:});
         end   
     end 
     
@@ -240,7 +240,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
     end
     
     methods (Static, Access = protected)
-        function b       = checkedBlur(b, ndims_)
+        function b = checkedBlur(b, ndims_)
             assert(isnumeric(b));
             if (length(b) < ndims_)
                 b = mean(b)*ones(1, ndims_);
@@ -249,7 +249,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 b = b(1:3);
             end
         end
-        function m       = checkedMask(m, sz)
+        function m = checkedMask(m, sz)
             if (~isa(m, 'double'))
                 m = double(m); 
             end
@@ -266,7 +266,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 metppix = metppix(1:length(sigma));
             end
         end
-        function sz      = embedVecInSitu(sz, fixedsz)
+        function sz = embedVecInSitu(sz, fixedsz)
             %% EMBEDVECINSITU resizes sz to match ndims of fixedsz
             %  e.g.  >> sz = BlurringTool.embedVecInSitu([2 2 30], [18 18 31 100])
             %        sz = 
@@ -283,7 +283,7 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
                 sz  = tmp;
             end
         end
-        function vout    = stretchVec(vin, newlen, repeat)
+        function vout = stretchVec(vin, newlen, repeat)
             %% STRETCHVEC stretches a vector to a new size, with repeated final element as necessary
             %  Usage: [vout] = stretchVec(vin, newlen, repeat)
             %         vin:     col or row vector
@@ -315,8 +315,8 @@ classdef BlurringTool < handle & mlfourd.ImagingFormatTool
         end
     end
     
-    methods (Access = protected)
-        function fp  = blurredFileprefix(this)
+    methods (Access = protected)     
+        function fp = blurredFileprefix(this)
             if this.blur_ < 1
                 fp = sprintf('%s_b0%g', this.fileprefix, round(10*max(this.blur_)));                
                 return

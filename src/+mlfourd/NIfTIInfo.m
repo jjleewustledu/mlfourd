@@ -1,6 +1,6 @@
-classdef NIfTIInfo < mlfourd.AbstractNIfTIInfo 
+classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo 
 	%% NIFTIINFO emulates Matlab function niftiinfo for use with Matlab versions prior to R2017b.  
-    %  See also mlfourd.Analyze75Info, mlfourdfp.FourdfpInfo.  Requires Image Processing Toolbox function affine3d.
+    %  See also mlfourd.Analyze75Info, mlfourd.FourdfpInfo.  Requires Image Processing Toolbox function affine3d.
 
 	%  $Revision$
  	%  was created 30-Apr-2018 16:39:09 by jjlee,
@@ -21,14 +21,12 @@ classdef NIfTIInfo < mlfourd.AbstractNIfTIInfo
             
             this = this@mlfourd.AbstractNIfTIInfo(varargin{:});            
             
-            if (~lexist(this.fqfilename))
+            if (~isfile(this.fqfilename))
                 return
             end
             
             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-            this.hdr_ = this.adjustHdr(this.hdr_);        
-            this.raw_ = this.initialRaw;
-            this.anaraw_ = this.initialAnaraw;
+            this.hdr_ = this.adjustHdr(this.hdr_);
  		end
     end
     

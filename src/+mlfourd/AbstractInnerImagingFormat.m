@@ -1,12 +1,12 @@
-classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlfourd.InnerNIfTIIO & mlfourd.HandleINIfTI 
+classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlfourd.HandleINIfTI & mlfourd.InnerNIfTIIO
 	%% ABSTRACTINNERIMAGINGFORMAT supports imaging formats through concrete subclasses such as InnerNIfTI,  
     %  mlfourdfp.InnerFourdfp, mlsurfer.InnerMGH.  Altering property filesuffix is a convenient way to change states 
     %  for formats.
-
+    %
 	%  $Revision$
  	%  was created 22-Jul-2018 01:31:58 by jjlee,
  	%  last modified $LastChangedDate$ and placed into repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
- 	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
+ 	%  It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
     properties (Abstract)
         hdxml
@@ -112,13 +112,14 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             %  @param im is the incoming imaging array; converted to single if data bandwidth is appropriate.
             %  @return updates img, datatype, bitpix, dim.
             
-            this.img_                                     = im;
-            this                                          = this.optimizePrecision;
-            this.imagingInfo_.hdr.dime.dim                = ones(1,8);
-            this.imagingInfo_.hdr.dime.dim(1)             = this.rank;
-            this.imagingInfo_.hdr.dime.dim(2:this.rank+1) = this.size;
-            this.imagingInfo_.hdr                         = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
-            this.stack_                                   = [this.stack_ {this.descrip}];
+            this.img_                                  = im;
+            ndims_                                     = ndims(this.img_);
+            this                                       = this.optimizePrecision;
+            this.imagingInfo_.hdr.dime.dim             = ones(1,8);
+            this.imagingInfo_.hdr.dime.dim(1)          = ndims_;
+            this.imagingInfo_.hdr.dime.dim(2:ndims_+1) = this.size;
+            this.imagingInfo_.hdr                      = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
+            this.stack_                                = [this.stack_ {this.descrip}];
         end
         
         function bp   = get.bitpix(this) 
@@ -234,7 +235,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             o = this.originalType_;
         end
         function pd   = get.pixdim(this)
-            pd = this.hdr.dime.pixdim(2:this.rank+1);
+            ndims_ = this.ndims;
+            pd = this.hdr.dime.pixdim(2:ndims_+1);
         end        
         function        set.pixdim(this, pd)
             %% SET.PIXDIM sets voxel-time dimensions in mm, s; and this.N := false.
@@ -340,7 +342,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             end
         end        
         function d    = duration(this)
-            if (this.rank > 3)
+            if (this.ndims > 3)
                 d = this.size(4)*this.pixdim(4);
             else
                 d = 0;
@@ -424,6 +426,13 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
         function        hist(this, varargin)
             histogram(reshape(this.img, [1, numel(this.img)]), varargin{:});
         end 
+        function d    = logical(this)
+            if (~isa(this.img_, 'logical'))
+                d = logical(this.img_);
+            else 
+                d = this.img_;
+            end
+        end 
         function m3d  = matrixsize(this)
             m3d = [this.size(1) this.size(2) this.size(3)];
         end   
@@ -469,13 +478,17 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
             %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed            
             
-            this.saveLogger;
-            this = this.mutateInnerImagingFormatByFilesuffix; 
-            this = this.ensureFilesuffix;
             this = this.ensureImg;
             this = this.ensureNoclobber;
+            this = this.ensureFilesuffix;
+            if strcmp(this.filesuffix, '.mat')
+                save(this.fqfilename, 'this')
+                return
+            end
+            this = this.mutateInnerImagingFormatByFilesuffix; 
             ensuredir(this.filepath);
             this.save__;
+            this.saveLogger;
         end 
         function this = saveas(this, fn)
             %% SAVEAS
@@ -497,7 +510,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             %% SCRUBNANINF sets to zero non-finite elements of its argument
             %  @param obj := this.img_ by default.
             %  @return this.
-            %  See also mlfourd.AbstractNIfTIComponent and mlfourd.NIfTIDecorator.
+            %  See also mlfourd.AbstractNIfTIComponent and mlfourd.NIfTIdecorator.
             
             p = inputParser;
             addOptional(p, 'obj', this.img_, @isnumeric);
@@ -506,7 +519,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             
             if (all(isfinite(img__(:))))
                 return; end
-            switch (this.rank(img__))
+            switch (ndims(img__))
                 case 1
                     img__ = scrub1D(this, img__);
                 case 2
@@ -517,7 +530,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
                     img__ = scrub4D(this, img__);
                 otherwise
                     error('mlfourd:unsupportedParamValue', ...
-                          'InnerNIfTI.scrubNanInf:  this.rank(img) -> %i', this.rank(img__));
+                          'InnerNIfTI.scrubNanInf:  ndims(img) -> %i', ndims(img__));
             end            
             this.img = img__;
             
@@ -594,8 +607,8 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
         function        view(this, varargin)
             this.viewExternally(this.viewer, varargin{:});
         end
-        function this = zoom(this, varargin)
-            %% ZOOM parameters resembles fslroi; indexing starts with 0 and passing -1 for a size will set it to 
+        function this = zoomed(this, varargin)
+            %% ZOOMED parameters resembles fslroi; indexing starts with 0 and passing -1 for a size will set it to 
             %  the full image extent for that dimension.
             %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean (not time) size := fac*size and
             %                                symmetrically sets all min.
@@ -692,21 +705,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
                 return
             end
             this.logger_.add(ensureString(varargin{:}));
-        end       
-        function        addLogNoEcho(this, varargin)
-            %% ADDLOG
-            %  @param lg is a textual log entry; it is entered into an internal logger which is a handle.
-            
-            if (isempty(this.logger_))
-                return
-            end
-            if (ischar(varargin{1}))
-                this.addImgrec(varargin{:});
-                this.logger_.addNoEcho(varargin{:});
-                return
-            end
-            this.logger_.addNoEcho(ensureString(varargin{:}));
-        end       
+        end    
         function s    = asStruct(this) 
             info = this.imagingInfo; % updated with make_nii in AbstractInnerImagingFormat.ctor
             s = struct( ...
@@ -890,19 +889,19 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             addParameter(ip, 'creationDate', datestr(now), @ischar);
             addParameter(ip, 'img', [], @isnumeric);
             addParameter(ip, 'label', '', @ischar);
-            addParameter(ip, 'logger', mlpipeline.Logger(this.defaultFqfilename), @(x) isa(x, 'mlpipeline.ILogger'));
+            addParameter(ip, 'logger', [], @(x) isempty(x) || isa(x, 'mlpipeline.ILogger'));
             addParameter(ip, 'orient', '');
             addParameter(ip, 'originalType', class(this), @ischar);
             addParameter(ip, 'seriesNumber', nan, @isnumeric);
             addParameter(ip, 'separator', ';', @ischar);
             addParameter(ip, 'stack', {}, @iscell);
-            addParameter(ip, 'viewer', this.VIEWER, @ischar);  
+            addParameter(ip, 'viewer', mlfourd.Viewer);  
             addParameter(ip, 'circshiftK', 0, @isnumeric);                                       % see also mlfourd.ImagingInfo
             addParameter(ip, 'N', mlpipeline.ResourcesRegistry.instance().defaultN, @islogical); % 
             parse(ip, varargin{:});
             
-            this.filesystemRegistry_ = mlsystem.FilesystemRegistry.instance;
-            this.imagingInfo_ = ip.Results.imagingInfo;
+            this.filesystemRegistry_ = mlio.FilesystemRegistry.instance;
+            this.imagingInfo_ = copy(ip.Results.imagingInfo);
             this.imagingInfo_.circshiftK = ip.Results.circshiftK;
             this.imagingInfo_.N = ip.Results.N;
             
@@ -927,17 +926,17 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
                 this.stack_ = this.initialStack;
             end 
             
-            this.logger_ = mlpipeline.Logger(this.fqfileprefix, this);
-            this.addLogNoEcho(evalc('disp(this)'));
-            if (~isempty(this.descrip))
-                this.addLogNoEcho(['descrip:  ' this.descrip]);
-            end                   
+            if isa(ip.Results.logger, 'mlpipeline.ILogger')
+                this.logger_ = ip.Results.logger;
+            else
+                this.logger_ = mlpipeline.Logger2(this.fqfileprefix, this);
+            end
  		end
  	end 
     
     %% HIDDEN
     
-    properties (Hidden)        
+    properties (Hidden) 
         creationDate_
         img_ = []
         label_
@@ -1090,7 +1089,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.imagingInfo_ = this.imagingInfo_.zoom(rmin, rsize);
+            this.imagingInfo_ = this.imagingInfo_.zoomed(rmin, rsize);
         end
         function this = zoom4D(this, rmin, rsize)
             
@@ -1125,7 +1124,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
                 error('mlfourd:unsupportedArrayShape', 'AbstractInnerImagingFormat.zoom3D')
             end
             this.img = im;
-            this.imagingInfo_ = this.imagingInfo_.zoom(rmin, rsize);
+            this.imagingInfo_ = this.imagingInfo_.zoomed(rmin, rsize);
         end
         
         function that = copyElement(this)
@@ -1133,7 +1132,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             
             that = copyElement@matlab.mixin.Copyable(this);
             %that.filesystemRegistry_ = copy(this.filesystemRegistry_);
-            %that.imagingInfo_ = copy(this.imagingInfo_);
+            that.imagingInfo_ = copy(this.imagingInfo_);
             %that.creationDate_ = copy(this.creationDate_);
             %that.img_ = copy(this.img_);
             %that.label_ = copy(this.label_);

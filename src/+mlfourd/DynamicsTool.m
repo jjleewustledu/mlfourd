@@ -1,4 +1,4 @@
-classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
+classdef DynamicsTool < handle & mlfourd.ImagingTool
 	%% DYNAMICSTOOL
 
 	%  $Revision$ 
@@ -39,9 +39,9 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             ipr.mask = mlfourd.ImagingContext2(ipr.mask);
             ipr.rsn_labels = mlfourd.ImagingContext2(ipr.rsn_labels);
             
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_corrcoef'];
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_corrcoef');
             this.imagingFormat_.filesuffix = '.nii.gz';
-            this.imagingFormat_ = this.imagingFormat_.mutateInnerImagingFormatByFilesuffix();
+            this.imagingFormat_ = mlfourd.NiftiTool.createFromImagingFormat(this.imagingFormat_);
             sz = size(this.imagingFormat_);
             Nxyz = prod(sz(1:3));
             Nt = sz(4);
@@ -142,7 +142,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
             this.imagingFormat_.img = img;            
-            this.fileprefix = [this.fileprefix '_interp1'];
+            this.fileprefix = strcat(this.fileprefix, '_interp1');
         end
         function this = makima(this, varargin)
             ip = inputParser;
@@ -157,7 +157,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = makima(ipr.times0, img, ipr.times1);
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
             this.imagingFormat_.img = img;            
-            this.fileprefix = [this.fileprefix '_makima'];
+            this.fileprefix = strcat(this.fileprefix, '_makima');
         end
         function this = mean(this, varargin)
             %% applies Matlab mean over time samples
@@ -196,7 +196,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             img = pchip(ipr.times0, img, ipr.times1);
             img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
             this.imagingFormat_.img = img;            
-            this.fileprefix = [this.fileprefix '_pchip'];
+            this.fileprefix = strcat(this.fileprefix, '_pchip');
         end  
         function this = Q(this, varargin)
             %% Q is the sum of squares of time series := \Sigma_t this_t.^2.
@@ -265,9 +265,9 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             namesAndLogging()                        
             
             function namesAndLogging()
-                this.fileprefix = [this.fileprefix this.AVGT_SUFFIX];
+                this.fileprefix = strcat(this.fileprefix, this.AVGT_SUFFIX);
                 if length(T) ~= Nt
-                    this.fileprefix = [this.fileprefix sprintf('%i-%i', T(1), T(end))];
+                    this.fileprefix = strcat(this.fileprefix, sprintf('%i-%i', T(1), T(end)));
                 end
                 this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(ipr.taus/sum(ipr.taus)));
             end
@@ -285,7 +285,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan');
             
             % names & logging
-            this.fileprefix = [this.fileprefix this.SUMT_SUFFIX];
+            this.fileprefix = strcat(this.fileprefix, this.SUMT_SUFFIX);
             if ~isempty(varargin)
                 this.fileprefix = sprintf('%s%g-%g', this.fileprefix, T(1), T(end));
             end
@@ -348,18 +348,15 @@ classdef DynamicsTool < handle & mlfourd.ImagingFormatTool
             end
             
             % names & logging
-            this.fileprefix = [this.fileprefix this.SUMXYZ_SUFFIX];
-            if (~lstrfind(M.fileprefix, 'rand'))
-                this.fileprefix = [this.fileprefix upper(M.fileprefix(1)) M.fileprefix(2:end)];
-            end
+            this.fileprefix = strcat(this.fileprefix, this.SUMXYZ_SUFFIX);
             this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
         end
         
- 		function this = DynamicsTool(h, varargin)
-            this = this@mlfourd.ImagingFormatTool(h, varargin{:}); 
+ 		function this = DynamicsTool(varargin)
+            this = this@mlfourd.ImagingTool(varargin{:}); 
         end 
     end
-      
+
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end
 

@@ -1,15 +1,35 @@
-classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlio.HandleIOInterface
-	%% ImagingContext2 is the context and AbstractImagingTool is the state forming a state design pattern for imaging
-    %  tools.  It's intent is to improve the expressivity of tools for imaging objects, much as state-dependent tools
-    %  for editing graphical objects improve expressivity of grpahics workflows.  See also AbstactImagingTool.
-    
-	%  $Revision: 2627 $ 
- 	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
- 	%  by $Author: jjlee $,  
- 	%  last modified $LastChangedDate: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
- 	%  and checked into repository $URL: file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext2.m $,  
- 	%  developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John Joowon Lee.
- 	%  $Id: ImagingContext2.m 2627 2013-09-16 06:18:10Z jjlee $ 
+classdef ImagingContext2 < handle & mlfourd.IImaging
+	%% IMAGINGCONTEXT2 provides the context for a state design pattern for research involving imaging.
+    %
+    %  INTENT.  States are behavioral objects.  Such an object alters its behaviors upon changes to its internal state.
+    %  The objects will appear to change their class.  
+    %
+    %  MOTIVATION.  ImagingContext2 represents imaging which may be in one of various states.  Imaging may reside on a 
+    %  filesystem.  It may be stored with information according to various standardized imaging formats.  It may have
+    %  been loaded into random access memory and experienced operations involving blurring, manipulation of 
+    %  spatiotemporal dynamics, masking or numerical transformations.  Upon receiving requests from other objects, an
+    %  ImagingContext2 object responds variously depending on its current state.  For example, requests to show
+    %  visualizations will differ depending on whether ImagingContext2 is in a filesystem-oriented state, a
+    %  volume-oriented state, a surface-oriented state or a point-cloud-oriented state.  ImagingContext2 can exhibit
+    %  differing behavior in each of its states.  Some states may be usefully conceptualized as implementing one of 
+    %  various imaging manipulations tools, similarly to idioms used by apps such as Adobe Photoshop.  
+    %
+    %  ImagingState2 represents the state of imaging manipulation tools.  The ImagingState2 class declares an interface
+    %  common to all classes that represent distinct operational states.  Subclasses of ImagingState2 implement state-
+    %  specific behaviors.  For example, NiftiTool, CiftiTool, and DicomTool implement behaviors particular to 
+    %  NIfTI, CIfTI, and DICOM-related states of ImagingContext2.  The class ImagingContext2 maintains a state object, 
+    %  an instance of a subclass of ImagingState2, that represents the current state of ImagingContext2.  The class 
+    %  ImagingContext2 delegates state-specific request to this state object. 
+    %
+    %  See also:  Erich Gamma, et al. Design patterns : elements of reusable object-oriented software. Reading, Mass.: 
+    %             Addison-Wesley, 1995.
+    %
+    %  N.B.:  numeq, numneq, numgt, numlt, ..., gt, lt, ..., all evaluate numerical imaging data of ImagingContext2.
+    %         eq,== and neq,~= evaluate whether handles for ImagingContext2 are the same.
+    %
+	%  Created 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) by jjlee in repository 
+    %  file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext2.m.
+ 	%  Developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John J. Lee.
     
     properties (Constant)
         IMAGING_TYPES = { ...
@@ -24,10 +44,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             'folder' 'path' 'double' 'single'}
     end
     
-    properties 
-        verbosity = 0;
-    end
-    
 	properties (Dependent)
         filename
         filepath
@@ -39,115 +55,14 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
         fqfp
         noclobber
         
-        imagingInfo
-        imgrec
-        innerTypeclass
-        logger
-        viewer
-        
+        bytes
+        compatibility
+        logger      
         stateTypeclass
+        viewer  
     end
     
     methods (Static)
-        function this = fread(varargin)
-            ip = inputParser;
-            addRequired(ip, 'filename', @isfile)
-            addOptional(ip, 'size', [], @isnumeric)
-            addOptional(ip, 'precision', 'single', @ischar)
-            addParameter(ip, 'hdr', [], @isstruct)
-            addParameter(ip, 'format', 'luckett', @ischar) 
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-            
-            fid = fopen(ipr.filename, 'r');            
-            img = single(fread(fid, ipr.precision));
-            fclose(fid);
-            
-            hk = {348; ''; ''; 0; 0; 'r'; 0};
-            hkHeadings = {'sizeof_hdr', 'data_type', 'db_name', 'extents', 'session_error', 'regular', 'dim_info'};
-            dime = {[3 48 64 48 1 1 1 1]; ...
-                     0; 0 ;0; 0; 16; ...
-                     32; 0; [1 3 3 3 1 1 1 1]; 352; 0; ...
-                     0; 0; 0; 10; 0; ...
-                     0; 0; 0; 3649; 0};
-            dimeHeadings = {'dim', ...
-                            'intent_p1', 'intent_p2', 'intent_p3', 'intent_code', 'datatype', ...
-                            'bitpix', 'slice_start', 'pixdim', 'vox_offset', 'scl_slope', ...
-                            'scl_inter', 'slice_end', 'slice_code', 'xyzt_units', 'cal_max', ...
-                            'cal_min', 'slice_duration', 'toffset', 'glmax', 'glmin'};
-            hist = {''; ''; 0; 1; 0; ...
-                    0; 0; -71; -95; -71; ...
-                    [3 0 0 -71]; [0 3 0 -95]; [0 0 3 -71]; ''; 'n+1'; ...
-                    [72 96 72]};
-            histHeadings = {'descrip', 'aux_file', 'qform_code', 'sform_code', 'quatern_b', ...
-                            'quatern_c', 'quatern_d', 'qoffset_x', 'qoffset_y', 'qoffset_z', ...
-                            'srow_x', 'srow_y', 'srow_z', 'intent_name', 'magic', ... 
-                            'originator'};
-            extra = { ...
-                'DT_FLOAT32'; 'NIFTI_INTENT_NONE'; ''; 'NIFTI_XFORM_SCANNER_ANAT'; 'NIFTI_XFORM_UNKNOWN'; ...
-                'NIFTI_UNITS_MM'; 'NIFTI_UNITS_SEC'; 'NIFTI_UNITS_UNKNOWN'; 0; 0; ...
-                0; 'NIFTI_SLICE_UNKNOWN'; 0; 0; 0};
-            extraHeadings = { ...
-                'NIFTI_DATATYPES', 'NIFTI_INTENT_CODES', 'NIFTI_INTENT_NAMES', 'NIFTI_SFORM_CODES', 'NIFTI_QFORM_CODES', ...
-                'NIFTI_SPACE_UNIT', 'NIFTI_TIME_UNIT', 'NIFTI_SPECTRAL_UNIT', 'NIFTI_FREQ_DIM', 'NIFTI_PHASE_DIM', ...
-                'NIFTI_SLICE_DIM', 'NIFTI_SLICE_ORDER', 'NIFTI_VERSION', 'NIFTI_ONEFILE', 'NIFTI_5TH_DIM'};
-
-            switch numel(img)
-                case 48*64*48
-                    img = reshape(img, [48 64 48]);
-                    ipr.hdr = struct( ...
-                        'hk', cell2struct(hk, hkHeadings, 1), ...
-                        'dime', cell2struct(dime, dimeHeadings, 1), ...
-                        'hist', cell2struct(hist, histHeadings, 1), ...
-                        'extra', cell2struct(extra, extraHeadings, 1));
-                case 128*128*75
-                    img = reshape(img, [128 128 75]);
-                case 176*208*176
-                    img = reshape(img, [176 208 176]);
-                case 256*256*256
-                    img = reshape(img, [256 256 256]);
-                otherwise
-            end
-
-            ifc = mlfourd.ImagingFormatContext(img);
-            [p,f] = myfileparts(ipr.filename);
-            switch ipr.format
-                case 'nifti'
-                    ipr.filename = fullfile(p, [f '.nii.gz']);
-                case 'fourdfp'
-                    ipr.filename = fullfile(p, [f '.4dfp.hdr']);
-                case 'luckett'
-                    ifc.img = flip(ifc.img, 2);
-                    ipr.filename = fullfile(p, [f '.4dfp.hdr']);
-                case 'mgz'
-                    ipr.filename = fullfile(p, [f '.mgz']);
-                otherwise
-                    error('mlfourd:ValueError', 'ImagingContext2.fread() does not support format %s', ipr.format)
-            end
-            ifc.filename = ipr.filename;
-            if ~isempty(ipr.hdr)
-                ifc.hdr = ipr.hdr;
-            end
-            this = mlfourd.ImagingContext2(ifc);
-        end
-        
-        %% For use in static workspaces (e.g., while debugging static functions)
-        
-        function this = static_fsleyes(varargin)
-            this = mlfourd.ImagingContext2(varargin{:});
-            this.fsleyes;
-        end
-        function this = static_fslview(varargin)
-            this = mlfourd.ImagingContext2(varargin{:});
-            this.fslview;
-        end
-        function this = static_freeview(varargin)
-            this = mlfourd.ImagingContext2(varargin{:});
-            this.freeview;
-        end
-        
-        %% Typeclass utilities
-        
         function im   = imagingType(typ, obj)
             %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
             %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
@@ -240,26 +155,20 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
                           'ImagingContext2.imagingType.obj->%s not recognized', obj);
             end
         end
-        function tf   = isImagingType(t)
-            tf = lstrcmp(t, mlfourd.ImagingContext2.IMAGING_TYPES);
-        end
-        function tf   = isLocationType(t)
-            tf = lstrcmp(t, {'folder' 'path'});
-        end
         function loc  = locationType(typ, loc0)
             %% LOCATIONTYPE returns location data cast as a requested representative type detailed below.
             %  @param typ is the requested representation:  'folder', 'path'.
             %  @param loc0 is the representation of location data provided by the client.  
             %  @returns loc is the location data loc0 cast as the requested representation.
             
-            assert(ischar(loc0));
+            assert(istext(loc0));
             switch typ
-                case 'folder'
+                case {'folder' "folder"}
                     loc = mybasename(loc0);
-                case 'path'
+                case {'path' "path"}
                     loc = loc0;
                 otherwise
-                    error('mlfourd:insufficientSwitchCases', ...
+                    error('mlfourd:ValueError', ...
                           'ImagingContext2.locationType.loc0->%s not recognized', loc0);
             end
         end
@@ -268,110 +177,104 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
 	methods
         
         %% GET/SET
-        
+
+        function     set.filename(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.filename = f;
+        end
         function f = get.filename(this)
             f = this.state_.filename;
         end
+        function     set.filepath(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.filepath = f;
+        end 
         function f = get.filepath(this)
             f = this.state_.filepath;
+        end
+        function     set.fileprefix(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.fileprefix = f;
         end
         function f = get.fileprefix(this)
             f = this.state_.fileprefix;
         end
+        function     set.filesuffix(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.filesuffix = f;
+        end
         function f = get.filesuffix(this)
             f = this.state_.filesuffix;
+        end
+        function     set.fqfilename(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.fqfilename = f;
         end
         function f = get.fqfilename(this)
             f = this.state_.fqfilename;
         end
+        function     set.fqfileprefix(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.fqfileprefix = f;
+        end
         function f = get.fqfileprefix(this)
             f = this.state_.fqfileprefix;
+        end
+        function     set.fqfn(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.fqfn = f;
         end
         function f = get.fqfn(this)
             f = this.state_.fqfn;
         end
+        function     set.fqfp(this, f)
+            if this.compatibility
+                this.selectImagingTool();
+            end
+            this.state_.fqfp = f;
+        end
         function f = get.fqfp(this)
             f = this.state_.fqfp;
         end
-        function g = get.imagingInfo(this)
-            g = this.state_.imagingInfo;
-        end
-        function f = get.imgrec(this)
-            f = this.state_.imgrec;
-        end
-        function g = get.innerTypeclass(this)
-            g = this.state_.innerTypeclass;
-        end 
-        function f = get.logger(this)
-            f = this.state_.logger;
+        function     set.noclobber(this, f)
+            this.state_.noclobber = f;
         end
         function f = get.noclobber(this)
             f = this.state_.noclobber;
         end
-        function c = get.stateTypeclass(this)
-            c = class(this.state_);
+
+        function g = get.bytes(this)
+            g = this.state_.bytes;
+        end
+        function g = get.compatibility(this)
+            g = this.compatibility_;
+        end
+        function g = get.logger(this)
+            g = copy(this.state_.logger);
+        end
+        function g = get.stateTypeclass(this)
+            g = class(this.state_);
+        end
+        function     set.viewer(this, s)
+            assert(isa(s, 'mlfourd.IViewer'))
+            this.state_.viewer = s;
         end
         function v = get.viewer(this)
             v = this.state_.viewer;
-        end
-        
-        function set.filename(this, f)
-            this.selectImagingFormatTool();
-            this.state_.filename = f;
-        end
-        function set.filepath(this, f)
-            this.selectImagingFormatTool();
-            this.state_.filepath = f;
-        end        
-        function set.fileprefix(this, f)
-            this.selectImagingFormatTool();
-            this.state_.fileprefix = f;
-        end        
-        function set.filesuffix(this, f)
-            this.selectImagingFormatTool();
-            this.state_.filesuffix = f;
-        end        
-        function set.fqfilename(this, f)
-            this.selectImagingFormatTool();
-            this.state_.fqfilename = f;
-        end        
-        function set.fqfileprefix(this, f)
-            this.selectImagingFormatTool();
-            this.state_.fqfileprefix = f;
-        end        
-        function set.fqfn(this, f)
-            this.selectImagingFormatTool();
-            this.state_.fqfn = f;
-        end        
-        function set.fqfp(this, f)
-            this.selectImagingFormatTool();
-            this.state_.fqfp = f;
-        end
-        function set.noclobber(this, f)
-            this.state_.noclobber = f;
-        end        
-        function set.viewer(this, v)
-            assert(ischar(v));
-            this.state_.viewer = v;
-        end
-        
-        %% various casting of mlfourd.ImagingFormatContext
-        
-        function ifc = fourdfp(this)
-            this.selectImagingFormatTool;
-            ifc = this.state_.fourdfp;
-        end
-        function ifc = mgh(this)
-            this.selectImagingFormatTool;
-            ifc = this.mgz;
-        end
-        function ifc = mgz(this)
-            this.selectImagingFormatTool;
-            ifc = this.state_.mgz;
-        end
-        function ifc = nifti(this)
-            this.selectImagingFormatTool;
-            ifc = this.state_.nifti;
         end
         
         %% select states
@@ -383,53 +286,84 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             this.state_.selectDynamicsTool(this);
         end
         function this = selectFilesystemTool(this)
+            %% saves imaging information to filesystem, then clears imaging information from memory, retaining only 
+            %  filesystem inforamtion.
+
+            % update filesystem with memory contents
+            this.save;
+
             this.state_.selectFilesystemTool(this);
         end
-        function this = selectFourdfp(this)
-            %% mutates state to be 4dfp
+        function this = selectFourdfpTool(this)
+            %% mutate imaging-format state to be 4dfp
 
-            that = mlfourd.ImagingContext2(this.fourdfp);
-            this.state_ = copy(that.state_);
-            this.addLog('mlfourd.ImagingContext2.selectFourdfp mutated state')
+            if this.compatibility
+                this.state_.fourdfp;
+                return
+            end
+            this.selectImagingTool; % supports compatibility
+            this.state_.selectFourdfpTool; % state_ returns a safe copy of nifti
         end
-        function this = selectIsNumericTool(this)
-            this.state_.selectIsNumericTool(this);
-        end
-        function this = selectImagingFormatTool(this)
-            this.state_.selectImagingFormatTool(this);
+        function this = selectImagingTool(this)
+            if this.compatibility
+                this.state_.selectImagingFormatTool(this);
+                return
+            end
+            this.state_.selectImagingTool(this);
         end
         function this = selectMaskingTool(this)
             this.state_.selectMaskingTool(this);
         end
-        function this = selectMgh(this)
-            %% mutates state to be mgh
-            
-            that = mlfourd.ImagingContext2(this.mgh);
-            this.state_ = copy(that.state_);
-            this.addLog('mlfourd.ImagingContext2.selectMgh mutated state')
+        function this = selectMatlabTool(this)
+            this.state_.selectMatlabTool(this);
         end
-        function this = selectMgz(this)
-            %% mutates state to be mgz
+        function this = selectMghTool(this)
+            %% mutate imaging-format state to be mgz
             
-            that = mlfourd.ImagingContext2(this.mgz);
-            this.state_ = copy(that.state_);
-            this.addLog('mlfourd.ImagingContext2.selectMgz mutated state')
+            if this.compatibility
+                this.state_.mgz;
+                return
+            end
+            this.selectImagingTool; % supports compatibility
+            this.state_.selectMghTool; % state_ returns a safe copy of nifti
         end
-        function this = selectNifti(this)
-            %% mutates state to be NIfTI
+        function this = selectNiftiTool(this)
+            %% mutate imaging-format state to be NIfTI
             
-            that = mlfourd.ImagingContext2(this.nifti);
-            this.state_ = copy(that.state_);
-            this.addLog('mlfourd.ImagingContext2.selectNifti mutated state')
+            if this.compatibility
+                this.state_.nifti;
+                return
+            end
+            this.selectImagingTool; % supports compatibility
+            this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
         function this = selectNumericalTool(this)
-            this.state_.selectNumericalTool(this);
+            if this.compatibility
+                this.state_.selectNumericalTool(this);
+                return
+            end
+            this.selectMatlabTool;
         end
-        function this = selectRegistrationTool(this)
-            this.state_.selectRegistrationTool(this);
-        end    
         
-        %% mlpatterns.HandleNumerical
+        %% FilesystemTool
+
+        function tf   = isempty(~)
+            tf = false; %%% isempty(this.state_);
+        end
+        function len  = length(this)
+            len = length(this.state_);
+        end
+        function n    = ndims(this)
+            n = this.state_.ndims;
+        end
+        function n    = numel(this)
+            n = this.state_.numel;
+        end 
+        function s    = size(this, varargin)
+            s = this.state_.size(varargin{:});
+        end 
+
+        %% mlpatterns.Numerical
         
         function that = abs(this)
             this.selectNumericalTool;
@@ -471,6 +405,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that = copy(this);
             that.state_.atanh();            
         end
+        function that = bsxfun(this, pfun, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.bsxfun(pfun, b);
+        end
         function that = cos(this)
             this.selectNumericalTool;
             that = copy(this);
@@ -480,11 +419,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             this.selectNumericalTool;
             that = copy(this);
             that.state_.cosh();            
-        end
-        function that = bsxfun(this, pfun, b)
-            this.selectNumericalTool;
-            that = copy(this);
-            that.state_.bsxfun(pfun, b);
         end   
         function that = dice(this, b, varargin)
             this.selectNumericalTool;
@@ -495,6 +429,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             this.selectNumericalTool;
             that = copy(this);
             that.state_.exp();            
+        end
+        function that = expm(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.expm();            
         end
         function that = flip(this, adim)
             this.selectNumericalTool;
@@ -535,6 +474,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             this.selectNumericalTool;
             that = copy(this);
             that.state_.log10();            
+        end
+        function that = logm(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.logm();            
         end
         function that = max(this, b)
             this.selectNumericalTool;
@@ -603,6 +547,16 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that = copy(this);
             that.state_.sinh();            
         end
+        function that = sqrt(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.sqrt();            
+        end
+        function that = sqrtm(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.sqrtm();            
+        end
         function that = sum(this, varargin)
             this.selectNumericalTool;
             that = copy(this);
@@ -645,35 +599,61 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
         end        
         
         function that = numeq(this, b)
+            %% evaluates eq(this.imagingFormat.img, b).  eq(this, b) evaluates identities of handles.
+
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.eq(b);
+            that.state_.numeq(b);
         end
         function that = numne(this, b)
+            %% evaluates neq(this.imagingFormat.img, b).  not(eq(this, b)) evaluates identities of handles.
+
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.ne(b);
+            that.state_.numne(b);
         end
         function that = numlt(this, b)
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.lt(b);
+            that.state_.numlt(b);
         end
         function that = numle(this, b)
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.le(b);
+            that.state_.numle(b);
         end
         function that = numgt(this, b)
             this.selectNumericalTool;
             that = copy(this);
-            that.state_.gt(b);
+            that.state_.numgt(b);
         end
         function that = numge(this, b)
             this.selectNumericalTool;
             that = copy(this);
+            that.state_.numge(b);
+        end
+
+        function that = lt(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.lt(b);
+        end
+        function that = le(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.le(b);
+        end
+        function that = gt(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.gt(b);
+        end
+        function that = ge(this, b)
+            this.selectNumericalTool;
+            that = copy(this);
             that.state_.ge(b);
         end
+        
         function that = and(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -704,6 +684,11 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that = copy(this);
             that.state_.isnan;
         end
+        function that = not(this)
+            this.selectNumericalTool;
+            that = copy(this);
+            that.state_.not;
+        end
         function that = or(this, b)
             this.selectNumericalTool;
             that = copy(this);
@@ -713,12 +698,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that = copy(this);
             that.state_.xor(b);
         end
-        function that = not(this)
-            this.selectNumericalTool;
-            that = copy(this);
-            that.state_.not;
-        end        
-        
         
         function that = false(this, varargin)
             this.selectNumericalTool;
@@ -761,7 +740,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that.state_.zeros(varargin{:});
         end
         
-        %% mlpatterns.HandleDipNumerical
+        %% mlpatterns.DipNumerical
          
         function d = dipiqr(this)
             this.selectNumericalTool;
@@ -1141,14 +1120,6 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             that = copy(this);
             that.state_.maskedByZ(varargin{:});
         end
-        function that = msktgen(this, varargin)
-            this.selectMaskingTool;
-            that = copy(this);
-            that.state_.msktgen(varargin{:});
-        end
-        function that = roi(this, varargin)
-            that = this.zoomed(varargin{:});
-        end
         function that = thresh(this, varargin)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
@@ -1203,120 +1174,109 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             %  @param tsize is optional.
             %  @returns copy(this)
             
-            %error('mlfourd:IncompleteImplementationError', 'ImagingContext2.zoomed');
-            
             this.selectMaskingTool;
             that = copy(this);
             that.state_.zoomed(varargin{:});
         end
         
-        %% mfourdfp.RegistrationTool
-        
-        %% mlfourd.ImagingFormatTool
+        %% mlfourd.ImagingTool
         
         function this = addImgrec(this, varargin)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             this.state_.addImgrec(varargin{:});
         end
         function this = addLog(this, varargin)
             %% ADDLOG
             %  @param varargin are log entries for the imaging state
             
-            if ~isempty(this.state_.logger)
-                this.state_.logger.add(varargin{:});
+            try
+                this.state_.addLog(varargin{:});
+            catch ME
+                handwarning(ME)
             end
-        end
-        function this = addLogNoEcho(this, varargin)
-            %% ADDLOGNOECHO
-            %  @param varargin are log entries for the imaging state
-            
-            if ~isempty(this.state_.logger)
-                this.state_.logger.addNoEcho(varargin{:});
-            end
-        end  
-        function c    = char(this, varargin)
-            this.selectImagingFormatTool;
-            c = this.state_.char(varargin{:});
-        end
-        function d    = double(this)
-            this.selectImagingFormatTool;
-            d = this.state_.double;
         end
         function        ensureDouble(this)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             this.state_.ensureDouble;
         end
         function        ensureSaved(this)
             %% ENSURESAVED saves the imaging state as this.fqfilename on the filesystem if not already saved.
             
-            if (~lexist(this.fqfilename))
+            if (~isfile(this.fqfilename))
                 this.save;
             end
         end
         function        ensureSingle(this)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             this.state_.ensureSingle;
         end
         function        export(this, varargin)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             this.state_.export(varargin{:});
         end
-        function        freeview(this, varargin)
-            this.selectImagingFormatTool;
-            this.state_.freeview(varargin{:});
+        function ifc  = fourdfp(this)
+            %% FOURDFP first ensures this object's internal imaging format to be fourdfp, then returns a safe copy of 
+            %  the imaging format object.
+            %  Returns:
+            %      ifc (IImagingFormat): e.g., FourdfpTool.
+            %      this: with state mutated to support 4dfp.
+
+            this.selectImagingTool; % supports compatibility
+            ifc = copy(this.state_.fourdfp);
         end
-        function        fslview(this, varargin)
-            this.selectImagingFormatTool;
-            this.state_.fslview(varargin{:});
+        function        freeview(this, varargin)
+            %this.selectImagingTool;
+            if ~contains(this.viewer.app, 'freeview')
+                [~,r] = mlbash('which freeview');
+                this.viewer = mlfourd.Viewer(strtrim(r));
+            end
+            this.view(varargin{:});
         end
         function        fsleyes(this, varargin)
-            this.selectImagingFormatTool;
-            this.state_.fsleyes(varargin{:});
+            %this.selectImagingTool;
+            if ~contains(this.viewer.app, 'fsleyes')
+                [~,r] = mlbash('which fsleyes');
+                this.viewer = mlfourd.Viewer(strtrim(r));
+            end
+            this.view(varargin{:});
         end
-        function        hist(this, varargin)
-            this.selectImagingFormatTool;
-            this.state_.hist(varargin{:});
+        function        fslview(this, varargin)
+            this.fsleyes(varargin{:})
         end
         function h    = histogram(this, varargin)
-            this.selectImagingFormatTool;
             h = this.state_.histogram(varargin{:});
         end
         function h    = imagesc(this, varargin)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             h = this.state_.imagesc(varargin{:});
-        end
-        function tf   = isempty(this)
-            %% ISEMPTY
-            %  @return tf is boolean for state emptiness
-            
-            this.selectImagingFormatTool;
-            tf = this.state_.isempty;
-        end
-        function l    = length(this)
-            %% LENGTH
-            %  @return l is the length of a composite imaging state
-            
-            this.selectImagingFormatTool;
-            l = this.state_.length;
-        end
-        function l    = logical(this)
-            this.selectImagingFormatTool;
-            l = this.state_.logical;
-        end
+        end   
         function s    = mat2str(this, varargin)
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             s = this.state_.mat2str(varargin{:});
+        end 
+        function ifc  = mgz(this)
+            %% MGZ first ensures this object's internal imaging format to be mgz, then returns a safe copy of the
+            %  imaging format object.
+            %  Returns:
+            %      ifc (IImagingFormat): e.g., MghTool.
+            %      this: with state mutated to support mgz.
+
+            this.selectImagingTool; % supports compatibility
+            ifc = copy(this.state_.mgz);
         end
-        function n    = ndims(this)
-            this.selectImagingFormatTool;
-            n = this.state_.ndims;
-        end
-        function n    = numel(this)
-            this.selectImagingFormatTool;
-            n = this.state_.numel;
-        end        
+        function ifc  = nifti(this)
+            %% NIFTI first ensures this object's internal imaging format to be nifti, then returns a safe copy of the
+            %  imaging format object.
+            %  Returns:
+            %      ifc (IImagingFormat): e.g., NiftiTool.
+            %      this: with state mutated to support nifti.
+
+            this.selectImagingTool; % supports compatibility
+            ifc = copy(this.state_.nifti);
+        end   
         function p    = pointCloud(this, varargin)
             ip = inputParser;
+            ip.KeepUnmatched = true;
             addParameter(ip, 'thresh', [], @isscalar)
             addParameter(ip, 'uthresh', [], @isscalar)
             addParameter(ip, 'threshp', [], @isscalar)
@@ -1336,43 +1296,35 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
                 this = this.uthreshp(ipr.uthreshp);
             end
             
-            this.selectImagingFormatTool;
-            p = this.state_.pointCloud;
+            this.selectImagingTool;
+            p = this.state_.pointCloud(varargin{:});
         end
         function r    = rank(this)
-            %% DEPRECATED; use ndims.
-            
-            this.selectImagingFormatTool;
-            r = this.ndims;
+            r = ndims(this);
         end
         function        save(this)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
-            this.selectImagingFormatTool;
-            this.state_.save;
+            this.selectImagingTool;
+            save(this.state_);
         end
         function this = saveas(this, varargin)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.
-            %  @param filename is a string that is compatible with requirements of the filesystem;
-            %  @return this for compatibility with non-handle interfaces.
-            %  it replaces internal filename & filesystem information.
+            %  Args:
+            %      filename (text): is compatible with requirements of the filesystem;
+            %  Returns:
+            %      this for compatibility with non-handle interfaces,
+            %      replacing internal filename & filesystem information.
 
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             this.state_ = this.state_.saveas(varargin{:});
-        end   
-        function s    = single(this)
-            this.selectImagingFormatTool;
-            s = this.state_.single;
-        end  
-        function s    = size(this, varargin)
-            s = this.state_.size(varargin{:});
-        end 
+        end                
         function tf   = sizeEq(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for equal size
 
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             tf = this.state_.sizeEq(ic);
         end
         function tf   = sizeGt(this, ic)
@@ -1380,7 +1332,7 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for > size
 
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             tf = this.state_.sizeGt(ic);
         end
         function tf   = sizeLt(this, ic)
@@ -1388,103 +1340,222 @@ classdef ImagingContext2 < handle & matlab.mixin.Heterogeneous & matlab.mixin.Co
             %  @param ImagingContext2 to compare to this for size
             %  @returns tf logical for < size
 
-            this.selectImagingFormatTool;
+            this.selectImagingTool;
             tf = this.state_.sizeLt(ic);
         end
-        function c    = string(this, varargin)
-            this.selectImagingFormatTool;
-            c = this.state_.string(varargin{:});
-        end
-        function this = updateImagingFormatTool(this, u)
-            %  first call {fourdfp,mgz,nifti}, make adjustments, then call updateImagingFormatTool for fine-grained aufbau.
-            %  @param u is mlfourd.ImagingFormatContext.
-            
-            this.selectImagingFormatTool;
-            this.state_.updateInnerImaging(u);
-        end
-        function        view(this, varargin)
+        function [s,r] = view(this, varargin)
             %% VIEW
-            %  @param are additional filenames and other arguments to pass to the viewer, 
-            %  which will be saved to the filesystem as needed.
-            %  @return new window with a view of the imaging state
+            %  Args:
+            %      varargin (any): are additional filenames and additional mlio.IOInterface objects to pass to the 
+            %                      viewer.  Viewers will access tempfiles of what is active in memory.
+            %  Returns:
+            %      s: system status.
+            %      r: system result.
+            %      out: stdout | figure_handle | new window containing a view of the imaging state.
             
-            this.selectImagingFormatTool;
-            this.state_.view(varargin{:});
+            if this.compatibility
+                this.state_.view(varargin{:});
+                return
+            end
+            [s,r] = this.state_.view(varargin{:});
         end
-        
+
         %%
         
-        function this = ImagingContext2(obj, varargin)
-            %% ImagingContext2 
-            %  @param obj is imaging data:  ImagingContext2, ImagingContext, char, data supported by ImagingFormatTool.
-            %  @return initialized context for a state design pattern.  
+        function c = char(this, varargin)
+            c = char(this.state_, varargin{:});
+        end
+        function d = double(this)
+            this.selectImagingTool();
+            d = double(this.state_);
+        end        
+        function tf = haveDistinctStates(this, that)
+            %  Args:
+            %      that (ImagingContext2): with distinct state.
+
+            tf = this.state_ ~= that.state_;
+        end
+        function tf = haveDistinctContextHandles(this, that)
+            %  Args:
+            %      that (ImagingContext2): with distinct context handle, used by state to access its context
+
+            tf = haveDistinctContextHandles(this.state_, that.state_);
+        end
+        function imgi = imagingInfo(this)
+            this.selectImagingTool(); 
+            imgi = copy(this.state_.imagingInfo());
+        end
+        function imgf = imagingFormat(this)
+            imgf = copy(this.state_.imagingFormat());
+        end
+        function d = int8(this)
+            this.selectImagingTool();
+            d = int8(this.state_);
+        end
+        function d = int16(this)
+            this.selectImagingTool();
+            d = int16(this.state_);
+        end
+        function d = int32(this)
+            this.selectImagingTool();
+            d = int32(this.state_);
+        end
+        function d = int64(this)
+            this.selectImagingTool();
+            d = int64(this.state_);
+        end
+        function l = logical(this)
+            this.selectImagingTool();
+            l = logical(this.state_);
+        end        
+        function s = single(this)
+            this.selectImagingTool();
+            s = single(this.state_);
+        end
+        function s = string(this, varargin)
+            s = string(this.state_, varargin{:});
+        end
+        function d = uint8(this)
+            this.selectImagingTool();
+            d = uint8(this.state_);
+        end
+        function d = uint16(this)
+            this.selectImagingTool();
+            d = uint16(this.state_);
+        end
+        function d = uint32(this)
+            d = uint32(this.state_);
+        end
+        function d = uint64(this)
+            this.selectImagingTool();
+            d = uint64(this.state_);
+        end
+
+        function this = ImagingContext2(imgobj, varargin)
+            %  Args:
+            %      imgobj (any): contains any imaging, such as [], numeric objects, filenames, another ImagingContext2
+            %                    for copy-construction or any object supported by stateful ImagingTool ~ ImagingState2.
             
             import mlfourd.*;
-            if 0 == nargin % must support empty ctor
-                this.state_ = ImagingFormatTool(this);
+
+            if 0 == nargin || isempty(imgobj)
+                % must support empty ctor
+                this.state_ = TrivialTool(this);
                 return
             end
-            if isa(obj, 'mlfourd.ImagingContext2')
-                this = copy(obj);
-                return
-            end            
-            if ischar(obj)
-                this.state_ = FilesystemTool(this, obj);
-                return
-            end
-            if islogical(obj)
-                obj = single(obj);
-            end
-            if ~isdeployed
-                if isa(obj, 'mlfourd.ImagingContext') % legacy objects
-                    this.state_ = ImagingFormatTool(this, struct(obj.niftid), varargin{:});
+
+            rr = mlpipeline.ResourcesRegistry.instance();
+            ip = inputParser;
+            ip.KeepUnmatched = true;
+            addRequired(ip, 'imgobj')
+            addParameter(ip, 'compatibility', rr.imagingContextCompatibility, @islogical)
+            parse(ip, imgobj, varargin{:})
+            ipr = ip.Results;
+            this.compatibility_ = ipr.compatibility; % KLUDGE, for refactoring
+
+            if ~this.compatibility_ % KLUDGE, for refactoring
+                if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
+                    % copy ctor
+                    this = copy(ipr.imgobj);
                     return
                 end
+                if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
+                    this.state_ = MatlabTool(this, ipr.imgobj, varargin{:});
+                    return
+                end
+                if istext(ipr.imgobj)
+                    this.state_ = FilesystemTool(this, ipr.imgobj, varargin{:});
+                    return
+                end
+                if isstruct(ipr.imgobj) || ...
+                   isa(ipr.imgobj, 'mlfourd.ImagingFormatContext') || ...
+                   isa(ipr.imgobj, 'mlfourd.ImagingContext')
+                    % legacy
+                    assert(~isdeployed)
+                    this.state_ = LegacyTool.create(this, ipr.imgobj, varargin{:});
+                    return
+                end
+                this.state_ = ImagingTool(this, ipr.imgobj, varargin{:});
+                return
             end
-            this.state_ = ImagingFormatTool(this, obj, varargin{:});
-        end
-        function that = clone(this)
-            that = copy(this);
+            
+            if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
+                % copy ctor
+                this = copy(ipr.imgobj);
+                return
+            end
+            if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
+                this.state_ = NumericalTool_20211201(this, ipr.imgobj, varargin{:});
+                return
+            end
+            if istext(ipr.imgobj)
+                this.state_ = FilesystemTool_20211201(this, ipr.imgobj, varargin{:});
+                return
+            end
+            if isa(ipr.imgobj, 'mlfourd.ImagingContext') 
+                % legacy
+                assert(~isdeployed)
+                this.state_ = ImagingFormatTool_20211201(this, ImagingFormatContext(struct(ipr.imgobj.niftid)), varargin{:});
+                return
+            end
+            this.state_ = ImagingFormatTool_20211201(this, ipr.imgobj, varargin{:});
         end
     end  
     
     %% PROTECTED
     
     properties (Access = protected)
-        state_ = []
+        compatibility_  % KLUDGE, for refactoring
+        state_
     end 
     
     methods (Access = protected)
         function that = copyElement(this)
-            %%  See also web(fullfile(docroot, 'matlab/ref/matlab.mixin.copyable-class.html'))
-            
             that = copyElement@matlab.mixin.Copyable(this);
             that.state_ = copy(this.state_);
+            that.state_.contexth_ = that;
         end
     end
         
-    %% HIDDEN
-    
+    %% HIDDEN    
+
 	methods (Hidden)
         function changeState(this, s)
-            %% should only be accessed by AbstractImagingTool.
+            %  Args:
+            %      s (ImagingState2): state which is requesting state transition.
             
-            assert(isa(s, 'mlfourd.AbstractImagingTool'));
+            %assert(isa(s, 'mlfourd.ImagingState2'))
             this.state_ = s;
         end
     end
     
     %% DEPRECATED
     
+    properties (Hidden)
+        verbosity = 0;
+    end
+    
     methods (Hidden)
+        function that = clone(this)
+            %% @deprecated
+
+            that = copy(this);
+        end
         function ifc = niftid(this)
-            this.selectImagingFormatTool;
+            %% @deprecated
+
+            this.selectImagingTool;
             ifc = this.nifti;
         end
         function ifc = numericalNiftid(this)
+            %% @deprecated
+
             this.selectNumericalTool;
             ifc = this.nifti;
-        end 
+        end
+        function that = roi(this, varargin)
+            that = this.zoomed(varargin{:});
+        end
     end  
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

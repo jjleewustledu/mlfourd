@@ -216,7 +216,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             niid = mlfourd.NIfTId(this.ref.dicomAsFourdfp); % sagittal
             this.verifyt1_dcm2niix_4dfp(niid);            
             this.verifyEqual(niid.filesuffix, '.4dfp.hdr');
-            this.verifyClass(niid.imagingInfo, 'mlfourdfp.FourdfpInfo');
+            this.verifyClass(niid.imagingInfo, 'mlfourd.FourdfpInfo');
             
             tmp = tempFqfilename(fullfile(pwd, 'test_load_4dfp'));
             niid.saveas([tmp '.4dfp.hdr']);
@@ -260,7 +260,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             niid = mlfourd.NIfTId(this.ref.surferAsFourdfp);
             this.verify001_4dfp(niid);
             this.verifyEqual(niid.filesuffix, '.4dfp.hdr');
-            this.verifyClass(niid.imagingInfo, 'mlfourdfp.FourdfpInfo');
+            this.verifyClass(niid.imagingInfo, 'mlfourd.FourdfpInfo');
             popd(pwd0_);
         end
         function test_load_surfer_niigz(this)
@@ -284,7 +284,7 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             niid = mlfourd.NIfTId(this.ref.surferAsMgz);
             this.verify001(niid, '.nii.gz');
             this.verifyEqual(niid.filesuffix, '.nii.gz');
-            this.verifyClass(niid.imagingInfo, 'mlsurfer.MGHInfo');
+            this.verifyClass(niid.imagingInfo, 'mlfourd.MGHInfo');
             popd(pwd0_);
         end
         

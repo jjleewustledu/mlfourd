@@ -79,7 +79,7 @@ classdef Test_NIfTI < mlfourd_unittest.Test_mlfourd
         end
         function test_clone(this)
             import mlfourd.*;
-            this.assertTrue(isequal(this.t1, this.t1.clone));
+            this.assertTrue(isequal(this.t1, copy(this.t1));
         end
         function test_makeSimilar(this)
             t1sim     = this.t1.makeSimilar(this.t1.img);

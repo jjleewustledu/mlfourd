@@ -1,4 +1,4 @@
-classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleNumerical & mlpatterns.HandleDipNumerical
+classdef NumericalTool < handle & mlfourd.ImagingTool & mlpatterns.Numerical & mlpatterns.DipNumerical
 	%% NUMERICALTOOL extends INIfTI implementations with bsxfun and other numerical functionality.
     
 	%  $Revision$
@@ -10,7 +10,7 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         
     methods
         
-        %% implementations of mlpatterns.HandleNumerical
+        %% implementations of mlpatterns.Numerical
         
         function abs(this)
             this.usxfun(@abs);
@@ -58,9 +58,11 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function exp(this)
             this.usxfun(@exp);
         end
+        function expm(this)
+            this.usxfun(@expm);
+        end
         function flip(this, b)
             this.bsxfun(@flip, b);
-%            this.imagingFormat_.fileprefix = sprintf('%s_flip%i', this.imagingFormat_.fileprefix, b);
         end
         function rdivide(this, b)
             this.bsxfun(@rdivide, b);
@@ -114,6 +116,9 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function log10(this)
             this.usxfun(@log10);
         end
+        function logm(this)
+            this.usxfun(@logm);
+        end
         function max(this, b)
             this.bsxfun(@max, b);
         end
@@ -157,6 +162,12 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function sinh(this)
             this.usxfun(@sinh);
         end
+        function sqrt(this)
+            this.usxfun(@sqrt);
+        end
+        function sqrtm(this)
+            this.usxfun(@sqrtm);
+        end
         function sum(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', sum(this.imagingFormat_.img, varargin{:}));
@@ -165,9 +176,11 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             else
                 tag = ['_' strrep(cell2str(varargin), ' ', '_')];
             end
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_sum' tag];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  sum %s %s', this.fileprefix, mat2str(varargin{:}))); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_sum' tag];
+            end
         end
         function tan(this)
             this.usxfun(@tan);
@@ -188,22 +201,22 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             this.usxfun(@uminus);
         end
         
-        function eq(this, b)
+        function numeq(this, b)
             this.lbsxfun(@eq, b);
         end
-        function ne(this, b)
+        function numne(this, b)
             this.lbsxfun(@ne, b);
         end
-        function lt(this, b)
+        function numlt(this, b)
             this.lbsxfun(@lt, b);
         end
-        function le(this, b)
+        function numle(this, b)
             this.lbsxfun(@le, b);
         end
-        function gt(this, b)
+        function numgt(this, b)
             this.lbsxfun(@gt, b);
         end
-        function ge(this, b)
+        function numge(this, b)
             this.lbsxfun(@ge, b);
         end
         function and(this, b)
@@ -224,6 +237,9 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function isnan(this)
             this.lusxfun(@isnan);
         end 
+        function isreal(this)
+            this.usxfun(@isreal)
+        end
         function or(this, b)
             this.lbsxfun(@or, b);
         end
@@ -237,37 +253,47 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
         function false(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', false(this.imagingFormat_.size, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_false'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  false %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_false'];
+            end
         end
         function find(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', find(this.imagingFormat_.img, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_find'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  find %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_find'];
+            end
         end
         function nan(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', nan(this.imagingFormat_.size, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_nan'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  nan %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_nan'];
+            end
         end
         function ones(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', ones(this.imagingFormat_.size, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_ones'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  ones %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_ones'];
+            end
         end
         function reshape(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', reshape(this.imagingFormat_.img, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_reshape'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  reshape %s', mat2str(size(this.imagingFormat_.img)))); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_reshape'];
+            end
         end
         function scrubNanInf(this)
             img_ = this.imagingFormat_.img;
@@ -275,102 +301,108 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             img_(~isfinite(img_)) = 0;
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', img_);
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_scrubNanInf'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  scrubNanInf %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_scrubNanInf'];
+            end
         end
         function true(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', true(this.imagingFormat_.size, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_true'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  true %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_true'];
+            end
         end
         function zeros(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', zeros(this.imagingFormat_.size, varargin{:}));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_zeros'];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  zeros %s', this.fileprefix)); 
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_zeros'];
+            end
         end
                 
-        %% implementations of mlpatterns.HandleDipNumerical
+        %% implementations of mlpatterns.DipNumerical
         
         function d = dipiqr(this)
             this.usxfun(@dipiqr);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
         function d = dipisfinite(this)
             this.usxfun(@dipisfinite);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
             d = logical(d);
         end
         function d = dipisinf(this)
             this.usxfun(@dipisinf);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
             d = logical(d);
         end
         function d = dipisnan(this)
             this.usxfun(@dipisnan);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
             d = logical(d);
         end
         function d = dipisreal(this)
             this.usxfun(@dipisreal);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
             d = logical(d);
         end
         function d = diplogprod(this)
             this.usxfun(@diplogprod);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
         function d = dipmad(this)
             this.usxfun(@dipmad);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end        
         function d = dipmax(this)
             this.usxfun(@dipmax);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end        
         function d = dipmean(this)
             this.usxfun(@dipmean);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end        
         function d = dipmedian(this)
             this.usxfun(@dipmedian);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end        
         function d = dipmin(this)
             this.usxfun(@dipmin);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end   
         function d = dipmode(this)
             this.usxfun(@dipmode);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
         function d = dipprctile(this, b)
             this.bsxfun(@dipprctile, b);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
         function d = dipprod(this)
             this.usxfun(@dipprod);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end        
         function d = dipquantile(this, b)
             this.bsxfun(@dipquantile, b);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
         function d = dipstd(this)
             this.usxfun(@dipstd);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end                
         function d = dipsum(this)
             this.usxfun(@dipsum);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end 
         function d = diptrimmean(this, b)
             this.bsxfun(@diptrimmean, b);
-            d = this.getInnerImaging.img;
+            d = this.imagingFormat_.img;
         end
                 
         %% 
@@ -403,14 +435,16 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', logical(funh(this.imagingFormat_.img)));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh)];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  %s %s', func2str(funh), this.fileprefix));
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh)];
+            end
         end
         function lbsxfun(this, funh, b)
             %% LBSXFUN overloads bsxfun for INIfTI
             %  @param funh  is a function_handle.
-            %  @param b     is logical, AbstractImagingTool, ImagingFormatContext or acceptable arg to
+            %  @param b     is logical, ImagingState2, ImagingFormatContext or acceptable arg to
             %               ImagingFormatContext.ctor.
             %  @return this is modified.
             %  @throws MATLAB:bsxfun:nonnumericOperands
@@ -418,27 +452,33 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             import mlfourd.*;
             if (isnumeric(b))
                 this.imagingFormat_ = ImagingFormatContext( ...
-                    this.imagingFormat_, 'img', logical(bsxfun(funh, this.imagingFormat_.img, b)));
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+                    this.imagingFormat_, 'img', logical(bsxfun(funh, double(this.imagingFormat_.img), double(b))));
                 this.imagingFormat_.addLog( ...
                     sprintf('NumericalTool:  l%s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+                if this.annotateFileprefix_
+                    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+                end
                 return
             end
             if (isa(b, 'mlfourd.ImagingContext2'))
                 b = b.nifti;
                 this.imagingFormat_ = ImagingFormatContext( ...
-                    this.imagingFormat_, 'img', logical(bsxfun(funh, this.imagingFormat_.img, b.img)));
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+                    this.imagingFormat_, 'img', logical(bsxfun(funh, double(this.imagingFormat_.img), double(b.img))));
                 this.imagingFormat_.addLog( ...
-                    sprintf('NumericalTool:  l%s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                    sprintf('NumericalTool:  l%s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+                if this.annotateFileprefix_
+                    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+                end
                 return
             end
             b = ImagingFormatContext(b);
             this.imagingFormat_ = ImagingFormatContext( ...
-                this.imagingFormat_, 'img', logical(bsxfun(funh, this.imagingFormat_.img, b.img)));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+                this.imagingFormat_, 'img', logical(bsxfun(funh, double(this.imagingFormat_.img), double(b.img))));
             this.imagingFormat_.addLog( ...
-                sprintf('NumericalTool:  l%s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                sprintf('NumericalTool:  l%s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_l' char(funh) '_' this.bstr(b)];
+            end
         end
         function usxfun(this, funh)
             %% USXFUN
@@ -448,14 +488,16 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', double(funh(this.imagingFormat_.img)));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh)];
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  %s %s', func2str(funh), this.fileprefix));
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh)];
+            end
         end
         function bsxfun(this, funh, b)
             %% BSXFUN overloads bsxfun for INIfTI
             %  @param funh  is a function_handle.
-            %  @param b     is numeric, AbstractImagingTool, ImagingFormatContext or acceptable arg to
+            %  @param b     is numeric, ImagingState2, ImagingFormatContext or acceptable arg to
             %               ImagingFormatContext.ctor.
             %  @return this is modified.
             %  @throws MATLAB:bsxfun:nonnumericOperands
@@ -464,32 +506,52 @@ classdef NumericalTool < handle & mlfourd.ImagingFormatTool & mlpatterns.HandleN
             if (isnumeric(b))
                 this.imagingFormat_ = ImagingFormatContext( ...
                     this.imagingFormat_, 'img', double(bsxfun(funh, double(this.imagingFormat_.img), double(b))));
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
                 this.imagingFormat_.addLog( ...
                     sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+                if this.annotateFileprefix_
+                    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
+                end
                 return
             end
             if (isa(b, 'mlfourd.ImagingContext2'))
                 b = b.nifti;
                 this.imagingFormat_ = ImagingFormatContext( ...
                     this.imagingFormat_, 'img', double(bsxfun(funh, double(this.imagingFormat_.img), double(b.img))));
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
                 this.imagingFormat_.addLog( ...
-                    sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                    sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+                if this.annotateFileprefix_
+                    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
+                end
                 return
             end
             b = ImagingFormatContext(b);
             this.imagingFormat_ = ImagingFormatContext( ...
                 this.imagingFormat_, 'img', double(bsxfun(funh, double(this.imagingFormat_.img), double(b.img))));
-            this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
             this.imagingFormat_.addLog( ...
-                sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, b.fileprefix));
+                sprintf('NumericalTool:  %s %s %s', func2str(funh), this.fileprefix, this.bstr(b)));
+            if this.annotateFileprefix_
+                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_' char(funh) '_' this.bstr(b)];
+            end
         end
         
-        function this = NumericalTool(h, varargin)
-            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
+        function this = NumericalTool(contexth, imagingFormat, varargin)
+            %  Args:
+            %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
+            %      imagingFormat (IImagingFormat): provides numerical imaging data.  
+            %  N.B. that handle classes are given to the encapsulated state, not copied, for performance.            
+
+            ip = inputParser;
+            ip.KeepUnmatched = true;
+            addRequired(ip, 'contexth', @(x) isa(x, 'mlfourd.ImagingContext2'))
+            addRequired(ip, 'imagingFormat',  @(x) isnumeric(x) || islogical(x) || isa(x, 'mlfourd.IImagingFormat'))
+            parse(ip, contexth, imagingFormat, varargin{:})
+            ipr = ip.Results;
+            if isnumeric(ipr.imagingFormat) || islogical(ipr.imagingFormat)
+                ipr.imagingFormat = mlfourd.ImagingFormatContext(ipr.imagingFormat, varargin{:});
+            end            
+            this = this@mlfourd.ImagingTool(ipr.contexth, ipr.imagingFormat, varargin{:});
         end
-    end 
+    end     
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
  end 

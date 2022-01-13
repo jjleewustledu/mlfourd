@@ -1,4 +1,4 @@
-classdef ImagingInfo < mlio.AbstractIO
+classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable & mlio.IOInterface
 	%% IMAGINGINFO manages metadata and header information for imaging.  Internally, it uses NIfTI conventions.
     %  See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
     %
@@ -23,27 +23,71 @@ classdef ImagingInfo < mlio.AbstractIO
     %  1792 Complex128, 2 float64   (Use float64, bitpix=128) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
     %  2048 Complex256, 2 float128  (Unsupported, bitpix=256) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
     %
-	%  $Revision$
- 	%  was created 27-Jun-2018 00:57:05 by jjlee,
- 	%  last modified $LastChangedDate$ and placed into repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
- 	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
+	%  Created 27-Jun-2018 00:57:05 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
+ 	%  Developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
     properties (Dependent)
+        filename
+        filepath
+        fileprefix 
+        filesuffix
+        fqfilename
+        fqfileprefix
+        fqfn
+        fqfp
+        noclobber
+
+        anaraw
         circshiftK
         qfac % from this.hdr.dime.pixdim(1)
         qform_code
         raw % : [1×1 struct]
         sform_code
                       
-        hdr % after Jimmy Shen's niftitools
+        hdr % subset of mlfourd.JimmyShenInterface
         ext
+        filesystem % get/set handle, not copy, from external filesystem 
         filetype
         machine
-        N
+        N % keeps track of the option "-N" used by nifti_4dfp
         untouch
     end
     
     methods (Static)
+        function this = createFromFilename(fn, varargin)
+            import mlfourd.*
+
+            [~,~,x] = myfileparts(fn);
+            hf = mlio.HandleFilesystem.createFromString(fn);
+            switch char(x)
+                case '.mat'
+                    this = ImagingInfo(hf, varargin{:});
+                case {'.nii' '.nii.gz'}
+                    this = NIfTIInfo(hf, varargin{:});
+                case {'.4dfp.hdr' '.4dfp.img'}
+                    this = FourdfpInfo(hf, varargin{:});
+                case {'.mgz' '.mgh'}
+                    this = MGHInfo(hf, varargin{:});
+                otherwise
+                    this = ImagingInfo(hf, varargin{:});
+            end
+        end
+        function this = createFromFilesystem(fs, varargin)
+            import mlfourd.*
+
+            switch fs.filesuffix
+                case '.mat'
+                    this = ImagingInfo(fs, varargin{:});
+                case {'.nii' '.nii.gz'}
+                    this = NIfTIInfo(fs, varargin{:});
+                case {'.4dfp.hdr' '.4dfp.img'}
+                    this = FourdfpInfo(fs, varargin{:});
+                case {'.mgz' '.mgh'}
+                    this = MGHInfo(fs, varargin{:});
+                otherwise
+                    this = ImagingInfo(fs, varargin{:});
+            end
+        end
         function e = defaultFilesuffix
             e =  mlfourd.NIfTIInfo.FILETYPE_EXT;
         end
@@ -102,56 +146,158 @@ classdef ImagingInfo < mlio.AbstractIO
     end
     
 	methods 
+
+        %% SET/GET
+
+        function     set.filename(this, s)
+            this.filesystem_.filename = s;
+        end
+        function g = get.filename(this)
+            g = this.filesystem_.filename;
+        end
+        function     set.filepath(this, s)
+            this.filesystem_.filepath = s;
+        end
+        function g = get.filepath(this)
+            g = this.filesystem_.filepath;
+        end
+        function     set.fileprefix(this, s)
+            this.filesystem_.fileprefix = s;
+        end
+        function g = get.fileprefix(this)
+            g = this.filesystem_.fileprefix;
+        end
+        function     set.filesuffix(this, s)
+            this.filesystem_.filesuffix = s;
+        end
+        function g = get.filesuffix(this)
+            g = this.filesystem_.filesuffix;
+        end
+        function     set.fqfilename(this, s)
+            this.filesystem_.fqfilename = s;
+        end
+        function g = get.fqfilename(this)
+            g = this.filesystem_.fqfilename;
+        end
+        function     set.fqfileprefix(this, s)
+            this.filesystem_.fqfileprefix = s;
+        end
+        function g = get.fqfileprefix(this)
+            g = this.filesystem_.fqfileprefix;
+        end
+        function     set.fqfn(this, s)
+            this.filesystem_.fqfn = s;
+        end
+        function g = get.fqfn(this)
+            g = this.filesystem_.fqfn;
+        end
+        function     set.fqfp(this, s)
+            this.filesystem_.fqfp = s;
+        end
+        function g = get.fqfp(this)
+            g = this.filesystem_.fqfp;
+        end
+        function     set.noclobber(this, s)
+            this.filesystem_.noclobber = s;
+        end
+        function g = get.noclobber(this)
+            g = this.filesystem_.noclobber;
+        end
         
-        %% GET, SET 
-        
-        function g    = get.circshiftK(this)
+        function g = get.anaraw(this)
+            g = this.anarawLocal();
+        end
+        function g = get.circshiftK(this)
             g = this.circshiftK_;
         end        
-        function this = set.circshiftK(this, s)
+        function     set.circshiftK(this, s)
             assert(isnumeric(s));
             this.circshiftK_ = s;
         end
-        function g    = get.qfac(this)
+        function g = get.qfac(this)
             g = this.hdr.dime.pixdim(1);
             if (0 == g)
                 g = 1;
             end
         end         
-        function g    = get.qform_code(this)
+        function g = get.qform_code(this)
             g = this.hdr.hist.qform_code;
+        end        
+        function g = get.raw(this)
+            assert(~isempty(this.hdr_));
+            g = struct( ...
+                'sizeof_hdr', this.hdr_.hk.sizeof_hdr, ...
+                  'dim_info', this.hdr_.hk.dim_info, ...
+                       'dim', this.hdr_.dime.dim, ...
+                 'intent_p1', this.hdr_.dime.intent_p1, ...
+                 'intent_p2', this.hdr_.dime.intent_p2, ...
+                 'intent_p3', this.hdr_.dime.intent_p3, ...
+               'intent_code', this.hdr_.dime.intent_code, ...
+                  'datatype', this.hdr_.dime.datatype, ...
+                    'bitpix', this.hdr_.dime.bitpix, ...
+               'slice_start', this.hdr_.dime.slice_start, ...
+                    'pixdim', this.hdr_.dime.pixdim, ...
+                'vox_offset', this.hdr_.dime.vox_offset, ...
+                 'scl_slope', this.hdr_.dime.scl_slope, ...
+                 'scl_inter', this.hdr_.dime.scl_inter, ...
+                 'slice_end', this.hdr_.dime.slice_end, ...
+                'slice_code', this.hdr_.dime.slice_code, ...
+                'xyzt_units', this.hdr_.dime.xyzt_units, ...
+                   'cal_max', this.hdr_.dime.cal_max, ...
+                   'cal_min', this.hdr_.dime.cal_min, ...
+            'slice_duration', this.hdr_.dime.slice_duration, ...
+                   'toffset', this.hdr_.dime.toffset, ...
+                   'descrip', this.hdr_.hist.descrip, ...
+                  'aux_file', this.hdr_.hist.aux_file, ...
+                'qform_code', this.hdr_.hist.qform_code, ...
+                'sform_code', this.hdr_.hist.sform_code, ...
+                 'quatern_b', this.hdr_.hist.quatern_b, ...
+                 'quatern_c', this.hdr_.hist.quatern_c, ...
+                 'quatern_d', this.hdr_.hist.quatern_d, ...
+                 'qoffset_x', this.hdr_.hist.qoffset_x, ...
+                 'qoffset_y', this.hdr_.hist.qoffset_y, ...
+                 'qoffset_z', this.hdr_.hist.qoffset_z, ...
+                    'srow_x', this.hdr_.hist.srow_x, ...
+                    'srow_y', this.hdr_.hist.srow_y, ...
+                    'srow_z', this.hdr_.hist.srow_z, ...
+               'intent_name', this.hdr_.hist.intent_name, ...
+                     'magic', this.hdr_.hist.magic);             
         end
-        function g    = get.raw(this)
-            g = this.raw_;
-        end
-        function g    = get.sform_code(this)
+        function g = get.sform_code(this)
             g = this.hdr.hist.sform_code;
         end
         
-        function g    = get.hdr(this)
+        function g = get.hdr(this)
             g = this.hdr_;
         end
-        function this = set.hdr(this, s)
+        function     set.hdr(this, s)
             assert(isstruct(s));
             this.hdr_ = s;
             this.untouch_ = false;
         end
-        function g    = get.ext(this)
+        function g = get.ext(this)
             g = this.ext_;
         end
-        function this = set.ext(this, s)
+        function     set.ext(this, s)
             this.ext_ = s;
             this.untouch_ = false;
         end
-        function g    = get.filetype(this)
+        function     set.filesystem(this, s)
+            assert(isa(s, 'mlio.HandleFilesystem'))
+            this.filesystem_ = s;
+        end
+        function g = get.filesystem(this)
+            g = copy(this.filesystem_);
+        end
+        function g = get.filetype(this)
             g = this.filetype_;
         end
-        function this = set.filetype(this, s)
+        function     set.filetype(this, s)
             assert(isnumeric(s));
             this.filetype_ = s;
             this.untouch_ = false;
         end
-        function g    = get.machine(this)
+        function g = get.machine(this)
             g = this.machine_;
             if (isempty(g))
                 [~,~,m] = computer;
@@ -162,31 +308,47 @@ classdef ImagingInfo < mlio.AbstractIO
                 end
             end
         end
-        function g    = get.N(this)
+        function g = get.N(this)
             g = this.N_;
         end        
-        function this = set.N(this, s)
+        function     set.N(this, s)
             assert(islogical(s));
             this.N_ = s;
         end
-        function g    = get.untouch(this)
+        function g = get.untouch(this)
             g = this.untouch_;
         end
-        function this = set.untouch(this, s)
+        function     set.untouch(this, s)
             this.untouch_ = logical(s);
         end
         
         %%
         
-        function hdr  = adjustHdr(this, hdr)
+        function hdr = adjustHdr(this, hdr)
             if (~isempty(this.datatype_))
                 hdr.dime.datatype = this.datatype_;
                 hdr.dime.bitpix = this.newBitpix;
             end
             hdr = this.permuteHdr(hdr);
             hdr = this.adjustHistOriginator(hdr);
-        end 
-        function nii  = load_nii(this)
+        end         
+        function this = append_descrip(this, varargin) 
+            %% APPEND_DESCRIP
+            %  @param [varargin] may be a single string or args to sprintf.
+            %  @return this updates descrip with separator_ and appended string.
+            %  @throws MATLAB:printf:invalidInputType
+            
+            if (nargin > 2)
+                astring = sprintf(varargin{:});
+            else
+                astring = varargin{:};
+            end
+            this.hdr_.hist.descrip = sprintf('%s%s %s', this.hdr_.hist.descrip, this.separator_, astring);
+        end
+        function c = char(this)
+            c = char(this.filesystem_);
+        end
+        function nii = load_nii(this)
             nii = mlniftitools.load_nii(this.fqfilename);
         end
         function [h,e,f,m] = load_untouch_header_only(this)
@@ -197,12 +359,29 @@ classdef ImagingInfo < mlio.AbstractIO
             
             [h,e,f,m] = mlniftitools.load_untouch_header_only(this.fqfilename);
         end
-        function s    = load_untouch_nii(this)
+        function s = load_untouch_nii(this)
             % @return s := struct of NIfTI data expected by mlniftitools
             
             s = mlniftitools.load_untouch_nii(this.fqfilename);
-        end        
-        function this = zoom(this, rmin, rsize)
+        end  
+        function this = prepend_descrip(this, varargin) 
+            %% PREPEND_DESCRIP
+            %  @param [varargin] may be a single string or args to sprintf.
+            %  @return this updates descrip with prepended string and separator_.
+            %  @throws MATLAB:printf:invalidInputType
+            
+            if (nargin > 2)
+                astring = sprintf(varargin{:});
+            else
+                astring = varargin{:};
+            end
+            this.hdr_.hist.descrip = sprintf('%s%s %s', astring, this.separator_, this.hdr_.hist.descrip);
+        end
+        function this = reset_scl(this)
+            this.hdr_.dime.scl_slope = 1;
+            this.hdr_.dime.scl_inter = 0;
+        end
+        function this = zoomed(this, rmin, rsize)
             shift = this.AffMats*[rmin(1:3) 0]';
             
             this.hdr.hist.quatern_b = 0;
@@ -215,12 +394,49 @@ classdef ImagingInfo < mlio.AbstractIO
             this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
             this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
             this.hdr.hist.originator = rsize(1:3)/2;
+        end        
+        function s = string(this, varargin)
+            s = string(this.filesystem_, varargin{:});
         end
-        function this = reset_scl(this)
-            this.hdr_.dime.scl_slope = 1;
-            this.hdr_.dime.scl_inter = 0;
+        function xyz = AffineMethod3(this, ijk)
+            % AFFINEMETHOD3 (used when sform_code > 0):
+            % -----------------------------------------
+            % The (x,y,z) coordinates are given by a general affine transformation
+            % of the (i,j,k) indexes:
+            % 
+            %   x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
+            %   y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
+            %   z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
+            % 
+            % The srow_* vectors are in the NIFTI_1 header.  Note that no use is
+            % made of pixdim[] in this method.
+            %
+            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
+            %
+            %    @param  ijk := voxel indices
+            %    @return xyz := Cartesian position
+            
+            assert(this.sform_code > 0, ...
+                'mlfourd:unexpectedInternalParam', 'AbstractNIfTIInfo.RMatrixMethod3.sform_code->%i', this.sform_code);
+            
+            xyz = this.AffMats * [ensureColVector(ijk); 1];
         end
-        function xyz  = RMatrixMethod2(this, ijk)
+        function A = AffMats(this)
+            A      = zeros(3, 4);
+            A(1,:) = this.hdr.hist.srow_x;
+            A(2,:) = this.hdr.hist.srow_y;
+            A(3,:) = this.hdr.hist.srow_z;
+        end
+        function R = RMatq(this)
+            a = 0;
+            b = this.hdr.hist.quatern_b;
+            c = this.hdr.hist.quatern_c;
+            d = this.hdr.hist.quatern_d;
+            R = [ (2*a^2 - 1 + 2*b^2) (2*b*c - 2*d*a)     (2*b*d + 2*c*a); ...
+                  (2*b*c + 2*d*a)     (2*a^2 - 1 + 2*c^2) (2*c*d - 2*b*a); ...
+                  (2*b*d - 2*c*a)     (2*c*d + 2*b*a)     (2*a^2 - 1 + 2*d^2) ];
+        end
+        function xyz = RMatrixMethod2(this, ijk)
             %%   RMATRIXMETHOD2 (used when qform_code > 0, which should be the "normal" case):
             %    -----------------------------------------------------------------------------
             %    The (x,y,z) coordinates are given by the pixdim[] scales, a rotation
@@ -288,87 +504,70 @@ classdef ImagingInfo < mlio.AbstractIO
                                [h.qoffset_x   h.qoffset_y   h.qoffset_z  ]';
             
         end
-        function R    = RMatq(this)
-            a = 0;
-            b = this.hdr.hist.quatern_b;
-            c = this.hdr.hist.quatern_c;
-            d = this.hdr.hist.quatern_d;
-            R = [ (2*a^2 - 1 + 2*b^2) (2*b*c - 2*d*a)     (2*b*d + 2*c*a); ...
-                  (2*b*c + 2*d*a)     (2*a^2 - 1 + 2*c^2) (2*c*d - 2*b*a); ...
-                  (2*b*d - 2*c*a)     (2*c*d + 2*b*a)     (2*a^2 - 1 + 2*d^2) ];
-        end
-        function xyz  = AffineMethod3(this, ijk)
-            % AFFINEMETHOD3 (used when sform_code > 0):
-            % -----------------------------------------
-            % The (x,y,z) coordinates are given by a general affine transformation
-            % of the (i,j,k) indexes:
-            % 
-            %   x = srow_x[0] * i + srow_x[1] * j + srow_x[2] * k + srow_x[3]
-            %   y = srow_y[0] * i + srow_y[1] * j + srow_y[2] * k + srow_y[3]
-            %   z = srow_z[0] * i + srow_z[1] * j + srow_z[2] * k + srow_z[3]
-            % 
-            % The srow_* vectors are in the NIFTI_1 header.  Note that no use is
-            % made of pixdim[] in this method.
-            %
-            %    See also https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
-            %
-            %    @param  ijk := voxel indices
-            %    @return xyz := Cartesian position
-            
-            assert(this.sform_code > 0, ...
-                'mlfourd:unexpectedInternalParam', 'AbstractNIfTIInfo.RMatrixMethod3.sform_code->%i', this.sform_code);
-            
-            xyz = this.AffMats * [ensureColVector(ijk); 1];
-        end
-        function A    = AffMats(this)
-            A      = zeros(3, 4);
-            A(1,:) = this.hdr.hist.srow_x;
-            A(2,:) = this.hdr.hist.srow_y;
-            A(3,:) = this.hdr.hist.srow_z;
-        end
-        
+
         function this = ImagingInfo(varargin)
  			%% IMAGINGINFO
- 			%  @param filename is required.  For aufbau, the file need not exist on the filesystem.
+            %  Args:
+ 			%      filesystem_ (text|mlio.HandleFilesystem):  
+            %                 If text, ImagingInfo creates isolated filesystem_ information.
+            %                 If mlio.HandleFilesystem, ImagingInfo will reference the handle for filesystem_ information,
+            %                 allowing for external modification for synchronization.
+            %                 For aufbau, the file need not exist on the filesystem.
+            %       circshiftK (numeric):
+            %       datatype (numeric):
+            %       ext ():
+            %       filetype ():
+            %       N (logical):
+            %       separator (text): separates annotations
+            %       untouch (logical):
+            %       hdr (struct): hdr sepcified by mlniftitools.
+
             
             ip = inputParser;
             ip.KeepUnmatched = true;
-            addOptional( ip, 'filename', this.tempFqfilename, @ischar);
+            rregistry = mlpipeline.ResourcesRegistry.instance();
+            addOptional( ip, 'filesystem', mlio.HandleFilesystem(), @(x) istext(x) || isa(x, 'mlio.HandleFilesystem'));
             addParameter(ip, 'circshiftK', 0, @isnumeric);
             addParameter(ip, 'datatype', [], @isnumeric); % 16
             addParameter(ip, 'ext', []);
             addParameter(ip, 'filetype', []);
-            addParameter(ip, 'N', mlpipeline.ResourcesRegistry.instance().defaultN, @islogical);
+            addParameter(ip, 'N', rregistry.defaultN, @islogical);
+            addParameter(ip, 'separator', ';', @istext)
             addParameter(ip, 'untouch', true, @islogical);
             addParameter(ip, 'hdr', this.initialHdr, @isstruct);
             parse(ip, varargin{:});
-            this.fqfilename = ip.Results.filename;
+            ipr = ip.Results;
+            if istext(ipr.filesystem)
+                this.filesystem_ = mlio.HandleFilesystem.createFromString(ipr.filesystem);
+            end
+            if isa(ipr.filesystem, 'mlio.HandleFilesystem')
+                this.filesystem_ = ipr.filesystem;
+            end
             this = this.adjustFilesuffix;
-            this.circshiftK_ = ip.Results.circshiftK;
-            this.N_ = ip.Results.N;
-            this.datatype_ = ip.Results.datatype;
-            this.ext_ = ip.Results.ext;
-            this.filetype_ = ip.Results.filetype;            
- 			this.untouch_ = ip.Results.untouch;
+            this.circshiftK_ = ipr.circshiftK;
+            this.N_ = ipr.N;
+            this.datatype_ = ipr.datatype;
+            this.ext_ = ipr.ext;
+            this.filetype_ = ipr.filetype;      
+            this.separator_ = ipr.separator;      
+ 			this.untouch_ = ipr.untouch;
             
-            this.hdr_ = ip.Results.hdr;
- 			this.raw_ = this.initialRaw;   
-            this.anaraw_ = this.initialAnaraw;            
+            this.hdr_ = ipr.hdr;
         end		  
     end 
     
     %% PROTECTED
     
     properties (Access = protected)
-        anaraw_   
         circshiftK_
         datatype_
-        hdr_
         ext_
+        filesystem_
         filetype_
+        hdr_
         machine_
         N_
-        raw_
+        separator_
         untouch_
     end
     
@@ -394,31 +593,35 @@ classdef ImagingInfo < mlio.AbstractIO
         function hdr  = adjustHistOriginator(this, hdr)
             % See also:  nifti_4dfp.
             
-            if (~isprop(hdr, 'originator'))                
+            if (~isprop(hdr, 'originator'))
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
-            if (norm(hdr.hist.originator) < eps)                
+            if (norm(hdr.hist.originator) < eps)
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
-            if (isa(this, 'mlfourdfp.FourdfpInfo') && this.N)                
+            if (isa(this, 'mlfourd.FourdfpInfo') && this.N)
                 hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
                 return
             end
         end 
-        function araw = initialAnaraw(this)
+        function a = anarawLocal(this)
             assert(~isempty(this.hdr_));
-            araw = struct( ...
+            a = struct( ...
                 'ByteOrder', this.machine, ...
-                'Extents', nan, ...
-                'ImgDataType', '', ...
+                'Extents', this.hdr_.hk.extents, ...
+                'ImgDataType', this.hdr_.hk.data_type, ...
                 'GlobalMax', this.hdr_.dime.glmax, ...
                 'GlobalMin', this.hdr_.dime.glmin, ...
                 'OMax', 0, ...
                 'Omin', 0, ...
                 'SMax', 0, ...
-                'SMin', 0);            
+                'SMin', 0); 
+        end
+        function that = copyElement(this)
+            that = copyElement@matlab.mixin.Copyable(this);
+            that.filesystem_ = copy(this.filesystem_);
         end
         function hdr  = initialHdr(this)
             hk   = struct( ...
@@ -454,8 +657,8 @@ classdef ImagingInfo < mlio.AbstractIO
             hist = struct( ...
                 'descrip', sprintf('instance of %s', class(this)), ...
                 'aux_file', '', ...
-                'qform_code', 1, ...
-                'sform_code', 1, ...
+                'qform_code', 0, ...
+                'sform_code', 0, ...
                 'quatern_b', 0, ...
                 'quatern_c', 0, ...
                 'quatern_d', 0, ...
@@ -469,48 +672,8 @@ classdef ImagingInfo < mlio.AbstractIO
                 'magic', 'n+1');
             hdr = struct('hk', hk, 'dime', dime, 'hist', hist);
         end
-        function raw  = initialRaw(this)
-            assert(~isempty(this.hdr_));
-            raw = struct( ...
-                'sizeof_hdr', this.hdr_.hk.sizeof_hdr, ...
-                  'dim_info', this.hdr_.hk.dim_info, ...
-                       'dim', this.hdr_.dime.dim, ...
-                 'intent_p1', this.hdr_.dime.intent_p1, ...
-                 'intent_p2', this.hdr_.dime.intent_p2, ...
-                 'intent_p3', this.hdr_.dime.intent_p3, ...
-               'intent_code', this.hdr_.dime.intent_code, ...
-                  'datatype', this.hdr_.dime.datatype, ...
-                    'bitpix', this.hdr_.dime.bitpix, ...
-               'slice_start', this.hdr_.dime.slice_start, ...
-                    'pixdim', this.hdr_.dime.pixdim, ...
-                'vox_offset', this.hdr_.dime.vox_offset, ...
-                 'scl_slope', this.hdr_.dime.scl_slope, ...
-                 'scl_inter', this.hdr_.dime.scl_inter, ...
-                 'slice_end', this.hdr_.dime.slice_end, ...
-                'slice_code', this.hdr_.dime.slice_code, ...
-                'xyzt_units', this.hdr_.dime.xyzt_units, ...
-                   'cal_max', this.hdr_.dime.cal_max, ...
-                   'cal_min', this.hdr_.dime.cal_min, ...
-            'slice_duration', this.hdr_.dime.slice_duration, ...
-                   'toffset', this.hdr_.dime.toffset, ...
-                   'descrip', this.hdr_.hist.descrip, ...
-                  'aux_file', this.hdr_.hist.aux_file, ...
-                'qform_code', this.hdr_.hist.qform_code, ...
-                'sform_code', this.hdr_.hist.sform_code, ...
-                 'quatern_b', this.hdr_.hist.quatern_b, ...
-                 'quatern_c', this.hdr_.hist.quatern_c, ...
-                 'quatern_d', this.hdr_.hist.quatern_d, ...
-                 'qoffset_x', this.hdr_.hist.qoffset_x, ...
-                 'qoffset_y', this.hdr_.hist.qoffset_y, ...
-                 'qoffset_z', this.hdr_.hist.qoffset_z, ...
-                    'srow_x', this.hdr_.hist.srow_x, ...
-                    'srow_y', this.hdr_.hist.srow_y, ...
-                    'srow_z', this.hdr_.hist.srow_z, ...
-               'intent_name', this.hdr_.hist.intent_name, ...
-                     'magic', this.hdr_.hist.magic);             
-        end
         
-        %% methods to complete NIfTI-1 specifications from Analyze 7.5 data        
+        %% methods to complete NIfTI-1 specifications from Analyze 7.5 data
         
         function v    = permuteCircshiftVec(this, v)
             if (0 == this.circshiftK_); return; end

@@ -1,4 +1,4 @@
-classdef (Abstract) JimmyShenInterface  
+classdef (Abstract, HandleCompatible) JimmyShenInterface  
 	%% JIMMYSHENINTERFACE describes the code base that is the foundation of the the mlfourd package.
     %  http://research.baycrest.org/~jimmy/
     %  http://www.mathworks.com/matlabcentral/fileexchange/authors/20638

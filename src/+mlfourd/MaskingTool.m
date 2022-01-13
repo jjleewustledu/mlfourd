@@ -1,4 +1,4 @@
-classdef MaskingTool < handle & mlfourd.ImagingFormatTool
+classdef MaskingTool < handle & mlfourd.ImagingTool
 	%% MASKINGTOOL
     %
     
@@ -18,7 +18,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             this.imagingFormat_.img  = double(this.imagingFormat_.img ~= 0);
             this.imagingFormat_ = this.imagingFormat_.reset_scl;
             this.warnLargeVolumeFraction;
-            this.fileprefix = [this.fileprefix '_binarized'];  
+            this.fileprefix = strcat(this.fileprefix, '_binarized');  
             this.addLog('MaskingTool.binarized');
         end
         function n    = count(this)
@@ -31,7 +31,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %% IMFILL calls Matlab's imfill.
 
             this.imagingFormat_.img = imfill(logical(this.imagingFormat_.img), varargin{:});
-            this.fileprefix = [this.fileprefix '_imfill'];  
+            this.fileprefix = strcat(this.fileprefix, '_imfill');  
             this.addLog('MaskingTool.imfill');
         end
         function this = masked(this, M)
@@ -113,7 +113,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
 
             assert(isscalar(t));
             bin  = this.imagingFormat_.img >= t;
-            this = this.makeSimilar( ...
+            this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskingTool.thresh(%g)', t));
@@ -128,7 +128,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             end
             img  = this.imagingFormat_.img;
             bin  = img >= p*dipiqr(img(img > 0.01*dipmax(img)));
-            this = this.makeSimilar( ...
+            this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
@@ -140,7 +140,7 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             
             assert(isscalar(t));
             bin  = this.imagingFormat_.img <= t;
-            this = this.makeSimilar( ...
+            this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthr%s', this.fileprefix, this.decimal2str(t)), ...
                    'descrip',    sprintf('MaskingTool.uthresh(%g)', t));
@@ -155,12 +155,15 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             end
             img  = this.imagingFormat_.img;
             bin  = img <= p*dipiqr(img(img > 0.01*dipmax(img)));
-            this = this.makeSimilar( ...
+            this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
             this.addLog('MaskingTool.uthreshp(%g)', p);
-        end   
+        end  
+        function this = zoom(this, varargin)
+            this = this.zoomed(varargin{:});
+        end  
         function this = zoomed(this, varargin)
             %% ZOOMED parameters resembles fslroi, but indexing starts with 1 and passing -1 for a size will set it to 
             %  the full image extent for that dimension.
@@ -175,11 +178,11 @@ classdef MaskingTool < handle & mlfourd.ImagingFormatTool
             %  @param tsize is optional.            
             %  @returns this
 
-            this.imagingFormat_ = this.imagingFormat_.zoom(varargin{:});
+            this.imagingFormat_ = this.imagingFormat_.zoomed(varargin{:});
         end
         
-        function this = MaskingTool(h, varargin)
-            this = this@mlfourd.ImagingFormatTool(h, varargin{:});
+        function this = MaskingTool(varargin)
+            this = this@mlfourd.ImagingTool(varargin{:});
         end
         
     end

@@ -1,13 +1,13 @@
 classdef InnerCellComposite < mlpatterns.CellComposite
 	%% INNERCELLCOMPOSITE is a mlpatterns.CellComposite designed for use by package mlfourd. 
     %  It is designed for clarity and efficiency over safety.
-
+    %
 	%  $Revision$
  	%  was created 16-Jan-2016 17:59:46
  	%  by jjlee,
  	%  last modified $LastChangedDate$
  	%  and checked into repository /Users/jjlee/Local/src/mlcvl/mlfourd/src/+mlfourd.
- 	%% It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
+ 	%  It was developed on Matlab 9.0.0.307022 (R2016a) Prerelease for MACI64.
 
 	methods		  
  		function this = InnerCellComposite(varargin)

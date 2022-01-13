@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
+classdef (Abstract) AbstractNIfTIInfo < handle & mlfourd.ImagingInfo
 	%% ABSTRACTNIFTIINFO  
 
 	%  $Revision$
@@ -46,18 +46,18 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             g = s.bytes;
         end
         function g = get.Description(this)
-            g = this.raw_.descrip;
+            g = this.raw.descrip;
         end
         function g = get.ImageSize(this)
-            end_ = 1+this.raw_.dim(1);
-            g = this.raw_.dim(2:end_);
+            end_ = 1+this.raw.dim(1);
+            g = this.raw.dim(2:end_);
         end
         function g = get.PixelDimensions(this)
-            end_ = 1+this.raw_.dim(1);
-            g = this.raw_.pixdim(2:end_);
+            end_ = 1+this.raw.dim(1);
+            g = this.raw.pixdim(2:end_);
         end
         function g = get.Datatype(this)
-            switch (this.raw_.datatype)
+            switch (this.raw.datatype)
                 case 0
                     g = 'Unknown';
                 case 1
@@ -99,7 +99,7 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             end
         end
         function g = get.BitsPerPixel(this)
-            g = this.raw_.bitpix;
+            g = this.raw.bitpix;
         end
         function g = get.SpaceUnits(this)
             g = this.spaceUnits_;
@@ -117,11 +117,11 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             g = this.timeOffset_;
         end
         function g = get.SliceCode(this)
-            if (0 == this.raw_.slice_code)
+            if (0 == this.raw.slice_code)
                 g = 'Unknown';
                 return
             end
-            g = this.raw_.slice_code;
+            g = this.raw.slice_code;
         end
         function g = get.FrequencyDimension(this)
             g = this.frequencyDimension_;
@@ -142,7 +142,7 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             g = affine3d(this.affineTransform_);
         end
         function g = get.Qfactor(this) % a.k.a. qfac
-            g = this.raw_.pixdim(1); 
+            g = this.raw.pixdim(1); 
             if (0 == g)
                 g = 1;
             end
@@ -179,10 +179,10 @@ classdef (Abstract) AbstractNIfTIInfo < mlfourd.ImagingInfo
             end
         end
         function fqfn = fqfileprefix_nii(this)
-            fqfn = [this.fqfileprefix '.nii'];
+            fqfn = strcat(this.fqfileprefix, '.nii');
         end
         function fqfn = fqfileprefix_nii_gz(this)
-            fqfn = [this.fqfileprefix '.nii.gz'];
+            fqfn = strcat(this.fqfileprefix, '.nii.gz');
         end        
         function nii = make_nii(this)
             [X,untouch,hdr] = niftiread(this);

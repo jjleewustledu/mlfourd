@@ -1,4 +1,4 @@
-classdef Viewer 
+classdef Viewer < mlfourd.IViewer
 	%% VIEWER prepares viewer apps with mlfourd.NIfTId
 
 	%  $Revision$
@@ -7,13 +7,13 @@ classdef Viewer
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
 	properties
- 		app = 'freeview'
+ 		app
         fv
     end
 
     methods (Static)
         function [s,r] = view(varargin)
-            % VIEW has this.app := 'freeview'.
+            % VIEW has this.app := 'fsleyes'.
             
             this = mlfourd.Viewer;
             [s,r] = this.aview(varargin{:});
@@ -27,8 +27,14 @@ classdef Viewer
             for v = 1:length(varargin)
                 [targs{v},todel(v)] = this.interpretTarget(varargin{v});
             end
-            
-            [s,r] = mlbash(sprintf('%s %s', this.app, cell2str(targs, 'AsRow', true)));
+            if any(contains(string(targs), ".mgz")) || any(contains(string(targs), ".mgh"))
+                app_ = fullfile(getenv('FREESURFER_HOME'), 'bin', 'freeview');
+                targs = convertStringsToChars(targs);
+                [s,r] = mlbash(sprintf('%s %s', app_, cell2str(targs)));
+            else
+                targs = convertStringsToChars(targs);
+                [s,r] = mlbash(sprintf('%s %s', this.app, cell2str(targs)));
+            end
             
             for v = 1:length(varargin)
                 if (todel(v))
@@ -41,24 +47,36 @@ classdef Viewer
         end
 		  
  		function this = Viewer(varargin)
+            app_ = fullfile(getenv('FSLDIR'), 'bin', 'fsleyes');
+            
             ip = inputParser;
-            addOptional(ip, 'app', 'freeview', @ischar);
+            addOptional(ip, 'app', app_, @ischar);
+            addParameter(ip, 'temp_pattern', '', @istext)
             parse(ip, varargin{:});
-            this.app = ip.Results.app;
+            ipr = ip.Results;
+
+            this.app = ipr.app;
             this.fv = mlfourdfp.FourdfpVisitor;
+            this.temp_pattern = ipr.temp_pattern;
  		end
  	end 
 
     %% PROTECTED
     
+    properties (Access = protected)
+        temp_pattern
+    end
+
     methods (Access = protected)
         function fqt = fqtarget(~, t)
-            fqt = [myfileprefix(t) '.nii'];
+            fqt = [myfileprefix(t) '.nii.gz'];
         end
         function fn = constructTmpNii(this, fn)
             fn_ = tempFqfilename(fn);
-            copyfile_4dfp(fn, fn_);
-            this.fv.nifti_4dfp_n(fn_);
+            fp = myfileprefix(fn);
+            fp_ = myfileprefix(fn_);
+            copyfile_4dfp(fp, fp_);
+            this.fv.nifti_4dfp_n(fp_);
             fn = this.fqtarget(fn_);
         end
         function [interp,todel] = interpretTarget(this, targ)
@@ -73,32 +91,15 @@ classdef Viewer
                     end
                 case {'char' 'string'}
                     
-                    % 4dfp extensions
-                    if (lstrfind(targ, '.4dfp.'))
-                        interp = this.constructTmpNii(targ);
-                        todel = true;
-                        return
-                    end
-                    
-                    % no extension found
-                    if (lexist([targ '.nii'], 'file'))
-                        interp = [targ '.nii'];
-                        todel = false;
-                        return
-                    end
-                    if (lexist([targ '.nii.gz'], 'file'))
-                        interp = [targ '.nii.gz'];
-                        todel = false;
-                        return
-                    end
-                    if (lexist([targ '.4dfp.img'], 'file'))
-                        interp = this.constructTmpNii(targ);
-                        todel = true;
-                        return
-                    end
-                    
                     % NIfTI extension .nii[.gz]
                     if (lstrfind(targ, '.nii'))
+                        interp = targ;
+                        todel = false;
+                        return
+                    end
+                    
+                    % 4dfp extensions
+                    if (lstrfind(targ, '.4dfp.'))
                         interp = targ;
                         todel = false;
                         return
@@ -111,30 +112,37 @@ classdef Viewer
                         return
                     end
                     
+                    % no extension found
+                    if isfile(strcat(targ, '.nii.gz'))
+                        interp = strcat(targ, '.nii.gz');
+                        todel = false;
+                        return
+                    end
+                    if isfile(strcat(targ, '.nii'))
+                        interp = strcat(targ, '.nii');
+                        todel = false;
+                        return
+                    end
+                    if isfile(strcat(targ, '.4dfp.img'))
+                        interp = strcat(targ, '.4dfp.hdr');
+                        todel = false;
+                        return
+                    end
+                    
                     % command-line options
                     interp = targ;
                     todel = false;
                 otherwise
-                    if false % (~isdeployed)
-                        if (isa(targ, 'mlfourd.ImagingContext')) %#ok<UNRCH>
-                            if (~lexist(targ.fqfilename))
-                                targ.filesuffix = '.nii';
-                                targ.save;
-                            end
-                            [interp,todel] = this.interpretTarget(targ.fqfilename);
-                            return
-                        end
-                    end
                     if (isa(targ, 'mlfourd.ImagingContext2') || ...
-                        isa(targ, 'mlfourd.INIfTI'))
-                        if (~lexist(targ.fqfilename))
-                            targ.filesuffix = '.nii';
+                        isa(targ, 'mlfourd.ImagingFormatContext2'))
+                        if ~isfile(targ.fqfilename)
+                            targ.filesuffix = '.nii.gz';
                             targ.save;
                         end
                         [interp,todel] = this.interpretTarget(targ.fqfilename);
                         return
                     end
-                    error('mlfourd:unsupportedSwitchcase', ...
+                    error('mlfourd:ValueError', ...
                         'class(Viewer.interpretTarget.targ)->%s', class(targ));
             end
         end

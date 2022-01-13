@@ -1,4 +1,4 @@
-classdef InnerNIfTIc < mlfourd.InnerNIfTIcIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
+classdef InnerNIfTIc < mlfourd.AbstractCompositeIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI & mlpatterns.Composite
 	%% INNERNIFTIC supplies composite INIfTI objects to AbstractNIfTIComponent.  It also forms a composite
     %  design pattern with decorators InnerNIfTId, which supplies composite INIfTI objects to AbstractNIfTIComponent.
     %  InnerNIfTIc supports cell and mlpatterns.CellComposite.

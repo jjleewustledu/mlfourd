@@ -1,4 +1,4 @@
-classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.HandleJimmyShenInterface
+classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.JimmyShenInterface
 	%% INNERNIFTI supplies decorated INIfTI objects to AbstractNIfTIComponent.  It also forms a composite
     %  design pattern with composites InnerNIfTIc, which supplies composite INIfTI objects to AbstractNIfTIComponent.
     
@@ -76,9 +76,9 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Hand
             import mlfourd.* mlfourdfp.* mlsurfer.*;  
             hdr_ = this.hdr;
             switch (this.filesuffix)
-                case FourdfpInfo.SUPPORTED_EXT
+                case mlfourd.FourdfpInfo.SUPPORTED_EXT
                     %deleteExisting([this.fqfileprefix '.4dfp.*']);
-                    info = FourdfpInfo(this.fqfilename, ...
+                    info = mlfourd.FourdfpInfo(this.fqfilename, ...
                         'datatype', this.datatype, 'ext', this.imagingInfo.ext, 'filetype', this.imagingInfo.filetype, 'N', this.N , 'untouch', false, 'hdr', hdr_);                    
                     this = InnerFourdfp(info, ...
                        'creationDate', this.creationDate, 'img', this.img, 'label', this.label, 'logger', this.logger, ...

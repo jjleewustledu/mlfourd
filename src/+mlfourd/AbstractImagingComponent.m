@@ -1,5 +1,6 @@
 classdef AbstractImagingComponent < mlio.AbstractCompositeIO & mlfourd.JimmyShenInterface & mlfourd.INIfTI 
 	%% ABSTRACTNIFTICOMPONENT is a parallel hierarchy of AbstractNIfTId, intended for composite design patterns. 
+    %  Todo:  trace use of property cachedNext.
 
 	%  $Revision: 2618 $ 
  	%  was created $Date: 2013-09-08 23:15:55 -0500 (Sun, 08 Sep 2013) $ 

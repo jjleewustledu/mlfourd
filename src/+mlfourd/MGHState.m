@@ -15,7 +15,7 @@ classdef MGHState < mlfourd.ImagingState
     
     methods (Static)
         function niifn = mgh2nii(mghfn)
-            fqfp  = mghfn(1:end-length(mlsurfer.MGHInfo.MGH_EXT));
+            fqfp  = mghfn(1:end-length(mlfourd.MGHInfo.MGH_EXT));
             niifn = [fqfp '.nii'];
             assert(lexist(mghfn, 'file'));
             mlfourd.MGHState.mri_convert(mghfn, niifn);
@@ -26,7 +26,7 @@ classdef MGHState < mlfourd.ImagingState
                 [~,~,fsuffix] = myfileparts(f1);
                 if (strcmp('.nii.gz', fsuffix) || strcmp('.nii', fsuffix))
                     f2 = filename( ...
-                         fileprefix(f1, fsuffix), mlsurfer.MGHInfo.MGH_EXT); 
+                         fileprefix(f1, fsuffix), mlfourd.MGHInfo.MGH_EXT); 
                 end
                 if (strcmp('.mgz', fsuffix)    || strcmp('.mgh', fsuffix))
                     f2 = filename( ...
@@ -37,7 +37,7 @@ classdef MGHState < mlfourd.ImagingState
         end
         function mghfn = nii2mgh(niifn)
             fqfp  = niifn(1:end-length('.nii'));
-            mghfn = [fqfp mlsurfer.MGHInfo.MGH_EXT];
+            mghfn = [fqfp mlfourd.MGHInfo.MGH_EXT];
             assert(lexist(niifn, 'file'));
             mlfourd.MGHState.mri_convert(niifn, mghfn);
         end

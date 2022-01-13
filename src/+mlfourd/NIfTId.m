@@ -23,7 +23,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
         function [tf,e] = supportedFileformExists(fn)
             %% SUPPORTEDFILEFORMEXISTS searches for an existing filename.  If not found it attempts to find 
             %  the same fileprefix with alternative extension for supported image formats:  drawn from
-            %  {mlfourdfp.FourdfpInfo.SUPPORTED_EXT mlfourd.NIfTIInfo.SUPPORTED_EXT mlsurfer.MGHInfo.SUPPORTED_EXT},
+            %  {mlfourd.FourdfpInfo.SUPPORTED_EXT mlfourd.NIfTIInfo.SUPPORTED_EXT mlfourd.MGHInfo.SUPPORTED_EXT},
             %  respecting their enumerated cardinality.
             %  @param fn is the filename queried.
             %  @return tf := filename or fileprefix with support image format found.
@@ -38,7 +38,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
             
             % ff doesn't exist as an explicit file; check if there exists a variation of filesuffix           
             [p,f] = myfileparts(fn);
-            e3s = mlfourdfp.FourdfpInfo.SUPPORTED_EXT;
+            e3s = mlfourd.FourdfpInfo.SUPPORTED_EXT;
             for ie = 1:length(e3s)
                 if (lexist(fullfile(p, [f e3s{ie}]), 'file'))
                     tf = true;
@@ -54,7 +54,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                     return
                 end
             end
-            e2s = mlsurfer.MGHInfo.SUPPORTED_EXT;
+            e2s = mlfourd.MGHInfo.SUPPORTED_EXT;
             for ie = 1:length(e2s)
                 if (lexist(fullfile(p, [f e2s{ie}]), 'file'))
                     tf = true;
@@ -131,7 +131,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                 this = this.adjustFieldsFromInputParser(ip);
                 return
             end
-            if (isa(obj, 'mlio.IOInterface') || isa(obj, 'mlio.HandleIOInterface'))
+            if (isa(obj, 'mlio.IOInterface'))
                 assert(lexist(obj.fqfilename, 'file'), ...
                     'mlfourd:fileNotFound', 'NIfTId.ctor could not find %s', obj.fqfilename);
                 this = NIfTId(obj.fqfilename);
@@ -166,7 +166,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                 isa(obj, 'mlfourd.ImagingInfo') || ...
                 ischar(obj) ||  ...
                 isa(obj, 'mlfourd.INIfTId')  || isa(obj, 'mlfourd.INIfTIc') || ...
-                isa(obj, 'mlio.IOInterface') || isa(obj, 'mlio.HandleIOInterface') || ...
+                isa(obj, 'mlio.IOInterface') || ...
                 isstruct(obj) || ...
                 isnumeric(obj), ...                
                 'mlfourd:invalidCtorObj', ...
@@ -208,7 +208,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
                         inn = InnerFourdfp(FourdfpInfo(obj));
                     case NIfTIInfo.SUPPORTED_EXT
                         inn = InnerNIfTI(NIfTIInfo(obj));
-                    case mlsurfer.MGHInfo.SUPPORTED_EXT 
+                    case mlfourd.MGHInfo.SUPPORTED_EXT 
                         inn = InnerMGH(MGHInfo(obj));
                     case '.hdr'
                         inn = InnerNIfTI(Analyze75Info(obj));
@@ -299,7 +299,7 @@ classdef NIfTId < mlfourd.AbstractNIfTIComponent & mlfourd.JimmyShenInterface & 
             this.innerNIfTI_.separator_ = ';';
             this.innerNIfTI_.stack_ = obj.stack;
             this.innerNIfTI_.viewer = obj.viewer;
-            % mlsystem.FilesystemRegistry is a singleton design pattern
+            % mlio.FilesystemRegistry is a singleton design pattern
             this.innerNIfTI_.imagingInfo = obj.imagingInfo;
         end
         function this     = adjustInnerNIfTIWithNumeric(this, num)
