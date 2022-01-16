@@ -1275,6 +1275,12 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             ifc = copy(this.state_.nifti);
         end   
         function p    = pointCloud(this, varargin)
+            %  Params:
+            %      thresh (scalar): per fslmaths
+            %      uthresh (scalar): per fslmaths
+            %      threshp (scalar): per fslmaths
+            %      uthreshp (scalar): per fslmaths
+
             ip = inputParser;
             ip.KeepUnmatched = true;
             addParameter(ip, 'thresh', [], @isscalar)
