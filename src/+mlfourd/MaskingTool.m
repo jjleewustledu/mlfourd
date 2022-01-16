@@ -124,12 +124,13 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             
             if p > 1
-                p = p/100;
+                p_ = p/100;
             end
-            img  = this.imagingFormat_.img;
-            bin  = img >= p*dipiqr(img(img > 0.01*dipmax(img)));
+            img = double(this.imagingFormat_.img);
+            img = img .* (img > 0.01*dipmax(img));
+            bin = img >= p_*dipmax(img);
             this.makeSimilar( ...
-                   'img', double(this.imagingFormat_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* bin, ...
                    'fileprefix', sprintf('%s_thrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.threshp(%g)', p));
             this.addLog('MaskingTool.threshp(%g)', p);
@@ -151,12 +152,13 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to upper-threshold current image (zero anything above the number)
             
             if p > 1
-                p = p/100;
+                p_ = p/100;
             end
-            img  = this.imagingFormat_.img;
-            bin  = img <= p*dipiqr(img(img > 0.01*dipmax(img)));
+            img = double(this.imagingFormat_.img);
+            img = img .* (img > 0.01*dipmax(img));
+            bin = img <= p_*dipmax(img);
             this.makeSimilar( ...
-                   'img', double(this.imagingFormat_.img) .* double(bin), ...
+                   'img', double(this.imagingFormat_.img) .* bin, ...
                    'fileprefix', sprintf('%s_uthrp%s', this.fileprefix, this.prct2str(p)), ...
                    'descrip',    sprintf('MaskedNIfTId.uthreshp(%g)', p));
             this.addLog('MaskingTool.uthreshp(%g)', p);
