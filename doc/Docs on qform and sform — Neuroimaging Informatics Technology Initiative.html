@@ -1,0 +1,1059 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en">
+
+
+<head>
+    <meta http-equiv="Content-Type"
+          content="text/html;charset=utf-8" />
+
+    <title>
+        Docs on qform and sform
+        &mdash;
+        Neuroimaging Informatics Technology Initiative
+    </title>
+
+    
+        
+            <base href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html" />
+        
+    
+
+    <meta name="generator" content="Plone - http://plone.org" />
+
+    <meta content="aclark" name="DC.creator" />
+    <meta content="2005-04-04 18:16:06"
+          name="DC.date.created" />
+    <meta content="2018-11-14 09:21:34"
+          name="DC.date.modified" />
+    <meta content="Document" name="DC.type" />
+    <meta content="text/html" name="DC.format" />
+
+    <!-- Basic crude style for Netscape4.x - This can be removed
+         if you don't want the special NS4 look - it will still work,
+         just be plain text instead. Column layout for Netscape4.x included -->
+    <link rel="Stylesheet" type="text/css"
+          href="https://nifti.nimh.nih.gov/ploneNS4.css" />
+
+    <!-- Column style sheet. -->
+    <style type="text/css" media="screen"><!-- @import url(https://nifti.nimh.nih.gov/ploneColumns.css); --></style>
+
+    <!-- Main style sheets for CSS2 capable browsers -->
+    <style type="text/css" media="screen"><!-- @import url(https://nifti.nimh.nih.gov/plone.css); --></style>
+
+    <!-- Old style sheet from Plone 1.0, remove tal:condition="nothing" if you need to use the old styles.
+         Will be removed in Plone 2.1. -->
+    
+
+    <!-- Alternate style sheets for the bigger/smaller text switcher -->
+    <link rel="alternate stylesheet" type="text/css"
+          media="screen"
+          href="https://nifti.nimh.nih.gov/ploneTextSmall.css"
+          title="Small Text" />
+    <link rel="alternate stylesheet" type="text/css"
+          media="screen"
+          href="https://nifti.nimh.nih.gov/ploneTextLarge.css"
+          title="Large Text" />
+
+    <!-- Style sheet used for printing -->
+    <link rel="stylesheet" type="text/css" media="print"
+          href="https://nifti.nimh.nih.gov/plonePrint.css" />
+
+    <!-- Style sheet used for presentations (Opera is the only browser supporting this at the moment) -->
+    <link rel="stylesheet" type="text/css"
+          media="projection"
+          href="https://nifti.nimh.nih.gov/plonePresentation.css" />
+
+    <!-- Internet Explorer CSS Fixes -->
+    <!--[if IE]>
+    <style type="text/css" media="all">@import url(https://nifti.nimh.nih.gov/ploneIEFixes.css);</style>
+    <![endif]-->
+
+
+    <!-- Custom style sheet if available -->
+    <style type="text/css" media="all"><!-- @import url(https://nifti.nimh.nih.gov/ploneCustom.css); --></style>
+
+    <link rel="shortcut icon"
+          href="https://nifti.nimh.nih.gov/niftifav.ico"
+          type="image/x-icon" />
+
+    <link rel="search"
+          href="https://nifti.nimh.nih.gov/search_form"
+          title="Search this site" />
+
+    
+
+    <link rel="up"
+          href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages"
+          title="Up one level" />
+
+    
+
+    <!-- Disable IE6 image toolbar -->
+    <meta http-equiv="imagetoolbar" content="no" />
+
+    
+      <!-- A slot where you can insert CSS in the header from a template -->
+        
+    
+
+    
+
+    <!-- min-width support for IE via Javascript, required for tableless -->
+    <!--[if IE]>
+    <script type="text/javascript"
+            src="https://nifti.nimh.nih.gov/plone_minwidth.js"></script>
+    <![endif]-->
+
+    
+    
+    
+    
+    
+    
+
+
+    
+      <!-- A slot where you can insert elements in the header from a template -->
+    
+
+    
+      <!-- A slot where you can insert javascript in the header from a template -->
+      <!-- We participate in the US government's analytics program. See the data at analytics.usa.gov. -->
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=HHS&amp;subagency=NIH"></script>
+
+        
+    
+
+    <!-- Common Plone ECMAScripts -->
+
+    <!-- Pull-down ECMAScript menu, only active if logged in -->
+    
+
+    <!-- Define dynamic server-side variables for javascripts in this one  -->
+    <script type="text/javascript"
+            src="https://nifti.nimh.nih.gov/plone_javascript_variables.js">
+    </script>
+
+    <script type="text/javascript"
+            src="https://nifti.nimh.nih.gov/plone_javascripts.js">
+    </script>
+
+    
+
+      <!-- Old JS from Plone 1.0, remove tal:condition="nothing" if you need to use the old pop-ups.
+           Will be removed in Plone 2.1 -->
+      
+
+    
+  </head>
+
+<body class="section-nifti-1">
+
+<div id="visual-portal-wrapper">
+
+<div id="portal-top">
+
+    <a href="#documentContent" class="hiddenStructure">Skip to content.</a>
+
+    <div id="portal-skinswitcher">
+  
+</div>
+
+    <ul id="portal-siteactions">
+
+    <li id="siteaction-small_text"><a
+    href="javascript:setActiveStyleSheet('Small Text', 1);"
+    title="Small Text">Small Text</a></li>
+    <li id="siteaction-normal_text"><a
+    href="javascript:setActiveStyleSheet('', 1);"
+    title="Normal Text">Normal Text</a></li>
+    <li id="siteaction-large_text"><a
+    href="javascript:setActiveStyleSheet('Large Text', 1);"
+    title="Large Text">Large Text</a></li>
+
+</ul>
+
+    <div id="portal-searchbox">
+    <form name="searchform"
+          action="https://nifti.nimh.nih.gov/search">
+        <label for="searchGadget" class="hiddenStructure">Search</label>
+        <input id="searchGadget" name="SearchableText"
+               type="text" size="20" alt="Search"
+               title="Search" accesskey="s"
+               class="visibility:visible" tabindex="30001" />
+        <input class="searchButton" type="submit"
+               value="Search" accesskey="s" tabindex="30002" />
+    </form>
+</div>
+
+    <h1 id="portal-logo">
+    <a href="https://nifti.nimh.nih.gov">Neuroimaging Informatics Technology Initiative</a>
+</h1>
+
+    
+    <h5 class="hiddenStructure">Sections</h5>
+
+    <ul id="portal-globalnav">
+        
+        <li id="portaltab-index_html" class="plain">
+            <a href="https://nifti.nimh.nih.gov"
+               accesskey="t">Home</a>
+        </li>
+        
+        
+        <li id="portaltab-background" class="plain">
+            <a href="https://nifti.nimh.nih.gov/background"
+               accesskey="t">Background</a>
+        </li>
+        
+        
+        <li id="portaltab-nifti-1" class="selected">
+            <a href="https://nifti.nimh.nih.gov/nifti-1"
+               accesskey="t">NIfTI-1 Data Format</a>
+        </li>
+        
+        
+        <li id="portaltab-board" class="plain">
+            <a href="https://nifti.nimh.nih.gov/board"
+               accesskey="t">NIfTI Message Board</a>
+        </li>
+        
+        
+        <li id="portaltab-dfwg" class="plain">
+            <a href="https://nifti.nimh.nih.gov/dfwg"
+               accesskey="t">DFWG</a>
+        </li>
+        
+        
+        <li id="portaltab-internal" class="plain">
+            <a href="https://nifti.nimh.nih.gov/dfwg/internal"
+               accesskey="t">Internal</a>
+        </li>
+        
+        
+        <li id="portaltab-sitemap" class="plain">
+            <a href="https://nifti.nimh.nih.gov/sitemap"
+               accesskey="t">SiteMap</a>
+        </li>
+        
+    </ul>
+
+
+
+    
+
+<h5 class="hiddenStructure">Personal tools</h5>
+
+<ul id="portal-personaltools">
+    
+
+    <li class="portalNotLoggedIn">
+              DFWG Members
+    </li>
+
+       
+    
+        <li>
+            <a href="https://nifti.nimh.nih.gov/login_form"
+               accesskey="u">
+               Log in
+            </a>
+        </li>
+    
+
+</ul>
+
+
+    <div id="portal-breadcrumbs">
+
+    You are here:
+    
+            <a href="https://nifti.nimh.nih.gov/">Home</a>
+            <span class="breadcrumbSeparator">&raquo;</span>
+    
+    
+    <span>
+        
+            <a href="https://nifti.nimh.nih.gov/nifti-1/"
+               accesskey="accesskeys-breadcrumbs">NIfTI-1 Data Format</a>
+            <span class="breadcrumbSeparator"> &raquo; </span>
+            
+         
+    </span>
+    <span>
+        
+            <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/"
+               accesskey="accesskeys-breadcrumbs">Documentation</a>
+            <span class="breadcrumbSeparator"> &raquo; </span>
+            
+         
+    </span>
+    <span>
+        
+            <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/"
+               accesskey="accesskeys-breadcrumbs">NIfTI-1 Fields</a>
+            <span class="breadcrumbSeparator"> &raquo; </span>
+            
+         
+    </span>
+    <span>
+        
+            <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/"
+               accesskey="accesskeys-breadcrumbs">nifti1fields_pages</a>
+            <span class="breadcrumbSeparator"> &raquo; </span>
+            
+         
+    </span>
+    <span>
+        
+            
+            
+            <span>Docs on qform and sform</span>
+         
+    </span>
+</div>
+</div>
+
+<div class="visualClear"></div>
+
+<!-- The wrapper div. It contains the three columns. -->
+<div id="portal-columns" class="visualColumnHideTwo">
+
+    <!-- start of the main and left columns -->
+    <div id="visual-column-wrapper">
+
+        <!-- start of main content block -->
+        <div id="portal-column-content">
+
+            <div id="content" class="">
+
+                
+
+                <div class="documentContent" id="region-content">
+
+                    <a name="documentContent"></a>
+
+                    
+
+                    
+
+                    
+    
+        <h1 class="documentFirstHeading">Docs on qform and sform</h1>
+    
+        <div class="documentActions">
+
+    <h5 class="hiddenStructure">Document Actions</h5>
+
+    <ul>
+    
+        <li>
+            <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html/sendto_form">
+            
+                <img src="https://nifti.nimh.nih.gov/mail_icon.gif"
+                     alt="Send this page to somebody"
+                     title="Send this page to somebody"
+                     height="16" width="16" />
+            </a>
+        </li>
+    
+    
+        <li>
+            <a href="javascript:this.print();">
+            
+                <img src="https://nifti.nimh.nih.gov/print_icon.gif"
+                     alt="Print this page"
+                     title="Print this page" height="16"
+                     width="16" />
+            </a>
+        </li>
+    
+
+    </ul>
+
+    
+
+</div>
+    
+        <div class="documentDescription"></div>
+    
+        
+    
+        <div class="plain">
+            <p></p><p><title> </title></p>
+<p></p>
+<p></p>
+<p></p><h2>qform, sform</h2>
+<p></p><ul>
+<p></p><li>Links to FAQ questions
+        <ul>
+        <li><a href="https://nifti.nimh.nih.gov/nifti-1/documentation/faq#Q17">Q17. What alignment information is stored in the NIfTI-1 header?</a>
+        </li></ul>
+</li>
+<p></p><p>
+</p>
+<li><a href="qsform_brief_usage">Recommended usage for qforms and sforms in applications</a>
+<li><a href="figqformusage">Illustration about the qform field</a>
+</li>
+<p></p><p>
+</p><li>Links to Bboard questions
+</li>
+<p></p><p>
+</p><li>See also
+        <ul>
+        <li><a href="quatern.html">quatern</a>  <a href="srow.html">srow</a>
+        </li>
+        </ul>
+</li>
+</ul>
+<p></p><p>
+</p><hr>
+<h3>nifti1.h header documentation</h3>
+<pre><p>/<i>---------------------------------------------------------------------------</i>/<br>/* 3D IMAGE (VOLUME) ORIENTATION AND LOCATION IN SPACE:<br>   ---------------------------------------------------<br>   There are 3 different methods by which continuous coordinates can<br>   attached to voxels.  The discussion below emphasizes 3D volumes, and<br>   the continuous coordinates are referred to as (x,y,z).  The voxel<br>   index coordinates (i.e., the array indexes) are referred to as (i,j,k),<br>   with valid ranges:<br>     i = 0 .. dim<a href="#ref1"></a><a href="#ref1">[1]</a>-1<br>     j = 0 .. dim<a href="#ref2"></a><a href="#ref2">[2]</a>-1  (if dim<a href="#ref0"></a><a href="#ref0">[0]</a> &gt;= 2)<br>     k = 0 .. dim<a href="#ref3"></a><a href="#ref3">[3]</a>-1  (if dim<a href="#ref0"></a><a href="#ref0">[0]</a> &gt;= 3)<br>   The (x,y,z) coordinates refer to the CENTER of a voxel.  In methods<br>   2 and 3, the (x,y,z) axes refer to a subject-based coordinate system,<br>   with<br>     +x = Right  +y = Anterior  +z = Superior.<br>   This is a right-handed coordinate system.  However, the exact direction<br>   these axes point with respect to the subject depends on qform_code<br>   (Method 2) and sform_code (Method 3).<br></p><ol>
+<li>B.: The i index varies most rapidly, j index next, k index slowest.<br>    Thus, voxel (i,j,k) is stored starting at location<br>      (i + j*dim<a href="#ref1"></a><a href="#ref1">[1]</a> + k*dim<a href="#ref1"></a><a href="#ref1">[1]</a>*dim<a href="#ref2"></a><a href="#ref2">[2]</a>) * (bitpix/8)<br>    into the dataset array.</li>
+<li>B.: The ANALYZE 7.5 coordinate system is<br>      +x = Left  +y = Anterior  +z = Superior<br>    which is a left-handed coordinate system.  This backwardness is<br>    too difficult to tolerate, so this NIFTI-1 standard specifies the<br>    coordinate order which is most common in functional neuroimaging.</li>
+<li>B.: The 3 methods below all give the locations of the voxel centers<br>    in the (x,y,z) coordinate system.  In many cases, programs will wish<br>    to display image data on some other grid.  In such a case, the program<br>    will need to convert its desired (x,y,z) values into (i,j,k) values<br>    in order to extract (or interpolate) the image data.  This operation<br>    would be done with the inverse transformation to those described below.</li>
+<li>B.: Method 2 uses a factor <code>qfac</code> which is either -1 or 1; qfac is<br>    stored in the otherwise unused pixdim<a href="#ref0"></a><a href="#ref0">[0]</a>.  If pixdim<a href="#ref0"></a><a href="#ref0">[0]</a>=0.0 (which<br>    should not occur), we take qfac=1.  Of course, pixdim<a href="#ref0"></a><a href="#ref0">[0]</a> is only used<br>    when reading a NIFTI-1 header, not when reading an ANALYZE 7.5 header.</li>
+<li>B.: The units of (x,y,z) can be specified using the xyzt_units field.</li>
+<p></p></ol>
+<p>   METHOD 1 (the "old" way, used only when qform_code = 0):<br>   -------------------------------------------------------<br>   The coordinate mapping from (i,j,k) to (x,y,z) is the ANALYZE<br>   7.5 way.  This is a simple scaling relationship:</p><p>     x = pixdim<a href="#ref1"></a><a href="#ref1">[1]</a> * i<br>     y = pixdim<a href="#ref2"></a><a href="#ref2">[2]</a> * j<br>     z = pixdim<a href="#ref3"></a><a href="#ref3">[3]</a> * k</p>
+<p></p><p>   No particular spatial orientation is attached to these (x,y,z)<br>   coordinates.  (NIFTI-1 does not have the ANALYZE 7.5 orient field,<br>   which is not general and is often not set properly.)  This method<br>   is not recommended, and is present mainly for compatibility with<br>   ANALYZE 7.5 files.</p>
+<p>   METHOD 2 (used when qform_code &gt; 0, which should be the "normal" case):<br>   ---------------------------------------------------------------------<br>   The (x,y,z) coordinates are given by the pixdim[] scales, a rotation<br>   matrix, and a shift.  This method is intended to represent<br>   "scanner-anatomical" coordinates, which are often embedded in the<br>   image header (e.g., DICOM fields (0020,0032), (0020,0037), (0028,0030),<br>   and (0018,0050)), and represent the nominal orientation and location of<br>   the data.  This method can also be used to represent "aligned"<br>   coordinates, which would typically result from some post-acquisition<br>   alignment of the volume to a standard orientation (e.g., the same<br>   subject on another day, or a rigid rotation to true anatomical<br>   orientation from the tilted position of the subject in the scanner).<br>   The formula for (x,y,z) in terms of header parameters and (i,j,k) is:</p><p>     [ x ]   [ R11 R12 R13 ] [        pixdim<a href="#ref1"></a><a href="#ref1">[1]</a> * i ]   [ qoffset_x ]<br>     [ y ] = [ R21 R22 R23 ] [        pixdim<a href="#ref2"></a><a href="#ref2">[2]</a> <i> j ] + [ qoffset_y ]<br>     [ z ]   [ R31 R32 R33 ] [ qfac </i> pixdim<a href="#ref3"></a><a href="#ref3">[3]</a> * k ]   [ qoffset_z ]</p>
+<p></p><p>   The qoffset_* shifts are in the NIFTI-1 header.  Note that the center<br>   of the (i,j,k)=(0,0,0) voxel (first value in the dataset array) is<br>   just (x,y,z)=(qoffset_x,qoffset_y,qoffset_z).</p>
+<p>   The rotation matrix R is calculated from the quatern_* parameters.<br>   This calculation is described below.</p>
+<p>   The scaling factor qfac is either 1 or -1.  The rotation matrix R<br>   defined by the quaternion parameters is "proper" (has determinant 1).<br>   This may not fit the needs of the data; for example, if the image<br>   grid is<br>     i increases from Left-to-Right<br>     j increases from Anterior-to-Posterior<br>     k increases from Inferior-to-Superior<br>   Then (i,j,k) is a left-handed triple.  In this example, if qfac=1,<br>   the R matrix would have to be</p><p>     [  1   0   0 ]<br>     [  0  -1   0 ]  which is "improper" (determinant = -1).<br>     [  0   0   1 ]</p>
+<p></p><h3>   If we set qfac=-1, then the R matrix would be</h3>
+<p>     [  1   0   0 ]<br>     [  0  -1   0 ]  which is proper.<br>     [  0   0  -1 ]</p>
+<p>   This R matrix is represented by quaternion <a href="#refa,b,c,d"></a><a href="#refa,b,c,d">[a,b,c,d]</a> = <a href="#ref0,1,0,0"></a><a href="#ref0,1,0,0">[0,1,0,0]</a>
+   (which encodes a 180 degree rotation about the x-axis).</p>
+<p>   METHOD 3 (used when sform_code &gt; 0):<br>   -----------------------------------<br>   The (x,y,z) coordinates are given by a general affine transformation<br>   of the (i,j,k) indexes:</p><p>     x = srow_x<a href="#ref0"></a><a href="#ref0">[0]</a> * i + srow_x<a href="#ref1"></a><a href="#ref1">[1]</a> * j + srow_x<a href="#ref2"></a><a href="#ref2">[2]</a> * k + srow_x<a href="#ref3"></a><a href="#ref3">[3]</a>
+     y = srow_y<a href="#ref0"></a><a href="#ref0">[0]</a> * i + srow_y<a href="#ref1"></a><a href="#ref1">[1]</a> * j + srow_y<a href="#ref2"></a><a href="#ref2">[2]</a> * k + srow_y<a href="#ref3"></a><a href="#ref3">[3]</a>
+     z = srow_z<a href="#ref0"></a><a href="#ref0">[0]</a> * i + srow_z<a href="#ref1"></a><a href="#ref1">[1]</a> * j + srow_z<a href="#ref2"></a><a href="#ref2">[2]</a> * k + srow_z<a href="#ref3"></a><a href="#ref3">[3]</a></p>
+<p></p><p>   The srow_* vectors are in the NIFTI_1 header.  Note that no use is<br>   made of pixdim[] in this method.</p>
+<p>   WHY 3 METHODS?<br>   --------------<br>   Method 1 is provided only for backwards compatibility.  The intention<br>   is that Method 2 (qform_code &gt; 0) represents the nominal voxel locations<br>   as reported by the scanner, or as rotated to some fiducial orientation and<br>   location.  Method 3, if present (sform_code &gt; 0), is to be used to give<br>   the location of the voxels in some standard space.  The sform_code<br>   indicates which standard space is present.  Both methods 2 and 3 can be<br>   present, and be useful in different contexts (method 2 for displaying the<br>   data on its original grid; method 3 for displaying it on a standard grid).</p>
+<p>   In this scheme, a dataset would originally be set up so that the<br>   Method 2 coordinates represent what the scanner reported.  Later,<br>   a registration to some standard space can be computed and inserted<br>   in the header.  Image display software can use either transform,<br>   depending on its purposes and needs.</p>
+<p>   In Method 2, the origin of coordinates would generally be whatever<br>   the scanner origin is; for example, in MRI, (0,0,0) is the center<br>   of the gradient coil.</p>
+<p>   In Method 3, the origin of coordinates would depend on the value<br>   of sform_code; for example, for the Talairach coordinate system,<br>   (0,0,0) corresponds to the Anterior Commissure.</p>
+<p></p><p></p></pre>
+<p><br>
+</p><h3>DEFINED CODES</h3>
+<pre><p>   /* <a href="#refqs"></a><a href="#refqs">[qs]</a>form_code value:  <i>/      /</i> x,y,z coordinate system refers to:    <i>/<br>   /</i>-----------------------<i>/      /</i>---------------------------------------*/</p>
+<p></p><p>#define NIFTI_XFORM_UNKNOWN      0 /<i>! Arbitrary coordinates (Method 1). </i>/</p>
+<p>#define NIFTI_XFORM_SCANNER_ANAT 1 /<i>! Scanner-based anatomical coordinates </i>/</p>
+<p>#define NIFTI_XFORM_ALIGNED_ANAT 2 /<i>! Coordinates aligned to another file's, or to anatomical "truth".            </i>/</p>
+<p>#define NIFTI_XFORM_TALAIRACH    3 /<i>! Coordinates aligned to Talairach-Tournoux Atlas; (0,0,0)=AC, etc. </i>/</p>
+<p>#define NIFTI_XFORM_MNI_152      4 /<i>! MNI 152 normalized coordinates. </i>/</p>
+<p></p></pre>
+        </div>
+    
+        <div class="documentByLine">
+
+  
+
+  <span>
+    Created by
+  </span>
+
+  <a href="https://nifti.nimh.nih.gov/Members/aclark">Alex Clark</a>
+
+  
+
+  <br />
+
+  
+
+  
+
+  <span>
+    Last modified
+  </span>
+  2018-11-14 09:21
+
+  
+
+</div>
+    
+
+
+                    
+                        <div class="discussion">
+
+    
+
+</div>
+                    
+
+                </div>
+
+            </div>
+
+        </div>
+        <!-- end of main content block -->
+
+        <!-- start of the left (by default at least) column -->
+        <div id="portal-column-one">
+            <div class="visualPadding">
+                
+                    
+
+    
+
+        
+            
+    <div class="portlet" id="portlet-navigation-tree">
+    <div>
+        <h5>Navigation</h5>
+        <div class="portletBody">
+            <div class="portletContent odd">
+                
+                
+                    
+                        
+
+                        <a href="https://nifti.nimh.nih.gov/"
+                           accesskey="n"
+                           class="navItem navRootItem"
+                           title="Neuroimaging Informatics Technology Initiative">
+                            <img
+    src="https://nifti.nimh.nih.gov/site_icon.gif"
+    height="16" width="16" alt="" class="navIconRoot"
+    title="Plone Site" />
+                            <span class="navItemText">
+                                  Home
+                            </span>
+                        </a>
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/background/"
+                           accesskey="n"
+                           class="navItem navLevel1"
+                           title="Background information about NIfTI">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">Background</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/"
+                           accesskey="n"
+                           class="navItem navLevel1"
+                           title="NIfTI-1 is adapted from the widely used ANALYZETM 7.5 file format. The hope is that older non-NIfTI-aware software that uses the ANALYZE 7.5 format will still be compatible with NIfTI-1. NIfTI-1 uses the &quot;empty space&quot; in the ANALYZE 7.5 header to add several new features. These features are summarized in the Sep 2003 presentation and OHBM abstract (these are linked under More Documentation).">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">NIfTI-1 Data Format</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/linkto_faq/link_view"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title=" Brought to you by the members of the Data Format Working Group">
+                            <img
+    src="https://nifti.nimh.nih.gov/link_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Link" />
+                            <span class="navItemText">NIfTI-1 FAQ</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/linkto_poster/link_view"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title=" And now (June 2004) the poster for the HBM meeting!">
+                            <img
+    src="https://nifti.nimh.nih.gov/link_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Link" />
+                            <span class="navItemText">NIfTI-1 Poster</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/AFNIextension1/document_view"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title="The AFNI extension (ecode=4) to the NIfTI-1.1 header is described.">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">AFNI extension in NIfTI-1.1</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/NIfTI1Format/document_view"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title="This is collection of texts about the NIfTI-1 format, mostly from the nifti1.h header file by R.W. Cox and about qform and sform by M. Jenkinson.  ">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">NIfTI-1 documentation</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/document.2013-12-18.7024504148/document_view"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">document.2013-12-18.7024504148</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/"
+                           accesskey="n"
+                           class="navItem navLevel2"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">Documentation</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1diagrams.pdf/file_view"
+                           accesskey="n"
+                           class="navItem navLevel3"
+                           title="Diagrams of the NIfTI-1 file structure (Author: Hester Breman)">
+                            <img
+    src="https://nifti.nimh.nih.gov/file_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="File" />
+                            <span class="navItemText">NIfTI-1 Format Diagrams [PDF]</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/"
+                           accesskey="n"
+                           class="navItem navLevel3"
+                           title="The field-by-field documentation on these pages was taken directly from the official nifti-1 header file documentation written by Bob Cox, SSCC, NIMH. These pages provide a &quot;clickable&quot; index to that information, and some links to additional information.">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">NIfTI-1 Fields</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/"
+                           accesskey="n"
+                           class="navItem navLevel4"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">nifti1fields_pages</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/sizeof_hdr.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">sizeof_hdr.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/dim.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">dim.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/intent_p123.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">intent_p123.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/intent_code.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">intent_code.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/bitpix.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">bitpix.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/intent_name.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">intent_name.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/pixdim.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">pixdim.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5 currentNavItem"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">Docs on qform and sform</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/UNUSED.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">UNUSED.html</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/group__NIFTI1__INTENT__CODES.html/document_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/document_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Document" />
+                            <span class="navItemText">NIFTI1_INTENT_CODES</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/doxygen.gif/image_view"
+                           accesskey="n"
+                           class="navItem navLevel5"
+                           title="">
+                            <img
+    src="https://nifti.nimh.nih.gov/image_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Image" />
+                            <span class="navItemText">doxygen.gif</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/board/"
+                           accesskey="n"
+                           class="navItem navLevel1"
+                           title="The NIfTI Message board (for discussing the NIfTI-1 Data Format and related issues)">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">NIfTI Message Board</span>
+                        </a>
+
+                        
+                    
+                
+                
+                    
+                        <a href="https://nifti.nimh.nih.gov/dfwg/"
+                           accesskey="n"
+                           class="navItem navLevel1"
+                           title="Data Format Working Group">
+                            <img
+    src="https://nifti.nimh.nih.gov/folder_icon.gif"
+    height="16" width="16" alt="" class="navIcon"
+    title="Folder" />
+                            <span class="navItemText">Data Format Working Group</span>
+                        </a>
+
+                        
+                    
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+        
+
+        
+    
+    
+
+        
+            
+        
+
+        
+    
+    
+
+        
+            
+        
+
+        
+    
+    
+
+        
+            
+        
+
+        
+    
+
+                
+                &nbsp;
+            </div>
+        </div>
+        <!-- end of the left (by default at least) column -->
+
+    </div>
+    <!-- end of the main and left columns -->
+
+    <!-- start of right (by default at least) column -->
+    
+    <!-- end of the right (by default at least) column -->
+
+    <div class="visualClear">&nbsp;</div>
+
+</div>
+<!-- end column wrapper -->
+
+<hr class="netscape4" />
+
+<div id="portal-footer">
+
+
+
+<span><a href="http://www.nih.gov"><img src="/nihlogo.gif" border="0" alt="National Institutes of Health Logo" title="National Institutes of Health" /></a> &nbsp; &nbsp; &nbsp; &nbsp;
+<a href="http://www.nimh.nih.gov"><img src="/nimhlogo.gif" border="0" alt="National Institute of Mental Health Logo" title="National Institute of Mental Health" /></a> &nbsp; &nbsp; &nbsp;
+&nbsp; <a href="http://www.dhhs.gov"><img src="/dhhslogo.gif" border="0" alt="Department of Health and Human Services Logo" title="Department of Health and Human Services" /></a> &nbsp; &nbsp;
+&nbsp; &nbsp; 
+<a href="http://www.ninds.nih.gov"><img src="/nindslogo.gif" border="0" alt="NINDS Logo" title="FirstGov.gov" /></a> &nbsp; &nbsp; &nbsp;
+&nbsp;
+<a href="http://www.nibib1.nih.gov"><img src="/nibib_sm.gif" border="0" alt="NIBIB Logo" title="National Institute of Biomedical Imaging and Bioengineering" /></a> &nbsp; &nbsp; &nbsp;
+&nbsp;</span>
+
+
+
+</div>
+
+<div id="portal-colophon">
+      <!--
+
+	Please keep the Plone Powered button (or a textual link to us) if you use
+	Plone on your site. It's a nice token of gratitude, and we appreciate your
+	help in promoting the Plone name.
+
+	Plone is powered by the combined forces of Zope and CMF, two absolutely
+	great systems made by Zope Corporation (http://zope.com) and they in turn
+	are based on the best programming language in the world - Python
+	(http://www.python.org). We owe these guys a lot, thanks for making Plone
+	possible!
+
+      -->
+
+      <a href="http://plone.org">
+	<img src="https://nifti.nimh.nih.gov/plone_powered.gif"
+      height="15" width="80" alt="Powered by Plone"
+      title="This Plone site was built using the Plone Content Management System. Click for more information." />
+      </a>
+
+      
+
+      <p class="discreet">
+	This site conforms to the following standards:
+      </p>
+
+      <ul>
+	<li>
+	  <a href="http://www.section508.gov">
+	    <img src="https://nifti.nimh.nih.gov/colophon_sec508.gif"
+          height="15" width="80" alt="Section 508"
+          title="This Plone site conforms to the US Government Section 508 Accessibility Guidelines." />
+	  </a>
+	</li>
+	<li>
+	  <a href="http://www.w3.org/WAI/WCAG1AA-Conformance"
+      title="Explanation of WCAG Conformance">
+	    <img src="https://nifti.nimh.nih.gov/colophon_wai-aa.gif"
+          height="15" width="80" alt="WCAG"
+          title="This Plone site conforms to the W3C-WAI Web Content Accessibility Guidelines." />
+	  </a>
+	</li>
+	<li>
+	  <a href="http://validator.w3.org/check/referer">
+	    <img src="https://nifti.nimh.nih.gov/colophon_xhtml.png"
+          height="15" width="80" alt="Valid XHTML"
+          title="This Plone site is valid XHTML." />
+	  </a>
+	</li>
+	<li>
+	  <a href="http://jigsaw.w3.org/css-validator/check/referer">
+	    <img src="https://nifti.nimh.nih.gov/colophon_css.png"
+          height="15" width="80" alt="Valid CSS"
+          title="This Plone site was built with valid CSS." />
+	  </a>
+	</li>
+	<li>
+	  <a href="http://plone.org/browsersupport">
+	    <img src="https://nifti.nimh.nih.gov/colophon_anybrowser.png"
+          height="15" width="80" alt="Usable in any browser"
+          title="This Plone site is usable in any web browser." />
+	  </a>
+	</li>
+      </ul>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+

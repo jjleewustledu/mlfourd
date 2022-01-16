@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/favicon.20220103150815220.ico" type="image/x-icon">
+<link rel='canonical' href='https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image'><meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.20220103150815220.js"></script><link rel="stylesheet" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common.min.20220103150815220.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/matlabcentral.min.20220103150815220.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/fileexchange.min.20220103150815220.css" type="text/css">
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-400.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-500.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-700.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-400.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-500.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-700.20220103150815220.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/mathworks.20220103150815220.woff" rel="preload" as="font" type="font/woff" crossorigin>
+<script id="analyticsDigitalData">digitalData = {
+    'pageInstanceID' : 'Tools for NIfTI and ANALYZE image - File Exchange - MATLAB Central',
+    'page' : {
+        'pageInfo' : {
+            'pageID' : '/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image',
+            'destinationURL' : 'https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image'
+        },
+        'category' : {
+            'primaryCategory' : 'matlabcentral',
+            'subCategory1' : 'matlabcentral/fileexchange',
+            'subCategory2' : '',
+        },
+        'attributes' : {"descriptonCode":"FX_8797","category":["Import, Export, and Conversion","MRI","Get Started with Image Processing Toolbox","DICOM Format"]}
+    },
+    'product' : [{ 'productInfo' : {} }],
+    'component' : [],
+    'events' : [],
+    'user': []
+};
+</script><script>(function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"[class*='personalization-container']:not([id^='web-application']) {opacity: 0 !important}",2E3);</script><script src="//assets.adobedtm.com/d0cc0600946eb3957f703b9fe43c3590597a8c2c/satelliteLib-e8d23c2e444abadc572df06537e2def59c01db09.js" async></script><title>Tools for NIfTI and ANALYZE image - File Exchange - MATLAB Central</title>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="ZqSkfQfQhRUojNZ9QHhTVwMDQQw6rrzBt9xMUY0r84sz4/q3sbpw7OWA01GGVAlO5ENZ2IBlv1DbxlPZk+ppjg==" />
+<script src="/matlabcentral/fileexchange/assets/application-fb93970bc27536a5145e889fe730f0933c04d8c908804effdb158973200ad126.js"></script>
+<link rel="stylesheet" media="screen" href="/matlabcentral/fileexchange/assets/application-c6136d68b4c151454abd52ce559a20b44713eac5b87ae2d346c7542eed8c87f4.css" />
+<link rel="stylesheet" media="screen" href="/matlabcentral/fileexchange/assets/ui/application-49e27dc5b88eca64bff2998bff91de5a559cd1814e2900d8468a59c37c8c0792.css" />
+<link rel="stylesheet" type="text/css" href="/matlabcentral/static/rtc/scripts/mlc-rtc-1.0.5.css">
+<script src="/matlabcentral/static/rtc/scripts/code-options-1.2.0.js" data-code-options-app="fileexchange" data-locale="en-US"></script>
+<script src="https://www.mathworks.com/matlabcentral/jscript/profile_card_v1.2.js" data-app-name="fileexchange"></script>
+<script src="/matlabcentral/discussions/component.v2.js" crossorigin="anonymous"></script>
+<meta property="og:title" content="Tools for NIfTI and ANALYZE image" /><meta property="og:type" content="website" /><meta property="og:url" content="https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image" /><meta property="og:image" content="https://www.mathworks.com/responsive_image/160/120/0/0/0/cache/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/28/screenshot.jpg" /><meta property="og:description" content="Load, save, make, reslice, view (and edit) both NIfTI and ANALYZE data on any platform" />
+
+                              <script>!function(a){var e="https://s.go-mpulse.net/boomerang/",t="addEventListener";if("False"=="True")a.BOOMR_config=a.BOOMR_config||{},a.BOOMR_config.PageParams=a.BOOMR_config.PageParams||{},a.BOOMR_config.PageParams.pci=!0,e="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="LERXA-6VNES-W6PXS-U8C7F-BXSZH",function(){function n(e){a.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!a.BOOMR||!a.BOOMR.version&&!a.BOOMR.snippetExecuted){a.BOOMR=a.BOOMR||{},a.BOOMR.snippetExecuted=!0;var i,_,o,r=document.createElement("iframe");if(a[t])a[t]("load",n,!1);else if(a.attachEvent)a.attachEvent("onload",n);r.src="javascript:void(0)",r.title="",r.role="presentation",(r.frameElement||r).style.cssText="width:0;height:0;border:0;display:none;",o=document.getElementsByTagName("script")[0],o.parentNode.insertBefore(r,o);try{_=r.contentWindow.document}catch(O){i=document.domain,r.src="javascript:var d=document.open();d.domain='"+i+"';void(0);",_=r.contentWindow.document}_.open()._l=function(){var a=this.createElement("script");if(i)this.domain=i;a.id="boomr-if-as",a.src=e+"LERXA-6VNES-W6PXS-U8C7F-BXSZH",BOOMR_lstart=(new Date).getTime(),this.body.appendChild(a)},_.write("<bo"+'dy onload="document._l();">'),_.close()}}(),"".length>0)if(a&&"performance"in a&&a.performance&&"function"==typeof a.performance.setResourceTimingBufferSize)a.performance.setResourceTimingBufferSize();!function(){if(BOOMR=a.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var e=""=="true"?1:0,t="",n="qd6kyffykwq4oypbyiiq-f-f256c954c-clientnsv4-s.akamaihd.net",i="false"=="true"?2:1,_={"ak.v":"32","ak.cp":"31027","ak.ai":parseInt("195948",10),"ak.ol":"0","ak.cr":35,"ak.ipv":4,"ak.proto":"h2","ak.rid":"1425d8eb","ak.r":39735,"ak.a2":e,"ak.m":"x","ak.n":"essl","ak.bpcip":"128.252.172.0","ak.cport":63790,"ak.gh":"104.89.171.14","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.csrc":"-","ak.acc":"","ak.t":"1642185233","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==bv+t61/PAILD9JpRxWhtg+j3mulaxnWeuzPuzcTqiuJ5RllmeQwak9yeGEJ2fNziNS1cMyK3ud1FD9JOHe7/UzPVfCQOMWQJ9ZJB6v3hkbknZtD8azfMvBlAdW1N0RxutdBrWrcrxlZJmu5tb8b2Bmfdn3tuQi0YWW9Ga3YfsCxW67ky8lkTBtg1pb52YqaZCrvhJgXKqgHe7kNDV4Hsp5Q7WeXE0+jwka5C3M60/Y4lCJasN35yLJISFwFtsVgHLZIff0MNA9VAXQPbNkrvyw3RxdwGbZoN5HXMDk6bUQ420H/yF0RQeTsNcoieMos6mA+yjvYnxOkTkqUUcNY7q1DiKZf3JrdedABJ2DcwM7vkWkLCEtL2db4201mzaFjIR5OzsFsoyKNHVomHUsT1tjT1TCLFaplmdjHkoCL4Nyk=","ak.pv":"154","ak.dpoabenc":"","ak.tf":i};if(""!==t)_["ak.ruds"]=t;var o={i:!1,av:function(e){var t="http.initiator";if(e&&(!e[t]||"spa_hard"===e[t]))_["ak.feo"]=void 0!==a.aFeoApplied?1:0,BOOMR.addVar(_)},rv:function(){var a=["ak.bpcip","ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(a)}};BOOMR.plugins.AK={akVars:_,akDNSPreFetchDomain:n,init:function(){if(!o.i){var a=BOOMR.subscribe;a("before_beacon",o.av,null,null),a("onbeacon",o.rv,null,null),o.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+<body class="
+		   
+		   templateservice
+		  
+		  
+		  " data-label-chat-online="Chat with Support" data-label-chat-offline="Chat is Offline" data-label-chatbot="Start MathWorks Bot" data-image-chatbot="/content/dam/mathworks/mathworks-dot-com/images/responsive/logos/chatbot.png">
+
+	<a class="skip_link sr-only" href="#content_container" tabindex="1">Skip to content</a>
+
+	
+<!-- Mobile TopNav: Start -->
+<div class="header visible-xs visible-sm" id="header_mobile">
+	<nav class="navbar navbar-default" role="navigation"><div class="navbar-header">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-xs-3">
+						<button type="button" class="navbar-toggle topnav_toggle" tabindex="1" data-toggle="collapse" data-target="#topnav_collapse">
+							<span class="sr-only">Toggle Main Navigation</span>
+							<span class="icon-menu"></span>
+						</button>
+					</div>
+					<div class="col-xs-6">
+						<div class="text-center">
+							<a href="/?s_tid=gn_logo" class="svg_link navbar-brand" tabindex="3">
+								<img src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/pic-header-mathworks-logo.20220103150815220.svg" class="mw_logo" alt="MathWorks - Mobile View"></a>
+						</div>
+					</div>
+					<div class="col-xs-3">
+						<div class="matrix_affordance_container_mobile" id="matrix_affordance_container_mobile"></div>
+					</div>
+				</div>
+			</div>
+			<div class="container-fluid">
+				<div class="row visible-xs visible-sm">
+					<div class="col-xs-12">
+						<div class="navbar-collapse collapse" id="topnav_collapse">
+							<div class="topNavigation topnavigation containsResourceName resourceClass-topnavigation">
+
+<ul class="nav navbar-nav" id="topnav">
+<li class="headernav_login" style="display: none;">
+	<a class="mwa-nav_login" tabindex="2"><span class="visible-xs visible-sm">Sign In <span class="sr-only">to Your MathWorks Account</span></span><span class="visible-lg visible-md"><span class="sr-only">Sign In to Your MathWorks Account</span></span></a>
+</li>
+<li class="headernav_logout dropdown" style="display: none;">
+	<a href="#" role="button" aria-haspopup="menu" aria-controls="mwa-nav" class="dropdown-toggle mwa_image_drop_down" data-toggle="dropdown" tabindex="2">
+		<span class="visible-xs visible-sm">
+			<span class="mobile_account_image">
+				<span class="sr-only">Access your MathWorks Account</span>
+			</span>
+			<span class="mobile_account_name" aria-hidden="true"></span>
+			<b class="caret"></b>
+		</span>
+	</a>
+	<ul role="menu" class="dropdown-menu" id="mwa-nav">
+<li class="mwa-nav_account"><a role="menuitem" class="mwa-account" tabindex="2">My Account</a></li>
+		<li class="mwa-nav_community"><a role="menuitem" class="mwa-community-profile" tabindex="2">My Community Profile</a></li>
+		<li class="mwa-nav_associate"><a role="menuitem" class="mwa-link-license" tabindex="2">Link License</a></li>
+		<li class="mwa-nav_logout">
+<a role="menuitem" class="mwa-logout" tabindex="2">Sign Out</a>
+		</li>
+	</ul>
+</li>
+
+	
+		<li class="topnav_products ">
+			<a href="/products.html?s_tid=gn_ps" tabindex="2">Products</a>
+		</li>
+	
+		<li class="topnav_solutions ">
+			<a href="/solutions.html?s_tid=gn_sol" tabindex="2">Solutions</a>
+		</li>
+	
+		<li class="topnav_academia ">
+			<a href="/academia.html?s_tid=gn_acad" tabindex="2">Academia</a>
+		</li>
+	
+		<li class="topnav_support ">
+			<a href="/support.html?s_tid=gn_supp" tabindex="2">Support</a>
+		</li>
+	
+		<li class="topnav_community ">
+			<a href="/matlabcentral/?s_tid=gn_mlc" tabindex="2">Community</a>
+		</li>
+	
+		<li class="topnav_events ">
+			<a href="/company/events.html?s_tid=gn_ev" tabindex="2">Events</a>
+		</li>
+	
+	
+		<li class="headernav_store">
+			<a href="/products/get-matlab.html?s_tid=gn_getml" tabindex="2">Get MATLAB</a>
+		</li>
+	
+</ul>
+</div>
+
+						</div>
+						<div class="navbar-collapse collapse" id="matrix_collapse">
+							<div class="matrix_menu_container_mobile" id="matrix_menu_container_mobile"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+</div>
+<!-- Mobile TopNav: End -->
+<!-- Desktop TopNav: Start -->
+<div class="header hidden-xs hidden-sm" id="header_desktop">
+	<nav class="navbar navbar-default" role="navigation"><div class="container-fluid">
+			<div class="row">
+				<div class="col-md-9">
+					<div class="navbar-header">
+						<div class="logo_container hidden-xs hidden-sm">
+							<a href="/?s_tid=gn_logo" class="svg_link pull-left" tabindex="1">
+								<img src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/pic-header-mathworks-logo.20220103150815220.svg" class="mw_logo" alt="MathWorks"></a>
+						</div>
+						<div class="navbar-collapse collapse hidden-xs hidden-sm">
+							
+							<div class="topNavigation topnavigation containsResourceName resourceClass-topnavigation">
+
+
+	<ul id="topnav" class="nav navbar-nav">
+<li class="topnav_products ">
+			<a href="/products.html?s_tid=gn_ps" tabindex="2">Products</a>
+		</li>
+	
+		<li class="topnav_solutions ">
+			<a href="/solutions.html?s_tid=gn_sol" tabindex="2">Solutions</a>
+		</li>
+	
+		<li class="topnav_academia ">
+			<a href="/academia.html?s_tid=gn_acad" tabindex="2">Academia</a>
+		</li>
+	
+		<li class="topnav_support ">
+			<a href="/support.html?s_tid=gn_supp" tabindex="2">Support</a>
+		</li>
+	
+		<li class="topnav_community ">
+			<a href="/matlabcentral/?s_tid=gn_mlc" tabindex="2">Community</a>
+		</li>
+	
+		<li class="topnav_events ">
+			<a href="/company/events.html?s_tid=gn_ev" tabindex="2">Events</a>
+		</li>
+	</ul>
+</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="headerNavigation headernavigation containsResourceName resourceClass-headernavigation">
+<div class="collapse navbar-collapse" id="headernav_collapse">
+	<ul class="nav navbar-nav navbar-right" id="headernav">
+<li class="headernav_store"><a href="/products/get-matlab.html?s_tid=gn_getml" class="btn btn_color_blue companion_btn btn-xs" tabindex="2">Get MATLAB</a></li>
+		
+		<li class="headernav_login" style="display: none;">
+	<a class="mwa-nav_login" tabindex="2"><span class="visible-xs visible-sm">Sign In <span class="sr-only">to Your MathWorks Account</span></span><span class="visible-lg visible-md"><span class="sr-only">Sign In to Your MathWorks Account</span></span></a>
+</li>
+<li class="headernav_logout dropdown" style="display: none;">
+	<a href="#" role="button" aria-haspopup="menu" aria-controls="mwa-nav" class="dropdown-toggle mwa_image_drop_down" data-toggle="dropdown" tabindex="2">
+		<span class="visible-xs visible-sm">
+			<span class="mobile_account_image">
+				<span class="sr-only">Access your MathWorks Account</span>
+			</span>
+			<span class="mobile_account_name" aria-hidden="true"></span>
+			<b class="caret"></b>
+		</span>
+	</a>
+	<ul role="menu" class="dropdown-menu" id="mwa-nav">
+<li class="mwa-nav_account"><a role="menuitem" class="mwa-account" tabindex="2">My Account</a></li>
+		<li class="mwa-nav_community"><a role="menuitem" class="mwa-community-profile" tabindex="2">My Community Profile</a></li>
+		<li class="mwa-nav_associate"><a role="menuitem" class="mwa-link-license" tabindex="2">Link License</a></li>
+		<li class="mwa-nav_logout">
+<a role="menuitem" class="mwa-logout" tabindex="2">Sign Out</a>
+		</li>
+	</ul>
+</li>
+
+		<li id="headernav_matrix" class="headernav_matrix">
+	</ul>
+</div>
+</div>
+
+				</div>
+			</div>
+		</div>
+	</nav>
+</div>
+<!-- Desktop TopNav: End -->
+
+	<div class="sticky_header_container includes_subnav">
+		<!-- Section Header: Start -->
+		<div class="section_header level_3">
+			<div class="container-fluid">
+				<div class="row" id="mobile_search_row">
+					<div class="col-sm-6 col-md-7" id="section_header_title">
+						<div>
+<div class="sectionHead sectionhead containsResourceName resourceClass-sectionhead">
+	<div class="section_header_content">
+		<div class="section_header_title"><p class="h1">
+				<a href="/matlabcentral/fileexchange/" class="add_cursor_pointer">File Exchange</a>
+				
+			</p></div>
+		
+			<button type="button" class="navbar-toggle collapsed subnav visible-xs visible-sm" data-toggle="collapse" data-target=".mobile_subnav_content" aria-label="Mobile Navigation"> <span class="icon-arrow-down icon_24"><span class="sr-only">Toggle Sub Navigation</span></span> </button>
+		
+	</div>
+</div>
+</div>
+					</div>
+					<div class="col-xs-12 col-sm-6 col-md-5" id="mobile_search">
+						<div>
+<div class="sectionHeadSearchBox sectionheadsearchbox containsResourceName resourceClass-sectionheadsearchbox">
+<div class="search_nested_content_container">
+	
+	<div id="search_scope_site" class="collapse in"><!-- Search File Exchange -->
+<div id="search_scope_fx" class="collapse in">
+  <form id="fx_search_form" name="mlcsearch_form" method="get" data-language="en" action="/matlabcentral/fileexchange">
+    
+    <div class="input-group tokenized_search_field">
+      <label class="sr-only">Search File Exchange</label>
+      <input type="search" class="form-control conjoined_search fileexchange-search" autocomplete="off" name="q" placeholder="Search File Exchange" id="fxsearch"  value="" onfocus="this.value = this.value;">
+      <div class="input-group-btn">
+        <button type="button" class="btn btn_search_adjacent dropdown-toggle" data-toggle="dropdown" tabindex="-1"><span class="caret"></span><span class="search_scope_label">File Exchange</span></button>
+        <ul class="dropdown-menu list-unstyled dropdown-menu-right" role="menu">
+          <li data-toggle="collapse" data-target="#search_scope_support" class="site_search_scope_trigger"><a href="#">Support</a></li>
+          <li data-toggle="collapse" data-target="#search_scope_sitewide"  class="site_search_scope_trigger"><a href="#">MathWorks</a></li>
+        </ul>
+        <script>
+        window.addEventListener('DOMContentLoaded', function() {
+          $(".support_search_scope_trigger, .site_search_scope_trigger").click(function() {
+            $("#search_scope_fx").removeClass("in");
+            $("#query").val($("#fxsearch").val());
+            $("#supportsearch").val($("#fxsearch").val());
+          });
+        });
+        </script>
+        <button type="submit" id="submitsearch" class="btn icon-search btn_search_adjacent btn_search icon_16" tabindex="-1"></button>
+      </div>
+    </div>
+  </form>
+</div>
+<!-- End Search File Exchange -->
+<!-- Support Search -->
+<div id="search_scope_support" class="collapse">
+      <form id="supportsearch_form" name="supportsearch_form" method="get" data-language="en" action="/support/search_results.html">
+        <div class="input-group tokenized_search_field">
+          <label class="sr-only">Search Support</label>
+          <input type="search" class="form-control conjoined_search" autocomplete="off" name="q" placeholder="Search Support" id="supportsearch">
+          <div class="input-group-btn">
+            <button type="button" class="btn btn_search_adjacent dropdown-toggle" data-toggle="dropdown" tabindex="-1"><span class="caret"></span><span class="search_scope_label">Support</span></button>
+            <ul class="dropdown-menu list-unstyled dropdown-menu-right" role="menu">
+              <li data-toggle="collapse" data-target="#search_scope_fx"  class="fileexchange_search_scope_trigger"><a href="#">File Exchange</a></li>
+              <li data-toggle="collapse" data-target="#search_scope_sitewide"  class="support_search_scope_trigger"><a href="#">MathWorks</a></li>
+            </ul>
+            <script>
+            window.addEventListener('DOMContentLoaded', function() {
+              $(".support_search_scope_trigger, .fileexchange_search_scope_trigger").click(function() {
+                $("#search_scope_support").removeClass("in");
+                $("#fxsearch").val($("#supportsearch").val());
+                $("#query").val($("#supportsearch").val());
+              });
+            });
+            </script>
+            <button type="submit" name="submitsearch" id="submitsearch" class="btn icon-search btn_search_adjacent btn_search icon_16" tabindex="-1"></button>
+          </div>
+        </div>
+      </form>
+    </div>
+<!-- End Support Search -->
+<!-- Search MathWorks.com -->
+<div id="search_scope_sitewide" class="collapse">
+ <form name="search" id="site_search" class="site_search" action="/search/site_search.html" method="get">
+   <div class="input-group">
+     <label class="sr-only">Search MathWorks.com</label>
+     <input type="hidden" name="c[]" value="entire_site">
+     <input type="search" name="q" id="query" class="form-control conjoined_search" placeholder="Search MathWorks.com" autocomplete="off" \="">
+     <div class="input-group-btn">
+       <button type="button" class="btn btn_search_adjacent dropdown-toggle" data-toggle="dropdown" tabindex="-1"><span class="caret"></span><span class="search_scope_label">MathWorks</span></button>
+       <ul class="dropdown-menu list-unstyled dropdown-menu-right" role="menu">
+         <li data-toggle="collapse" data-target="#search_scope_fx"  class="fileexchange_search_scope_trigger"><a href="#">File Exchange</a></li>
+         <li data-toggle="collapse" data-target="#search_scope_support" class="support_search_scope_trigger"><a href="#">Support</a></li>
+       </ul>
+       <script>
+       window.addEventListener('DOMContentLoaded', function() {
+         $(".support_search_scope_trigger, .fileexchange_search_scope_trigger").click(function() {
+           $("#search_scope_sitewide").removeClass("in");
+           $("#fxsearch").val($("#query").val());
+           $("#supportsearch").val($("#query").val());
+         });
+       });
+       </script>
+       <button type="submit" id="searchbutton" class="btn icon-search btn_search_adjacent btn_search icon_16" tabindex="-1"></button>
+     </div>
+   </div>
+ </form>
+</div>
+<!-- End Search --></div>
+	
+		<script>
+			$(".search_scope_trigger").click(function handlerSearch(event) {
+				var target1 = event.target.parentNode.attributes.getNamedItem("data-groupid").nodeValue;
+				$('#' + target1).removeClass("in");
+			});
+		</script>
+</div>
+<button class="btn icon-remove btn_search pull-right icon_32 visible-xs" data-toggle="collapse" data-target="#mobile_search" aria-expanded="false" aria-controls="mobile_search"><span class="sr-only">Close Mobile Search</span>
+</button>
+
+</div>
+</div>
+					</div>
+					<div class="visible-xs" id="search_actuator">
+						<button class="btn icon-search btn_search pull-right icon_16 containsResourceName resourceClass-button" data-toggle="collapse" data-target="#mobile_search" aria-expanded="false" aria-controls="mobile_search"><span class="sr-only">Close Mobile Search</span></button>
+					</div>
+				</div>
+				<!-- Mobile Local Nav: Start -->
+				<div class="row visible-xs visible-sm" id="mobile_subnav">
+					<div class="col-xs-12">
+						<div class="navbar-collapse collapse mobile_subnav_content">
+							<div>
+<div class="localNavigation localnav containsResourceName resourceClass-localnav">
+
+
+	<ul id="localnav_mobile" class="nav navbar-nav subnav" style="float:none">
+<li class="dropdown ">
+				<a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">MATLAB Central<span class="caret"></span></a>
+				<ul class="dropdown-menu">
+<li>
+							<a href="/matlabcentral/?s_tid=gn_mlc">Community Home</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/answers/index/?s_tid=gn_mlc_an">MATLAB Answers</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/fileexchange/?s_tid=gn_mlc_fx">File Exchange</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/cody/?s_tid=gn_mlc_cody">Cody</a>
+							
+						</li>
+					
+						<li>
+							<a href="https://blogs.mathworks.com/?s_tid=gn_mlc_blg">Blogs</a>
+							<hr class="local_nav_hr">
+</li>
+					
+						<li>
+							<a href="/matlabcentral/content/communities.html?s_tid=gn_mlc_tbc_dl">Communities</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/community/onramps/mlc_treasure_hunt?s_tid=gn_mlc_hunt">Treasure Hunt</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/highlights?s_tid=gn_mlc_hl">Highlights</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/contests.html?s_tid=gn_mlc_contests">Contests</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/content/community-advisors.html?s_tid=gn_mlc_cab">Advisors</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/profile/badges/all?s_tid=gn_mlc_bdgs">Virtual Badges</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/content/about.html?s_tid=gn_mlc_about">About</a>
+							
+						</li>
+					
+				</ul>
+</li>
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+	
+ <li id="leftnav_files"><a href="https://www.mathworks.com/matlabcentral/fileexchange/?s_tid=gn_mlc_fx_files">Files</a></li> <li id="leftnav_authors"><a href="https://www.mathworks.com/matlabcentral/fileexchange/authors?s_tid=gn_mlc_fx_auth">Authors</a></li> <li><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My File Exchange<span class="caret"></span></a><ul class="dropdown-menu"><li id=""><a href="/matlabcentral/profile/authors/my_profile?content=all">Followed Content Feed</a></li><li id=""><a href="/matlabcentral/profile/authors/my_profile/follows">Manage Following</a></li><li id=""><a href="/matlabcentral/profile/authors/my_profile/notification_preferences">Communication Preferences</a></li><li id=""><a href="/matlabcentral/fileexchange/authors/my_fileexchange?s_tid=gn_mlc_fx_myfx">My Files</a></li></ul></li> <li id="leftnav_submit"><a href="/contribute?s_tid=gn_mlc_fx_contr">Publish</a></li> <li id="leftnav_about"><a href="/matlabcentral/content/fx/about.html?s_tid=gn_mlc_fx_help">About</a></li>
+
+</ul>
+</div>
+</div>
+
+						</div>
+					</div>
+				</div>
+				<!-- Mobile Local Nav: End -->
+			</div>
+		</div>
+		
+	<div class="horizontal_nav hidden-xs hidden-sm ">
+		<div class="horizontal_nav_container">
+			
+			<div>
+				<div class="container-fluid">
+					<div class="row">
+						
+	<div class="col-md-8 col-lg-9 hidden-xs hidden-sm">
+		<nav class="navbar navbar-default" role="navigation" id="subnav"><div class="collapse navbar-collapse">
+				<div>
+<div class="localNavigation localnav containsResourceName resourceClass-localnav">
+
+
+	<ul id="localnav" class="nav navbar-nav subnav" style="float:none">
+<li class="dropdown ">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">MATLAB Central<span class="caret"></span></a>
+				<ul class="dropdown-menu">
+<li>
+							<a href="/matlabcentral/?s_tid=gn_mlc">Community Home</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/answers/index/?s_tid=gn_mlc_an">MATLAB Answers</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/fileexchange/?s_tid=gn_mlc_fx">File Exchange</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/cody/?s_tid=gn_mlc_cody">Cody</a>
+							
+						</li>
+					
+						<li>
+							<a href="https://blogs.mathworks.com/?s_tid=gn_mlc_blg">Blogs</a>
+							<hr class="local_nav_hr">
+</li>
+					
+						<li>
+							<a href="/matlabcentral/content/communities.html?s_tid=gn_mlc_tbc_dl">Communities</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/community/onramps/mlc_treasure_hunt?s_tid=gn_mlc_hunt">Treasure Hunt</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/highlights?s_tid=gn_mlc_hl">Highlights</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/contests.html?s_tid=gn_mlc_contests">Contests</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/content/community-advisors.html?s_tid=gn_mlc_cab">Advisors</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/profile/badges/all?s_tid=gn_mlc_bdgs">Virtual Badges</a>
+							
+						</li>
+					
+						<li>
+							<a href="/matlabcentral/content/about.html?s_tid=gn_mlc_about">About</a>
+							
+						</li>
+					
+				</ul>
+</li>
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+			
+			
+		
+	
+ <li id="leftnav_files"><a href="https://www.mathworks.com/matlabcentral/fileexchange/?s_tid=gn_mlc_fx_files">Files</a></li> <li id="leftnav_authors"><a href="https://www.mathworks.com/matlabcentral/fileexchange/authors?s_tid=gn_mlc_fx_auth">Authors</a></li> <li><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My File Exchange<span class="caret"></span></a><ul class="dropdown-menu"><li id=""><a href="/matlabcentral/profile/authors/my_profile?content=all">Followed Content Feed</a></li><li id=""><a href="/matlabcentral/profile/authors/my_profile/follows">Manage Following</a></li><li id=""><a href="/matlabcentral/profile/authors/my_profile/notification_preferences">Communication Preferences</a></li><li id=""><a href="/matlabcentral/fileexchange/authors/my_fileexchange?s_tid=gn_mlc_fx_myfx">My Files</a></li></ul></li> <li id="leftnav_submit"><a href="/contribute?s_tid=gn_mlc_fx_contr">Publish</a></li> <li id="leftnav_about"><a href="/matlabcentral/content/fx/about.html?s_tid=gn_mlc_fx_help">About</a></li>
+
+</ul>
+</div>
+</div>
+			</div>
+		</nav>
+</div>
+	<div class="col-md-4 col-lg-3 hidden-xs hidden-sm">
+		<div>
+<div class="callToAction calltoactionheader containsResourceName resourceClass-calltoactionheader">
+
+
+	<div class="cta_box">
+		<ul class="list-inline">
+<li class="cta_item cta_item_general">
+				<a href="/campaigns/products/trials.html" class="
+						  icon-download
+						  " data-link="lead" data-offertype="trial">
+					Trial software
+				</a>
+			</li>
+		</ul>
+</div>
+
+
+
+</div>
+</div>
+	</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	</div>
+
+
+
+	
+
+	
+
+	
+		
+
+		
+			
+			<div class="content_container" id="content_container" tabindex="-1">
+				
+				<div class="container-fluid">
+					
+					
+					<section><div class="mainParsys parsys containsResourceName resourceClass-parsys">
+<div class="targetcontainer containsResourceName resourceClass-targetcontainer section">
+
+
+
+<div class="personalization-container " id="web-application-body-container">
+	<div>
+<div class="targetContent parsys containsResourceName resourceClass-parsys">
+<div class="cqColumns containsResourceName section resourceClass-columns">
+<div class="row   ">
+
+	
+		<div class=" col-xs-12">
+<div class="2420e633-83fe-4c2d-9b62-4248985f27d2 parsys containsResourceName resourceClass-parsys">
+  
+
+  <!-- JSON-LD for SEO purpose (see more at https://schema.org/) -->
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "name": "Tools for NIfTI and ANALYZE image - File Exchange - MATLAB CentralFile Exchange - MATLAB Central",
+      "accessibilitySummary": "Load, save, make, reslice, view (and edit) both NIfTI and ANALYZE data on any platform",
+      "url": "https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image",
+      "datePublished": "22 Jan 2014",
+      "contributor": {
+        "@type": "Person",
+        "name": "Jimmy Shen"
+      },
+      "contentRating": "4.6",
+      "commentCount": "187"
+    }
+  </script>
+
+  <div id="announcements_container"></div>
+
+  <div data-view="detail">
+    
+    
+    
+    <div id="followSuccess" class="alert alert-success hidden"> <span class="alert_icon icon-alert-success"></span>
+  <p class="alert_heading"><strong>You are now following this Submission</strong></p>
+  <ul>
+    <li>You will see updates in your <a href='/matlabcentral/profile/authors/my_profile?content=all'>followed content feed</a></li>
+    <li>You may receive emails, depending on your <a href='/matlabcentral/profile/authors/my_profile/notification_preferences'>communication preferences</a></li>
+  </ul>
+</div>
+
+    
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function() {
+    $("#matlab_fileexchange_badge_copy").tooltip({trigger: 'manual'});
+});
+</script>
+
+
+    <!-- start-of-the-page-container -->
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- start-of-the-header -->
+        <div class="row">
+          <div class="col-xs-12 col-sm-2">
+            <div id="thumbnail" class="text-center">
+  <a border="0" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/28/screenshot.jpg"><img src="/responsive_image/160/120/0/0/0/cache/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/28/screenshot.jpg" alt="image thumbnail" itemprop="image" /></a>
+</div>
+
+          </div>
+          <div class="col-xs-12 col-sm-10">
+            <div class="row">
+              <div class="col-xs-12 col-sm-8 col-md-9">
+                <h2 id="title" class="add_font_color_emphasize add_margin_5">
+                    <span id="titleText">Tools for NIfTI and ANALYZE image</span>
+                </h2>
+                <div class="add_margin_5">
+                    <span id="user_version" class="small add_font_color_mediumgray">version 1.27.0.0 (426 KB) by </span>
+                  <span><a class="author_inline analyticsMlcProfileModal results_author" data-locale-id="en-US" href="/matlabcentral/profile/authors/757722">Jimmy Shen</a>
+
+</span>
+                </div>
+                <div id="summary" class="add_text_wrapping">
+                  <span id="summaryText">Load, save, make, reslice, view (and edit) both NIfTI and ANALYZE data on any platform</span>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-4 col-md-3 section_downsize">
+                <div class="pull-right">
+                  <div class="rating add_margin_0 text-right add_display_block" title="4.60 out of 5 Stars">
+                    <span class="numberrating">
+                      <div class="rate_scale">
+                        <a href="">
+                          <div class="rated pull-right" data-tab-id="reviews_tab" style="width: 92.0%;">
+                              <span id="rating_value">4.6</span>
+                          </div>
+                        </a>
+                      </div>
+                      <a id="review_count" href="">
+                        <span data-counter-id="reviews" data-tab-id="reviews_tab">
+                          (89)
+                        </span>
+                      </a>
+                    </span>
+                  </div>
+                    <p class="add_margin_0 text-right">
+                      <span id="downloads">103.8K Downloads</span>
+                      <span class="icon_16 icon-info-circle" data-container="body" data-toggle="popover" role="button" tabindex="0" data-trigger="hover" data-placement="left" title="" data-content="Last 30 days: 338<br> All time: 103,834" data-original-title="Downloads" aria-describedby="popover506129"></span>
+                    </p>
+                  <p class="add_margin_0 text-right">
+                    <span id="date_updated">Updated
+                      <span content="2014-01-22">22 Jan 2014</span>
+                    </span>
+                  </p>
+                    <div class="metadata_info text-right">
+    <a data-toggle="modal" href="#version_history_modal">View Version History</a>
+</div>
+
+<div class="modal fade" id="version_history_modal" tabindex="-1" role="dialog" aria-labelledby="version_history_modal_title" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3 class="modal-title" id="version_history_modal_title">Version History</h3>
+      </div>
+      <div class="modal-body section_upsize">
+        <p></p>
+        <div id="update_notes" class="row add_margin_50 update_notes_container" data-add-on-update-note=true>
+          <div class="col-xs-12">
+            <div class="section_downsize">
+              <table>
+                <tbody>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.27.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/28/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2014-01-22 23:20:54 UTC">22 Jan 2014</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.27.0.0</td>
+                      <td class="add_padding_10"><p>1. Thanks to the feedback and contribution of Chris McNorgan from Western University, the rri_orient.m now have optional parameter for orientation vector.
+<br />2. New program pad_nii.m is available together with clip_nii.m. See example in FAQ.pdf.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.26.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/27/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2013-03-07 14:35:48 UTC">7 Mar 2013</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.26.0.0</td>
+                      <td class="add_padding_10"><p>Since voxel size can be less than 0, I will change the default voxel_size in reslice_nii.m from rounded minimum voxel_size in original NIfTI header to absolute minimum voxel_size in original NIfTI header. This fixed reslice_nii bug.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.25.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/26/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2012-10-16 19:11:47 UTC">16 Oct 2012</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.25.0.0</td>
+                      <td class="add_padding_10"><p>Added some new features and fixed some bugs. For more detail, please visit: </p>
+
+<p><a href="http://www.rotman-baycrest.on.ca/~jimmy/NIfTI" target="_blank" rel="nofollow noopener noreferrer">http://www.rotman-baycrest.on.ca/~jimmy/NIfTI</a></p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.24.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/25/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-09-21 15:49:36 UTC">21 Sep 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.24.0.0</td>
+                      <td class="add_padding_10"><p>Thanks to the feedback of Matthew Bickell from University of Cape Town, a bug is fixed when edit voxel in millimeter unit.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.23.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/24/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-09-01 12:21:35 UTC">1 Sep 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.23.0.0</td>
+                      <td class="add_padding_10"><p>"make_nii.m" is now able to automatically detect both single and double complex data type.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.22.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/23/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-06-10 13:04:41 UTC">10 Jun 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.22.0.0</td>
+                      <td class="add_padding_10"><p>Fixed a bug for yesterday's release</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.21.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/22/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-06-09 17:59:05 UTC">9 Jun 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.21.0.0</td>
+                      <td class="add_padding_10"><p>You can now create RGB NIfTI / ANALYZE file structure using make_nii / make_ana program.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.20.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/21/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-05-02 15:20:22 UTC">2 May 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.20.0.0</td>
+                      <td class="add_padding_10"><p>New program "load_untouch_header_only.m" and "save_untouch_slice.m" is provided. Check <a href="http://www.rotman-baycrest.on.ca/~jimmy/NIFTI" target="_blank" rel="nofollow noopener noreferrer">http://www.rotman-baycrest.on.ca/~jimmy/NIFTI</a> for more details.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.19.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/20/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-03-10 18:48:42 UTC">10 Mar 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.19.0.0</td>
+                      <td class="add_padding_10"><p>New feature is added in "view_nii" program to let you edit voxel values or set landmarks. Also thanks to the code from Roman, which speed up "load_untouch_nii_img" program when the slices are not loaded at once.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.16.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/17/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-02-15 18:27:36 UTC">15 Feb 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.16.0.0</td>
+                      <td class="add_padding_10"><p>1. Fixed an overlay problem in view_nii.m, so the color of min/max is now showing properly.
+<br />2. Included an overlay example in <a href="http://www.rotman-baycrest.on.ca/~jimmy/NIfTI/FAQ.htm" target="_blank" rel="nofollow noopener noreferrer">http://www.rotman-baycrest.on.ca/~jimmy/NIfTI/FAQ.htm</a> and <a href="http://www.rotman-baycrest.on.ca/~jimmy/NIfTI/examples.txt" target="_blank" rel="nofollow noopener noreferrer">http://www.rotman-baycrest.on.ca/~jimmy/NIfTI/examples.txt</a>.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.14.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/15/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2011-02-03 17:19:11 UTC">3 Feb 2011</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.14.0.0</td>
+                      <td class="add_padding_10"><p>Thanks to the feedback of Roman Fleysher from Yeshiva University, I fixed a bug when loading a quaternion form NIfTI data.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.13.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/14/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2010-08-19 17:20:32 UTC">19 Aug 2010</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.13.0.0</td>
+                      <td class="add_padding_10"><p>Thanks to Rembrandt from Radboud University Nijmegen (Netherlands), I made 2 small changes to handle the exceptions.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.12.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/13/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2010-04-13 12:23:01 UTC">13 Apr 2010</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.12.0.0</td>
+                      <td class="add_padding_10"><p>Fixed a bug in "collapse_nii_scan" to collapse Analyze format data.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.11.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/12/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2010-01-06 11:45:40 UTC">6 Jan 2010</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.11.0.0</td>
+                      <td class="add_padding_10"><p>1. "load_untouch_nii" now supports loading specific slices of NIfTI or Analyze format.
+<br />2. MATLAB ask me to remove any "under GNU license" phrase in any file.
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.10.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/11/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2010-01-05 12:07:04 UTC">5 Jan 2010</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.10.0.0</td>
+                      <td class="add_padding_10"><p>"load_untouch_nii" now supports loading specific slices of NIfTI or Analyze format.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.9.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/10/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2009-09-09 11:32:54 UTC">9 Sep 2009</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.9.0.0</td>
+                      <td class="add_padding_10"><p>While an N-Dimensional matrix can be saved into a NIfTI file using "make_nii / save_nii" command pair, a 3D matrix can also be saved into an ANALYZE file using "make_ana / save_untouch_nii" in order to be compatible with some ANALYZE only programs.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.8.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/9/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2009-07-03 18:37:07 UTC">3 Jul 2009</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.8.0.0</td>
+                      <td class="add_padding_10"><p>Fixed several bugs, and posted informative table: </p>
+
+<p><a href="http://www.rotman-baycrest.on.ca/~jimmy/UseANALYZE.htm" target="_blank" rel="nofollow noopener noreferrer">http://www.rotman-baycrest.on.ca/~jimmy/UseANALYZE.htm</a>
+</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.7.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/8/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2009-06-18 12:38:16 UTC">18 Jun 2009</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.7.0.0</td>
+                      <td class="add_padding_10"><p>Just receive warning from MATLAB: "If I do not license my code with BSD, my code will be removed."</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.6.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/7/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2009-03-25 16:49:52 UTC">25 Mar 2009</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.6.0.0</td>
+                      <td class="add_padding_10"><p>Thanks to the feedback of Kate Fissell from University of Pittsburgh, transformation matrix M will no longer be saved by save_untouch_nii.m.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.5.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/6/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2009-03-17 14:58:11 UTC">17 Mar 2009</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.5.0.0</td>
+                      <td class="add_padding_10"><p>1. Thanks to the feedback of Bryce Wilkins from USC, a typo in one of my message display is fixed.  </p>
+
+<p>2. Thanks to the suggestion of Ashish Raj from Cornell, 'expand_nii_scan.m' is modified and 'collapse_nii_scan.m' is added.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.4.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/5/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2008-12-05 11:42:05 UTC">5 Dec 2008</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.4.0.0</td>
+                      <td class="add_padding_10"><p>Default data type for 'make_nii.m' now follows the data type of 'img' matrix, instead of float32.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.3.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/4/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2008-12-04 13:27:53 UTC">4 Dec 2008</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.3.0.0</td>
+                      <td class="add_padding_10"><p>Fixed a bug in fliplr.m when reading files.</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.2.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/3/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2008-10-24 10:22:39 UTC">24 Oct 2008</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.2.0.0</td>
+                      <td class="add_padding_10"><p>update didn't show up</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.1.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/2/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2008-10-23 16:55:46 UTC">23 Oct 2008</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.1.0.0</td>
+                      <td class="add_padding_10"><p>1. Properly handle fread/'*char' problem with foreign characters in MATLAB 7 and above;  2. Reordered input parameters for 'reslice_nii.m' program;</p></td>
+                    </tr>
+                    <tr>
+                      <td class="add_padding_5 cell_20">
+                        <div data-version-modal-state="add" data-version-number="1.0.0.0">
+                          <div data-view="versions">
+                            <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/1/download/zip">Download</a></div>
+</div>
+
+                          </div>
+                        </div>
+                      </td>
+                      <td class="add_padding_10 add_font_color_mediumgray cell_20">
+                        <time datetime="2008-09-05 16:47:23 UTC">5 Sep 2008</time>
+                      </td>
+                      <td class="add_padding_10 add_text_wrapping cell_20">1.0.0.0</td>
+                      <td class="add_padding_10"><p>Extended Load / Save / Make programs to N-Dimension, where N can be from 3 to 7 for NIfTI data and from 3 to 4 for ANALYZE data.</p></td>
+                    </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+                    <p class="text-right"><a data-toggle="modal" href="#license_modal">View License</a></p>
+
+<div class="modal fade" id="license_modal" tabindex="-1" role="dialog" aria-labelledby="license_modal_title" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3 class="modal-title" id="license_modal_title">License</h3>
+      </div>
+      <div class="modal-body">
+        <iframe src="/matlabcentral/mlc-downloads/downloads/e54e43bf-4a80-11e4-9553-005056977bd0/8df299db-7cd1-c039-defe-718748810857/licenses/license.txt" style="border: none" frameborder="0"></iframe>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+                </div>
+              </div>
+              <div class="col-xs-12">
+                <ul class="list-inline pull-right add_clear_both">
+  <li class="add_margin_0">
+      <div id="follow" data-fileexchange-id='8797'></div>
+  </li>
+  <!-- Start Download action -->
+  <li>
+    <div data-visible-on="add">
+            <div><a title="Download" data-logintodownload="false" class="btn btn-sm btn_color_blue btn-block link--download" href="/matlabcentral/mlc-downloads/downloads/submissions/8797/versions/28/download/zip">Download</a></div>
+</div>
+
+  </li>
+  <!-- End Download action -->
+</ul>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end-of-the-header -->
+
+        <!-- start-of-the-tabs -->
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="all-tabs-container">
+              <div>
+  <ul role="tablist" class="nav nav-tabs responsive" id="add_on_files">
+    <li class="active">
+      <a role="tab" data-toggle="tab" href="#overview_tab" name="overview">Overview</a>
+    </li>
+        <li class="">
+          <a role="tab" data-toggle="tab" href="#functions_tab" name="functions" class="resizable-iframe">Functions</a>
+        </li>
+    <li class="">
+      <a role="tab" data-toggle="tab" href="#reviews_tab" name="reviews">Reviews  <span data-counter-id="reviews">(89)</span></a>
+    </li>
+    <li class="">
+      <a role="tab" data-toggle="tab" href="#discussions_tab" name="discussions">Discussions  <span data-counter-id="discussions">(132)</span></a>
+    </li>
+  </ul>
+</div>
+
+<div class="tab-content responsive">
+    <div class="tab-pane active" id="overview_tab" data-context="web">
+    <div class="row">
+      <div class='col-xs-12 col-md-9' >
+          <div id="editors_notes" class="row">
+            <div class="col-xs-12 col-sm-8 col-sm-offset-2">
+              <div class="panel panel-default">
+                <div class="panel-body" data-add-on-editor-note="true">
+                  <p><strong>Editor&#39;s Note:</strong> Popular File <a href=" https://www.mathworks.com/matlabcentral/fileexchange/?term=tag:%22popular+file+2018%22">2018</a> 
+<a href=" http://www.mathworks.com/matlabcentral/fileexchange/?term=tag%3A%22Popular+File+2019%22">2019</a>
+<a href=" http://www.mathworks.com/matlabcentral/fileexchange/?term=tag%3A%22Popular+File+2020%22">2020</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <div id="description" data-add-on-description="true" class="add_margin_30 add_text_wrapping">
+          <div id="descriptionBody"><p>Please always check NIfTI_tools.pdf for detail descriptions and latest updates.</p>
+
+<p>If you are confused by the Left / Right of an ANALYZE image, please read UseANALYZE.pdf.</p>
+
+<p>You may also want to go through FAQ.pdf for practical solutions and real examples.</p>
+
+<p>Basic Programs:</p>
+
+<p>1. load_untouch_header_only.m: Load only the header section of NIfTI or ANALYZE file. The input file will be automatically detected. NIfTI structure will be returned for NIfTI file, and ANALYZE structure will be returned for ANALYZE file.</p>
+
+<p>2. load_nii.m: Load N-Dimensional NIfTI file (where N can be from 3 to 7) or ANALYZE file (where N can be from 3 to 4), and apply header info (e.g. affine geometric transform, voxel intensity scaling, etc.) to the data. If your file has more than 3-Dimension (e.g. time series etc.), you can also specify a range to extract only 1 or several volumes.</p>
+
+<p>3. save_nii.m: Save N-Dimensional NIfTI structure (where N can be from 3 to 7) that is loaded by "load_nii.m" or made by "make_nii.m" into a NIfTI file.</p>
+
+<p>4. make_nii.m: Make N-Dimensional NIfTI structure (where N can be from 3 to 7) based on the N-Dimensional matrix and other optional parameters (e.g. voxel_size, origin, etc.). Using "save_nii" command, the NIfTI structure that is made by "make_nii" can be saved into a NIfTI file.</p>
+
+<p>5. make_ana.m: Make 3D ANALYZE structure based on the 3D matrix and other optional parameters (e.g. voxel_size, origin, etc.). Using "save_untouch_nii" command, the ANALYZE structure that is made by "make_ana" can be saved into an ANALYZE file in order to be compatible with some ANALYZE only programs.</p>
+
+<p>6. reslice_nii.m: Re-sample 3D (or 4D) NIfTI file, or ANALYZE file with affine matrix M in .mat file, and save the re-sampled data into a new NIfTI file. The program will base on the affine matrix, which is especially useful for oblique images with non-orthogonal rotation or shearing that cannot be loaded with "load_nii.m". You can also specify voxel_size, etc. It will not cause negative effect, as long as you remember not to do slice time correction after using "reslice_nii.m".</p>
+
+<p>7. pad_nii.m: Pad the volume(s) in NIfTI structure from any of the six sides, while keeping the originator, voxel size, data type, and description unchanged. The program is especially useful after you use reslice_nii, since the new volume will most likely have different dimensions.</p>
+
+<p>8. clip_nii.m: Clip the volume(s) in NIfTI structure from any of the six sides, while keeping the originator, voxel size, data type, and description unchanged. The program is especially useful after you use reslice_nii, since the new volume will most likely have different dimensions.</p>
+
+<p>9. view_nii.m: View &amp; Edit 3D (or 4D) NIfTI or ANALYZE structure that is loaded by "load_nii.m" or made by "make_nii.m". Activation map, ROI, etc. can be overlaid on top of a background image (see above picture). Plotted view can be embedded into your existing figure window. If you use it as an individual program, it can also edit the orientation and voxel value of the image, view volume histogram, and save the modified image.</p>
+
+<p>10. load_untouch_nii.m: Load N-Dimensional NIfTI file (where N can be from 3 to 7) or ANALYZE file (where N can be from 3 to 4), but do not apply any changes that are indicated in the header. WARNING: Do not use "view_nii.m" to view the structure that is loaded by "load_untouch_nii.m".</p>
+
+<p>11. save_untouch_nii.m: Save N-Dimensional NIfTI structure (where N can be from 3 to 7) or ANALYZE structure (where N can be from 3 to 4) that is loaded by "load_untouch_nii.m" or made by "make_ana.m" into a new NIfTI or ANALYZE file. If you do not modify the loaded dataset, the header and data in the new saved file should be the same as those in the original file.</p>
+
+<p>Other Programs:</p>
+
+<p>1. collapse_nii_scan.m: Integrate multiple single-scan NIfTI or ANALYZE files into a multiple-scan NIfTI file.</p>
+
+<p>2. expand_nii_scan.m: Break a multiple-scan NIfTI file into multiple single-scan NIfTI files.</p>
+
+<p>3. save_untouch_slice.m: Save back to the original image with a portion of slices that was loaded by load_untouch_nii. You can process those slices matrix in any way, as long as their dimension is not altered.</p>
+
+<p>4. get_nii_frame.m: Return the number of time frames of a NIfTI file.</p>
+
+<p>5. flip_lr.m: Flip NIfTI or ANALYZE file Left-Right along the plane across the originator, and save the L-R flipped data into a NIfTI file. WARNING: Please use this program with caution, although you can always flip it back.</p>
+
+<p>6. load_nii_ext.m: Load header extension from a NIfTI file.</p>
+
+<p>7. mat_into_hdr.m: Integrate affine matrix in old SPM .mat file into its .hdr header file. Thus, the ANALYZE file is converted into a NIfTI file with the updated .hdr header file.
+</p></div>
+        </div>
+
+          <div id="citation" class="add_margin_30 add_text_wrapping">
+    <h3 class="add_bottom_rule add_margin_5">
+      Cite As
+    </h3>
+        <p id="defaultCitation" class="add_margin_20">
+    Jimmy Shen (2022). <span id="defaultCitationTitle">Tools for NIfTI and ANALYZE image</span> (https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image), MATLAB Central File Exchange.
+    Retrieved <time datetime="2022-01-14 18:33:54 UTC">January 14, 2022</time>.
+</p>
+
+  </div>
+
+      </div>
+
+      <div class="col-xs-12 col-md-3 section_downsize">
+          
+
+          <div id="matlab_release" class="add_margin_20">
+            <h5 class="add_bottom_rule add_margin_5">MATLAB Release Compatibility</h5>
+            <div>
+              Created with
+              R11.1
+            </div>
+            <div>
+              Compatible with any release
+            </div>
+          </div>
+
+        <div id="os_platforms" class="add_margin_20">
+          <h5 class="add_bottom_rule add_margin_5">Platform Compatibility</h5>
+          <span class='icon-checkbox-checked add_padding_5'></span><span>Windows</span> <span class='icon-checkbox-checked add_padding_5'></span><span>macOS</span> <span class='icon-checkbox-checked add_padding_5'></span><span>Linux</span>
+        </div>
+
+          <div id="categories" class="add_margin_20">
+    <h5 class="add_bottom_rule add_margin_5">Categories</h5>
+    <ul class="list-unstyled show_more_toggle" data-height="200" data-collapse-text="Show less" data-expand-text="Show more">
+        <li class="add_margin_15">
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/image-pro211&amp;s_tid=FX_AO_detail_cat">Image Processing and Computer Vision</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=images/index&amp;s_tid=FX_AO_detail_cat">Image Processing Toolbox</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=images/import-export-and-conversion&amp;s_tid=FX_AO_detail_cat">Import, Export, and Conversion</a>
+            <span class="add_font_color_darkgray">></span>
+        </li>
+        <li class="add_margin_15">
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/sciences1689&amp;s_tid=FX_AO_detail_cat">Sciences</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/neuroscie832&amp;s_tid=FX_AO_detail_cat">Neuroscience</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/human-bra836&amp;s_tid=FX_AO_detail_cat">Human Brain Mapping</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/mri1163&amp;s_tid=FX_AO_detail_cat">MRI</a>
+            <span class="add_font_color_darkgray">></span>
+        </li>
+        <li class="add_margin_15">
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/image-pro211&amp;s_tid=FX_AO_detail_cat">Image Processing and Computer Vision</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=images/index&amp;s_tid=FX_AO_detail_cat">Image Processing Toolbox</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=images/getting-started-with-image-processing-toolbox&amp;s_tid=FX_AO_detail_cat">Get Started with Image Processing Toolbox</a>
+            <span class="add_font_color_darkgray">></span>
+        </li>
+        <li class="add_margin_15">
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/industrie1690&amp;s_tid=FX_AO_detail_cat">Industries</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/medical-d1604&amp;s_tid=FX_AO_detail_cat">Medical Devices</a>
+            <span class="add_font_color_darkgray">></span>
+            <a data-enable-spinner="true" href="/matlabcentral/fileexchange/?category[]=support/dicom-for1697&amp;s_tid=FX_AO_detail_cat">DICOM Format</a>
+            <span class="add_font_color_darkgray">></span>
+        </li>
+    </ul>
+  </div>
+
+
+        <div class="add_margin_20">
+  <div data-tags-path="">
+    <h5 class="add_bottom_rule add_margin_5">Tags
+      <span id="add_tags_span" class="add-tags-span pull_right ">
+        <a class="add-tags-link" href="#">Add Tags</a>
+      </span>
+    </h5>
+    <div id="tags" class="tag-list">
+        <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22analyze%22">analyze</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22edit%22">edit</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22flip%22">flip</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22header%22">header</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22image%22">image</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22isotropic%22">isotropic</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22las%22">las</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22load%22">load</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22make%22">make</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22medical%22">medical</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22neurological%22">neurological</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22nifti%22">nifti</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22nifti1%22">nifti1</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22niftl%22">niftl</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22popular+file+2018%22">popular file 2018</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22popular+file+2019%22">popular file 2019</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22popular+file+2020%22">popular file 2020</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22radiological%22">radiological</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22ras%22">ras</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22resampling%22">resampling</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22reslice%22">reslice</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22reslicing%22">reslicing</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22save%22">save</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22toolbox%22">toolbox</a> <a rel="nofollow" class="tag_component" href="/matlabcentral/fileexchange/?term=tag:%22view%22">view</a>
+    </div>
+
+    <div id="add_tags_form">
+      <form id="add_new_tags_form" action="/matlabcentral/fileexchange/ui/tags" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" />
+  <input type="hidden" name="add_on_uuid" value="e54e43bf-4a80-11e4-9553-005056977bd0" />
+  <input type="text" name="tags" id="add_tags" value="" class="form-control add_margin_5" />
+  <button type="button" class="btn btn-xs companion_btn btn_color_blue cancel_button">Cancel</button>
+  <input type="submit" value="Save" class="btn btn-xs btn_secondary save_button" data-disable-with="Save" />
+</form>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    $("#add_tags").multicomplete({
+      data_source: { url: "/matlabcentral/fileexchange/ui/tags/auto_suggest" }
+    });
+
+    $(".add-tags-link").click(function() {
+      $("#add_tags_form").show();
+      $("#add_tags").focus();
+      return false;
+    });
+
+    $("#add_tags_form .cancel_button").click(function() {
+      $("#add_tags").val('').blur();
+      $("#add_tags_form").hide();
+    });
+
+    $("#add_new_tags_form").on('ajax:complete', function(){
+      $('.multicomplete > .multicomplete-selected-item').remove()
+      $("#add_tags").val('').blur();
+      $("#add_tags_form").hide();
+    });
+});
+</script>
+
+
+        <div id="related_content" data-related-content-path="/matlabcentral/fileexchange/ui/related_content/e54e43bf-4a80-11e4-9553-005056977bd0"></div>
+
+          <div id="acknowledgements" class="add_margin_20">
+    <h5 class="add_bottom_rule add_margin_5">
+    Acknowledgements</h5>
+        <p class="add_margin_10 add_text_wrapping">
+          <strong>Inspired by:</strong>
+          <a href="/matlabcentral/fileexchange/1878-mri-analyze-tools">MRI Analyze tools</a>
+        </p>
+        <p class="add_margin_10 add_text_wrapping">
+          <strong>Inspired:</strong>
+          <a href="/matlabcentral/fileexchange/57666-pcg_unwrap_2d-ph_nii-ph_file-mask_nii-max_iter-epsi_con-n">PCG_unwrap_2D(ph_nii, ph_file, mask_nii, max_iter, epsi_con, N)</a>, <a href="/matlabcentral/fileexchange/74807-mriqual">MRIqual</a>, <a href="/matlabcentral/fileexchange/72753-bioimage-suite-web">BioImage Suite Web</a>, <a href="/matlabcentral/fileexchange/54300-exportpnginkscape-filename-dpi-handle">ExportPngInkscape(filename,dpi,handle)</a>, <a href="/matlabcentral/fileexchange/64579-parametric-mapping-scripts-for-mri-data">Parametric Mapping Scripts for MRI data</a>, <a href="/matlabcentral/fileexchange/52486-fmridata-tool">fMRIData Tool</a>, <a href="/matlabcentral/fileexchange/74729-nifti-studio">NIfTI Studio</a>, <a href="/matlabcentral/fileexchange/48277-visualization-of-multi-modal-volume-segmentation">Visualization of multi-modal volume segmentation</a>, <a href="/matlabcentral/fileexchange/22508-siemens-dicom-sort-and-convert-to-nifti">Siemens DICOM sort and convert to NIfTI</a>, <a href="/matlabcentral/fileexchange/26026-bipolar-colormap">Bipolar Colormap</a>, <a href="/matlabcentral/fileexchange/36125-generate-synthetic-fmri-data">Generate synthetic fMRI data</a>, <a href="/matlabcentral/fileexchange/36463-rapid-a-routine-assurance-pipeline-for-imaging-of-diffusion">RAPID: a Routine Assurance Pipeline for Imaging of Diffusion</a>, <a href="/matlabcentral/fileexchange/47072-3d-nifti-data-viewer">3D NIfTI Data Viewer</a>, <a href="/matlabcentral/fileexchange/22817-seconds-to-hours-minutes-seconds">Seconds to hours, minutes, seconds</a>, <a href="/matlabcentral/fileexchange/22928-composite-image">Composite Image</a>, <a href="/matlabcentral/fileexchange/31279-create_mosaic-m">create_mosaic.m</a>, <a href="/matlabcentral/fileexchange/30853-field-mapping-toolbox">Field Mapping Toolbox</a>, <a href="/matlabcentral/fileexchange/34906-function-for-viewing-mri-slices">Function for Viewing MRI Slices</a>, <a href="/matlabcentral/fileexchange/38174-a-gui-to-load-and-view-nii-files">A GUI to load and view .NII files.</a>, <a href="/matlabcentral/fileexchange/41874-dicom-to-nifti-converter">DICOM to NIfTI converter</a>, <a href="/matlabcentral/fileexchange/52053-finding-functional-networks-in-brain-fmri-data-using-stepwise-clustering">Finding functional networks in brain fMRI data using stepwise clustering</a>, <a href="/matlabcentral/fileexchange/61847-brain-ruler">Brain Ruler</a>
+        </p>
+  </div>
+
+
+            <div id="poll_container"></div>
+            <script>
+              var component = new DiscussionsFrame({
+                  div_id: "#poll_container",
+                  app_id: "fx"
+              });
+              component.initPolls();
+            </script>
+
+          
+
+          <div id="treasure_hunt_spotlight">
+  <div class="panel panel-default add_cursor_pointer" onclick="location.href='/matlabcentral/community/onramps/mlc_treasure_hunt?s_tid=hunt_spotlight';">
+    <div class="panel-heading add_background_cover add_font_color_white" style="min-height: 80px; background-image: url(/matlabcentral/static/hunt_banner.png);">
+    </div>
+    <div class="panel-body">
+      <h3>Community Treasure Hunt</h3>
+      <p>Find the treasures in MATLAB Central and discover how the community can help you!</p>
+      <a class="icon-chevron" href="/matlabcentral/community/onramps/mlc_treasure_hunt?s_tid=hunt_spotlight">Start Hunting!</a>
+    </div>
+  </div> 
+</div>
+
+          <div id="relatedContentSpotlight" class="relatedContentSpotlight" addonFileExchangeId="8797" addonTitle="Tools for NIfTI and ANALYZE image" addonSummary="Load, save, make, reslice, view (and edit) both NIfTI and ANALYZE data on any platform" addonTags="analyze edit flip header image isotropic las load make medical neurological nifti nifti1 niftl popular file 2018 popular file 2019 popular file 2020 radiological ras resampling reslice reslicing save toolbox view" addonPath="8797-tools-for-nifti-and-analyze-image">
+</div>
+
+<div id="staticSpotlight" class="hidden">
+  <div class="panel panel-default">
+    <div class="panel-heading add_padding_40 add_background_position_left add_background_cover" style="background-image: url(/images/responsive/supporting/apps/downloads/panel-live-editor-spotlight.png);">
+    </div>
+    <div class="panel-body">
+      <h3 class="add_font_color_orange">Discover Live Editor</h3>
+      <p>Create scripts with code, output, and formatted text in a single executable document.</p>
+      <hr class="add_hr_spacing_10">
+      <p><a class="icon-chevron" href="https://www.mathworks.com/products/matlab/live-editor.html?s_tid=fx_mlle" target="liveeditor">Learn About Live Editor</a></p>
+    </div>
+  </div>
+</div>
+      </div>
+    </div>
+  </div>
+  <script>
+  $(function() {
+    var incrementViewCount = new UI.IncrementViewCount(
+      "/matlabcentral/fileexchange/ui/view_count",
+      "e54e43bf-4a80-11e4-9553-005056977bd0"
+    );
+
+    incrementViewCount.execute();
+  });
+</script>
+
+<script type="text/javascript">$(document).ready(function () { CodeOptions.show(); });</script>
+      <div class="tab-pane resizable-iframe " id="functions_tab">
+        <div class="row">
+    <div class="col-xs-3">
+    	<div class="package__file-list single_tier functions" data-pane="scroll">
+            <h4></h4>
+          <ul class="nav nav-list nav--file-list truncate_text list-inline">
+              <li id="function_9a2f527c-43b0-f448-515d-c17411175874" class="selected" title="affine(old_img, old_M, new_elem_size, verbose, bg, method)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Faffine.m&amp;embed=web" title="affine(old_img, old_M, new_elem_size, verbose, bg, method)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Faffine.m&amp;embed=web">affine(old_img, old_M, new_elem_size, verbose, bg, method)</a>
+              </li>
+              <li id="function_8ab77881-9dd2-ff02-b81c-495511f4837f" class="" title="bipolar(M, lo, hi, contrast)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fbipolar.m&amp;embed=web" title="bipolar(M, lo, hi, contrast)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fbipolar.m&amp;embed=web">bipolar(M, lo, hi, contrast)</a>
+              </li>
+              <li id="function_f7a306c0-4878-438f-da8a-0f2c0d766a93" class="" title="bresenham_line3d(P1, P2, precision)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fbresenham_line3d.m&amp;embed=web" title="bresenham_line3d(P1, P2, precision)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fbresenham_line3d.m&amp;embed=web">bresenham_line3d(P1, P2, precision)</a>
+              </li>
+              <li id="function_e64666b3-ef10-c757-bdfb-bda183b6fd92" class="" title="clip_nii(nii, opt)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fclip_nii.m&amp;embed=web" title="clip_nii(nii, opt)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fclip_nii.m&amp;embed=web">clip_nii(nii, opt)</a>
+              </li>
+              <li id="function_7342c86d-6f72-6220-6764-9cfac4e53d17" class="" title="collapse_nii_scan(scan_pattern, fileprefix, scan_path)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fcollapse_nii_scan.m&amp;embed=web" title="collapse_nii_scan(scan_pattern, fileprefix, scan_path)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fcollapse_nii_scan.m&amp;embed=web">collapse_nii_scan(scan_pattern, fileprefix, scan_path)</a>
+              </li>
+              <li id="function_89770f5a-8709-1dcd-b8f6-3e9f7206cd40" class="" title="expand_nii_scan(filename, img_idx, newpath)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fexpand_nii_scan.m&amp;embed=web" title="expand_nii_scan(filename, img_idx, newpath)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fexpand_nii_scan.m&amp;embed=web">expand_nii_scan(filename, img_idx, newpath)</a>
+              </li>
+              <li id="function_d55c0712-0b07-9eec-aac5-bf1c827a8912" class="" title="extra_nii_hdr(hdr)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fextra_nii_hdr.m&amp;embed=web" title="extra_nii_hdr(hdr)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fextra_nii_hdr.m&amp;embed=web">extra_nii_hdr(hdr)</a>
+              </li>
+              <li id="function_4a044972-46fd-7ae7-a150-24e259438ec2" class="" title="flip_lr(original_fn, flipped_fn, old_RGB, tolerance, preferredForm)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fflip_lr.m&amp;embed=web" title="flip_lr(original_fn, flipped_fn, old_RGB, tolerance, preferredForm)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fflip_lr.m&amp;embed=web">flip_lr(original_fn, flipped_fn, old_RGB, tolerance, preferredForm)</a>
+              </li>
+              <li id="function_a6dffd5f-08ac-92cf-1b78-1603c8b3101b" class="" title="get_nii_frame(filename)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fget_nii_frame.m&amp;embed=web" title="get_nii_frame(filename)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fget_nii_frame.m&amp;embed=web">get_nii_frame(filename)</a>
+              </li>
+              <li id="function_bc0af594-9929-e156-4918-af02970cdd95" class="" title="load_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, tolerance, preferredForm)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii.m&amp;embed=web" title="load_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, tolerance, preferredForm)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii.m&amp;embed=web">load_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, tolerance, preferredForm)</a>
+              </li>
+              <li id="function_45813a10-2af6-e4a6-8eb8-97682462a276" class="" title="load_nii_ext(filename)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_ext.m&amp;embed=web" title="load_nii_ext(filename)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_ext.m&amp;embed=web">load_nii_ext(filename)</a>
+              </li>
+              <li id="function_6d1ddf3a-acdf-2a8a-839f-aa8eb23ac106" class="" title="load_nii_hdr(fileprefix)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_hdr.m&amp;embed=web" title="load_nii_hdr(fileprefix)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_hdr.m&amp;embed=web">load_nii_hdr(fileprefix)</a>
+              </li>
+              <li id="function_7cfce8d9-c36e-bb1a-4be9-0b0da01b793b" class="" title="load_nii_hdr(fileprefix, machine)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch0_nii_hdr.m&amp;embed=web" title="load_nii_hdr(fileprefix, machine)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch0_nii_hdr.m&amp;embed=web">load_nii_hdr(fileprefix, machine)</a>
+              </li>
+              <li id="function_2510f9d6-dc07-12bf-bd8d-d24041719a1b" class="" title="load_nii_hdr(fileprefix, machine, filetype)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii_hdr.m&amp;embed=web" title="load_nii_hdr(fileprefix, machine, filetype)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii_hdr.m&amp;embed=web">load_nii_hdr(fileprefix, machine, filetype)</a>
+              </li>
+              <li id="function_081f75aa-ea1f-f405-c7fc-fa1045c11f57" class="" title="load_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_img.m&amp;embed=web" title="load_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_nii_img.m&amp;embed=web">load_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB)</a>
+              </li>
+              <li id="function_e231d6f7-82ec-1f21-adbf-c78431eaeb54" class="" title="load_untouch_header_only(filename)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_header_only.m&amp;embed=web" title="load_untouch_header_only(filename)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_header_only.m&amp;embed=web">load_untouch_header_only(filename)</a>
+              </li>
+              <li id="function_815159ec-c9d4-c0b2-890b-080c85b84a3b" class="" title="load_untouch_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, slice_idx)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii.m&amp;embed=web" title="load_untouch_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, slice_idx)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii.m&amp;embed=web">load_untouch_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, 			old_RGB, slice_idx)</a>
+              </li>
+              <li id="function_b0b78b29-6584-1227-0153-50893ff05236" class="" title="load_untouch_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB,slice_idx)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii_img.m&amp;embed=web" title="load_untouch_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB,slice_idx)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fload_untouch_nii_img.m&amp;embed=web">load_untouch_nii_img(hdr,filetype,fileprefix,machine,img_idx,dim5_idx,dim6_idx,dim7_idx,old_RGB,slice_idx)</a>
+              </li>
+              <li id="function_c1251a92-4a33-5c54-c9c7-467bd5aa13d8" class="" title="make_ana(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmake_ana.m&amp;embed=web" title="make_ana(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmake_ana.m&amp;embed=web">make_ana(varargin)</a>
+              </li>
+              <li id="function_f6fab085-ac88-a383-f9e6-ba8a4120980d" class="" title="make_nii(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmake_nii.m&amp;embed=web" title="make_nii(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmake_nii.m&amp;embed=web">make_nii(varargin)</a>
+              </li>
+              <li id="function_8bb7e711-a942-a575-299e-f06297aeab24" class="" title="mat_into_hdr(files)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmat_into_hdr.m&amp;embed=web" title="mat_into_hdr(files)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fmat_into_hdr.m&amp;embed=web">mat_into_hdr(files)</a>
+              </li>
+              <li id="function_9abc252d-b242-7367-8c78-4a8b6222c33a" class="" title="pad_nii(nii, opt)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fpad_nii.m&amp;embed=web" title="pad_nii(nii, opt)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fpad_nii.m&amp;embed=web">pad_nii(nii, opt)</a>
+              </li>
+              <li id="function_a2bfa858-928e-a1b7-a757-f920a248aa9b" class="" title="reslice_nii(old_fn, new_fn, voxel_size, verbose, bg, method, img_idx, preferredForm)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Freslice_nii.m&amp;embed=web" title="reslice_nii(old_fn, new_fn, voxel_size, verbose, bg, method, img_idx, preferredForm)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Freslice_nii.m&amp;embed=web">reslice_nii(old_fn, new_fn, voxel_size, verbose, bg, method, img_idx, preferredForm)</a>
+              </li>
+              <li id="function_efcc4421-edf4-83a1-1a82-96cf16e27c16" class="" title="rri_file_menu(action, varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_file_menu.m&amp;embed=web" title="rri_file_menu(action, varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_file_menu.m&amp;embed=web">rri_file_menu(action, varargin)</a>
+              </li>
+              <li id="function_17dea5d2-7f78-dafa-53d6-4bb2e2969b9c" class="" title="rri_orient(nii, varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_orient.m&amp;embed=web" title="rri_orient(nii, varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_orient.m&amp;embed=web">rri_orient(nii, varargin)</a>
+              </li>
+              <li id="function_8748deda-9ddc-9cca-c853-fe08d1353273" class="" title="rri_orient_ui(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_orient_ui.m&amp;embed=web" title="rri_orient_ui(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_orient_ui.m&amp;embed=web">rri_orient_ui(varargin)</a>
+              </li>
+              <li id="function_79f24628-f30b-97e1-1f74-45ca6cec28b0" class="" title="rri_select_file(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_select_file.m&amp;embed=web" title="rri_select_file(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_select_file.m&amp;embed=web">rri_select_file(varargin)</a>
+              </li>
+              <li id="function_0bc8176c-c60a-50e8-8127-9f0aaa05e725" class="" title="rri_xhair(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_xhair.m&amp;embed=web" title="rri_xhair(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_xhair.m&amp;embed=web">rri_xhair(varargin)</a>
+              </li>
+              <li id="function_2d91923d-748e-f2aa-1dd8-5e645e34db19" class="" title="rri_zoom_menu(fig)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_zoom_menu.m&amp;embed=web" title="rri_zoom_menu(fig)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Frri_zoom_menu.m&amp;embed=web">rri_zoom_menu(fig)</a>
+              </li>
+              <li id="function_bde71a53-2803-6a67-3216-ccc553c6f6bc" class="" title="save_nii(nii, fileprefix, old_RGB)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii.m&amp;embed=web" title="save_nii(nii, fileprefix, old_RGB)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii.m&amp;embed=web">save_nii(nii, fileprefix, old_RGB)</a>
+              </li>
+              <li id="function_a09f2df1-0c7d-d40b-e5a9-9bf233863249" class="" title="save_nii_ext(ext, fid)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii_ext.m&amp;embed=web" title="save_nii_ext(ext, fid)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii_ext.m&amp;embed=web">save_nii_ext(ext, fid)</a>
+              </li>
+              <li id="function_12c04c86-28b7-da8b-7a14-9bd3dfaa0c14" class="" title="save_nii_hdr(hdr, fid)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch0_nii_hdr.m&amp;embed=web" title="save_nii_hdr(hdr, fid)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch0_nii_hdr.m&amp;embed=web">save_nii_hdr(hdr, fid)</a>
+              </li>
+              <li id="function_8d80c80b-ad39-aa48-6db9-b107b50021fc" class="" title="save_nii_hdr(hdr, fid)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_nii_hdr.m&amp;embed=web" title="save_nii_hdr(hdr, fid)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_nii_hdr.m&amp;embed=web">save_nii_hdr(hdr, fid)</a>
+              </li>
+              <li id="function_be3ea81e-e052-701b-59e3-68a757072ef7" class="" title="save_nii_hdr(hdr, fid)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii_hdr.m&amp;embed=web" title="save_nii_hdr(hdr, fid)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_nii_hdr.m&amp;embed=web">save_nii_hdr(hdr, fid)</a>
+              </li>
+              <li id="function_f6ff8ec3-4263-09d4-c288-fdb17b5343d5" class="" title="save_untouch_header_only(hdr, filename)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_header_only.m&amp;embed=web" title="save_untouch_header_only(hdr, filename)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_header_only.m&amp;embed=web">save_untouch_header_only(hdr, filename)</a>
+              </li>
+              <li id="function_27cb1b86-6dff-8103-2f96-62cc01db8387" class="" title="save_untouch_nii(nii, filename)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_nii.m&amp;embed=web" title="save_untouch_nii(nii, filename)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_nii.m&amp;embed=web">save_untouch_nii(nii, filename)</a>
+              </li>
+              <li id="function_50d44ccf-46d7-3781-c3c8-460b22750281" class="" title="save_untouch_slice(slice, filename, slice_idx, img_idx, dim5_idx, dim6_idx, dim7_idx)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_slice.m&amp;embed=web" title="save_untouch_slice(slice, filename, slice_idx, img_idx, dim5_idx, dim6_idx, dim7_idx)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fsave_untouch_slice.m&amp;embed=web">save_untouch_slice(slice, filename, slice_idx, img_idx, dim5_idx, dim6_idx, dim7_idx)</a>
+              </li>
+              <li id="function_100f0d42-5146-f489-0436-ddadd27b31b6" class="" title="unxform_nii(nii, inblock)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Funxform_nii.m&amp;embed=web" title="unxform_nii(nii, inblock)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Funxform_nii.m&amp;embed=web">unxform_nii(nii, inblock)</a>
+              </li>
+              <li id="function_78fbe7ff-105b-cadf-7e98-4cc30e14a873" class="" title="verify_nii_ext(ext)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fverify_nii_ext.m&amp;embed=web" title="verify_nii_ext(ext)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fverify_nii_ext.m&amp;embed=web">verify_nii_ext(ext)</a>
+              </li>
+              <li id="function_a83bde55-da11-58c2-ea21-b4c3dea759c0" class="" title="view_nii(varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fview_nii.m&amp;embed=web" title="view_nii(varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fview_nii.m&amp;embed=web">view_nii(varargin)</a>
+              </li>
+              <li id="function_66d834aa-d70e-d806-a4fa-a70fe73b5f01" class="" title="view_nii_menu(fig, varargin)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fview_nii_menu.m&amp;embed=web" title="view_nii_menu(fig, varargin)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fview_nii_menu.m&amp;embed=web">view_nii_menu(fig, varargin)</a>
+              </li>
+              <li id="function_f7050626-d8c2-2f4d-5dfd-3669c7acfbc0" class="" title="xform_nii(nii, tolerance, preferredForm)">
+                <a href="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fxform_nii.m&amp;embed=web" title="xform_nii(nii, tolerance, preferredForm)" data-render-in-viewer-app="true"
+                data-iframe-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Fxform_nii.m&amp;embed=web">xform_nii(nii, tolerance, preferredForm)</a>
+              </li>
+          </ul>
+      </div>
+    </div>
+    <div class="col-xs-9">
+    	<div class="package__file-content">
+        <div class="panel panel-default package__file-content_panel" id="functions_iframe_holder">
+          <iframe id='functions_iframe' src="" data-default-src="https://viewer.mathworks.com/?viewer=plain_code&amp;url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F8797%2Fversions%2F28%2Fcontents%2Faffine.m&amp;embed=web"></iframe>
+        </div>
+      </div>
+    </div>
+</div>
+
+      </div>
+  <div class="tab-pane " id="reviews_tab">
+    
+
+  <div id="reviews" data-mlc-discussions="true" data-group-id="fx-reviews" data-created-by="757722" data-ref-id="e54e43bf-4a80-11e4-9553-005056977bd0" data-url= https://www.mathworks.com/matlabcentral/fileexchange/8797?tab=reviews></div>
+
+  </div>
+  <div class="tab-pane " id="discussions_tab">
+    
+
+  <div id="discussions" data-mlc-discussions="true" data-group-id="fx-comments" data-created-by="757722" data-ref-id="e54e43bf-4a80-11e4-9553-005056977bd0" data-url= https://www.mathworks.com/matlabcentral/fileexchange/8797?tab=discussions></div>
+
+  </div>
+</div>
+
+            </div>
+          </div>
+        </div>
+        <!-- end-of-the-tabs -->
+      </div>
+    </div>
+    <!-- end-of-the-page-container -->
+    
+    <script src="/matlabcentral/fileexchange/assets/file_infos/show-b71540842eac7fccd17af5fc4d7a6455c2a356cef8ea9a70d32a35a0417078c9.js"></script>
+    <script src="/matlabcentral/fileexchange/assets/ui/application-1f2e1c742897b7acbbe1ff65d4b7963bf288577ec22cd57bd64506d27be0a62a.js"></script>
+  </div>
+
+<script src="/matlabcentral/jscript/announcements_v1.js" data-app-name="File Exchange"></script>
+<script type="text/javascript">
+    $(function () {
+        $('[data-toggle="popover"]').popover({ html: true });
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // Has to run on window load and not DOMContentReady because we have to wait for the Quaularoo object to exist
+    window.addEventListener("load", function () {
+        // Qualaroo survey code added in web2020Jul -- all values must be strings
+        function setQualarooVars(userIsFollowing) {
+            if (typeof _kiq !== "undefined" && _kiq.push) {
+                let qualarooVars = {
+                    "userLoggedIn": "true",
+                    "userIsFollowing": userIsFollowing.toString(),
+                    "userIsAuthor":  "false"
+                }
+
+                _kiq.push(['set', qualarooVars]);
+            }
+        }
+
+        const followUiContainer = document.getElementById("follow");
+
+        // Follow UI container only exists if the current user is logged in
+        if (followUiContainer) {
+            const followService = new FollowService(followUiContainer);
+
+            followService.addEventListener("load", function(followingLoadEvent) {
+                setQualarooVars(followingLoadEvent.data.isFollowing);
+            });
+
+            followService.load();
+        } else {
+            setQualarooVars(false);
+        }
+    });
+
+    const discussionsContainer = document.getElementById("discussions");
+
+    if (discussionsContainer) {
+        const discussionsComponent = new DiscussionsService(
+            "e54e43bf-4a80-11e4-9553-005056977bd0",
+            "#discussions",
+            "fx-comments",
+            "discussions",
+            "https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image?tab=discussions",
+            "https://www.mathworks.com/login?uri=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Ffileexchange%2F8797-tools-for-nifti-and-analyze-image%3Ftab%3Ddiscussions&amp;form_type=community"
+        );
+        discussionsComponent.load();
+    }
+
+    const reviewsContainer = document.getElementById("reviews");
+
+    if (reviewsContainer) {
+        const reviewsComponent = new DiscussionsService(
+            "e54e43bf-4a80-11e4-9553-005056977bd0",
+            "#reviews",
+            "fx-reviews",
+            "reviews",
+            "https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image?tab=reviews",
+            "https://www.mathworks.com/login?uri=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Ffileexchange%2F8797-tools-for-nifti-and-analyze-image%3Ftab%3Dreviews&amp;form_type=community"
+        );
+        reviewsComponent.load();
+    }
+</script>
+</div>
+</div>
+	
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section><div>
+<div class="modalParsys parsys containsResourceName resourceClass-parsys">
+</div>
+</div>
+
+						<div id="location_content" style="display:none;"></div>
+
+<div class="modal fade" id="country-unselected" tabindex="-1" role="dialog" aria-labelledby="country-unselected-title" translate="no">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+				<img src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/pic-header-mathworks-logo.20220103150815220.svg" style="width:167px; height:auto;" class="mw_logo" alt="MathWorks - Domain Selector">
+</div>
+			<div class="modal-body">
+				<div class="row add_margin_40">
+					<div class="col-xs-12">
+						<p class="h1 icon-globe add_icon_color_darkblue" id="country-unselected-title">Select a Web
+							Site</p>
+						<p>Choose a web site to get translated content where available and see local events and
+							offers. Based on
+							your location, we recommend that you select: <strong class="recommended-country"></strong>.
+						</p>
+						<div class="default-recommendation">
+							<a href="#" id="recommended_domain_button" class="btn btn_color_blue containsResourceName resourceClass-button"><span class="recommended-country-button"></span></a>
+						</div>
+						<div class="ch-recommendation" style="display:none;">
+							<ul class="list-inline">
+<li class="add_display_block_xs add_margin_10_xs"><a href="//ch.mathworks.com" class="recommendation-button btn btn_color_blue btn-md add_display_block_xs" data-subdomain="ch" data-lang="en" data-recommended-text="Switzerland" data-default-lang="true" data-do-not-rewrite="true">Switzerland (English)</a></li>
+								<li class="add_display_block_xs add_margin_10_xs"><a href="//ch.mathworks.com" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ch" data-lang="de" data-recommended-text="Schweiz" data-do-not-rewrite="true">Switzerland (Deutsch)</a></li>
+								<li class="add_display_block_xs"><a href="//ch.mathworks.com" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ch" data-lang="fr" data-recommended-text="Suisse" data-do-not-rewrite="true">Switzerland (Français)</a></li>
+							</ul>
+</div>
+						<div class="zh-recommendation" style="display:none;">
+							<ul class="list-inline">
+<li class="add_display_block_xs add_margin_10_xs"><a href="//ww2.mathworks.cn" class="recommendation-button btn btn_color_blue btn-md add_display_block_xs" data-subdomain="ww2" data-lang="zh" data-recommended-text="中国" data-default-lang="true" data-do-not-rewrite="true">中国 (简体中文)</a></li>
+								<li class="add_display_block_xs"><a href="//ww2.mathworks.cn" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ww2" data-lang="en" data-recommended-text="China" data-do-not-rewrite="true">中国 (English)</a></li>
+							</ul>
+</div>
+					</div>
+				</div>
+				<p>You can also select a web site from the following list:</p>
+				<div class="alert alert-warning" id="china_performance_alert" style="display:none;">
+<span class="alert_icon icon-alert-warning"></span>
+					<h2>How to Get Best Site Performance</h2>
+					<p>Select the China site (in Chinese or English) for best site performance. Other MathWorks country
+						sites are not optimized for visits from your location.</p>
+				</div>
+				<div class="row add_margin_20">
+					<div class="col-sm-4 col-md-3">
+						<h3 class="add_bottom_rule">Americas</h3>
+						<ul class="list-unstyled">
+<li>
+<a href="//la.mathworks.com" class="domain_selector_link" data-country-code="LA" data-subdomain="la" data-lang="es" data-default-lang="true" data-selected-text="América Latina" data-recommended-text="América Latina" data-do-not-rewrite="true">América Latina</a> (Español)
+							</li>
+							<li>
+<a href="//www.mathworks.com" class="domain_selector_link" data-country-code="CA" data-subdomain="www" data-lang="en" data-do-not-rewrite="true">Canada</a> (English)
+							</li>
+							<li>
+<a href="//www.mathworks.com" class="domain_selector_link" data-country-code="US" data-subdomain="www" data-lang="en" data-default-lang="true" data-selected-text="United States" data-recommended-text="United States" data-do-not-rewrite="true">United States</a> (English)
+							</li>
+						</ul>
+</div>
+					<div class="col-sm-4 col-md-6">
+						<h3 class="add_bottom_rule">Europe</h3>
+						<div class="row">
+							<div class="col-xs-6 col-sm-12 col-md-6">
+								<ul class="list-unstyled add_margin_0_sm">
+<li>
+<a href="//nl.mathworks.com" class="domain_selector_link" data-country-code="BE" data-subdomain="nl" data-lang="en" data-do-not-rewrite="true">Belgium</a> (English)
+									</li>
+									<li>
+<a href="//se.mathworks.com" class="domain_selector_link" data-country-code="DK" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Denmark</a> (English)
+									</li>
+									<li>
+<a href="//de.mathworks.com" class="domain_selector_link" data-country-code="DE" data-subdomain="de" data-lang="de" data-default-lang="true" data-selected-text="Deutschland" data-recommended-text="Deutschland" data-do-not-rewrite="true">Deutschland</a> (Deutsch)
+									</li>
+									<li>
+<a href="//es.mathworks.com" class="domain_selector_link" data-country-code="ES" data-subdomain="es" data-lang="es" data-default-lang="true" data-selected-text="España" data-recommended-text="España" data-do-not-rewrite="true">España</a> (Español)
+									</li>
+									<li>
+<a href="//se.mathworks.com" class="domain_selector_link" data-country-code="FI" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Finland</a> (English)
+									</li>
+									<li>
+<a href="//fr.mathworks.com" class="domain_selector_link" data-country-code="FR" data-subdomain="fr" data-lang="fr" data-default-lang="true" data-selected-text="France" data-recommended-text="France" data-do-not-rewrite="true">France</a> (Français)
+									</li>
+									<li>
+<a href="//uk.mathworks.com" class="domain_selector_link" data-country-code="IE" data-subdomain="uk" data-lang="en" data-do-not-rewrite="true">Ireland</a> (English)
+									</li>
+									<li>
+<a href="//it.mathworks.com" class="domain_selector_link" data-country-code="IT" data-subdomain="it" data-lang="it" data-default-lang="true" data-selected-text="Italia" data-recommended-text="Italia" data-do-not-rewrite="true">Italia</a> (Italiano)
+									</li>
+									<li>
+<a href="//nl.mathworks.com" class="domain_selector_link" data-country-code="LU" data-subdomain="nl" data-lang="en" data-do-not-rewrite="true">Luxembourg</a> (English)
+									</li>
+								</ul>
+</div>
+							<div class="col-xs-6 col-sm-12 col-md-6">
+								<ul class="list-unstyled">
+<li>
+<a href="//nl.mathworks.com" class="domain_selector_link" data-country-code="NL" data-subdomain="nl" data-lang="en" data-default-lang="true" data-selected-text="Benelux" data-recommended-text="Netherlands" data-do-not-rewrite="true">Netherlands</a> (English)
+									</li>
+									<li>
+<a href="//se.mathworks.com" class="domain_selector_link" data-country-code="NO" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Norway</a> (English)
+									</li>
+									<li>
+<a href="//de.mathworks.com" class="domain_selector_link" data-country-code="AT" data-subdomain="de" data-lang="de" data-do-not-rewrite="true">Österreich</a> (Deutsch)
+									</li>
+									<li>
+<a href="//www.mathworks.com" class="domain_selector_link" data-country-code="PT" data-subdomain="www" data-lang="en" data-do-not-rewrite="true">Portugal</a> (English)
+									</li>
+									<li>
+<a href="//se.mathworks.com" class="domain_selector_link" data-country-code="Sweden" data-subdomain="se" data-lang="en" data-default-lang="true" data-selected-text="Nordic" data-recommended-text="Sweden" data-do-not-rewrite="true">Sweden</a> (English)
+									</li>
+									<li>Switzerland
+										<ul class="list-unstyled add_indent_20">
+<li>
+<a href="//ch.mathworks.com" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="de" data-selected-text="Schweiz" data-recommended-text="Schweiz" data-do-not-rewrite="true">Deutsch</a>
+											</li>
+											<li>
+<a href="//ch.mathworks.com" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="en" data-default-lang="true" data-selected-text="Switzerland" data-recommended-text="Switzerland" data-do-not-rewrite="true">English</a>
+											</li>
+											<li>
+<a href="//ch.mathworks.com" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="fr" data-selected-text="Suisse" data-recommended-text="Suisse" data-do-not-rewrite="true">Français</a>
+											</li>
+										</ul>
+</li>
+									<li>
+<a href="//uk.mathworks.com" class="domain_selector_link" data-country-code="GB" data-subdomain="uk" data-lang="en" data-default-lang="true" data-selected-text="United Kingdom" data-recommended-text="United Kingdom" data-do-not-rewrite="true">United Kingdom</a>
+										(English)
+									</li>
+								</ul>
+</div>
+						</div>
+					</div>
+					<div class="col-sm-4 col-md-3">
+						<h3 class="add_bottom_rule">Asia Pacific</h3>
+						<ul class="list-unstyled">
+<li>
+<a href="//au.mathworks.com" class="domain_selector_link" data-country-code="AU" data-subdomain="au" data-lang="en" data-default-lang="true" data-selected-text="Australia" data-recommended-text="Australia" data-do-not-rewrite="true">Australia</a> (English)
+							</li>
+							<li>
+<a href="//in.mathworks.com" class="domain_selector_link" data-country-code="IN" data-subdomain="in" data-lang="en" data-default-lang="true" data-selected-text="India" data-recommended-text="India" data-do-not-rewrite="true">India</a> (English)
+							</li>
+							<li>
+<a href="//au.mathworks.com" class="domain_selector_link" data-country-code="NZ" data-subdomain="au" data-lang="en" data-do-not-rewrite="true">New Zealand</a> (English)
+							</li>
+							<li>中国
+								<ul class="list-unstyled add_indent_20">
+<li>
+<a href="//ww2.mathworks.cn" class="domain_selector_link" data-country-code="CN" data-subdomain="ww2" data-lang="zh" data-default-lang="true" data-selected-text="中国" data-recommended-text="中国" data-do-not-rewrite="true">简体中文<span class="sr-only">Chinese</span>
+										</a>
+									</li>
+									<li>
+<a href="//ww2.mathworks.cn" class="domain_selector_link" data-country-code="CN" data-subdomain="ww2" data-lang="en" data-default-lang="true" data-selected-text="China" data-recommended-text="China" data-do-not-rewrite="true">English</a>
+									</li>
+								</ul>
+</li>
+							<li>
+<a href="//jp.mathworks.com" class="domain_selector_link" data-country-code="JP" data-subdomain="jp" data-lang="ja" data-default-lang="true" data-selected-text="日本" data-recommended-text="日本" data-do-not-rewrite="true">日本<span class="sr-only">Japanese</span></a> (日本語)
+							</li>
+							<li>
+<a href="//kr.mathworks.com" class="domain_selector_link" data-country-code="KR" data-subdomain="kr" data-lang="ko" data-default-lang="true" data-selected-text="한국" data-recommended-text="한국" data-do-not-rewrite="true">한국<span class="sr-only">Korean</span></a> (한국어)
+							</li>
+						</ul>
+</div>
+				</div>
+				<p class="text-center"><a href="#" class="worldwide_link">Contact your local office</a></p>
+			</div>
+		</div>
+	</div>
+</div>
+					
+				</div>
+			</div>
+			<div class="cta_container_mobile visible-sm visible-xs">
+	<div class="container-fluid">      
+		<div class="row">
+			<div class="col-xs-12">
+				<div>
+<div class="callToAction calltoactionheader containsResourceName resourceClass-calltoactionheader">
+
+
+	<div class="cta_box">
+		<ul class="list-inline">
+<li class="cta_item cta_item_general">
+				<a href="/campaigns/products/trials.html" class="
+						  icon-download
+						  " data-link="lead" data-offertype="trial">
+					Trial software
+				</a>
+			</li>
+		</ul>
+</div>
+
+
+
+</div>
+</div>
+			</div>
+		</div>
+	</div>
+</div>
+			
+			<footer id="footer" class="bs-footer"><div class="fat_footer_container">
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="fat_footer">
+<div class="fatFooterParsys iparsys parsys resourceClass-iparsys containsResourceName">
+<div class="section">
+<div class="new containsResourceName resourceClass-new"></div>
+</div>
+<div class="iparys_inherited">
+<div class="fatFooterParsys iparsys parsys containsResourceName resourceClass-par">
+<div class="cqColumns containsResourceName section resourceClass-columns">
+<div class="row   ">
+
+	
+		<div class=" col-xs-12 col-md-12 col-lg-3 add_margin_20">
+<div class="1 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="h4 add_font_futura_medium add_margin_0">MathWorks</p>
+<p><i>Accelerating the pace of engineering and science</i></p>
+
+</div>
+</div>
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p>MathWorks is the leading developer of mathematical computing software for engineers and scientists.</p>
+
+</div>
+</div>
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p><a href="/discovery.html?s_tid=hp_ff_a_discover" data-target="same">Discover…</a></p>
+</div>
+</div>
+
+</div>
+</div>
+	
+		<div class=" col-xs-12 col-md-12 col-lg-9">
+<div class="2 parsys containsResourceName resourceClass-parsys">
+<div class="cqColumns containsResourceName section resourceClass-columns">
+<div class="row add_margin_20  ">
+
+	
+		<div class=" col-xs-12 col-sm-2">
+<div class="1 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="ff_section_title"><a href="#fatfooter_products" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_products">Explore Products<span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_products"><ul class="list-unstyled">
+<li><a href="/products/matlab.html?s_tid=hp_ff_p_matlab" target="_self">MATLAB</a></li>
+<li><a href="/products/simulink.html?s_tid=hp_ff_p_simulink" target="_self">Simulink</a></li>
+<li><a href="/products/matlab/student.html?s_tid=hp_ff_p_student" target="_self">Student Software</a></li>
+<li><a href="/hardware-support/home.html?s_tid=hp_ff_p_hwsupport" target="_self">Hardware Support</a></li>
+<li><a href="/matlabcentral/fileexchange/?s_tid=hp_ff_p_fx">File Exchange</a></li>
+</ul></div>
+
+</div>
+</div>
+
+</div>
+</div>
+	
+		<div class=" col-xs-12 col-sm-2">
+<div class="2 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="ff_section_title"><a href="#fatfooter_buy" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_buy">Try or Buy<span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_buy"><ul class="list-unstyled">
+<li><a href="/downloads/web_downloads/?s_iid=hp_ff_t_downloads">Downloads</a></li>
+<li><a href="/campaigns/products/trials.html?s_iid=hp_ff_p_trial" data-target="same" data-link="lead" data-offertype="trial">Trial Software</a></li>
+<li><a href="/company/aboutus/contact_us/contact_sales.html?s_iid=hp_ff_t_sales" target="_self" data-link="lead" data-offertype="Contact Sales">Contact Sales</a></li>
+<li><a href="/pricing-licensing.html?s_iid=hp_ff_t_pricing" target="_self" data-link="lead" data-offertype="pl">Pricing and Licensing</a></li>
+<li><a href="/store/?s_iid=hp_ff_t_buy" target="_self" data-link="store">How to Buy</a></li>
+</ul></div>
+
+</div>
+</div>
+
+</div>
+</div>
+	
+		<div class=" col-xs-12 col-sm-2">
+<div class="3 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="ff_section_title"><a href="#fatfooter_use" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_use">Learn to Use<span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_use"><ul class="list-unstyled">
+<li><a href="/help/?s_tid=hp_ff_l_doc" data-target="same">Documentation</a></li>
+<li><a href="/support/learn-with-matlab-tutorials.html?s_tid=hp_ff_l_tutorials" data-target="same">Tutorials</a></li>
+<li><a href="/help/examples.html?s_tid=hp_ff_l_examples" data-target="same">Examples</a></li>
+<li><a href="/videos.html?s_tid=hp_ff_l_videos" target="_self">Videos and Webinars</a></li>
+<li><a href="/services/training.html?s_tid=hp_ff_l_training" target="_self">Training</a></li>
+</ul></div>
+
+</div>
+</div>
+
+</div>
+</div>
+	
+		<div class=" col-xs-12 col-sm-2">
+<div class="4 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="ff_section_title"><a href="#fatfooter_support" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_support">Get Support<span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_support"><ul class="list-unstyled">
+<li><a href="/help/install/?s_tid=hp_ff_s_install">Installation Help</a></li>
+<li><a href="/matlabcentral/answers/index?s_tid=hp_ff_s_answers">Answers</a></li>
+<li><a href="/services/consulting.html?s_tid=hp_ff_s_consulting" target="_self">Consulting</a></li>
+<li><a href="/licensecenter/?s_tid=hp_ff_s_license">License Center</a></li>
+<li><a href="/support/contact_us.html?s_tid=hp_ff_s_support" target="_self">Contact Support</a></li>
+</ul></div>
+
+</div>
+</div>
+
+</div>
+</div>
+	
+		<div class=" col-xs-12 col-sm-2">
+<div class="5 parsys containsResourceName resourceClass-parsys">
+<div class="text containsResourceName section resourceClass-text">
+<div class="mw-text   ">
+	<p class="ff_section_title"><a href="#fatfooter_about" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_about">About MathWorks<span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_about"><ul class="list-unstyled">
+<li><a href="/company/jobs/opportunities.html?s_tid=hp_ff_a_careers">Careers</a></li>
+<li><a href="/company/newsroom.html?s_tid=hp_ff_a_newsroom" target="_self">Newsroom</a></li>
+<li><a href="/company/aboutus/soc_mission.html?s_tid=hp_ff_a_socialmission" target="_self">Social Mission</a></li>
+<li><a href="/company/customer-stories.html?s_tid=hp_ff_a_customerstories" target="_self">Customer Stories</a></li>
+<li><a href="/company.html?s_tid=hp_ff_a_company" target="_self">About MathWorks</a></li>
+</ul></div>
+
+</div>
+</div>
+
+</div>
+</div>
+	
+</div>
+</div>
+
+</div>
+</div>
+	
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+		</div>
+	</div>
+</div>
+</div>
+
+	<!-- BASIC FOOTER CONTENT - Begin -->
+	<div class="container-fluid">
+		<div class="footer">
+			<div class="row">
+				<div class="col-xs-12 col-md-9">
+					<ul class="countrynav">
+<!-- Code to Remove Tracking from Previous page and add new tracking --><li class="footernav_country">
+							<a href="#" data-toggle="modal" data-target="#country-unselected">
+								<span class="sr-only">Select a Web Site</span>
+								<span class="icon-globe icon_color_quinary icon_16"></span><span id="countrySelectorButtonText">United States</span>
+							</a>
+						</li>
+					</ul>
+<div class="clearfix"></div>
+					<div>
+<div class="footerNavigation footernavigation containsResourceName resourceClass-footernavigation">
+	<ul class="footernav  ">
+<li class="footernav_footernav_patents">
+			<a href="/company/aboutus/policies_statements/trust-center.html?s_tid=gf_tc">Trust Center</a>
+		</li>
+	
+		<li class="footernav_footernav_trademarks">
+			<a href="/company/aboutus/policies_statements/trademarks.html?s_tid=gf_trd">Trademarks</a>
+		</li>
+	
+		<li class="footernav_footernav_privacy">
+			<a href="/company/aboutus/policies_statements.html?s_tid=gf_priv">Privacy Policy</a>
+		</li>
+	
+		<li class="footernav_footernav_piracy">
+			<a href="/company/aboutus/policies_statements/piracy.html?s_tid=gf_pir">Preventing Piracy</a>
+		</li>
+	
+		<li class="footernav_footernav_status">
+			<a href="https://status.mathworks.com/?s_tid=gf_application">Application Status</a>
+		</li>
+	
+		<li class="footernav_footernav_terms">
+			<a href="/matlabcentral/content/terms-of-use.html?s_tid=gf_terms">Terms of Use</a>
+		</li>
+	</ul>
+</div>
+</div>
+					
+					<div>
+<div class="footerCompanyAddress footercompanyaddress containsResourceName resourceClass-footercompanyaddress">
+	
+	<div class="cq-placeholder" data-emptytext="Footer Company Address"></div>
+
+</div>
+</div>
+					
+					<div>
+<div class="footerParsys iparsys parsys resourceClass-iparsys containsResourceName">
+<div class="section">
+<div class="new containsResourceName resourceClass-new"></div>
+</div>
+<div class="iparys_inherited">
+<div class="footerParsys iparsys parsys containsResourceName resourceClass-par"></div>
+</div>
+</div>
+</div>
+					
+					<div class="clearfix"></div>
+					<p class="copyright">© 1994-2022 The MathWorks, Inc.</p>
+				</div>
+				<div class="clearfix visible-sm add_margin_10"></div>
+				<div class="col-xs-12 col-md-3">
+					<div>
+<div class="socialMediaIconParsys iparsys parsys resourceClass-iparsys containsResourceName">
+<div class="section">
+<div class="new containsResourceName resourceClass-new"></div>
+</div>
+<div class="iparys_inherited">
+<div class="socialMediaIconParsys iparsys parsys containsResourceName resourceClass-par">
+<div class="socialmediaicon containsResourceName resourceClass-socialmediaicon section">
+
+
+	<div class="social_media  ">
+		<ul class="social_media_icons list-unstyled  ">
+<li>
+				<a href="https://www.facebook.com/MATLAB" class="svg_link" rel="noreferrer" target="_blank">
+					<img class="ico_facebook" alt="Facebook" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-facebook.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			<li>
+				<a href="https://www.twitter.com/MATLAB" class="svg_link" rel="noreferrer" target="_blank">
+					<img class="ico_twitter" alt="Twitter" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-twitter.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			<li>
+				<a href="https://www.instagram.com/matlab/" class="svg_link" rel="noreferrer" target="_blank">
+					<img class="ico_instagram" alt="Instagram" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-instagram.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			<li>
+				<a href="https://www.youtube.com/user/MATLAB" class="svg_link" rel="noreferrer" target="_blank">
+					<img class="ico_youtube" alt="YouTube" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-youtube.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			<li>
+				<a href="https://www.linkedin.com/company/the-mathworks_2" class="svg_link" rel="noreferrer" target="_blank">
+					<img class="ico_linkedin" alt="LinkedIn" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-linkedin.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			<li>
+				<a href="/company/rss.html" class="svg_link" rel="noreferrer">
+					<img class="ico_rss" alt="RSS" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-rss.20220103150815220.svg"></a>
+
+				 
+				
+			</li>
+			
+			
+		</ul>
+<div class="clearfix"></div>
+	</div>
+
+
+</div>
+</div>
+</div>
+</div>
+</div>
+					
+					<div class="clearfix"></div>
+					<p class="pull_right_sm pull_right_md pull_right_lg"><small class="percent_90"><em>Join the conversation</em></small></p>
+				</div>
+			</div>
+			
+		</div>
+
+	</div>
+	<!-- BASIC FAT FOOTER CONTENT - End -->
+</footer><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/domainredirect.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/akamai.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/lodash.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/condensedrelatedcontent.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/lightslider.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/matlabcentral.min.20220103150815220.js"></script><script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/matrixmenu.min.20220103150815220.js"></script><script>
+				if (typeof matrix !== 'undefined') {
+					matrix.show({
+						largeId: 'headernav_matrix',
+						smallId: ['matrix_affordance_container_mobile', 'matrix_menu_container_mobile'],
+						env: 'prod',
+						tier: 'DOTCOM',
+						lang: 'en'
+					});
+				}
+			</script>
+</body>
+</html>

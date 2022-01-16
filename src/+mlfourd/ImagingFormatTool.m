@@ -161,12 +161,16 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             assert(isnumeric(s))
             assert(3 == length(s))
             this.imagingInfo_.hdr.hist.originator = s;
-            this.imagingInfo_.hdr.hist.qoffset_x = 1 - s(1);
-            this.imagingInfo_.hdr.hist.qoffset_y = 1 - s(2);
-            this.imagingInfo_.hdr.hist.qoffset_z = 1 - s(3);
-            this.imagingInfo_.hdr.hist.srow_x(4) = 1 - s(1);
-            this.imagingInfo_.hdr.hist.srow_y(4) = 1 - s(2);
-            this.imagingInfo_.hdr.hist.srow_z(4) = 1 - s(3);
+            if this.imagingInfo_.hdr.hist.qform_code > 0
+                this.imagingInfo_.hdr.hist.qoffset_x = 1 - s(1);
+                this.imagingInfo_.hdr.hist.qoffset_y = 1 - s(2);
+                this.imagingInfo_.hdr.hist.qoffset_z = 1 - s(3);
+            end
+            if this.imagingInfo_.hdr.hist.sform_code > 0
+                this.imagingInfo_.hdr.hist.srow_x(4) = 1 - s(1);
+                this.imagingInfo_.hdr.hist.srow_y(4) = 1 - s(2);
+                this.imagingInfo_.hdr.hist.srow_z(4) = 1 - s(3);
+            end
         end
         function g = get.originator(this)
             g = this.hdr.hist.originator;
