@@ -93,13 +93,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function g = get.img(this)
             g = this.img_;
         end
-        function     set.img(this, g)
+        function     set.img(this, s)
             %  Args:
             %      im (numeric):  incoming imaging data
             %  Returns:
             %      this: with updated img, imagingInfo
             
-            this.adjustHdrForImg(g) % supports ImagingFormatTool
+            this.adjustHdrForImg(s) % supports ImagingFormatTool
         end
         function     set.logger(this, s)
             assert(isa(s, 'mlpipeline.ILogger'))
@@ -385,8 +385,10 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             this.filesystemRegistry_ = mlio.FilesystemRegistry.instance;
         end
 
-        function adjustHdrForImg(~, varargin)
-            %% supports ImagingFormatTool
+        function adjustHdrForImg(~)
+            %% supports ImagingFormatTool, which overrides
+            
+            error('mlfourd:NotImplementedError', 'ImagingFormatState2.adjustHdrForImg')
         end
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);

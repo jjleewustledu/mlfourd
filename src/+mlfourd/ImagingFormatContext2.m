@@ -102,6 +102,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.hdr;
         end
         function     set.img(this, s)
+            this.selectImagingFormatTool();
             this.state_.img = s;
         end
         function g = get.img(this)
