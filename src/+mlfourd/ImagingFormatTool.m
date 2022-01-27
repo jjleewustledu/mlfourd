@@ -332,6 +332,11 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             this.saveLogger();
         end 
         function [s,r] = view(this, varargin)
+            if isvector(this.img)
+                this.viewvec(varargin{:});
+                return
+            end
+
             s = []; r = '';
             try
                 % confirm viewer
@@ -369,6 +374,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 dispexcept(ME, 'mlfourd:RuntimeError', ...
                     'ImagingFormatTool.view called %s, which returned:\n\t%s', v.app, r);
             end
+        end
+        function viewvec(this, varargin)
+            plot(this.img, varargin{:});
         end
         function this = zoomed(this, varargin)
             %% ZOOMED parameters resembles fslroi; indexing starts with 0 and passing -1 for a size will set it to 
