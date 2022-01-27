@@ -204,14 +204,26 @@ classdef BlurringTool < handle & mlfourd.ImagingTool
         function imclose(this, varargin)
             this.morphologic(@imclose, varargin{:})
         end
+        function imclose_bin(this, varargin)
+            this.morphologic_bin(@imclose, varargin{:})
+        end
         function imdilate(this, varargin)
             this.morphologic(@imdilate, varargin{:})
+        end
+        function imdilate_bin(this, varargin)
+            this.morphologic_bin(@imdilate, varargin{:})
         end
         function imerode(this, varargin)
             this.morphologic(@imerode, varargin{:})
         end
+        function imerode_bin(this, varargin)
+            this.morphologic_bin(@imerode, varargin{:})
+        end
         function imopen(this, varargin)
             this.morphologic(@imopen, varargin{:})
+        end
+        function imopen_bin(this, varargin)
+            this.morphologic_bin(@imopen, varargin{:})
         end
         function imtophat(this, varargin)
             this.morphologic(@imtophat, varargin{:})
@@ -344,6 +356,18 @@ classdef BlurringTool < handle & mlfourd.ImagingTool
             end            
             this.fileprefix = sprintf('%s_%s', this.fileprefix, func2str(fhandle));
             this.addLog(sprintf('BlurringTool:  %s', func2str(fhandle)));
+        end
+        function morphologic_bin(this, fhandle, varargin)
+            if (4 == this.ndims)
+                for t = 1:size(this,4)
+                    this.imagingFormat_.img(:,:,:,t) = ...
+                        single(fhandle(logical(this.imagingFormat_.img(:,:,:,t))));
+                end
+            else
+                this.imagingFormat_.img = single(fhandle(logical(this.imagingFormat_), varargin{:}));
+            end            
+            this.fileprefix = sprintf('%s_%s_bin', this.fileprefix, func2str(fhandle));
+            this.addLog(sprintf('BlurringTool:  %s_bin', func2str(fhandle)));
         end
     end
     
