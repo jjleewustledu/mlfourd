@@ -877,12 +877,26 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imclose(varargin{:});
         end 
+        function that = imclose_bin(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imclose_bin(varargin{:});
+        end 
         function that = imdilate(this, varargin)            
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;
             that = copy(this);
             that.state_.imdilate(varargin{:});
+        end 
+        function that = imdilate_bin(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imdilate_bin(varargin{:});
         end 
         function that = imerode(this, varargin)            
             if (isempty(varargin));    that = this; return; end
@@ -891,12 +905,26 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imerode(varargin{:});
         end 
+        function that = imerode_bin(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imerode_bin(varargin{:});
+        end 
         function that = imopen(this, varargin)            
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;
             that = copy(this);
             that.state_.imopen(varargin{:});
+        end 
+        function that = imopen_bin(this, varargin)            
+            if (isempty(varargin));    that = this; return; end
+            if (isempty(varargin{1})); that = this; return; end
+            this.selectBlurringTool;
+            that = copy(this);
+            that.state_.imopen_bin(varargin{:});
         end 
         function that = imtophat(this, varargin)            
             if (isempty(varargin));    that = this; return; end

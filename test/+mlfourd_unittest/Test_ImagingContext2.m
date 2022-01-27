@@ -770,25 +770,44 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
         %% DynamicsTool
         
         function test_timeAveraged(this)
-            img = ones(2,2,2,4);
+            import mlfourd.*; 
 
-            import mlfourd.*;            
+            img = ones(2,2,2,4);           
             ic = ImagingContext2(img, 'compatibility', this.compatibility);
+            ic1 = ic.timeAveraged();
+            this.verifyEqual(double(ic1), ones(2,2,2));
             ic2 = ic.timeAveraged([2 3]);
             this.verifyEqual(double(ic2), ones(2,2,2));
-            ic3 = ic.timeAveraged;
+            ic3 = ic.timeAveraged('weights', ones(1,4)/4);
             this.verifyEqual(double(ic3), ones(2,2,2));
+            ic3 = ic.timeAveraged('taus', [1 1 1 1]);
+            this.verifyEqual(double(ic3), ones(2,2,2));
+
+            img = zeros(2,2,2,4);
+            img(:,:,:,2) = ones(2,2,2);
+            img(:,:,:,3) = 2*ones(2,2,2);
+            img(:,:,:,4) = 3*ones(2,2,2);
+            ic = ImagingContext2(img, 'compatibility', this.compatibility);
+            ic1 = ic.timeAveraged();
+            this.verifyEqual(double(ic1), 1.5*ones(2,2,2), 'AbsTol', 1e-15);
+            ic2 = ic.timeAveraged([2 3]);
+            this.verifyEqual(double(ic2), 1.5*ones(2,2,2), 'AbsTol', 1e-15);
+            ic3 = ic.timeAveraged('weights', [0 1 0.5 1/3]);
+            this.verifyEqual(double(ic3), 3*ones(2,2,2), 'AbsTol', 1e-15);
+            ic3 = ic.timeAveraged('taus', [0 1 2 3]);
+            this.verifyEqual(double(ic3), (14/6)*ones(2,2,2), 'AbsTol', 1e-15);
+            ic4 = ic.timeAveraged(2:4, 'weights', [0 1 0.5 1/3]);
+            this.verifyEqual(double(ic4), 3*ones(2,2,2), 'AbsTol', 1e-15);            
         end
         function test_timeContracted(this)
-            img = ones(2,2,2,4);
+            import mlfourd.*;  
 
-            import mlfourd.*;            
-            ic  = ImagingContext2(img, 'compatibility', this.compatibility);  
-            ic_ = ImagingContext2(img, 'compatibility', this.compatibility);            
+            img = ones(2,2,2,4);          
+            ic  = ImagingContext2(img, 'compatibility', this.compatibility);    
+            ic1 = ic.timeContracted;
+            this.verifyEqual(double(ic1), 4*ones(2,2,2));       
             ic2 = ic.timeContracted([2 3]);
             this.verifyEqual(double(ic2), 2*ones(2,2,2));
-            ic3 = ic_.timeContracted;
-            this.verifyEqual(double(ic3), 4*ones(2,2,2));
         end
         function test_volumeAveraged(this)
             img  = ones(2,2,2,4);
@@ -796,12 +815,11 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             mimg(1,1,1) = 1;
 
             import mlfourd.*;            
-            ic  = ImagingContext2(img, 'compatibility', this.compatibility);   
-            ic_ = ImagingContext2(img, 'compatibility', this.compatibility);        
+            ic  = ImagingContext2(img, 'compatibility', this.compatibility);  
+            ic1 = ic.volumeAveraged;
+            this.verifyEqual(double(ic1), [1 1 1 1]);      
             ic2 = ic.volumeAveraged(mimg);
             this.verifyEqual(double(ic2), [1 1 1 1]);
-            ic3 = ic_.volumeAveraged;
-            this.verifyEqual(double(ic3), [1 1 1 1]);
         end
         function test_volumeContracted(this)
             img  = ones(2,2,2,4);
@@ -810,11 +828,10 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             import mlfourd.*; 
             ic  = ImagingContext2(img, 'compatibility', this.compatibility);  
-            ic_ = ImagingContext2(img, 'compatibility', this.compatibility);
+            ic1 = ic.volumeContracted;
+            this.verifyEqual(double(ic1), [8 8 8 8]);
             ic2 = ic.volumeContracted(mimg);
             this.verifyEqual(double(ic2), [1 1 1 1]);
-            ic3 = ic_.volumeContracted;
-            this.verifyEqual(double(ic3), [8 8 8 8]);
             
 %             h = @improperMask;
 %             this.verifyWarning(h(ic, mimg), 'mlfourd:failedToVerify');            

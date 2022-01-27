@@ -217,10 +217,10 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             this.addLog('DynamicsTool.std');
         end
         function [this,T] = timeAveraged(this, varargin)
-            %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
-            %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
-            %  @param weights for each time \in T.
-            %  @param taus => weights := taus / sum(taus), superceding other requests for weights.
+            %  @param optional T \in \mathbb{N}^length(T), selecting time indices; 
+            %         e.g., [1 2 ... n] or [3 4 5 7 ... (n-1)].
+            %  @param weights to multiply each time, prior to selecting by T.  No normalizations provided.
+            %  @param taus := weights := taus / sum(taus), replacing other requests for weights.
             
             Nt = size(this.imagingFormat_, 4);
             ip = inputParser;
@@ -231,7 +231,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             ipr = ip.Results;
             T = ipr.T;
             if ~isempty(ipr.weights)
-                try                
+                try
                     ipr.weights = ipr.weights(T);                
                 catch ME
                     handexcept(ME, ...
@@ -241,7 +241,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             end
             
             if ~isempty(ipr.taus)
-                try                    
+                try
                     ipr.weights = ipr.taus / sum(ipr.taus);
                     ipr.weights = ipr.weights(T);                
                 catch ME
@@ -251,7 +251,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
                 end 
             end
             
-            if isempty(ipr.weights)               
+            if isempty(ipr.weights)
                 this.imagingFormat_.img = sum(this.imagingFormat_.img(:,:,:,T), 4, 'omitnan') / length(T);
                 namesAndLogging()
                 return
@@ -259,7 +259,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
                        
             this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,T); % truncate series
             for it = 1:length(T)
-                this.imagingFormat_.img(:,:,:,it) = ipr.weights(it) * this.imagingFormat_.img(:,:,:,it); % weight series
+                this.imagingFormat_.img(:,:,:,it) = ipr.weights(it) * this.imagingFormat_.img(:,:,:,it); % weighted series
             end
             this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan'); % sum series
             namesAndLogging()                        
@@ -273,8 +273,8 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             end
         end
         function [this,T] = timeContracted(this, varargin)
-            %  @param optional T \in \mathbb{N}^length(T), masks by time indices; 
-            %  e.g., [1 2 ... n] or [2 3 ... (n-1)].
+            %  @param optional T \in \mathbb{N}^length(T), selecting time indices; 
+            %         e.g., [1 2 ... n] or [3 4 5 7 ... (n-1)].
             
             ip = inputParser;
             addOptional(ip, 'T', 1:size(this.imagingFormat_,4), @isnumeric);
