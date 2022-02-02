@@ -7,6 +7,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
     properties
         compatibility = false
         do_view = false
+        MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0
         T1001 = 'T1001'
         T1001_ic_4dfp % anatDir
@@ -123,6 +124,9 @@ classdef Test_Imaging < matlab.unittest.TestCase
             import mlfourd.*
             this.pwd0 = pushd(this.TmpDir);
 
+            assert(isfile(this.large_4dfp))
+            assert(isfile(this.large_nii))
+
             if ~isfile(basename(this.fdg_ic_fqfn_nii))
                 copyfile(this.fdg_ic_fqfn_nii);
             end
@@ -144,12 +148,21 @@ classdef Test_Imaging < matlab.unittest.TestCase
             if ~isfile('T1.nii.gz')
                 mlbash('mri_convert T1.mgz T1.nii.gz')
             end
+            if ~isfile('T1_fslreorient2std.nii.gz')
+                mlbash('fslreorient2std T1.nii.gz T1_fslreorient2std.nii.gz')
+            end
+            if ~isfile('T1_fslreorient2std.4dfp.hdr')
+                mlbash('niftgz_4dfp -4 T1_fslreorient2std T1_fslreorient2std')
+            end
             if ~isfile('brain.mgz')
                 copyfile(fullfile(this.mriDir, 'brain.mgz'));
             end
             if ~isfile('brain.nii.gz')
                 mlbash('mri_convert brain.mgz brain.nii.gz')
             end
+            this.MNI152_LR_nii = ImagingContext2( ...
+                fullfile(getenv('FSLDIR'), 'data/standard/MNI152_T1_2mm_LR-masked.nii.gz'), ...
+                'compatibility', this.compatibility);
             this.T1001_ic_nii = ImagingContext2([this.T1001 '.nii.gz'], 'compatibility', this.compatibility);
             this.T1001_ic_4dfp = ImagingContext2([this.T1001 '.4dfp.hdr'], 'compatibility', this.compatibility);
         end
