@@ -302,7 +302,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 return
             end
             this.selectImagingTool; % supports compatibility
-            this.state_.selectFourdfpTool; % state_ returns a safe copy of nifti
+            this.state_.selectFourdfpTool; % state_ returns a safe copy of fourdfp
         end
         function this = selectImagingTool(this)
             if this.compatibility
