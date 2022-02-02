@@ -20,6 +20,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         hdr
         img
         logger
+        original
         stateTypeclass
         viewer
 
@@ -106,10 +107,15 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.state_.img = s;
         end
         function g = get.img(this)
+            this.selectImagingFormatTool();
             g = this.state_.img;
         end
         function g = get.logger(this)
             g = copy(this.state_.logger);
+        end
+        function g = get.original(this)
+            this.selectImagingFormatTool();
+            g = this.state_.original;
         end
         function g = get.stateTypeclass(this)
             g = class(this.state_);
@@ -366,41 +372,6 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         end
         function this = ensureSingle(this)
             this.state_ = this.state_.ensureSingle;
-        end
-        function        export(this, varargin)
-            %% supports .mat with conventions from Patrick Luckett
-            %  @param required fqfilename.
-            %  @param ndims is numeric.
-            
-            ip = inputParser;
-            addRequired(ip, 'fqfilename', @ischar)
-            addParameter(ip, 'ndims', 2, @isnumeric)
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-            
-            if ~strcmp(this.stateTypeclass, 'mlfourdfp.InnerFourdfp')
-                this.img = flip(this.img, 2);
-            end
-            switch ipr.ndims
-                case 2
-                    sz = size(this);
-                    if length(sz) < 4
-                        sz_ = sz;
-                        sz = ones(1,4);
-                        sz(1:length(sz_)) = sz_;
-                    end
-                    img = reshape(this.img, [prod(sz(1:3)) sz(4)]); %#ok<PROPLC>
-                otherwise
-                    error('mlfourd:RuntimeError', 'ImagingFormatContext.export.ipr.ndims->%g', ipr.ndims)
-            end
-            [~,~,x] = myfileparts(ipr.fqfilename);
-            switch x
-                case '.mat'
-                    save(ipr.fqfilename, 'img');
-                    clear('img')
-                otherwise
-                    error('mlfourd:RuntimeError', 'ImagingFormatContext.export.x->%s', x)
-            end
         end
         function        freeview(this, varargin)
             this.selectImagingFormatTool();
