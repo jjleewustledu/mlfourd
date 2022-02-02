@@ -1,5 +1,7 @@
 classdef FourdfpInfo < handle & mlfourd.Analyze75Info
-	%% FOURDFPINFO 
+	%% FOURDFPINFO relies on Jimmy Shen's mlniftitools to obtain header information from 4dfp files,
+    %  restructuring for internal representation as NIfTI whenever possible.  It also manages 
+    %  ifh and img.rec files needed by 4dfp.
     %  See also ${TRANSFER}/4dfp_format.txt
     
     %% 4dfp OVERVIEW
@@ -260,49 +262,12 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
  	%  last modified $LastChangedDate$ and placed into repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
-    properties (Constant) 
-        FILETYPE      = '4DFP'
-        FILETYPE_EXT  = '.4dfp.hdr'
-        FOURDFP_EXT   = '.4dfp.hdr';
-        SUPPORTED_EXT = {'.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec'};
-    end
-    
-    properties (Dependent)
-        ifh
-        ifh_orientation
-        imgrec
-    end
-    
     methods (Static)
         function e       = defaultFilesuffix
             e =  mlfourd.FourdfpInfo.FILETYPE_EXT;
         end
-        function [X,hdr] = exportFourdfp(X, hdr)
-            %% EXPORTFOURDFP
-            %  Use to maintain interoperability with output of niftigz_4dfp -4 <in.nii.gz> <out.4dfp.hdr> -N
-            %  niftigz_4dfp is not compliant with NIfTI qfac.
-            
-            import mlfourd.FourdfpInfo.*;
-            if (hdrIsReasonableSurfer(hdr))
-                switch ndims(X)
-                    case 3
-                        X = permute(X, [1 3 2]); % rl, pa, si with respect to fsleyes voxel/world orientations
-                    case 4
-                        X = permute(X, [1 3 2 4]); % rl, pa, si with respect to fsleyes voxel/world orientations
-                    otherwise
-                end
-                %X = flip(X,1);
-                X = flip(X,3);
-                
-                %X = flip(X,1);
-                X = flip(X,2);
-            else
-                X = flip(X,1);
-                X = flip(X,2);
-            end
-            hdr = adjustHdrForExport(hdr);
-        end
         function [X,hdr] = exportFourdfpToFreesurferSpace(X, hdr)
+            %% support mgh|mgz with FreeSurfer-styled imaging array ordering.
             
             import mlfourd.FourdfpInfo.*;
             if (hdrIsReasonableSurfer(hdr))
@@ -311,7 +276,9 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
                 X = permute(X, [1 3 2]);
             end
         end
-        function X       = exportFourdfpToNIfTI(X, varargin)
+        function [X,hdr] = exportFourdfpToNIfTI(X, hdr)
+            %% provides symmetries for the app programming interface, but performs no transformations 
+            %  since internal representations must be NIfTI compatible
         end
         function [X,hdr] = exportFreeSurferSpaceToFourdfp(X, hdr)
             %% EXPORTFREESURFERSPACETOFOURDFP
@@ -324,16 +291,13 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
                 X = flip(X,1);
                 X = flip(X,3);
             end
-            hdr = adjustHdrForExport(hdr);    
+            %hdr = adjustHdrForExport(hdr);    
             
             % eigen flips
             % X = flip(X,1); % rl, pa, si -> LR, pa, si
             % X = flip(X,2); % rl, pa, si -> rl, AP, si 
             % X = flip(X,3); % rl, pa, si -> rl, pa, IS
             % rl, AP, IS is target for 4dfp
-        end
-        function tf      = hdrIsReasonableNii(~)
-            tf = false;
         end
         function tf      = hdrIsReasonableSurfer(hdr)
             tf = all(abs(hdr.hist.srow_x( 2:3 ))             < 0.05) && ...
@@ -358,6 +322,19 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         end
     end
 
+    properties (Constant) 
+        FILETYPE      = '4DFP'
+        FILETYPE_EXT  = '.4dfp.hdr'
+        FOURDFP_EXT   = '.4dfp.hdr';
+        SUPPORTED_EXT = {'.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec'};
+    end
+    
+    properties (Dependent)
+        ifh
+        ifh_orientation
+        imgrec
+    end
+    
 	methods 
         
         %% GET, SET
@@ -405,54 +382,10 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         function fqfn = fqfileprefix_4dfp_imgrec(this)
             fqfn = strcat(this.fqfileprefix, '.4dfp.img.rec');
         end
-        
-        function [X,untouch,hdr] = analyze75read(this)
-            %% calls mlniftitools.load_nii
-            
-            jimmy = this.load_nii; % struct
-            X = jimmy.img; % identical to nii0 = load_untouch_nii(<from nifti_4dfp -n>); nii0.img
-            X = flip(X, 1); % storage order := Neurological, removing Analyze conventions  
-            X = this.importFourdfp(X, struct(this.ifh).orientation);
-            X = this.ensureDatatype(X, this.datatype_);
-            untouch = false;
-            hdr = this.adjustHdr(jimmy.hdr);
-        end
-        function hdr  = recalculateHdrHistOriginator(this, hdr)
-            [~,srow] = this.imgrecread;
-            if (~isempty(srow) && ~this.N)
-                hdr.hist.originator(1) = -srow(1,4);
-                hdr.hist.originator(2) = -srow(2,4);
-                hdr.hist.originator(3) = -srow(3,4);
-            end
-            
-            hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
-            hdr.hist.qform_code = 0;
-            hdr.hist.sform_code = 1;
-            
-                                    % a = 0.5  * sqrt(1 + trace(R)) = 0.5 + sqrt(2);
-            hdr.hist.quatern_b = 0; % 0.25 * (R(3,2) - R(2,3)) / a;
-            hdr.hist.quatern_c = 0; % 0.25 * (R(1,3) - R(3,1)) / a;
-            hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
-            
-            if (isfield(hdr.hist, 'originator'))
-                hdr.hist.qoffset_x = (1-hdr.hist.originator(1))*hdr.dime.pixdim(2);
-                hdr.hist.qoffset_y = (1-hdr.hist.originator(2))*hdr.dime.pixdim(3);
-                hdr.hist.qoffset_z = (1-hdr.hist.originator(3))*hdr.dime.pixdim(4);            
-
-                % for compliance with NIfTI format
-                srow = [[hdr.dime.pixdim(2) 0 0           ( 1-hdr.hist.originator(1))*hdr.dime.pixdim(2)]; ...
-                        [0 hdr.dime.pixdim(3) 0           ( 1-hdr.hist.originator(2))*hdr.dime.pixdim(3)]; ...
-                        [0 0 hdr.dime.pixdim(4)*this.qfac ( 1-hdr.hist.originator(3))*hdr.dime.pixdim(4)]];
-                hdr.hist.srow_x = srow(1,:);
-                hdr.hist.srow_y = srow(2,:);
-                hdr.hist.srow_z = srow(3,:); 
-            end
-                       
-            hdr = mlniftitools.extra_nii_hdr(hdr);
-            hdr = this.adjustDime(hdr);
-            hdr = this.adjustHist(hdr);
-        end        
+               
         function save(this)
+            %% saves ifh, img.reg
+
             assert(lstrfind(this.filesuffix, '.4dfp'));
             try                
                 warning('off', 'MATLAB:structOnObject');            
@@ -470,7 +403,7 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         end
         
  		function this = FourdfpInfo(varargin)
- 			%% FOURDFPINFO
+ 			%% FOURDFPINFO calls Analyze75Info() -> mlniftitools.load_untouch_header_only
  			%  @param filename is required.
  			
             this = this@mlfourd.Analyze75Info(varargin{:});
@@ -489,6 +422,13 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             that.ifh_ = copy(this.ifh_);
             that.imgrec_ = copy(this.imgrec_);
         end
+        function nii = ensureOrientation(~, nii)
+            %% brings analyze neurological to nifti radiological; no qfac available in analzye
+            %  brings 4dfp orientation to nifti orientation
+
+            assert(~ishandle(nii))
+            nii.img = flip(nii.img, 2);
+        end
     end
     
     %% PRIVATE
@@ -496,38 +436,6 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
     properties (Access = private)
         ifh_ % struct
         imgrec_ % cell
-    end
-    
-    methods (Static, Access = private)
-        function hdr = adjustHdrForExport(hdr)
-            %% ADJUSTHDRFOREXPORT
-            %  Use to maintain interoperability with output of niftigz_4dfp -4 <in.nii.gz> <out.4dfp.hdr> -N
-            %  niftigz_4dfp is not compliant with NIfTI qfac.
-            
-            if (mlfourd.FourdfpInfo.hdrIsReasonableNii(hdr))
-                return
-            end
-            
-            hdr.hist.qform_code = 0;
-            hdr.hist.sform_code = 1;
-            
-            fx = 1;
-            fy = 1;
-            fz = 1;
-            %fx = hdr.dime.pixdim(2);
-            %fy = hdr.dime.pixdim(3);
-            %fz = hdr.dime.pixdim(4);
-            
-            assert(mlpipeline.ResourcesRegistry.instance().defaultN);
-            
-            srow = [ [hdr.dime.pixdim(2) 0 0 (1-hdr.hist.originator(1))*fx]; ...
-                     [0 hdr.dime.pixdim(3) 0 (1-hdr.hist.originator(2))*fy]; ...
-                     [0 0 hdr.dime.pixdim(4) (1-hdr.hist.originator(3))*fz] ];
-            
-            hdr.hist.srow_x = -srow(1,:);
-            hdr.hist.srow_y =  srow(2,:);
-            hdr.hist.srow_z =  srow(3,:);
-        end
     end
     
     methods (Access = private)
@@ -557,22 +465,22 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             s = struct(p);
             
             %% possibly breaking pipeline
-%             assert(lstrfind(lower(this.ImgDataType), lower(s.number_format)), ...
-%                 'mlfourd:inconsistentParamValue', ...
-%                 'FourdfpInfo.ifhread.ifh.number_format->%s != %s', ...
-%                 s.number_format, this.ImgDataType);            
-%            [~,fp] = myfileparts(s.name_of_data_file);
-%            assert(lstrfind(fp, this.fileprefix), ...
-%               'mlfourd:inconsistentParamValue', ...
-%               'FourdfpInfo.ifhread.ifh.name_of_data_file->%s ~= %s', ... 
-%                s.name_of_data_file, this.fileprefix);
-%            assert(s.number_of_bytes_per_pixel == this.BitDepth/8, ...
-%                'mlfourd:inconsistentParamValue', ...
-%                'FourdfpInfo.ifhread.ifh.number_of_bytes_per_pixel->%g != %g', ...
-%                 s.number_of_bytes_per_pixel, this.BitDepth/8);
-%            assert(this.consistentByteOrder(s.imagedata_byte_order), ...
-%                'mlfourd:inconsistentParamValue', ...
-%                'FourdfpInfo.ifhread.ifh.imagedata_byte_order->%s', s.imagedata_byte_order);
+            % assert(lstrfind(lower(this.ImgDataType), lower(s.number_format)), ...
+            %     'mlfourd:inconsistentParamValue', ...
+            %     'FourdfpInfo.ifhread.ifh.number_format->%s != %s', ...
+            %     s.number_format, this.ImgDataType);            
+            % [~,fp] = myfileparts(s.name_of_data_file);
+            % assert(lstrfind(fp, this.fileprefix), ...
+            %   'mlfourd:inconsistentParamValue', ...
+            %   'FourdfpInfo.ifhread.ifh.name_of_data_file->%s ~= %s', ... 
+            %    s.name_of_data_file, this.fileprefix);
+            % assert(s.number_of_bytes_per_pixel == this.BitDepth/8, ...
+            %    'mlfourd:inconsistentParamValue', ...
+            %    'FourdfpInfo.ifhread.ifh.number_of_bytes_per_pixel->%g != %g', ...
+            %     s.number_of_bytes_per_pixel, this.BitDepth/8);
+            % assert(this.consistentByteOrder(s.imagedata_byte_order), ...
+            %    'mlfourd:inconsistentParamValue', ...
+            %    'FourdfpInfo.ifhread.ifh.imagedata_byte_order->%s', s.imagedata_byte_order);
             assert(this.consistentOrientation(s.orientation), ...
                 'mlfourd:inconsistentParamValue', ...
                 'FourdfpInfo.ifhread.ifh.orientation->%g', s.orientation);   

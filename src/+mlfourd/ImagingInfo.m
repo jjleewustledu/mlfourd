@@ -50,6 +50,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         filetype
         machine
         N % keeps track of the option "-N" used by nifti_4dfp
+        original
         untouch
     end
     
@@ -92,11 +93,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             e =  mlfourd.NIfTIInfo.FILETYPE_EXT;
         end
         function X = ensureDatatype(X, dt)
-            %  @param X is numeric.
+            %  @param X is numeric | text.
             %  @param dt is char for the datatype; cf. compmlete listing in help('mlfourd.ImagingInfo').
             %  @return X cast as dt.
             
-            if (isempty(dt))
+            if isempty(dt)
                 return
             end
             switch (dt)
@@ -137,7 +138,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                         X = uint64(X);
                     end
                 otherwise
-                    error('mlfourd:unsupportSwitchcase', 'ImagingInfo.ensureDatatype.dt');
+                    warning('mlfourd:ValueWarning', 'ImagingInfo.ensureDatatype.dt->%s', dt);
             end
         end
         function f = tempFqfilename
@@ -215,10 +216,10 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.circshiftK_ = s;
         end
         function g = get.qfac(this)
-            g = this.hdr.dime.pixdim(1);
-            if (0 == g)
-                g = 1;
+            if 0 == this.hdr.dime.pixdim(1)
+                this.hdr.dime.pixdim(1) = -1;
             end
+            g = this.hdr.dime.pixdim(1);
         end         
         function g = get.qform_code(this)
             g = this.hdr.hist.qform_code;
@@ -273,14 +274,14 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function     set.hdr(this, s)
             assert(isstruct(s));
             this.hdr_ = s;
-            this.untouch_ = false;
+            this.untouch_ = [];
         end
         function g = get.ext(this)
             g = this.ext_;
         end
         function     set.ext(this, s)
             this.ext_ = s;
-            this.untouch_ = false;
+            this.untouch_ = [];
         end
         function     set.filesystem(this, s)
             assert(isa(s, 'mlio.HandleFilesystem'))
@@ -295,16 +296,18 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function     set.filetype(this, s)
             assert(isnumeric(s));
             this.filetype_ = s;
-            this.untouch_ = false;
+            this.untouch_ = [];
         end
         function g = get.machine(this)
             g = this.machine_;
             if (isempty(g))
                 [~,~,m] = computer;
-                if (strcmp(m, 'L'))
-                    g = 'ieee-le';
+                if (strcmpi(m, 'L'))
+                    this.machine_ = 'ieee-le';
+                    g = this.machine_;
                 else
-                    g = 'ieee-be';
+                    this.machine_ = 'ieee-be';
+                    g = this.machine_;
                 end
             end
         end
@@ -315,11 +318,14 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             assert(islogical(s));
             this.N_ = s;
         end
+        function g = get.original(this)
+            g = this.original_;
+        end
         function g = get.untouch(this)
             g = this.untouch_;
         end
         function     set.untouch(this, s)
-            this.untouch_ = logical(s);
+            this.untouch_ = double(s);
         end
         
         %%
@@ -329,8 +335,54 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 hdr.dime.datatype = this.datatype_;
                 hdr.dime.bitpix = this.newBitpix;
             end
-            hdr = this.permuteHdr(hdr);
-            hdr = this.adjustHistOriginator(hdr);
+
+            % terrible KLUDGE which should be replaced by fslreorient2std or equivalent
+            if this.circshiftK_ ~= 0
+                hdr = this.permuteHdr(hdr);
+            end
+
+            % ensures consistency with nifti_4dfp.            
+            if ~isfield(hdr.hist, 'originator') || ...
+                    norm(hdr.hist.originator) < eps || ...
+                    (isa(this, 'mlfourd.FourdfpInfo') && this.N)
+                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* ...
+                                      double(hdr.dime.dim(2:4) - 1)/2;
+            end
+
+            % manage qform_code for scanner and sform_code for atlas
+            if hdr.hist.qform_code == 0 && hdr.hist.sform_code == 0
+                hdr.hist.sform_code = 1;
+            end
+
+            % manage 4dfp problems with
+            % srow_x: [0 0 0 0]
+            % srow_y: [0 0 0 0]
+            % srow_z: [0 0 0 0]
+            if all([0 0 0 0] == hdr.hist.srow_x) || ...
+               all([0 0 0 0] == hdr.hist.srow_y) || ...
+               all([0 0 0 0] == hdr.hist.srow_z)
+
+                hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
+
+                % for compliance with NIfTI format
+                % +x = Right; -y = Posterior; -z = Inferior
+                
+                                        % a = 0.5  * sqrt(1 + trace(R));
+                hdr.hist.quatern_b = 0; % 0.25 * (R(3,2) - R(2,3)) / a;
+                hdr.hist.quatern_c = 1; % 0.25 * (R(1,3) - R(3,1)) / a;
+                hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
+            
+                hdr.hist.qoffset_x =  hdr.hist.originator(1);
+                hdr.hist.qoffset_y = -hdr.hist.originator(2);
+                hdr.hist.qoffset_z = -hdr.hist.originator(3);            
+
+                srow = [[-hdr.dime.pixdim(2) 0 0  hdr.hist.originator(1)]; ...
+                        [0  hdr.dime.pixdim(3) 0 -hdr.hist.originator(2)]; ...
+                        [0  0 hdr.dime.pixdim(4) -hdr.hist.originator(3)]];
+                hdr.hist.srow_x = srow(1,:);
+                hdr.hist.srow_y = srow(2,:);
+                hdr.hist.srow_z = srow(3,:);
+            end
         end         
         function this = append_descrip(this, varargin) 
             %% APPEND_DESCRIP
@@ -348,21 +400,298 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function c = char(this)
             c = char(this.filesystem_);
         end
-        function nii = load_nii(this)
-            nii = mlniftitools.load_nii(this.fqfilename);
+        function tf = isanalyze(this)
+            tf =       isfield(this.hdr_.hk,   'hkey_un0');
+            tf = tf && isfield(this.hdr_.dime, 'vox_units');
+            tf = tf && isfield(this.hdr_.dime, 'cal_units');
+            tf = tf && isfield(this.hdr_.dime, 'unused1');
+            tf = tf && isfield(this.hdr_.dime, 'dim_un0');
+            tf = tf && isfield(this.hdr_.dime, 'roi_scale');
+            tf = tf && isfield(this.hdr_.dime, 'funused1');
+            tf = tf && isfield(this.hdr_.dime, 'funused2');
+            tf = tf && isfield(this.hdr_.dime, 'compressed');
+            tf = tf && isfield(this.hdr_.dime, 'verified');
+            tf = tf && isfield(this.hdr_.hist, 'orient');
+            tf = tf && isfield(this.hdr_.hist, 'generated');
+            tf = tf && isfield(this.hdr_.hist, 'scannum');
+            tf = tf && isfield(this.hdr_.hist, 'patient_id');
+            tf = tf && isfield(this.hdr_.hist, 'exp_date');
+            tf = tf && isfield(this.hdr_.hist, 'exp_time');
+            tf = tf && isfield(this.hdr_.hist, 'hist_un0');
+            tf = tf && isfield(this.hdr_.hist, 'views');
+            tf = tf && isfield(this.hdr_.hist, 'vols_added');
+            tf = tf && isfield(this.hdr_.hist, 'start_field');
+            tf = tf && isfield(this.hdr_.hist, 'field_skip');
+            tf = tf && isfield(this.hdr_.hist, 'omax');
+            tf = tf && isfield(this.hdr_.hist, 'omin');
+            tf = tf && isfield(this.hdr_.hist, 'smax');
+            tf = tf && isfield(this.hdr_.hist, 'smin');
         end
+        function tf = isnifti(this)
+            tf =       isfield(this.hdr_.hk,   'dim_info');
+            tf = tf && isfield(this.hdr_.dime, 'intent_p1');
+            tf = tf && isfield(this.hdr_.dime, 'intent_p2');
+            tf = tf && isfield(this.hdr_.dime, 'intent_p3');
+            tf = tf && isfield(this.hdr_.dime, 'intent_code');
+            tf = tf && isfield(this.hdr_.dime, 'slice_start');
+            tf = tf && isfield(this.hdr_.dime, 'scl_slope');
+            tf = tf && isfield(this.hdr_.dime, 'scl_inter');
+            tf = tf && isfield(this.hdr_.dime, 'slice_end');
+            tf = tf && isfield(this.hdr_.dime, 'slice_code');
+            tf = tf && isfield(this.hdr_.dime, 'xyzt_units');
+            tf = tf && isfield(this.hdr_.dime, 'slice_duration');
+            tf = tf && isfield(this.hdr_.dime, 'toffset');
+            tf = tf && isfield(this.hdr_.hist, 'qform_code');
+            tf = tf && isfield(this.hdr_.hist, 'sform_code');
+            tf = tf && isfield(this.hdr_.hist, 'quatern_b');
+            tf = tf && isfield(this.hdr_.hist, 'quatern_c');
+            tf = tf && isfield(this.hdr_.hist, 'quatern_d');
+            tf = tf && isfield(this.hdr_.hist, 'qoffset_x');
+            tf = tf && isfield(this.hdr_.hist, 'qoffset_y');
+            tf = tf && isfield(this.hdr_.hist, 'qoffset_z');
+            tf = tf && isfield(this.hdr_.hist, 'srow_x');
+            tf = tf && isfield(this.hdr_.hist, 'srow_y');
+            tf = tf && isfield(this.hdr_.hist, 'srow_z');
+            tf = tf && isfield(this.hdr_.hist, 'intent_name');
+            tf = tf && isfield(this.hdr_.hist, 'magic');
+        end
+        function nii = load_nii(this, varargin)
+            %  Load NIFTI or ANALYZE dataset. Support both *.nii and *.hdr/*.img
+            %  file extension. If file extension is not provided, *.hdr/*.img will
+            %  be used as default.
+            %
+            %  A subset of NIFTI transform is included. For non-orthogonal rotation,
+            %  shearing etc., please use 'reslice_nii.m' to reslice the NIFTI file.
+            %  It will not cause negative effect, as long as you remember not to do
+            %  slice time correction after reslicing the NIFTI file. Output variable
+            %  nii will be in RAS orientation, i.e. X axis from Left to Right,
+            %  Y axis from Posterior to Anterior, and Z axis from Inferior to
+            %  Superior.
+            %  
+            %  Usage: nii = load_nii(filename, [img_idx], [dim5_idx], [dim6_idx], ...
+            %			[dim7_idx], [old_RGB], [tolerance], [preferredForm])
+            %  
+            %  filename  - 	NIFTI or ANALYZE file name.
+            %  
+            %  img_idx (optional)  -  a numerical array of 4th dimension indices,
+            %	which is the indices of image scan volume. The number of images
+            %	scan volumes can be obtained from get_nii_frame.m, or simply
+            %	hdr.dime.dim(5). Only the specified volumes will be loaded. 
+            %	All available image volumes will be loaded, if it is default or
+            %	empty.
+            %
+            %  dim5_idx (optional)  -  a numerical array of 5th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  dim6_idx (optional)  -  a numerical array of 6th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  dim7_idx (optional)  -  a numerical array of 7th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  old_RGB (optional)  -  a scale number to tell difference of new RGB24
+            %	from old RGB24. New RGB24 uses RGB triple sequentially for each
+            %	voxel, like [R1 G1 B1 R2 G2 B2 ...]. Analyze 6.0 from AnalyzeDirect
+            %	uses old RGB24, in a way like [R1 R2 ... G1 G2 ... B1 B2 ...] for
+            %	each slices. If the image that you view is garbled, try to set 
+            %	old_RGB variable to 1 and try again, because it could be in
+            %	old RGB24. It will be set to 0, if it is default or empty.
+            %
+            %  tolerance (optional) - distortion allowed in the loaded image for any
+            %	non-orthogonal rotation or shearing of NIfTI affine matrix. If 
+            %	you set 'tolerance' to 0, it means that you do not allow any 
+            %	distortion. If you set 'tolerance' to 1, it means that you do 
+            %	not care any distortion. The image will fail to be loaded if it
+            %	can not be tolerated. The tolerance will be set to 0.1 (10%), if
+            %	it is default or empty.
+            %
+            %  preferredForm (optional)  -  selects which transformation from voxels
+            %	to RAS coordinates; values are s,q,S,Q.  Lower case s,q indicate
+            %	"prefer sform or qform, but use others if preferred not present". 
+            %	Upper case indicate the program is forced to use the specificied
+            %	tranform or fail loading.  'preferredForm' will be 's', if it is
+            %	default or empty.	- Jeff Gunter
+            %
+            %  Returned values:
+            %  
+            %  nii structure:
+            %
+            %	hdr -		struct with NIFTI header fields.
+            %
+            %	filetype -	Analyze format .hdr/.img (0); 
+            %			NIFTI .hdr/.img (1);
+            %			NIFTI .nii (2)
+            %
+            %	fileprefix - 	NIFTI filename without extension.
+            %
+            %	machine - 	machine string variable.
+            %
+            %	img - 		3D (or 4D) matrix of NIFTI data.
+            %
+            %	original -	the original header before any affine transform.
+            %  
+            %  Part of this file is copied and modified from:
+            %  http://www.mathworks.com/matlabcentral/fileexchange/1878-mri-analyze-tools
+            %  
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %  
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+
+            nii = mlniftitools.load_nii(this.fqfilename, varargin{:});
+            nii = this.ensureOrientation(nii);
+            nii.img = this.ensureDatatype(nii.img, this.datatype_);
+            nii.hdr = mlniftitools.extra_nii_hdr(nii.hdr);
+            nii.hdr.hist.qform_code = nii.original.hdr.hist.qform_code; % address mlniftitools bug
+            nii.hdr.hist.sform_code = nii.original.hdr.hist.sform_code; %
+            nii.hdr = this.adjustHdr(nii.hdr);
+            this.hdr_ = nii.hdr;
+            this.filetype_ = nii.filetype;
+            this.machine_ = nii.machine;
+            this.original_ = nii.original;
+            this.hdr.extra = nii.hdr.extra;
+            this.ext_ = [];
+            this.untouch_ = [];
+        end        
         function [h,e,f,m] = load_untouch_header_only(this)
-            % @return h := hdr
-            % @return e := ext
-            % @return f := filetype
-            % @return m := machine, 'ieee-le'|'ieee-be'
+            %  Load NIfTI / Analyze header without applying any appropriate affine
+            %  geometric transform or voxel intensity scaling. It is equivalent to
+            %  hdr field when using load_untouch_nii to load dataset. Support both
+            %  *.nii and *.hdr file extension. If file extension is not provided,
+            %  *.hdr will be used as default.
+            %  
+            %  Usage: [header, ext, filetype, machine] = load_untouch_header_only(filename)
+            %  
+            %  filename - NIfTI / Analyze file name.
+            %  
+            %  Returned values:
+            %  
+            %  header - struct with NIfTI / Analyze header fields.
+            %  
+            %  ext - NIfTI extension if it is not empty.
+            %  
+            %  filetype	- 0 for Analyze format (*.hdr/*.img);
+            %		  1 for NIFTI format in 2 files (*.hdr/*.img);
+            %		  2 for NIFTI format in 1 file (*.nii).
+            %  
+            %  machine    - a string, see below for details. The default here is 'ieee-le'.
+            %
+            %    'native'      or 'n' - local machine format - the default
+            %    'ieee-le'     or 'l' - IEEE floating point with little-endian
+            %                           byte ordering
+            %    'ieee-be'     or 'b' - IEEE floating point with big-endian
+            %                           byte ordering
+            %    'vaxd'        or 'd' - VAX D floating point and VAX ordering
+            %    'vaxg'        or 'g' - VAX G floating point and VAX ordering
+            %    'cray'        or 'c' - Cray floating point with big-endian
+            %                           byte ordering
+            %    'ieee-le.l64' or 'a' - IEEE floating point with little-endian
+            %                           byte ordering and 64 bit long data type
+            %    'ieee-be.l64' or 's' - IEEE floating point with big-endian byte
+            %                           ordering and 64 bit long data type.
+            %
+            %  Part of this file is copied and modified from:
+            %  http://www.mathworks.com/matlabcentral/fileexchange/1878-mri-analyze-tools
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %            
+            %  @return h := hdr
+            %  @return e := ext
+            %  @return f := filetype
+            %  @return m := machine, 'ieee-le'|'ieee-be'
             
             [h,e,f,m] = mlniftitools.load_untouch_header_only(this.fqfilename);
+            h = this.adjustHdr(h);
+            this.filetype_ = f;
+            this.machine_ = m;
+            this.ext_ = e;
+            this.untouch_ = 1;
         end
-        function s = load_untouch_nii(this)
+        function nii = load_untouch_nii(this, varargin)
+            %  Load NIFTI or ANALYZE dataset, but not applying any appropriate affine
+            %  geometric transform or voxel intensity scaling.
+            %
+            %  Although according to NIFTI website, all those header information are
+            %  supposed to be applied to the loaded NIFTI image, there are some
+            %  situations that people do want to leave the original NIFTI header and
+            %  data untouched. They will probably just use MATLAB to do certain image
+            %  processing regardless of image orientation, and to save data back with
+            %  the same NIfTI header.
+            %
+            %  Since this program is only served for those situations, please use it
+            %  together with "save_untouch_nii.m", and do not use "save_nii.m" or
+            %  "view_nii.m" for the data that is loaded by "load_untouch_nii.m". For
+            %  normal situation, you should use "load_nii.m" instead.
+            %  
+            %  Usage: nii = load_untouch_nii(filename, [img_idx], [dim5_idx], [dim6_idx], ...
+            %			[dim7_idx], [old_RGB], [slice_idx])
+            %  
+            %  filename  - 	NIFTI or ANALYZE file name.
+            %  
+            %  img_idx (optional)  -  a numerical array of image volume indices.
+            %	Only the specified volumes will be loaded. All available image
+            %	volumes will be loaded, if it is default or empty.
+            %
+            %	The number of images scans can be obtained from get_nii_frame.m,
+            %	or simply: hdr.dime.dim(5).
+            %
+            %  dim5_idx (optional)  -  a numerical array of 5th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  dim6_idx (optional)  -  a numerical array of 6th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  dim7_idx (optional)  -  a numerical array of 7th dimension indices.
+            %	Only the specified range will be loaded. All available range
+            %	will be loaded, if it is default or empty.
+            %
+            %  old_RGB (optional)  -  a scale number to tell difference of new RGB24
+            %	from old RGB24. New RGB24 uses RGB triple sequentially for each
+            %	voxel, like [R1 G1 B1 R2 G2 B2 ...]. Analyze 6.0 from AnalyzeDirect
+            %	uses old RGB24, in a way like [R1 R2 ... G1 G2 ... B1 B2 ...] for
+            %	each slices. If the image that you view is garbled, try to set 
+            %	old_RGB variable to 1 and try again, because it could be in
+            %	old RGB24. It will be set to 0, if it is default or empty.
+            %
+            %  slice_idx (optional)  -  a numerical array of image slice indices.
+            %	Only the specified slices will be loaded. All available image
+            %	slices will be loaded, if it is default or empty.
+            %
+            %  Returned values:
+            %  
+            %  nii structure:
+            %
+            %	hdr -		struct with NIFTI header fields.
+            %
+            %	filetype -	Analyze format .hdr/.img (0); 
+            %			NIFTI .hdr/.img (1);
+            %			NIFTI .nii (2)
+            %
+            %	fileprefix - 	NIFTI filename without extension.
+            %
+            %	machine - 	machine string variable.
+            %
+            %	img - 		3D (or 4D) matrix of NIFTI data.
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %            
             % @return s := struct of NIfTI data expected by mlniftitools
             
-            s = mlniftitools.load_untouch_nii(this.fqfilename);
+            nii = mlniftitools.load_untouch_nii(this.fqfilename, varargin{:});
+            nii.img = this.ensureDatatype(nii.img, this.datatype_);
+            nii.hdr = this.adjustHdr(nii.hdr);
+            this.hdr_ = nii.hdr;
+            this.filetype_ = nii.filetype;
+            this.machine_ = nii.machine;
+            this.original_ = [];
+            this.ext_ = nii.ext;
+            this.untouch_ = nii.untouch;
         end  
         function this = prepend_descrip(this, varargin) 
             %% PREPEND_DESCRIP
@@ -384,16 +713,15 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function this = zoomed(this, rmin, rsize)
             shift = this.AffMats*[rmin(1:3) 0]';
             
-            this.hdr.hist.quatern_b = 0;
-            this.hdr.hist.quatern_c = 0;
-            this.hdr.hist.quatern_d = 0;
-            this.hdr.hist.qoffset_x = 0;
-            this.hdr.hist.qoffset_y = 0;
-            this.hdr.hist.qoffset_z = 0;
+            this.hdr.hist.qoffset_x = this.hdr.hist.srow_x(4) + shift(1);
+            this.hdr.hist.qoffset_y = this.hdr.hist.srow_y(4) + shift(2);
+            this.hdr.hist.qoffset_z = this.hdr.hist.srow_z(4) + shift(3);
             this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
             this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
             this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
             this.hdr.hist.originator = rsize(1:3)/2;
+
+            this.hdr.dime.dim(2:4) = rsize;
         end        
         function s = string(this, varargin)
             s = string(this.filesystem_, varargin{:});
@@ -506,35 +834,35 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         end
 
         function this = ImagingInfo(varargin)
- 			%% IMAGINGINFO
+ 			%% IMAGINGINFO provides points of entry for building info and hdr objects
             %  Args:
  			%      filesystem_ (text|mlio.HandleFilesystem):  
-            %                 If text, ImagingInfo creates isolated filesystem_ information.
-            %                 If mlio.HandleFilesystem, ImagingInfo will reference the handle for filesystem_ information,
-            %                 allowing for external modification for synchronization.
-            %                 For aufbau, the file need not exist on the filesystem.
-            %       circshiftK (numeric):
-            %       datatype (numeric):
-            %       ext ():
-            %       filetype ():
-            %       N (logical):
-            %       separator (text): separates annotations
-            %       untouch (logical):
-            %       hdr (struct): hdr sepcified by mlniftitools.
-
+            %          If text, ImagingInfo creates isolated filesystem_ information.
+            %          If mlio.HandleFilesystem, ImagingInfo will reference the handle for filesystem_ information,
+            %          allowing for external modification for synchronization.
+            %          For aufbau, the file need not exist on the filesystem.
+            %      circshiftK (numeric):
+            %      datatype (numeric):
+            %      ext ():
+            %      filetype ():
+            %      N (logical):
+            %      separator (text): separates annotations
+            %      untouch (logical):
+            %      hdr (struct): hdr sepcified by mlniftitools.
             
             ip = inputParser;
             ip.KeepUnmatched = true;
             rregistry = mlpipeline.ResourcesRegistry.instance();
             addOptional( ip, 'filesystem', mlio.HandleFilesystem(), @(x) istext(x) || isa(x, 'mlio.HandleFilesystem'));
             addParameter(ip, 'circshiftK', 0, @isnumeric);
-            addParameter(ip, 'datatype', [], @isnumeric); % 16
+            addParameter(ip, 'datatype', [], @isscalar); % 16
             addParameter(ip, 'ext', []);
             addParameter(ip, 'filetype', []);
             addParameter(ip, 'N', rregistry.defaultN, @islogical);
             addParameter(ip, 'separator', ';', @istext)
-            addParameter(ip, 'untouch', true, @islogical);
+            addParameter(ip, 'untouch', [], @isnumeric);
             addParameter(ip, 'hdr', this.initialHdr, @isstruct);
+            addParameter(ip, 'original', [])
             parse(ip, varargin{:});
             ipr = ip.Results;
             if istext(ipr.filesystem)
@@ -543,16 +871,16 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             if isa(ipr.filesystem, 'mlio.HandleFilesystem')
                 this.filesystem_ = ipr.filesystem;
             end
-            this = this.adjustFilesuffix;
+            this = this.adjustFilesuffix4dfp;
             this.circshiftK_ = ipr.circshiftK;
-            this.N_ = ipr.N;
             this.datatype_ = ipr.datatype;
             this.ext_ = ipr.ext;
-            this.filetype_ = ipr.filetype;      
+            this.filetype_ = ipr.filetype;   
+            this.N_ = ipr.N;   
             this.separator_ = ipr.separator;      
- 			this.untouch_ = ipr.untouch;
-            
+ 			this.untouch_ = ipr.untouch;            
             this.hdr_ = ipr.hdr;
+            this.original_ = ipr.original;
         end		  
     end 
     
@@ -567,45 +895,12 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         hdr_
         machine_
         N_
+        original_
         separator_
         untouch_
     end
     
     methods (Access = protected) 
-        function hdr  = adjustDime(this, hdr)
-            %  mimicry:  mlniftitools.make_nii squeezes singleton dimensions s.t. nii.hdr.dime.dim(1) := 3 for single
-            %  time frames.  However, load_nii sets nii.hdr.dime.dim(1) := 4 for single time frames.
-            %  mimicry:  mlniftitools.make_nii populates nii.hdr.dime.pixdim := [0 1 1 1 1 1 1 1].   
-            %  However, load_nii tends to set nii.hdr.dime.pixdim := [1 1 1 1 1 0 0 0].
-            %  mimicry:  mlniftitools.make_nii  sets nii.hdr.dime.vox_offset := 0.
-            
-            hdr.dime.pixdim(1) = this.qfac; % qfac rules https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/qsform.html
-            hdr.dime.vox_offset = 352;
-        end
-        function hdr  = adjustHist(~, hdr)
-            % mimicry:  mlniftitools.make_nii drops nii.hdr.hist.magic := ''.            
-            hdr.hist.aux_file = '';
-            hdr.hist.magic = 'n+1';
-            if (isfield(hdr.hist, 'originator') && length(hdr.hist.originator) > 1)
-                hdr.hist.originator = hdr.hist.originator(1:3);
-            end
-        end
-        function hdr  = adjustHistOriginator(this, hdr)
-            % See also:  nifti_4dfp.
-            
-            if (~isprop(hdr, 'originator'))
-                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
-                return
-            end
-            if (norm(hdr.hist.originator) < eps)
-                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
-                return
-            end
-            if (isa(this, 'mlfourd.FourdfpInfo') && this.N)
-                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* double(hdr.dime.dim(2:4)) / 2;
-                return
-            end
-        end 
         function a = anarawLocal(this)
             assert(~isempty(this.hdr_));
             a = struct( ...
@@ -623,7 +918,27 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             that = copyElement@matlab.mixin.Copyable(this);
             that.filesystem_ = copy(this.filesystem_);
         end
-        function hdr  = initialHdr(this)
+        function nii = ensureOrientation(~, nii)
+            assert(~ishandle(nii))
+            if ~isfield(nii, 'hdr')
+                return
+            end
+            if ~isfield(nii, 'original')
+                return
+            end
+            if isempty(nii.original)
+                % initial load was likely 4dfp
+                nii.img = flip(nii.img, 1);
+                return
+            end
+            if nii.original.hdr.dime.pixdim(1) == -1
+                % initial load was likely nifti
+                nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
+                nii.img = flip(nii.img, 1);
+                return
+            end
+        end
+        function hdr = initialHdr(~)
             hk   = struct( ...
                 'sizeof_hdr', 348, ...
                 'data_type', '', ...
@@ -641,7 +956,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'datatype', 64, ... 
                 'bitpix', 64, ... 
                 'slice_start', 0, ... 
-                'pixdim', [1 1 1 1 1 1 1 1], ... 
+                'pixdim', [-1 1 1 1 1 1 1 1], ... 
                 'vox_offset', 352, ... 
                 'scl_slope', 1, ... 
                 'scl_inter', 0, ... 
@@ -655,7 +970,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'glmax', 0, ... 
                 'glmin', 0);
             hist = struct( ...
-                'descrip', sprintf('instance of %s', class(this)), ...
+                'descrip', 'mlfourd.ImagingInfo.initialHdr()', ...
                 'aux_file', '', ...
                 'qform_code', 0, ...
                 'sform_code', 0, ...
@@ -672,31 +987,21 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'magic', 'n+1');
             hdr = struct('hk', hk, 'dime', dime, 'hist', hist);
         end
-        
-        %% methods to complete NIfTI-1 specifications from Analyze 7.5 data
-        
-        function v    = permuteCircshiftVec(this, v)
+        function v = permuteCircshiftVec(this, v)
             if (0 == this.circshiftK_); return; end
             v(1:3) = circshift(v(1:3), this.circshiftK_);
-        end
-        function X    = permuteCircshiftX(this, X)
-            if (0 == this.circshiftK_); return; end
-            X = permute(X, circshift([1 2 3], this.circshiftK_));
-        end
-        function info = permuteInfo(this, info)
-            info.Width           = info.Dimensions(1);
-            info.Height          = info.Dimensions(3);
-            if (0 == this.circshiftK_); return; end
-            info.PixelDimensions = this.permuteCircshiftVec(info.PixelDimensions);
-            info.Dimensions      = this.permuteCircshiftVec(info.Dimensions);
         end
     end
     
     %% PRIVATE
     
     methods (Access = private)
-        function bp   = newBitpix(this)
-            assert(~isempty(this.datatype_));
+        function this = adjustFilesuffix4dfp(this)
+            if contains(this.filesuffix, '.4dfp')
+                this.filesuffix = '.4dfp.hdr';
+            end
+        end  
+        function bp = newBitpix(this)
             switch (this.datatype_)
                 case {'uchar' 'uint8' 2}
                     bp = 8;
@@ -717,22 +1022,19 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 case {'uint64' 1280}
                     bp = 64;
                 otherwise
-                    error('mlfourd:unsupportSwitchcase', 'ImagingInfo.adjustBitpix.this.datatype_');
+                    error('mlfourd:ValueError', 'ImagingInfo.newBitpix.this.datatype_->%s', string(dt));
             end
         end  
-        function hdr  = permuteHdr(this, hdr)
-            if (0 == this.circshiftK_); return; end
+        function hdr = permuteHdr(this, hdr)
+            if (0 == this.circshiftK_)
+                return
+            end
             hdr.dime.dim(2:4)    = this.permuteCircshiftVec(hdr.dime.dim(2:4));
             hdr.dime.pixdim(2:4) = this.permuteCircshiftVec(hdr.dime.pixdim(2:4));
-            if (isfield(hdr.hist, 'originator'))
+            if isfield(hdr.hist, 'originator')
                 hdr.hist.originator = this.permuteCircshiftVec(hdr.hist.originator);
             end
         end      
-        function this = adjustFilesuffix(this)
-            if (lstrfind(this.filesuffix, '.4dfp'))
-                this.filesuffix = '.4dfp.hdr';
-            end
-        end  
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

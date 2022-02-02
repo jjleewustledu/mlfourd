@@ -219,75 +219,27 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
             fqfn = strcat(this.fqfileprefix, '.img');
         end
         
-        function [X,untouch,hdr] = analyze75read(this)
-            %% calls mlniftitools.load_nii
-            
-            jimmy = this.load_nii; % struct
-            X = jimmy.img;
-            X = this.ensureDatatype(X, this.datatype_);
-            untouch = false;
-            hdr = this.adjustHdr(jimmy.hdr);
-        end
-        function nii = make_nii(this)
-            [X,untouch,hdr] = this.analyze75read;
-            nii = mlniftitools.make_nii( ...
-                X, this.PixelDimensions(1:3), hdr.hist.originator(1:3), this.datatype_, this.Descriptor);
-            nii.img = this.ensureDatatype(nii.img, this.datatype_);
-            nii.hdr = this.recalculateHdrHistOriginator(nii.hdr);
-            nii.untouch = untouch;
-        end
-        function hdr = recalculateHdrHistOriginator(this, hdr)
-            hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
-            hdr.hist.qform_code = 0;
-            hdr.hist.sform_code = 1;
-            
-                                    % a = 0.5  * sqrt(1 + trace(R));
-            hdr.hist.quatern_b = 0; % 0.25 * (R(3,2) - R(2,3)) / a;
-            hdr.hist.quatern_c = 0; % 0.25 * (R(1,3) - R(3,1)) / a;
-            hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
-            
-            if (isfield(hdr.hist, 'originator'))
-                hdr.hist.qoffset_x = -hdr.hist.originator(1)*hdr.dime.pixdim(2);
-                hdr.hist.qoffset_y = -hdr.hist.originator(2)*hdr.dime.pixdim(3);
-                hdr.hist.qoffset_z = -hdr.hist.originator(3)*hdr.dime.pixdim(4);            
-
-                % for compliance with NIfTI format
-                srow = [[hdr.dime.pixdim(2) 0 0           -hdr.hist.originator(1)*hdr.dime.pixdim(2)]; ...
-                        [0 hdr.dime.pixdim(3) 0           -hdr.hist.originator(2)*hdr.dime.pixdim(3)]; ...
-                        [0 0 hdr.dime.pixdim(4)*this.qfac -hdr.hist.originator(3)*hdr.dime.pixdim(4)]];
-                hdr.hist.srow_x = srow(1,:);
-                hdr.hist.srow_y = srow(2,:);
-                hdr.hist.srow_z = srow(3,:);
-            end
-                      
-            hdr = mlniftitools.extra_nii_hdr(hdr);
-            hdr = this.adjustDime(hdr);
-            hdr = this.adjustHist(hdr);
-        end
-        
  		function this = Analyze75Info(varargin)
  			%% ANALYZE75INFO calls mlniftitools.load_untouch_header_only
  			%  @param filename is required.
  			
             this = this@mlfourd.ImagingInfo(varargin{:});                
             
-            if (~isfile(this.fqfilename))
-                return
-            end
-            
-            this.info_ = analyze75info(this.fqfilename); % Matlab's native 
-            this.info_ = this.permuteInfo(this.info_); % KLUDGE
-            
-            % from mlniftitools
-            [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-            this.hdr_ = this.adjustHdr(this.hdr_); 
+%             if (~isfile(this.fqfilename))
+%                 return
+%             end            
+%             this.info_ = analyze75info(this.fqfilename); % Matlab's native 
+%             this.info_ = this.permuteInfo(this.info_); % KLUDGE
+%             
+%             % from mlniftitools
+%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
         end
     end 
     
     %% PROTECTED
     
     properties (Access = protected)
-        info_
+        info_ % supports getters with capitalization
     end
 
     methods (Access = protected)
@@ -303,6 +255,20 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
                 'Omin', this.OMin, ...
                 'SMax', this.SMax, ...
                 'SMin', this.SMin); 
+        end
+    end
+
+    %% PRIVATE
+
+    methods (Access = private)
+        function info = permuteInfo(this, info)
+            info.Width           = info.Dimensions(1);
+            info.Height          = info.Dimensions(3);
+            if (0 == this.circshiftK_)
+                return
+            end
+            info.PixelDimensions = this.permuteCircshiftVec(info.PixelDimensions);
+            info.Dimensions      = this.permuteCircshiftVec(info.Dimensions);
         end
     end
 

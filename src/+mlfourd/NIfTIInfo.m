@@ -1,5 +1,6 @@
 classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo 
-	%% NIFTIINFO emulates Matlab function niftiinfo for use with Matlab versions prior to R2017b.  
+	%% NIFTIINFO relies on Jimmy Shen's mlniftitools to obtain header information from NIfTI files.
+    %  It emulates Matlab function niftiinfo.
     %  See also mlfourd.Analyze75Info, mlfourd.FourdfpInfo.  Requires Image Processing Toolbox function affine3d.
 
 	%  $Revision$
@@ -19,14 +20,12 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
  			%% NIFTIINFO calls mlniftitools.load_untouch_header_only
  			%  @param filename is required.
             
-            this = this@mlfourd.AbstractNIfTIInfo(varargin{:});            
+            this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
             
-            if (~isfile(this.fqfilename))
-                return
-            end
-            
-            [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-            this.hdr_ = this.adjustHdr(this.hdr_);
+%             if (~isfile(this.fqfilename))
+%                 return
+%             end
+%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
  		end
     end
     

@@ -33,16 +33,15 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
 
  			this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
             
-            if (~isfile(this.fqfilename))
+            fqfileprefix_mgz = strcat(this.fqfileprefix, '.mgz');
+            if ~isfile(fqfileprefix_mgz)
                 return
-            end
-            
-            import mlfourd.*;
-            mlbash(sprintf('mri_convert %s %s', this.fqfilename, strcat(this.fqfileprefix, this.defaultFilesuffix))); 
+            end            
+            mlbash(sprintf('mri_convert %s %s', fqfileprefix_mgz, strcat(this.fqfileprefix, this.defaultFilesuffix))); 
             this.filesuffix = this.defaultFilesuffix; % hereafter, behave exactly as NIfTIInfo
             
-            [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-            this.hdr_ = this.adjustHdr(this.hdr_);
+%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
+%             this.hdr_ = this.adjustHdr(this.hdr_);
  		end
  	end 
 
