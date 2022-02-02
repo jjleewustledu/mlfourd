@@ -917,7 +917,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             this.viewer_ = ip.Results.viewer;              
 
             if (lexist(this.fqfilename, 'file'))
-                nii = this.imagingInfo_.make_nii;
+                nii = mlniftitools.make_nii(ipr.img, this.mmppix, this.originator, this.datatype, this.descrip);
                 this.imagingInfo_.hdr = nii.hdr;
                 this.img_ = nii.img;
                 this.imagingInfo_.untouch = nii.untouch;
