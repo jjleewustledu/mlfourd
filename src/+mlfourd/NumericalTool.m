@@ -255,9 +255,9 @@ classdef NumericalTool < handle & mlfourd.ImagingTool & mlpatterns.Numerical & m
                 this.imagingFormat_, 'img', false(this.imagingFormat_.size, varargin{:}));
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  false %s', this.fileprefix)); 
-            if this.annotateFileprefix_
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_false'];
-            end
+            %if this.annotateFileprefix_
+            %    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_false'];
+            %end
         end
         function find(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
@@ -273,18 +273,18 @@ classdef NumericalTool < handle & mlfourd.ImagingTool & mlpatterns.Numerical & m
                 this.imagingFormat_, 'img', nan(this.imagingFormat_.size, varargin{:}));
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  nan %s', this.fileprefix)); 
-            if this.annotateFileprefix_
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_nan'];
-            end
+            %if this.annotateFileprefix_
+            %    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_nan'];
+            %end
         end
         function ones(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', ones(this.imagingFormat_.size, varargin{:}));
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  ones %s', this.fileprefix)); 
-            if this.annotateFileprefix_
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_ones'];
-            end
+            %if this.annotateFileprefix_
+            %    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_ones'];
+            %end
         end
         function reshape(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
@@ -312,18 +312,18 @@ classdef NumericalTool < handle & mlfourd.ImagingTool & mlpatterns.Numerical & m
                 this.imagingFormat_, 'img', true(this.imagingFormat_.size, varargin{:}));
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  true %s', this.fileprefix)); 
-            if this.annotateFileprefix_
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_true'];
-            end
+            %if this.annotateFileprefix_
+            %    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_true'];
+            %end
         end
         function zeros(this, varargin)
             this.imagingFormat_ = mlfourd.ImagingFormatContext( ...
                 this.imagingFormat_, 'img', zeros(this.imagingFormat_.size, varargin{:}));
             this.imagingFormat_.addLog( ...
                 sprintf('NumericalTool:  zeros %s', this.fileprefix)); 
-            if this.annotateFileprefix_
-                this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_zeros'];
-            end
+            %if this.annotateFileprefix_
+            %    this.imagingFormat_.fileprefix = [this.imagingFormat_.fileprefix '_zeros'];
+            %end
         end
                 
         %% implementations of mlpatterns.DipNumerical
