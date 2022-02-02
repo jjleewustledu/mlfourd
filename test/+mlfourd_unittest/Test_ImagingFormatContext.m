@@ -205,9 +205,11 @@ classdef Test_ImagingFormatContext < mlfourd_unittest.Test_Imaging
         end
         function test_ctor_ana001(this) 
  			import mlfourd.*;
-            niih = ImagingFormatContext('ana001.hdr', 'circshiftK', 0, 'N', false); % sagittal            
-            this.verifyEqual(class(niih.img), 'double');
-            this.verifyEqual(size(niih.img),  [176 248 256]);
+            niih = ImagingFormatContext( ...
+                fullfile(getenv('HOME'), 'MATLAB-Drive/mlfourd/data/ana001.hdr'), ...
+                'circshiftK', 0, 'N', false); % sagittal            
+            this.verifyEqual(class(niih.img), 'int16');
+            this.verifyEqual(size(niih.img),  [248 256 176]);
             this.verifyEqual(niih.filesuffix, '.hdr');
             
             if (this.do_view); niih.fsleyes; end            
