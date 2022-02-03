@@ -1,8 +1,9 @@
 classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
-    %% IMAGINGFORMATSTATE2 defines an interface for encapsulating the behavior associated with particular states of 
-    %  ImagingFormatContext2.  Concrete states include FilesystemFormatTool, DicomTool, ListmodeTool, MatlabFormatTool, NiftiTool, 
+    %% IMAGINGFORMATSTATE2 defines an abstraction for encapsulating the behavior associated with particular states of 
+    %  ImagingFormatContext2.  Concrete states may include FilesystemFormatTool, DicomTool, ListmodeTool, MatlabFormatTool, NiftiTool, 
     %  CiftiTool, GiftiTool, FourdfpTool, and TrivialFormatTool.  These state-defining tools should remain encapsulated by 
     %  ImagingFormatContext2.
+    %  N.B.:  select*Tool() generate imagingInfo from the filesystem.
     %  
     %  Created 02-Dec-2021 21:23:23 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.    
@@ -99,6 +100,8 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             %  Returns:
             %      this: with updated img, imagingInfo
             
+            assert(isnumeric(s) || islogical(s))
+            this.img_ = s;
             this.adjustHdrForImg(s) % supports ImagingFormatTool
         end
         function     set.logger(this, s)
@@ -145,7 +148,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             end            
         end
         function that = selectImagingFormatTool(this, contexth)
-            if isa(this, 'mlfourd.ImagingFormatTool')
+            if isa(this, 'mlfourd.ImagingFormatTool') % short-circuit type-casting
                 return
             end
             if this.hasFourdfp()
@@ -167,12 +170,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 %this.filesystem_.filesuffix = '.mat';
                 this.addLog('ImagingFormatState2.selectMatlabFormatTool');
                 info_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_);
-                that = mlfourd.MatlabFormatTool(contexth, ...
+                temp = mlfourd.MatlabFormatTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
                                       'filesystem', this.filesystem_, ...
                                       'logger', this.logger, ...
                                       'viewer', this.viewer);
+                that = mlfourd.MatlabFormatTool.createFromImagingFormat(temp);
                 contexth.changeState(that);
             else
                 that = this;
@@ -183,12 +187,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 this.filesystem_.filesuffix = '.4dfp.hdr';
                 this.addLog('ImagingFormatState2.selectFourdfpTool');
                 info_ = mlfourd.FourdfpInfo(this.filesystem_);
-                that = mlfourd.FourdfpTool(contexth, ...
+                temp = mlfourd.FourdfpTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
                                       'filesystem', this.filesystem_, ...
                                       'logger', this.logger, ...
                                       'viewer', this.viewer);
+                that = mlfourd.FourdfpTool.createFromImagingFormat(temp);
                 contexth.changeState(that);
             else
                 that = this;
@@ -199,12 +204,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 this.filesystem_.filesuffix = '.mgz';
                 this.addLog('ImagingFormatState2.selectMghTool');
                 info_ = mlfourd.MGHInfo(this.filesystem_);
-                that = mlfourd.MghTool(contexth, ...
+                temp = mlfourd.MghTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
                                       'filesystem', this.filesystem_, ...
                                       'logger', this.logger, ...
                                       'viewer', this.viewer);
+                that = mlfourd.MghTool.createFromImagingFormat(temp);
                 contexth.changeState(that);
             else
                 that = this;
@@ -215,12 +221,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 this.filesystem_.filesuffix = '.nii.gz';
                 this.addLog('ImagingFormatState2.selectNiftiTool');
                 info_ = mlfourd.NIfTIInfo(this.filesystem_);
-                that = mlfourd.NiftiTool(contexth, ...
+                temp = mlfourd.NiftiTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
                                       'filesystem', this.filesystem_, ...
                                       'logger', this.logger, ...
                                       'viewer', this.viewer);
+                that = mlfourd.NiftiTool.createFromImagingFormat(temp);
                 contexth.changeState(that);
             else
                 that = this;
@@ -299,10 +306,8 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function save(this)
             %% SAVE saves this as this.fqfilename on the filesystem.
 
-            this.filesuffix = '.mat';
-            addLog(this, 'mlfourd.ImagingFormatState2.save(), with fqfilename == %s', this.fqfilename);
-            save(this.fqfilename, 'this')
-            save(this.logger)
+            that = this.selectMatlabFormatTool(this.contexth_);
+            save_mat(that);
         end
         function s = single(this)
             s = single(this.img);
@@ -348,11 +353,11 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
     methods (Access = protected)
         function this = ImagingFormatState2(contexth, varargin)
             %  Args:
-            %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
-            %      img (numeric): option provides numerical imaging data.  Default := [].
-            %      filesystem (HandleFilesystem): Default := mlio.HandleFilesystem().
-            %      logger (mlpipeline.ILogger): Default := log on filesystem | mlpipeline.Logger2(filesystem.fqfileprefix).
-            %      viewer (IViewer): Default := mlfourd.Viewer().
+            %      contexth (ImagingContext2 required):  handle to ImagingContexts of the state design pattern.
+            %      img (numeric option):  provides numerical imaging data.  Default := [].
+            %      filesystem (HandleFilesystem):  Default := mlio.HandleFilesystem().
+            %      logger (mlpipeline.ILogger):  Default := log on filesystem | mlpipeline.Logger2(filesystem.fqfileprefix).
+            %      viewer (IViewer):  Default := mlfourd.Viewer().
             %  N.B. that handle classes are given to the encapsulated state, not copied, for performance.
 
             ip = inputParser;
@@ -372,6 +377,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 this.logger_ = ipr.logger; 
                 this.logger_.fqfileprefix = this.fqfileprefix;
             else
+                % generate
                 logfile = strcat(this.filesystem_.fqfileprefix, '.log');
                 if isfile(logfile) 
                     % read existing from filesystem
@@ -387,8 +393,6 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
 
         function adjustHdrForImg(~)
             %% supports ImagingFormatTool, which overrides
-            
-            error('mlfourd:NotImplementedError', 'ImagingFormatState2.adjustHdrForImg')
         end
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);
