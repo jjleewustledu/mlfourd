@@ -269,7 +269,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         
         function false(this, varargin)
             this.imagingFormat_.img = false(this.imagingFormat_.size, varargin{:});
-            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_false');
+            %this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_false');
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.false: %s', this.fileprefix)); 
         end
@@ -284,13 +284,13 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
                 nan(this.imagingFormat_.size, varargin{:}), ...
                 'filesystem', this.filesystem, ...
                 'logger', this.logger);
-            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_nan');
+            %this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_nan');
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.nan: %s', this.fileprefix)); 
         end
         function ones(this, varargin)
             this.imagingFormat_.img = ones(this.imagingFormat_.size, varargin{:});
-            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_ones');
+            %this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_ones');
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.ones: %s', this.fileprefix)); 
         end
@@ -311,13 +311,13 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         end
         function true(this, varargin)
             this.imagingFormat_.img = true(this.imagingFormat_.size, varargin{:});
-            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_true');
+            %this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_true');
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.true: %s', this.fileprefix)); 
         end
         function zeros(this, varargin)
             this.imagingFormat_.img = zeros(this.imagingFormat_.size, varargin{:});
-            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_zeros');
+            %this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_zeros');
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.zero:s %s', this.fileprefix)); 
         end
