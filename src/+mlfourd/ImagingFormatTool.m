@@ -308,6 +308,126 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
             this.img_ = complex(rimg, iimg);
         end   
+        function this = ensureDouble(this)
+            if (this.hdr.dime.datatype ~= 64)
+                this.imagingInfo_.hdr.dime.datatype = 64;
+            end
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
+            end
+            if (~isa(this.img_, 'double'))
+                this.img_ = double(this.img_);
+            end
+        end 
+        function this = ensureInt8(this)
+            if (this.hdr.dime.datatype ~= 256)
+                this.imagingInfo_.hdr.dime.datatype = 256;
+            end
+            if (this.hdr.dime.bitpix ~= 8)
+                this.imagingInfo_.hdr.dime.bitpix = 8;
+            end
+            if (~isa(this.img_, 'int8'))
+                this.img_ = int8(this.img_);
+            end
+        end
+        function this = ensureInt16(this)
+            if (this.hdr.dime.datatype ~= 4)
+                this.imagingInfo_.hdr.dime.datatype = 4;
+            end
+            if (this.hdr.dime.bitpix ~= 16)
+                this.imagingInfo_.hdr.dime.bitpix = 16;
+            end
+            if (~isa(this.img_, 'int16'))
+                this.img_ = int16(this.img_);
+            end
+        end
+        function this = ensureInt32(this)
+            if (this.hdr.dime.datatype ~= 8)
+                this.imagingInfo_.hdr.dime.datatype = 8;
+            end
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
+            end
+            if (~isa(this.img_, 'int32'))
+                this.img_ = int32(this.img_);
+            end
+        end
+        function this = ensureInt64(this)
+            if (this.hdr.dime.datatype ~= 1024)
+                this.imagingInfo_.hdr.dime.datatype = 1024;
+            end
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
+            end
+            if (~isa(this.img_, 'int64'))
+                this.img_ = int64(this.img_);
+            end
+        end
+        function this = ensureNoclobber(this)
+            %% ENSURENOCLOBBER ensures that there is no clobbering.
+            %  @throws mlfourd:IOError:noclobberPreventedSaving if this.noclobber and isfile(this.fqfilename).
+            
+            if (this.noclobber && isfile(this.fqfilename))
+                error('mlfourd:IOError:noclobberPreventedSaving', ...
+                    'ImagingFormatTool.ensureNoclobber->%i but the file %s already exists; please check intentions', ...
+                    this.noclobber, this.fqfilename);
+            end
+        end   
+        function this = ensureSingle(this)
+            if (this.hdr.dime.datatype ~= 16)
+                this.imagingInfo_.hdr.dime.datatype = 16;
+            end
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
+            end
+            if (~isa(this.img_, 'single'))
+                this.img_ = single(this.img_);
+            end
+        end
+        function this = ensureUint8(this)
+            if (this.hdr.dime.datatype ~= 2)
+                this.imagingInfo_.hdr.dime.datatype = 2;
+            end
+            if (this.hdr.dime.bitpix ~= 8)
+                this.imagingInfo_.hdr.dime.bitpix = 8;
+            end
+            if (~isa(this.img_, 'uint8'))
+                this.img_ = uint8(this.img_);
+            end
+        end
+        function this = ensureUint16(this)
+            if (this.hdr.dime.datatype ~= 512)
+                this.imagingInfo_.hdr.dime.datatype = 512;
+            end
+            if (this.hdr.dime.bitpix ~= 16)
+                this.imagingInfo_.hdr.dime.bitpix = 16;
+            end
+            if (~isa(this.img_, 'uint16'))
+                this.img_ = uint16(this.img_);
+            end
+        end
+        function this = ensureUint32(this)
+            if (this.hdr.dime.datatype ~= 768)
+                this.imagingInfo_.hdr.dime.datatype = 768;
+            end
+            if (this.hdr.dime.bitpix ~= 32)
+                this.imagingInfo_.hdr.dime.bitpix = 32;
+            end
+            if (~isa(this.img_, 'uint32'))
+                this.img_ = uint32(this.img_);
+            end
+        end
+        function this = ensureUint64(this)
+            if (this.hdr.dime.datatype ~= 1280)
+                this.imagingInfo_.hdr.dime.datatype = 1280;
+            end
+            if (this.hdr.dime.bitpix ~= 64)
+                this.imagingInfo_.hdr.dime.bitpix = 64;
+            end
+            if (~isa(this.img_, 'uint64'))
+                this.img_ = uint64(this.img_);
+            end
+        end
         function fsleyes(this, varargin)
             %% FSLVIEW
             %  @param [filename[, ...]]
@@ -368,6 +488,50 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
             imgi = [];
         end
+        function this = optimizePrecision(this)
+            % ensures bitpix, datatype
+            % @return possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
+
+            if isempty(this.img_)
+                this = this.ensureDouble;
+                return
+            end
+            switch class(this.img_)
+                case 'logical'
+                    this = this.ensureUint8;
+                case 'uint8'
+                    this = this.ensureUint8;
+                case 'uint16'
+                    this = this.ensureSingle;
+                case 'uint32'
+                    this = this.ensureSingle;
+                case 'uint64'
+                    this = this.ensureDouble;
+                case 'int16'
+                    this = this.ensureInt16;
+                case 'int32'
+                    this = this.ensureInt32;
+                case 'int64'
+                    this = this.ensureInt64;
+                case 'single'
+                    this = this.ensureSingle;
+                case 'double'
+                    this = this.ensureDouble;
+                    if ~isreal(this.img_)
+                        return
+                    end
+                    if (isempty(this.img_(this.img_ ~= 0)))
+                        return
+                    end
+                    if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
+                        (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
+                        this = this.ensureSingle;
+                    end
+                otherwise
+                    error('mlfourd:ValueError', ...
+                        'AbstractImagingFormat.optimizePrecision.this.img_ has typeclass %s', class(this.img_))
+            end
+        end 
         function this = reset_scl(this)
             this.imagingInfo_ = this.imagingInfo_.reset_scl;
         end
@@ -893,134 +1057,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
             this.img = im;
             this.imagingInfo_ = this.imagingInfo_.zoomed(rmin, rsize);
-        end
-    end
-
-    %% DEPRECATED
-    
-    methods (Hidden)
-        function this = append_descrip(this, varargin) 
-            %% APPEND_DESCRIP
-            %  @param [varargin] may be a single string or args to sprintf.
-            %  @return this updates descrip with separator and appended string.
-            %  @throws MATLAB:printf:invalidInputType
-            
-            this.imagingInfo_.append_descrip(varargin{:});
-        end
-        function this = ensureDouble(this)
-            if (this.hdr.dime.datatype ~= 64)
-                this.imagingInfo_.hdr.dime.datatype = 64;
-            end
-            if (this.hdr.dime.bitpix ~= 64)
-                this.imagingInfo_.hdr.dime.bitpix = 64;
-            end
-            if (~isa(this.img_, 'double'))
-                this.img_ = double(this.img_);
-            end
-        end        
-        function this = ensureSingle(this)
-            if (this.hdr.dime.datatype ~= 16)
-                this.imagingInfo_.hdr.dime.datatype = 16;
-            end
-            if (this.hdr.dime.bitpix ~= 32)
-                this.imagingInfo_.hdr.dime.bitpix = 32;
-            end
-            if (~isa(this.img_, 'single'))
-                this.img_ = single(this.img_);
-            end
-        end
-        function this = ensureUint8(this)
-            if (this.hdr.dime.datatype ~= 2)
-                this.imagingInfo_.hdr.dime.datatype = 2;
-            end
-            if (this.hdr.dime.bitpix ~= 8)
-                this.imagingInfo_.hdr.dime.bitpix = 8;
-            end
-            if (~isa(this.img_, 'uint8'))
-                this.img_ = uint8(this.img_);
-            end
-        end
-        function this = ensureInt16(this)
-            if (this.hdr.dime.datatype ~= 4)
-                this.imagingInfo_.hdr.dime.datatype = 4;
-            end
-            if (this.hdr.dime.bitpix ~= 16)
-                this.imagingInfo_.hdr.dime.bitpix = 16;
-            end
-            if (~isa(this.img_, 'int16'))
-                this.img_ = int16(this.img_);
-            end
-        end
-        function this = ensureInt32(this)
-            if (this.hdr.dime.datatype ~= 8)
-                this.imagingInfo_.hdr.dime.datatype = 8;
-            end
-            if (this.hdr.dime.bitpix ~= 32)
-                this.imagingInfo_.hdr.dime.bitpix = 32;
-            end
-            if (~isa(this.img_, 'int32'))
-                this.img_ = int32(this.img_);
-            end
-        end
-        function this = ensureInt64(this)
-            if (this.hdr.dime.datatype ~= 1024)
-                this.imagingInfo_.hdr.dime.datatype = 1024;
-            end
-            if (this.hdr.dime.bitpix ~= 64)
-                this.imagingInfo_.hdr.dime.bitpix = 64;
-            end
-            if (~isa(this.img_, 'int64'))
-                this.img_ = int64(this.img_);
-            end
-        end
-        function this = optimizePrecision(this)
-            % ensures bitpix, datatype
-            % @return possibly conflicts with mlfourdfp.FourdfpVisitor.nift_4dfp_4
-
-            if isempty(this.img_)
-                this = this.ensureDouble;
-                return
-            end
-            switch class(this.img_)
-                case 'logical'
-                    this = this.ensureUint8;
-                case 'uint8'
-                    this = this.ensureUint8;
-                case 'uint16'
-                    this = this.ensureSingle;
-                case 'uint32'
-                    this = this.ensureSingle;
-                case 'uint64'
-                    this = this.ensureDouble;
-                case 'int16'
-                    this = this.ensureInt16;
-                case 'int32'
-                    this = this.ensureInt32;
-                case 'int64'
-                    this = this.ensureInt64;
-                case 'single'
-                    this = this.ensureSingle;
-                case 'double'
-                    this = this.ensureDouble;
-                    if (isempty(this.img_(this.img_ ~= 0)))
-                        return
-                    end
-                    if ((dipmin(abs(this.img_(this.img_ ~= 0))) >= eps('single')) && ...
-                        (dipmax(abs(this.img_(this.img_ ~= 0))) <= realmax('single')))
-                        this = this.ensureSingle;
-                    end
-                otherwise
-                    error('mlfourd:NotImplementedError', ...
-                        'class(AbstractImagingFormat.optimizePrecision.this.img_) is %s', class(this.img_))
-            end
-        end 
-        function this = prepend_descrip(this, varargin) 
-            %% PREPEND_DESCRIP
-            %  @param [varargin] may be a single string or args to sprintf.
-            %  @return this updates descrip with prepended string and separator.
-            %  @throws MATLAB:printf:invalidInputType            
-            
-            this.imagingInfo_.prepend_descrip(varargin{:});
         end
     end
     
