@@ -24,8 +24,8 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
             %% @todo refactor to call factory method imagingInfo().
 
             if matches(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
-                imgi = mlfourd.FourdfpInfo(this.fqfilename);
-                sz = imgi.Dimensions;
+                info = analyze75info(this.fqfilename);
+                sz = info.Dimensions;
                 sz = double(sz);
                 if 1 == sz(4)
                     sz = sz(1:3);
@@ -34,14 +34,8 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 return
             end
             if matches(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
-                imgi = mlfourd.NIfTIInfo(this.fqfilename);
-                sz = imgi.ImageSize;
-                sz = sz(varargin{:});
-                return
-            end 
-            if matches(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
-                imgi = mlfourd.MGHInfo(this.fqfilename);
-                sz = imgi.ImageSize;
+                info = niftiinfo(this.fqfilename);
+                sz = info.ImageSize;
                 sz = sz(varargin{:});
                 return
             end    
