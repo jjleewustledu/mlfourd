@@ -1,9 +1,67 @@
 classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
-    %% IMAGINGFORMATTOOL
-    %  N.B.:  select*Tool overrides superclass to support imagingInfo
+    %% IMAGINGFORMATTOOL defines an abstraction for encapsulating specifics of imaging formats.
+    %  It provides finer granularity of data representation than its superclass.  It supports behavior common
+    %  to all imaging formats, such as adjusting numerical type or precision, adjusting the field-of-view of data
+    %  (zoom*), viewing data, saving data.
+    %  N.B.:  select*Tool() overrides superclass, generating imagingInfo from existing ImagingFormatTool.
+    %  N.B.:  ctor accepts arguments for imagingInfo and useCase.
     %  
     %  Created 08-Dec-2021 22:27:36 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
+
+    methods (Static)
+        function [hdr,orig] = imagingFormatToHdr(iform)
+            %% from ImagingFormatTool create nifti hdr for internal representations
+
+            iinfo = iform.imagingInfo();
+            if isanalyze(iinfo)
+                % from non-nifti hdr build nifti hdr
+                jimmy = iform.make_nii();
+                hdr = jimmy.hdr;
+                if isfield(jimmy, 'original')
+                    orig = jimmy.original;
+                else
+                    orig = [];
+                end
+                return
+            end
+            if isnifti(iinfo)
+                if strcmp(iform.hdr.hist.descrip, 'ImagingInfo.initialHdr') && ...
+                        isfile(iform.fqfilename)
+                    % replace uninformative hdr with hdr from filesystem
+                    jimmy = iinfo.load_nii(); 
+                    hdr = jimmy.hdr;
+                    hdr.dime.pixdim(1) = -1;
+                    hdr.hist.qform_code = 1;
+                    hdr.hist.sform_code = 1;
+                    if isfield(jimmy, 'original')
+                        orig = jimmy.original;
+                    else
+                        orig = [];
+                    end
+                    return
+                end
+                if ~isempty(iinfo.original) && ...
+                        (iinfo.original.hdr.hist.qform_code > 0 || ...
+                         iinfo.original.hdr.hist.sform_code > 0)
+                    hdr = iform.hdr;
+                    hdr.dime.pixdim(1) = -1;
+                    hdr.hist.qform_code = iform.original.hdr.hist.qform_code;
+                    hdr.hist.sform_code = iform.original.hdr.hist.sform_code;
+                    orig = iform.original;
+                    return
+                end
+                hdr = iform.hdr;
+                hdr.dime.pixdim(1) = -1;
+                hdr.hist.qform_code = 1;
+                hdr.hist.sform_code = 1;
+                orig = iform.original;
+                return
+            end
+            hdr = iform.hdr;
+            orig = iform.original;
+        end
+    end
 
     properties (Constant)
         DESC_LEN_LIM = 1024; % limit to #char of desc; accumulate extended descriptions with logging features.
