@@ -681,69 +681,90 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
     %% PROTECTED
 
     properties (Access = protected)
-        imagingInfo_ % contains hdr, ext, filetype, N, untouch
+        imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
         orient_
     end
 
     methods (Access = protected)
         function this = ImagingFormatTool(contexth, img, varargin)
-            %% IMAGINGFORMATTOOL supports the following use cases.
+            %% IMAGINGFORMATTOOL provides points of entry for building img objects.  
+            %  It supports the following use cases:
             %  1. Receive written filesystem; read filesystem; return consistent imagingInfo, img, and logger.
-            %     E.g., reading data de novo.
-            %  2. Receive unwritten filesystem; return consistent img, imagingInfo, and logger.
+            %     E.g., reading pre-existing data.
+            %  2. Receive unwritten filesystem; return non-trivial and consistent img, imagingInfo, and logger.
             %     E.g., conversions:  nifti -> 4dfp.
             %  3. Receive unwritten filesystem and unwritten img; return consistent imagingInfo and logger.
-            %     E.g., de novo Matlab objects destined for written nifti.
+            %     E.g., de novo Matlab objects destined for nifti that is written to the filesystem.
             %
             %  Args:
-            %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
-            %      img (numeric): option provides numerical imaging data.  Default := [].
-            %      filesystem (HandleFilesystem): Default := mlio.HandleFilesystem().
-            %      imagingInfo (ImagingInfo): Default := ImagingInfo(this.filesystem_).
-            %      logger (mlpipeline.ILogger): Default := log on filesystem | mlpipeline.Logger2(filesystem.fqfileprefix).
-            %      viewer (IViewer): Default := mlfourd.Viewer().
-            %      useCase (numeric): described above.  Default := 1.
+            %      contexth (ImagingContext2 required):  handle to ImagingContexts of the state design pattern.
+            %      img (numeric option):  provides numerical imaging data.  Default := [].
+            %      filesystem (HandleFilesystem):  Default := mlio.HandleFilesystem().
+            %      imagingInfo (ImagingInfo):  Default := ImagingInfo(this.filesystem_).
+            %      logger (mlpipeline.ILogger):  Default := log on filesystem | mlpipeline.Logger2(filesystem.fqfileprefix).
+            %      viewer (IViewer):  Default := mlfourd.Viewer().
+            %      useCase (numeric|text):  described above, used for logging.  Default := 1.
 
             this = this@mlfourd.ImagingFormatState2(contexth, img, varargin{:});
 
             ip = inputParser;
             ip.KeepUnmatched = true;
             addParameter(ip, 'imagingInfo', [], @(x) isempty(x) || isa(x, 'mlfourd.ImagingInfo'))
-            addParameter(ip, 'useCase', 1, @isnumeric)
+            addParameter(ip, 'useCase', 'unknown', @(x) isnumeric(x) || istext(x))
             parse(ip, varargin{:})
             ipr = ip.Results;
             if isa(ipr.imagingInfo, 'mlfourd.ImagingInfo')
                 % reuse existing
                 this.imagingInfo_ = ipr.imagingInfo;
                 this.imagingInfo_.filesystem = this.filesystem_;
-            else                
+            else
+                % de novo
                 this.imagingInfo_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_);
-            end  
+            end % imagingInfo_ needs adjusting
 
+            % ================= common point of entry for building img objects =================
             if isfile(this.filesystem_) && isempty(this.img_) 
-
-                % use case 1
-                nii_ = this.imagingInfo_.make_nii;
-                this.imagingInfo_.hdr = nii_.hdr;
-                this.imagingInfo_.untouch = false;
-                this.img_ = nii_.img;
+                jimmy = this.imagingInfo_.load_nii(); % also updates imagingInfo_.hdr
+                this.img_ = jimmy.img;
+                this.adjustHdrForImg(this.img_);
+                ipr.useCase = 1;
+            end
+            if isfile(this.filesystem_) && ~isempty(this.img_)
+                this.adjustHdrForImg(this.img_);
+                ipr.useCase = 2;
+            end
+            if ~isfile(this.filesystem_) && isempty(this.img_)
+                ipr.useCase = 3;
+            end
+            if ~isfile(this.filesystem_) && ~isempty(this.img_)
+                this.adjustHdrForImg(this.img_);
+                ipr.useCase = 3;
             end
 
-            % all use cases
-            this.adjustHdrForImg(this.img_);
-            this.addLog('ImagingFormatTool.ctor.ipr.useCase ~ %i', ipr.useCase);
+            this.addLog('ImagingFormatTool.ctor.ipr.useCase ~ %s', ensureString(ipr.useCase));
         end
 
-        function        adjustHdrForImg(this, imgobj)
-            %% updates imagingInfo_.hdr
+        function        adjustHdrForImg(this, img)
+            %% updates imagingInfo_.hdr using characteristics of img
 
-            assert(isnumeric(imgobj) || islogical(imgobj))
-            ndims_ = ndims(imgobj);
-            this.img_                                  = imgobj;
-            this.imagingInfo_.hdr.dime.dim             = ones(1,8);
-            this.imagingInfo_.hdr.dime.dim(1)          = ndims_;
-            this.imagingInfo_.hdr.dime.dim(2:ndims_+1) = size(imgobj);
-            this.imagingInfo_.hdr                      = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
+            import mlfourd.ImagingInfo.datatype2bitpix
+            import mlfourd.ImagingInfo.img2datatype
+
+            ndims_ = ndims(img);
+            this.imagingInfo_.hdr.dime.dim = ones(1,8);
+            this.imagingInfo_.hdr.dime.dim(1) = ndims_;
+            this.imagingInfo_.hdr.dime.dim(2:ndims_+1) = size(img);
+            this.imagingInfo_.hdr.dime.datatype = img2datatype(img);
+            this.imagingInfo_.hdr.dime.bitpix = datatype2bitpix(this.imagingInfo_.hdr.dime.datatype);
+            this.imagingInfo_.hdr.dime.glmax = int32(dipmax(img));
+            this.imagingInfo_.hdr.dime.glmin = int32(dipmin(img));
+
+            this.imagingInfo_.hdr = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
+
+            this.addLog(clientname(false, 2))
+            %if ~contains(this.imagingInfo_.hdr.hist.descrip, 'adjustHdrForImg')
+            %    this.imagingInfo_.append_descrip('adjustHdrForImg');
+            %end
         end
         function ipr_ = adjustIpresultsForNegSize(this, ipr_)
             fields_ = circshift(fields(ipr_), -2, 1);
@@ -753,6 +774,11 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                     ipr_.(fields_{i})   = size(this, i/2);
                 end
             end
+        end
+        function this = assertNonemptyImg(this)
+            assert(~isempty(this.img), ...
+                'mlfourd:IOError', ...
+                'ImagingFormatTool.assertNonemptyImg: empty img are incompatible with mlnifittools.save_[untouch]_nii');
         end
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);
