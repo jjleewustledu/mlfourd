@@ -267,7 +267,7 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             e =  mlfourd.FourdfpInfo.FILETYPE_EXT;
         end
         function [X,hdr] = exportFourdfpToFreesurferSpace(X, hdr)
-            %% support mgh|mgz with FreeSurfer-styled imaging array ordering.
+            %% support mgh|mgz with FreeSurfer-styled imaging array ordering. KLUDGE.
             
             import mlfourd.FourdfpInfo.*;
             if (hdrIsReasonableSurfer(hdr))
@@ -276,12 +276,8 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
                 X = permute(X, [1 3 2]);
             end
         end
-        function [X,hdr] = exportFourdfpToNIfTI(X, hdr)
-            %% provides symmetries for the app programming interface, but performs no transformations 
-            %  since internal representations must be NIfTI compatible
-        end
         function [X,hdr] = exportFreeSurferSpaceToFourdfp(X, hdr)
-            %% EXPORTFREESURFERSPACETOFOURDFP
+            %% EXPORTFREESURFERSPACETOFOURDFP is a KLUDGE.
             %  Use to maintain interoperability with output of niftigz_4dfp -4 <in.nii.gz> <out.4dfp.hdr> -N
             %  niftigz_4dfp is not compliant with NIfTI qfac.
                   
@@ -291,7 +287,6 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
                 X = flip(X,1);
                 X = flip(X,3);
             end
-            %hdr = adjustHdrForExport(hdr);    
             
             % eigen flips
             % X = flip(X,1); % rl, pa, si -> LR, pa, si
@@ -300,25 +295,11 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             % rl, AP, IS is target for 4dfp
         end
         function tf      = hdrIsReasonableSurfer(hdr)
+            %% KLUDGE
+
             tf = all(abs(hdr.hist.srow_x( 2:3 ))             < 0.05) && ...
                  all(abs(hdr.hist.srow_y( 1:2 ))             < 0.05) && ...
                  all(abs(hdr.hist.srow_z([true false true])) < 0.05);
-        end
-        function X       = importFourdfp(X, varargin)
-            ip = inputParser;
-            addOptional(ip, 'orientation', 2, @isnumeric);
-            parse(ip, varargin{:});
-                      
-            switch (ip.Results.orientation)
-                case 2 % transverse
-                    X = flip(X,2);
-                case 3 % coronal
-                    X = flip(flip(X,2),3);
-                case 4 % sagittal
-                    X = flip(flip(flip(X,1),2),3);
-                otherwise
-                    error('mlfourd:unsupportedSwitchcase', 'NIfTId.flip_nii');
-            end
         end
     end
 

@@ -39,9 +39,6 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
             end            
             mlbash(sprintf('mri_convert %s %s', fqfileprefix_mgz, strcat(this.fqfileprefix, this.defaultFilesuffix))); 
             this.filesuffix = this.defaultFilesuffix; % hereafter, behave exactly as NIfTIInfo
-            
-%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
-%             this.hdr_ = this.adjustHdr(this.hdr_);
  		end
  	end 
 

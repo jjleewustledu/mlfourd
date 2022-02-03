@@ -66,7 +66,7 @@ classdef (Abstract) AbstractNIfTIInfo < handle & mlfourd.ImagingInfo
         function g = get.Datatype(this)
             switch (this.raw.datatype)
                 case 0
-                    g = 'Unknown';
+                    g = 'none';
                 case 1
                     g = 'ubit1';
                 case 2
@@ -86,7 +86,7 @@ classdef (Abstract) AbstractNIfTIInfo < handle & mlfourd.ImagingInfo
                 case 256
                     g = 'int8';
                 case 511
-                    g = 'single';
+                    g = 'single'; % RGB
                 case 512
                     g = 'uint16';
                 case 768
@@ -98,7 +98,7 @@ classdef (Abstract) AbstractNIfTIInfo < handle & mlfourd.ImagingInfo
                 case 1536
                     g = 'Unsupported';
                 case 1792
-                    g = 'float64';
+                    g = 'double'; % complex
                 case 2048
                     g = 'Unsupported';
                 otherwise
