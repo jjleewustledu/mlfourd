@@ -134,7 +134,25 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
             warning('on', 'MATLAB:structOnObject');
         end
     end
-    
+
+    %% PROTECTED
+
+    methods (Access = protected)
+        function ana = ensureOrientation(this, ana)
+            %% unique to 4dfp
+
+            assert(~ishandle(ana))
+            ana.img = single(ana.img);
+            ana.img = flip(ana.img, 2);
+            this.addLog(clientname(false, 2));
+        end
+        function ana = ensureHist(this, ana)
+            %% override behavior of mlniftitools.make_ana() dropping aux_file
+
+            ana.hdr.hist.aux_file = this.imagingInfo_.hdr.hist.aux_file;
+        end
+    end
+
     %% PRIVATE
     
     methods (Access = private)

@@ -600,71 +600,217 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
         end  
-        function this = ensureFilesuffix(this)
-            if (isempty(this.filesuffix))
-                this.filesuffix = this.imagingInfo_.defaultFilesuffix;
+        function nii  = ensureOrientation(~, nii)
+            assert(~ishandle(nii))
+            if ~isfield(nii, 'hdr')
+                return
             end
-        end
-        function this = ensureImg(this)
-            if (isempty(this.img))
-                error('mlfourd:IOError:attemptToSaveEmptyObject', ...
-                    'ImagingFormatTool.ensureImg:  %s', ...
-                    'the request is incompatible with mlnifittools.save_[untouch]_nii');
+            if ~isfield(nii, 'original')
+                return
             end
-        end
-        function this = ensureNoclobber(this)
-            %% ENSURENOCLOBBER ensures that there is no clobbering.
-            %  @throws mlfourd:IOError:noclobberPreventedSaving if this.noclobber and isfile(this.fqfilename).
-            
-            if (this.noclobber && isfile(this.fqfilename))
-                error('mlfourd:IOError:noclobberPreventedSaving', ...
-                    'ImagingFormatTool.ensureNoclobber->%i but the file %s already exists; please check intentions', ...
-                    this.noclobber, this.fqfilename);
+            if isempty(nii.original)
+                % initial load was likely 4dfp, overriding behavior of mlniftitools
+                return
+            end
+            if nii.original.hdr.dime.pixdim(1) == -1
+                % initial load was likely nifti, overriding behavior of mlniftitools
+                nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
+                return
             end
         end
         function tf   = hasJimmyShenExtension(this)
             tf = lstrfind(this.filesuffix, {'.hdr' '.nii' '.nii.gz'});
         end      
+        function nii  = make_nii(this, varargin)
+            %  Make NIfTI structure specified by an N-D matrix. Usually, N is 3 for 
+            %  3D matrix [x y z], or 4 for 4D matrix with time series [x y z t]. 
+            %  Optional parameters can also be included, such as: voxel_size, 
+            %  origin, datatype, and description. 
+            %  
+            %  Once the NIfTI structure is made, it can be saved into NIfTI file 
+            %  using "save_nii" command (for more detail, type: help save_nii). 
+            %  
+            %  Usage: nii = make_nii(img, [voxel_size], [origin], [datatype], [description])
+            %
+            %  Where:
+            %
+            %	img:		Usually, img is a 3D matrix [x y z], or a 4D
+            %			matrix with time series [x y z t]. However,
+            %			NIfTI allows a maximum of 7D matrix. When the
+            %			image is in RGB format, make sure that the size
+            %			of 4th dimension is always 3 (i.e. [R G B]). In
+            %			that case, make sure that you must specify RGB
+            %			datatype, which is either 128 or 511.
+            %
+            %	voxel_size (optional):	Voxel size in millimeter for each
+            %				dimension. Default is [1 1 1].
+            %
+            %	origin (optional):	The AC origin. Default is [0 0 0].
+            %
+            %	datatype (optional):	Storage data type:
+            %		2 - uint8,  4 - int16,  8 - int32,  16 - float32,
+            %		32 - complex64,  64 - float64,  128 - RGB24,
+            %		256 - int8,  511 - RGB96,  512 - uint16,
+            %		768 - uint32,  1792 - complex128
+            %			Default will use the data type of 'img' matrix
+            %			For RGB image, you must specify it to either 128
+            %			or 511.
+            %
+            %	description (optional):	Description of data. Default is ''.
+            %
+            %  e.g.:
+            %     origin = [33 44 13]; datatype = 64;
+            %     nii = make_nii(img, [], origin, datatype);    % default voxel_size
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %            
+
+            ip = inputParser;
+            addOptional(ip, 'img', this.img, @(x) isnumeric(x) || islogical(x))
+            addOptional(ip, 'voxel_size', this.mmppix, @isnumeric)
+            addOptional(ip, 'origin', this.originator(1:3), @isnumeric)
+            addOptional(ip, 'datatype', this.datatype, @isscalar)
+            addOptional(ip, 'descrip', this.hdr.hist.descrip, @istext)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+
+            nii = mlniftitools.make_nii( ...
+                ipr.img, ipr.voxel_size, ipr.origin, ipr.datatype, ipr.descrip);
+            nii.fileprefix = this.fqfileprefix;
+            nii.filetype = this.filetype;
+            nii.machine = this.machine;
+            nii.original = this.original;
+        end
         function        save_nii(this)
-            if (this.untouch)
+            %  Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
+            %  If file extension is not provided, *.hdr/*.img will be used as default.
+            %  
+            %  Usage: save_nii(nii, filename, [old_RGB])
+            %  
+            %  nii.hdr - struct with NIFTI header fields (from load_nii.m or make_nii.m)
+            %
+            %  nii.img - 3D (or 4D) matrix of NIFTI data.
+            %
+            %  filename - NIFTI file name.
+            %
+            %  old_RGB    - an optional boolean variable to handle special RGB data 
+            %       sequence [R1 R2 ... G1 G2 ... B1 B2 ...] that is used only by 
+            %       AnalyzeDirect (Analyze Software). Since both NIfTI and Analyze
+            %       file format use RGB triple [R1 G1 B1 R2 G2 B2 ...] sequentially
+            %       for each voxel, this variable is set to FALSE by default. If you
+            %       would like the saved image only to be opened by AnalyzeDirect 
+            %       Software, set old_RGB to TRUE (or 1). It will be set to 0, if it
+            %       is default or empty.
+            %  
+            %  Tip: to change the data type, set nii.hdr.dime.datatype,
+            %	and nii.hdr.dime.bitpix to:
+            % 
+            %     0 None                     (Unknown bit per voxel) % DT_NONE, DT_UNKNOWN 
+            %     1 Binary                         (ubit1, bitpix=1) % DT_BINARY 
+            %     2 Unsigned char         (uchar or uint8, bitpix=8) % DT_UINT8, NIFTI_TYPE_UINT8 
+            %     4 Signed short                  (int16, bitpix=16) % DT_INT16, NIFTI_TYPE_INT16 
+            %     8 Signed integer                (int32, bitpix=32) % DT_INT32, NIFTI_TYPE_INT32 
+            %    16 Floating point    (single or float32, bitpix=32) % DT_FLOAT32, NIFTI_TYPE_FLOAT32 
+            %    32 Complex, 2 float32      (Use float32, bitpix=64) % DT_COMPLEX64, NIFTI_TYPE_COMPLEX64
+            %    64 Double precision  (double or float64, bitpix=64) % DT_FLOAT64, NIFTI_TYPE_FLOAT64 
+            %   128 uint RGB                  (Use uint8, bitpix=24) % DT_RGB24, NIFTI_TYPE_RGB24 
+            %   256 Signed char            (schar or int8, bitpix=8) % DT_INT8, NIFTI_TYPE_INT8 
+            %   511 Single RGB              (Use float32, bitpix=96) % DT_RGB96, NIFTI_TYPE_RGB96
+            %   512 Unsigned short               (uint16, bitpix=16) % DT_UNINT16, NIFTI_TYPE_UNINT16 
+            %   768 Unsigned integer             (uint32, bitpix=32) % DT_UNINT32, NIFTI_TYPE_UNINT32 
+            %  1024 Signed long long              (int64, bitpix=64) % DT_INT64, NIFTI_TYPE_INT64
+            %  1280 Unsigned long long           (uint64, bitpix=64) % DT_UINT64, NIFTI_TYPE_UINT64 
+            %  1536 Long double, float128  (Unsupported, bitpix=128) % DT_FLOAT128, NIFTI_TYPE_FLOAT128 
+            %  1792 Complex128, 2 float64  (Use float64, bitpix=128) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
+            %  2048 Complex256, 2 float128 (Unsupported, bitpix=256) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128 
+            %  
+            %  Part of this file is copied and modified from:
+            %  http://www.mathworks.com/matlabcentral/fileexchange/1878-mri-analyze-tools
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %  - "old_RGB" related codes in "save_nii.m" are added by Mike Harms (2006.06.28) 
+            %
+
+            if this.untouch
                 this.save_untouch_nii;
                 return
-            end
-            this = this.optimizePrecision;            
+            end          
             warning('off', 'MATLAB:structOnObject');
             try
-                mlniftitools.save_nii(struct(this), this.fqfilename);
-                this.addLog("mlniftitools.save_nii(struct(this), " + this.fqfilename + ")");
+                this = this.optimizePrecision;
+                nii = struct(this);
+                nii = this.ensureOrientation(nii);
+                nii.fileprefix = this.fqfileprefix;
+                mlniftitools.save_nii(nii, this.fqfilename);
+                this.addLog("mlniftitools.save_nii(nii, " + this.fqfilename + ")");
             catch ME
                 dispexcept(ME, ...
-                    'mlfourd:IOError:from_mlniftitools', ...
+                    'mlfourd:IOError', ...
                     'ImagingFormatTool.save_nii could not save %s', this.fqfilename);
             end
             warning('on', 'MATLAB:structOnObject');
         end
+        function        save_untouch_header_only(~, hdr, hdr_filename)
+            %  This function is only used to save Analyze or NIfTI header that is
+            %  ended with .hdr and loaded by load_untouch_header_only.m. If you 
+            %  have NIfTI file that is ended with .nii and you want to change its
+            %  header only, you can use load_untouch_nii / save_untouch_nii pair.
+            %  
+            %  Usage: save_untouch_header_only(hdr, new_header_file_name)
+            %  
+            %  hdr - struct with NIfTI / Analyze header fields, which is obtained from:
+            %        hdr = load_untouch_header_only(original_header_file_name)
+            %  
+            %  new_header_file_name - NIfTI / Analyze header name ended with .hdr.
+            %        You can either copy original.img(.gz) to new.img(.gz) manually,
+            %        or simply input original.hdr(.gz) in save_untouch_header_only.m
+            %        to overwrite the original header.
+            %  
+            %  - Jimmy Shen (jshen@research.baycrest.org)
+            %    
+
+            mlniftitools.save_untouch_header_only(hdr, hdr_filename);
+            this.addLog("mlniftitools.save_untouch_header_only(hdr, " + hdr_filename + ")");
+        end
         function        save_untouch_nii(this)
+            %  Save NIFTI or ANALYZE dataset that is loaded by "load_untouch_nii.m".
+            %  The output image format and file extension will be the same as the
+            %  input one (NIFTI.nii, NIFTI.img or ANALYZE.img). Therefore, any file
+            %  extension that you specified will be ignored.
+            %
+            %  Usage: save_untouch_nii(nii, filename)
+            %  
+            %  nii - nii structure that is loaded by "load_untouch_nii.m"
+            %
+            %  filename  - 	NIFTI or ANALYZE file name.
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %
+
             if isfile(this.fqfilename)
-                warning('mlfourd:IOError:for_mlniftitools', ...
-                    ['ImagingFormatTool.save_untouch_nii:  ' ...
-                     'the imaging object has untouch->%i, but fqfilename->%s already exists.  ' ...
-                     'mlniftitools.save_untouch_nii doesn''t support saving in these circumstances.'], ...
+                warning('mlfourd:IOError', ...
+                    ['ImagingFormatTool.save_untouch_nii: ' ...
+                     'this object has untouch->%i, but fqfilename->%s already exists, ' ...
+                     'therefor mlniftitools.save_untouch_nii will not support saving.'], ...
                     this.untouch, this.fqfilename);
                 return
-            end            
+            end      
+            warning('off', 'MATLAB:structOnObject');
             try
-                assert(this.hasJimmyShenExtension, ...
-                    'mlfourd:unsupportedInternalState', ...
-                    ['ImagingFormatTool.save_untouch_nii ' ...
-                     'received a request to save imaging using a filesuffix that isn''t supported.']);
-                warning('off', 'MATLAB:structOnObject');
-                mlniftitools.save_untouch_nii(struct(this), this.fqfilename);
-                this.addLog("mlniftitools.save_untouch_nii(struct(this), " + this.fqfilename + ")");
-                warning('on', 'MATLAB:structOnObject');
+                nii = struct(this);
+                nii.fileprefix = this.fqfileprefix;
+                mlniftitools.save_untouch_nii(nii, this.fqfilename);
+                this.addLog("mlniftitools.save_untouch_nii(nii, " + this.fqfilename + ")");
             catch ME
                 dispexcept(ME, ...
-                    'mlfourd:IOError:from_mlniftitools', ...
+                    'mlfourd:IOError', ...
                     'ImagingFormatTool.save_untouch_nii could not save %s', this.fqfilename);
             end
+            warning('on', 'MATLAB:structOnObject');
         end
         function        saveLogger(this)
             if (~isempty(this.logger_))
