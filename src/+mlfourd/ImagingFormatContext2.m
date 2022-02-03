@@ -295,7 +295,6 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             d = uint64(this.state_);
         end
         function [s,r] = view(this, varargin)
-            this.selectImagingFormatTool();
             [s,r] = this.state_.view(varargin{:});
         end        
 
