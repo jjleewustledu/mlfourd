@@ -22,6 +22,28 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             this.verifyEqual(pwd, this.TmpDir)
         end
+        function test_711(this)
+            if ~this.do_view
+                return
+            end
+
+            ifc1 = mlfourd.ImagingFormatContext2('711-2B_111.4dfp.hdr');
+            ifc1.view()
+
+            tmp = strcat(tempname, '.nii.gz');
+            ifc1.saveas(tmp)
+            mlbash(sprintf('fsleyes %s %s', '711-2B_111.4dfp.hdr', tmp))
+
+            ifc2 = copy(ifc1);
+            tmp1 = strcat(tempname, '.4dfp.hdr');
+            ifc2.saveas(tmp1)
+            mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
+
+            mlbash(sprintf('fsleyes %s %s', tmp1, '711-2B_111.4dfp.hdr'))
+
+            deleteExisting(tmp)
+            deleteExisting(tmp1)
+        end
         function test_ctorAndSaveas(this)
             pwd0_ = pushd(this.TmpDir);
             
@@ -72,6 +94,8 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             ifc2.saveas(tmp1)
             mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
 
+            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename))
+
             deleteExisting(tmp)
             deleteExisting(tmp1)
         end
@@ -81,6 +105,9 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ifc.filesuffix, '.mat')
             ifc.filepath = pwd;
             fqfp = ifc.fqfp;
+            if this.do_view
+                ifc.view()
+            end
 
             ifc.selectNiftiTool();
             this.verifyEqual(ifc.stateTypeclass, 'mlfourd.NiftiTool')
@@ -90,14 +117,14 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ifc.hdr.dime.datatype, 64)
             this.verifyEqual(ifc.hdr.dime.bitpix, 64)
             this.verifyEqual(ifc.hdr.dime.pixdim, [-1 1 1 1 1 1 1 1])
-            this.verifyEqual(ifc.hdr.hist.descrip, 'mlfourd.ImagingInfo.initialHdr()')
+            this.verifyEqual(ifc.hdr.hist.descrip, 'ImagingInfo.initialHdr')
             this.verifyEqual(ifc.hdr.hist.qform_code, 1)
             this.verifyEqual(ifc.hdr.hist.sform_code, 1)
             this.verifyEqual(ifc.hdr.hist.quatern_b, 0)
-            this.verifyEqual(ifc.hdr.hist.quatern_c, 0)
+            this.verifyEqual(ifc.hdr.hist.quatern_c, 1)
             this.verifyEqual(ifc.hdr.hist.quatern_d, 0)
-            this.verifyEqual(ifc.hdr.hist.qoffset_x, 0)
-            this.verifyEqual(ifc.hdr.hist.qoffset_y, 0)
+            this.verifyEqual(ifc.hdr.hist.qoffset_x, 0.5, 'AbsTol', 1e-7)
+            this.verifyEqual(ifc.hdr.hist.qoffset_y, -0.5, 'AbsTol', 1e-7)
             this.verifyEqual(ifc.hdr.hist.qoffset_z, 0)
             this.verifyEqual(ifc.hdr.hist.originator(1:3), [0.5 0.5 0], 'AbsTol', 1e-7)
             ifc.save()
@@ -108,15 +135,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ifc.stateTypeclass, 'mlfourd.FourdfpTool')
             ifc.save()
             this.verifyTrue(isfile([fqfp '.4dfp.hdr']))
-            deleteExisting([fqfp '.4dfp.*'])
-
-%             ifc.selectMghTool();
-%             this.verifyEqual(ifc.stateTypeclass, 'mlfourd.MghTool')
-%             ifc.append_fileprefix('_mghtool');
-%             ifc.save()
-%             this.verifyTrue(isfile([fqfp '_mghtool.mgz']))
-%             deleteExisting([fqfp '_mghtool.mgz'])   
-%             deleteExisting([fqfp '_mghtool.nii.gz'])            
+            deleteExisting([fqfp '.4dfp.*'])          
         end
         function test_hdr_fdg(this)
             %% examines native 4dfp and two instances of nii.gz created by ImagingContext2 and nifti_4dfp, 

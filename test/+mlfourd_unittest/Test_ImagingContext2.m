@@ -237,7 +237,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             % verify imagingFormat
             ic.selectImagingTool();
-            this.verifyEqual(DataHash(ic.imagingFormat.hdr), '27dfdd65ad29f1942062c0f493e3578e')
+            this.verifyEqual(DataHash(ic.imagingFormat.hdr), 'cfaf77a5243639ea1a4f3db9bc724b53')
             this.verifyEqual(DataHash(ic.imagingFormat.img), 'd02d6a8dda1f915daa920c24d82f9621')
         end
         function test_ctor_logical(this)
@@ -1142,7 +1142,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             end
             this.verifyEqual(ic.imagingFormat.mmppix, [1 1 1])
             this.verifyEqual(ic.imagingFormat.originator(1:3), [127.5 127.5 127.5])
-            this.verifyEqual(ic.imagingInfo.hdr.dime.dim, [4 256 256 256 1 1 1 1]) % artefact of T1001_ic_4dfp?
+            this.verifyEqual(ic.imagingInfo.hdr.dime.dim, [3 256 256 256 1 1 1 1]) % artefact of T1001_ic_4dfp?
             this.verifyEqual(ic.imagingInfo.hdr.hist.qform_code, 1)
             this.verifyEqual(ic.imagingInfo.hdr.hist.sform_code, 1)
             if this.compatibility
