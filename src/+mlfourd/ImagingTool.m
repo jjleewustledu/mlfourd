@@ -117,10 +117,8 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             addRequired(ip, 'contexth', @(x) isa(x, 'mlfourd.ImagingContext2'))
             addRequired(ip, 'imagingFormat',  @(x) isa(x, 'mlfourd.IImagingFormat'))
             parse(ip, contexth, imagingFormat, varargin{:})
-            ipr = ip.Results;            
-            if ~isa(ipr.imagingFormat, 'mlfourd.ImagingFormatTool')
-                ipr.imagingFormat.selectImagingFormatTool();
-            end
+            ipr = ip.Results;
+            ipr.imagingFormat.selectImagingFormatTool();
             this = this@mlfourd.ImagingState2(ipr.contexth, ipr.imagingFormat, varargin{:});
         end
     end
