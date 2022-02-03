@@ -154,17 +154,22 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
     end
 
     %% PRIVATE
-    
+
     methods (Access = private)
-        function this = adjustQOffsets(this)
-            this.hdr.hist.qoffset_x = this.hdr.hist.qoffset_x / this.hdr.dime.pixdim(2);
-            this.hdr.hist.qoffset_y = this.hdr.hist.qoffset_y / this.hdr.dime.pixdim(3);
-            this.hdr.hist.qoffset_z = this.hdr.hist.qoffset_z / this.hdr.dime.pixdim(4);            
-        end
-        function this = adjustSRows(this)
-            this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) / this.hdr.dime.pixdim(2);
-            this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) / this.hdr.dime.pixdim(3);
-            this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) / this.hdr.dime.pixdim(4);
+        function m = mmppix_triple(this)
+            switch numel(this.mmppix)
+                case 1
+                    m = this.mmppix;
+                    m(2) = 0;
+                    m(3) = 0;
+                case 2
+                    m = this.mmppix;
+                    m(3) = 0;
+                case 3
+                    m = this.mmppix;
+                otherwise
+                    m = this.mmppix(1:3);
+            end
         end
     end
     
