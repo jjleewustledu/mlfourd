@@ -1223,6 +1223,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 handwarning(ME)
             end
         end
+        function        ensureComplex(this)
+            this.selectImagingTool;
+            this.state_.ensureComplex;
+        end
         function        ensureDouble(this)
             this.selectImagingTool;
             this.state_.ensureDouble;
@@ -1399,6 +1403,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function c = char(this, varargin)
             c = char(this.state_, varargin{:});
         end
+        function d = complex(this)
+            this.selectImagingTool();
+            d = complex(this.state_);
+        end  
         function d = double(this)
             this.selectImagingTool();
             d = double(this.state_);

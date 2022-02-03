@@ -203,6 +203,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function c = char(this, varargin)
             c = char(this.state_, varargin{:});
         end
+        function c = complex(this)
+            c = complex(this.state_);
+        end
         function d = double(this)
             d = double(this.state_);
         end
@@ -366,6 +369,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         end
         function this = append_fileprefix(this, varargin)
             this.state_ = this.state_.append_fileprefix(varargin{:});
+        end
+        function this = ensureComplex(this)
+            this.state_ = this.state_.ensureComplex;
         end
         function this = ensureDouble(this)
             this.state_ = this.state_.ensureDouble;

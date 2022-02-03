@@ -228,6 +228,12 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         function c = char(this, varargin)
             c = char(this.imagingFormat_, varargin{:});
         end
+        function c = complex(this)
+            d = double(this);
+            re = real(d);
+            im = imag(d);
+            c = complex(re, im);
+        end
         function d = double(this)
             d = double(this.imagingFormat_.img);
         end

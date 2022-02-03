@@ -230,6 +230,23 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
         %%
 
+        function this = ensureComplex(this)
+            if (this.hdr.dime.datatype ~= 1792)
+                this.imagingInfo_.hdr.dime.datatype = 1792;
+            end
+            if (this.hdr.dime.bitpix ~= 128)
+                this.imagingInfo_.hdr.dime.bitpix = 128;
+            end
+            rimg = real(this.img_);
+            iimg = imag(this.img_);
+            if ~isa(rimg, 'double')
+                rimg = double(rimg);
+            end
+            if ~isa(iimg, 'double')
+                iimg = double(iimg);
+            end
+            this.img_ = complex(rimg, iimg);
+        end   
         function fsleyes(this, varargin)
             %% FSLVIEW
             %  @param [filename[, ...]]

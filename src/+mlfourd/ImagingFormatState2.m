@@ -261,6 +261,12 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             c = evalc('disp(this)');
             c = char(c, varargin{:});
         end
+        function c = complex(this)
+            d = double(this.img);
+            re = real(d);
+            im = imag(d);
+            c = complex(re, im);
+        end
         function d = double(this)
             d = double(this.img);
         end
@@ -392,7 +398,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         end
 
         function adjustHdrForImg(~)
-            %% supports ImagingFormatTool, which overrides
+            %% this stub, called by set.img(), supports overriding by ImagingFormatTool.adjustHdrForImg()
         end
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);
