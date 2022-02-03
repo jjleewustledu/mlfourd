@@ -225,14 +225,10 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
  			
             this = this@mlfourd.ImagingInfo(varargin{:});                
             
-%             if (~isfile(this.fqfilename))
-%                 return
-%             end            
-%             this.info_ = analyze75info(this.fqfilename); % Matlab's native 
-%             this.info_ = this.permuteInfo(this.info_); % KLUDGE
-%             
-%             % from mlniftitools
-%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
+            if isfile(this.fqfilename)
+                this.info_ = analyze75info(this.fqfilename); % Matlab's native
+                this.info_ = this.permuteInfo(this.info_); % KLUDGE
+            end
         end
     end 
     

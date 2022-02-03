@@ -21,11 +21,6 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
  			%  @param filename is required.
             
             this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
-            
-%             if (~isfile(this.fqfilename))
-%                 return
-%             end
-%             [this.hdr_,this.ext_,this.filetype_,this.machine_] = this.load_untouch_header_only;
  		end
     end
     
