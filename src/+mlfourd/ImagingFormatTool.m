@@ -153,7 +153,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                     this = this.ensureDouble; %#ok<NASGU>
                 end
             else
-                error('mlfourd:unsupportedDatatype', 'InnerNIfTI.set.datatype does not support class(dt)->%s', class(dt));
+                error('mlfourd:ValueError', 'InnerNIfTI.set.datatype does not support class(dt)->%s', class(dt));
             end            
         end
         function g = get.ext(this)
@@ -178,7 +178,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
         end 
         function g = get.hdr(this)
-            %% KLUDGE for mlniftitools.save_nii_hdr line28
+            %% includes KLUDGE for mlniftitools.save_nii_hdr line28
 
             g = this.imagingInfo_.hdr;
             if (~isfield(g.hist, 'originator') || ...
@@ -251,7 +251,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 if isempty(this.filesystem_.filesuffix)
                     this.filesystem_.filesuffix = '.mat';
                 end
-                this.addLog('ImagingFormatTool.selectMatlabFormatTool');
+                this.addLog('ImagingFormatTool.selectMatlabFormatTool()');
                 that = mlfourd.MatlabFormatTool.createFromImagingFormat(this); % & imagingInfo
                 contexth.changeState(that);
             else
@@ -261,7 +261,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function that = selectFourdfpTool(this, contexth)
             if ~isa(this, 'mlfourd.FourdfpTool')
                 this.filesystem_.filesuffix = '.4dfp.hdr';
-                this.addLog('ImagingFormatTool.selectFourdfpTool');
+                this.addLog('ImagingFormatTool.selectFourdfpTool()');
                 that = mlfourd.FourdfpTool.createFromImagingFormat(this); % & imagingInfo
                 contexth.changeState(that);
             else
@@ -271,7 +271,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function that = selectMghTool(this, contexth)
             if ~isa(this, 'mlfourd.MghTool')
                 this.filesystem_.filesuffix = '.mgz';
-                this.addLog('ImagingFormatTool.selectMghTool');
+                this.addLog('ImagingFormatTool.selectMghTool()');
                 that = mlfourd.MghTool.createFromImagingFormat(this); % & imagingInfo
                 contexth.changeState(that);
             else
@@ -281,7 +281,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function that = selectNiftiTool(this, contexth)
             if ~isa(this, 'mlfourd.NiftiTool')
                 this.filesystem_.filesuffix = '.nii.gz';
-                this.addLog('ImagingFormatTool.selectNiftiTool');
+                this.addLog('ImagingFormatTool.selectNiftiTool()');
                 that = mlfourd.NiftiTool.createFromImagingFormat(this); % & imagingInfo
                 contexth.changeState(that);
             else
@@ -291,6 +291,14 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
         %%
 
+        function this = append_descrip(this, varargin) 
+            %% APPEND_DESCRIP
+            %  @param [varargin] may be a single string or args to sprintf.
+            %  @return this updates descrip with separator and appended string.
+            %  @throws MATLAB:printf:invalidInputType
+            
+            this.imagingInfo_.append_descrip(varargin{:});
+        end
         function this = ensureComplex(this)
             if (this.hdr.dime.datatype ~= 1792)
                 this.imagingInfo_.hdr.dime.datatype = 1792;
@@ -429,7 +437,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
         end
         function fsleyes(this, varargin)
-            %% FSLVIEW
+            %% FSLEYES
             %  @param [filename[, ...]]
             
             this.viewExternally('fsleyes', varargin{:});
@@ -447,41 +455,52 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             this.viewExternally('fslview_deprecated', varargin{:});
         end        
         function tf = hasFourdfp(this)
+            %% identifies whether the current imaging format is fourdfp
+
             tf = isa(this.imagingInfo_, 'mlfourd.FourdfpInfo') || ...
                 strcmp(this.filesuffix, '.4dfp.hdr') || ...
                 strcmp(this.filesuffix, '.4dfp.img');
         end
         function tf = hasMgh(this)
+            %% identifies whether the current imaging format is mgh
+
             tf = isa(this.imagingInfo_, 'mlfourd.MghInfo') || ...
                 strcmp(this.filesuffix, '.mgz') || ...
                 strcmp(this.filesuffix, '.mgh');
         end
         function tf = hasNifti(this)
+            %% identifies whether the current imaging format is nifti
+
             tf = isa(this.imagingInfo_, 'mlfourd.NIfTIInfo') || ...
                 strcmp(this.filesuffix, '.nii') || ...
                 strcmp(this.filesuffix, '.nii.gz');
         end
         function imgi = imagingInfo(this)
-            if isa(this.imagingInfo_, 'mlfourd.ImagingInfo') 
+            %  Returns:
+            %      imgi: the most informative imagingInfo available to the object instance
+
+            if isa(this.imagingInfo_, 'mlfourd.ImagingInfo') % trivial
                 imgi = this.imagingInfo_; % internal state must share handles
                 return
             end
-            if ~isfile(this.fqfilename)
+            if ~isfile(this.fqfilename) % defer to defaults from mlfourd.ImagingInfo()
                 this.imagingInfo_ = mlfourd.ImagingInfo(this.filesystem_);
                 imgi = this.imagingInfo_; % internal state must share handles
                 return
             end
-            if contains(this.filesuffix, '.4dfp')
+            if contains(this.filesuffix, '.4dfp') % specifiy 4dfp, seek filesystem
                 this.imagingInfo_ = mlfourd.FourdfpInfo(this.filesystem_);
                 imgi = this.imagingInfo_; % internal state must share handles
                 return
             end
             if contains(this.filesuffix, '.mgz') || contains(this.filesuffix, '.mgh')
+                % specify mgz|mgh, seek filesystem
                 this.imagingInfo_ = mlfourd.MGHInfo(this.filesystem_);
                 imgi = this.imagingInfo_; % internal state must share handles
                 return
             end
             if strcmp(this.filesuffix, '.nii.gz') || strcmp(this.filesuffix, '.nii') || strcmp(this.filesuffix, '.hdr')
+                % specify nifti, seek filesystem
                 this.imagingInfo_ = mlfourd.NIfTIInfo(this.filesystem_);
                 imgi = this.imagingInfo_; % internal state must share handles
                 return
@@ -532,6 +551,14 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                         'AbstractImagingFormat.optimizePrecision.this.img_ has typeclass %s', class(this.img_))
             end
         end 
+        function this = prepend_descrip(this, varargin) 
+            %% PREPEND_DESCRIP
+            %  @param [varargin] may be a single string or args to sprintf.
+            %  @return this updates descrip with prepended string and separator.
+            %  @throws MATLAB:printf:invalidInputType            
+            
+            this.imagingInfo_.prepend_descrip(varargin{:});
+        end
         function this = reset_scl(this)
             this.imagingInfo_ = this.imagingInfo_.reset_scl;
         end
@@ -556,17 +583,37 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             that = this.selectMatlabFormatTool(this.contexth_);
             save_mat(that);
         end
+        function [ext,esize_total] = verify_nii_ext(~, ext)
+            %  Verify NIFTI header extension to make sure that each extension section
+            %  must be an integer multiple of 16 byte long that includes the first 8
+            %  bytes of esize and ecode. If the length of extension section is not the
+            %  above mentioned case, edata should be padded with all 0.
+            %
+            %  Usage: [ext, esize_total] = verify_nii_ext(ext)
+            %
+            %  ext - Structure of NIFTI header extension, which includes num_ext,
+            %       and all the extended header sections in the header extension.
+            %       Each extended header section will have its esize, ecode, and
+            %       edata, where edata can be plain text, xml, or any raw data
+            %       that was saved in the extended header section.
+            %
+            %  esize_total - Sum of all esize variable in all header sections.
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %
 
-            this.save__();
-            this.saveLogger();
-        end 
+            [ext,esize_total] = mlniftitools.verify_nii_ext(ext);
+        end
         function [s,r] = view(this, varargin)
+            s = []; r = '';
+            
             if isvector(this.img)
                 this.viewvec(varargin{:});
                 return
             end
 
-            s = []; r = '';
             try
                 % confirm viewer
                 v = mlfourd.Viewer();
@@ -619,7 +666,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             %  @param zsize is optional.
             %  @param tmin  is optional.  Solitary tmin with tsize is supported.
             %  @param tsize is optional.
-            %  @throws .
             
             assert(3 == ndims(this) || 4 == ndims(this));
             
@@ -811,9 +857,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 return
             end
         end
-        function tf   = hasJimmyShenExtension(this)
-            tf = lstrfind(this.filesuffix, {'.hdr' '.nii' '.nii.gz'});
-        end      
         function nii  = make_nii(this, varargin)
             %  Make NIfTI structure specified by an N-D matrix. Usually, N is 3 for 
             %  3D matrix [x y z], or 4 for 4D matrix with time series [x y z t]. 
