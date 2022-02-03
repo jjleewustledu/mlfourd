@@ -89,6 +89,36 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                     this = ImagingInfo(fs, varargin{:});
             end
         end
+        function bp = datatype2bitpix(dt)
+            switch dt
+                case {'uint8' 'uchar' 2}
+                    bp = 8;
+                case {'int16' 'short' 4}
+                    bp = 16;
+                case {'int32' 8}
+                    bp = 32;
+                case {'single' 'float32' 16}
+                    bp = 32;
+                case {'complex64' 32}
+                    bp = 64;
+                case {'double' 'float64' 64}
+                    bp = 64;
+                case {'int8' 'schar' 256}
+                    bp = 8;
+                case {'uint16' 'ushort' 512}
+                    bp = 16;
+                case {'uint32' 768}
+                    bp = 32;
+                case {'int64' 'long' 1024}
+                    bp = 64;
+                case {'uint64' 'ulong' 1280}
+                    bp = 64;
+                case {'complex' 'complex128' 1792}
+                    bp = 128;
+                otherwise
+                    error('mlfourd:ValueError', 'ImagingInfo.datatype2bitpix.this.datatype_->%s', string(dt));
+            end
+        end 
         function e = defaultFilesuffix
             e =  mlfourd.NIfTIInfo.FILETYPE_EXT;
         end
@@ -101,44 +131,90 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 return
             end
             switch (dt)
-                case {'uchar' 'uint8' 2}
-                    if (~isa(X, 'uint8'))
+                case {'uint8' 'uchar' 2}
+                    if ~isa(X, 'uint8')
                         X = uint8(X);
                     end
-                case {'int16' 4}
-                    if (~isa(X, 'int16'))
+                case {'int16' 'short' 4}
+                    if ~isa(X, 'int16')
                         X = int16(X);
                     end
                 case {'int32' 8}
-                    if (~isa(X, 'int32'))
+                    if ~isa(X, 'int32')
                         X = int32(X);
                     end
                 case {'single' 'float32' 16}
-                    if (~isa(X, 'single'))
+                    if ~isa(X, 'single')
                         X = single(X);
                     end
                 case {'double' 'float64' 64}
-                    if (~isa(X, 'double'))
+                    if ~isa(X, 'double')
                         X = double(X);
                     end
-                case {'uint16' 512}
-                    if (~isa(X, 'uint16'))
+                case {'int8' 'schar' 256}
+                    if ~isa(X, 'int8')
+                        X = int8(X);
+                    end
+                case {'uint16' 'ushort' 512}
+                    if ~isa(X, 'uint16')
                         X = uint16(X);
                     end
                 case {'uint32' 768}
-                    if (~isa(X, 'uint32'))
+                    if ~isa(X, 'uint32')
                         X = uint32(X);
                     end
-                case {'int64' 1024}
-                    if (~isa(X, 'int64'))
+                case {'int64' 'long' 1024}
+                    if ~isa(X, 'int64')
                         X = int64(X);
                     end
-                case {'uint64' 1280}
-                    if (~isa(X, 'uint64'))
+                case {'uint64' 'ulong' 1280}
+                    if ~isa(X, 'uint64')
                         X = uint64(X);
                     end
+                case {'complex' 'complex128' 1792}
+                    reX = real(X);
+                    imX = imag(X);
+                    if ~isa(reX, 'double')
+                        reX = double(reX);
+                    end
+                    if ~isa(imX, 'double')
+                        imX = double(imX);
+                    end
+                    X = complex(reX, imX);
                 otherwise
-                    warning('mlfourd:ValueWarning', 'ImagingInfo.ensureDatatype.dt->%s', dt);
+                    error('mlfourd:ValueError', 'ImagingInfo.ensureDatatype.dt->%s', dt);
+            end
+        end
+        function dt = img2datatype(img)
+            if ~isreal(img)
+                dt = 1792;
+                return
+            end
+            switch class(img)
+                case 'logical'
+                    dt = 2;
+                case 'uint8'
+                    dt = 2;
+                case 'int16'
+                    dt = 4;
+                case 'int32'
+                    dt = 8;
+                case 'single'
+                    dt = 16;
+                case 'double' % includes complex
+                    dt = 64;
+                case 'int8'
+                    dt = 256;
+                case 'uint16'
+                    dt = 512;
+                case 'uint32'
+                    dt = 768;
+                case 'int64'
+                    dt = 1024;
+                case 'uint64'
+                    dt = 1280;
+                otherwise
+                    error('mlfourd:ValueError', 'ImagingInfo.img2datatype.this.datatype_->%s', class(img));
             end
         end
         function f = tempFqfilename
@@ -331,22 +407,22 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         %%
         
         function hdr = adjustHdr(this, hdr)
-            if (~isempty(this.datatype_))
-                hdr.dime.datatype = this.datatype_;
-                hdr.dime.bitpix = this.newBitpix;
-            end
+            %% adjusts defects in hdr arising from 4dfp or insufficiency of mlniftitools
 
             % terrible KLUDGE which should be replaced by fslreorient2std or equivalent
             if this.circshiftK_ ~= 0
                 hdr = this.permuteHdr(hdr);
             end
 
-            % ensures consistency with nifti_4dfp.            
+            % ensures consistency with originator created by nifti_4dfp.            
             if ~isfield(hdr.hist, 'originator') || ...
                     norm(hdr.hist.originator) < eps || ...
                     (isa(this, 'mlfourd.FourdfpInfo') && this.N)
-                hdr.hist.originator = double(hdr.dime.pixdim(2:4)) .* ...
-                                      double(hdr.dime.dim(2:4) - 1)/2;
+                xdims_ = min(3, hdr.dime.dim(1)); % space only
+                ori_ = double(hdr.dime.pixdim(2:1+xdims_)) .* ...
+                       double(hdr.dime.dim(2:1+xdims_) - 1)/2;
+                hdr.hist.originator = zeros(1, 3);
+                hdr.hist.originator(1:xdims_) = ori_;
             end
 
             % manage qform_code for scanner and sform_code for atlas
@@ -361,6 +437,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             if all([0 0 0 0] == hdr.hist.srow_x) || ...
                all([0 0 0 0] == hdr.hist.srow_y) || ...
                all([0 0 0 0] == hdr.hist.srow_z)
+
+                hdr.hist.qform_code = 1;
+                hdr.hist.sform_code = 1;
 
                 hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
 
@@ -395,7 +474,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             else
                 astring = varargin{:};
             end
-            this.hdr_.hist.descrip = sprintf('%s%s %s', this.hdr_.hist.descrip, this.separator_, astring);
+            if isempty(this.hdr_.hist.descrip)
+                this.hdr_.hist.descrip = astring;
+            else
+                this.hdr_.hist.descrip = sprintf('%s%s %s', this.hdr_.hist.descrip, this.separator_, astring);
+            end
         end
         function c = char(this)
             c = char(this.filesystem_);
@@ -704,11 +787,18 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             else
                 astring = varargin{:};
             end
-            this.hdr_.hist.descrip = sprintf('%s%s %s', astring, this.separator_, this.hdr_.hist.descrip);
-        end
+            if isempty(this.hdr_.hist.descrip)
+                this.hdr_.hist.descrip = astring;
+            else
+                this.hdr_.hist.descrip = sprintf('%s%s %s', astring, this.separator_, this.hdr_.hist.descrip);
+            end
+        end  
         function this = reset_scl(this)
             this.hdr_.dime.scl_slope = 1;
             this.hdr_.dime.scl_inter = 0;
+        end
+        function s = string(this, varargin)
+            s = string(this.filesystem_, varargin{:});
         end
         function this = zoomed(this, rmin, rsize)
             shift = this.AffMats*[rmin(1:3) 0]';
@@ -722,10 +812,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.hdr.hist.originator = rsize(1:3)/2;
 
             this.hdr.dime.dim(2:4) = rsize;
-        end        
-        function s = string(this, varargin)
-            s = string(this.filesystem_, varargin{:});
-        end
+        end 
         function xyz = AffineMethod3(this, ijk)
             % AFFINEMETHOD3 (used when sform_code > 0):
             % -----------------------------------------
@@ -927,12 +1014,12 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 return
             end
             if isempty(nii.original)
-                % initial load was likely 4dfp
+                % initial load was likely 4dfp, overriding behavior of mlniftitools
                 nii.img = flip(nii.img, 1);
                 return
             end
             if nii.original.hdr.dime.pixdim(1) == -1
-                % initial load was likely nifti
+                % initial load was likely nifti, overriding behavior of mlniftitools
                 nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
                 nii.img = flip(nii.img, 1);
                 return
@@ -948,7 +1035,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'regular', 'r', ...
                 'dim_info', 0);
             dime = struct( ...
-                'dim', [4 0 0 0 0 1 1 1], ...
+                'dim', [2 1 1 1 1 1 1 1], ...
                 'intent_p1', 0, ... 
                 'intent_p2', 0, ... 
                 'intent_p3', 0, ... 
@@ -958,7 +1045,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'slice_start', 0, ... 
                 'pixdim', [-1 1 1 1 1 1 1 1], ... 
                 'vox_offset', 352, ... 
-                'scl_slope', 1, ... 
+                'scl_slope', 0, ... 
                 'scl_inter', 0, ... 
                 'slice_end', 0, ... 
                 'slice_code', 0, ... 
@@ -970,7 +1057,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'glmax', 0, ... 
                 'glmin', 0);
             hist = struct( ...
-                'descrip', 'mlfourd.ImagingInfo.initialHdr()', ...
+                'descrip', 'ImagingInfo.initialHdr', ...
                 'aux_file', '', ...
                 'qform_code', 0, ...
                 'sform_code', 0, ...
@@ -980,9 +1067,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'qoffset_x', 0, ...
                 'qoffset_y', 0, ...
                 'qoffset_z', 0, ...
-                'srow_x', [1 0 0 0], ...
-                'srow_y', [0 1 0 0], ...
-                'srow_z', [0 0 1 0], ...
+                'srow_x', [0 0 0 0], ...
+                'srow_y', [0 0 0 0], ...
+                'srow_z', [0 0 0 0], ...
                 'intent_name', '', ...
                 'magic', 'n+1');
             hdr = struct('hk', hk, 'dime', dime, 'hist', hist);
@@ -1000,31 +1087,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             if contains(this.filesuffix, '.4dfp')
                 this.filesuffix = '.4dfp.hdr';
             end
-        end  
-        function bp = newBitpix(this)
-            switch (this.datatype_)
-                case {'uchar' 'uint8' 2}
-                    bp = 8;
-                case {'int16' 4}
-                    bp = 16;
-                case {'int32' 8}
-                    bp = 32;
-                case {'single' 'float32' 16}
-                    bp = 32;
-                case {'double' 'float64' 64}
-                    bp = 64;
-                case {'uint16' 512}
-                    bp = 16;
-                case {'uint32' 768}
-                    bp = 32;
-                case {'int64' 1024}
-                    bp = 64;
-                case {'uint64' 1280}
-                    bp = 64;
-                otherwise
-                    error('mlfourd:ValueError', 'ImagingInfo.newBitpix.this.datatype_->%s', string(dt));
-            end
-        end  
+        end 
         function hdr = permuteHdr(this, hdr)
             if (0 == this.circshiftK_)
                 return
