@@ -85,6 +85,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         %% important for 4dfp
 
         mmppix
+        original
         originator
         N % logical: suppress mmppix and center for 4dfp
     end
@@ -118,7 +119,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             u = this.imagingInfo_.untouch;
         end
         function     set.untouch(this, s)
-            this.imagingInfo_.untouch = logical(s);
+            this.imagingInfo_.untouch = s;
         end
 
         function g = get.datatype(this)
@@ -213,11 +214,13 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 g = g(1:3);
             end
         end
+        function g = get.original(this)
+            g = this.imagingInfo_.original;
+        end 
         function     set.originator(this, s)
             %% SET.ORIGINATOR sets ImagingInfo.originator voxel position in mm.
 
             assert(isnumeric(s))
-            assert(3 == length(s))
             this.imagingInfo_.hdr.hist.originator = s;
             if this.imagingInfo_.hdr.hist.qform_code > 0
                 this.imagingInfo_.hdr.hist.qoffset_x = 1 - s(1);
