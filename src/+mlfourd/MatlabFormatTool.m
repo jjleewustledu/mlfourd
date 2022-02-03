@@ -40,17 +40,18 @@ classdef MatlabFormatTool < handle & mlfourd.ImagingFormatTool
         function this = MatlabFormatTool(varargin)
             this = this@mlfourd.ImagingFormatTool(varargin{:});         
         end
-    end
 
-    %% HIDDEN
-    
-    methods (Hidden)        
-        function save__(this)
+        function save_mat(this)
             % undifferentiated ImagingInfo does not have 4dfp, mgz or nifti information
+            
+            this.assertNonemptyImg();
+            this.ensureNoclobber();
+            ensuredir(this.filepath);
             
             this.filesuffix = '.mat';
             save(this.fqfilename, 'this');
             this.addLog("save(" + this.fqfilename + ", 'this')");
+            this.saveLogger();
         end
     end
     

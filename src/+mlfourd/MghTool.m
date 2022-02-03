@@ -47,30 +47,29 @@ classdef MghTool < handle & mlfourd.ImagingFormatTool
         function this = MghTool(varargin)
             this = this@mlfourd.ImagingFormatTool(varargin{:});
         end
-    end
 
-    %% HIDDEN
-    
-    methods (Hidden) 
-        function save__(this)
-            assert(strcmp(this.filesuffix, '.mgz') || ...
-                   strcmp(this.filesuffix, '.mgh') || ...
-                   strcmp(this.filesuffix, '.nii') || ...
-                   strcmp(this.filesuffix, '.nii.gz'));
+        function save(this)
+            %% SAVE 
+
+            this.assertNonemptyImg();
+            this.ensureNoclobber();
+            ensuredir(this.filepath);
+
+            warning('off', 'MATLAB:structOnObject');
             try
-                warning('off', 'MATLAB:structOnObject');
-                fqfn = strcat(this.fqfileprefix, '.nii.gz');
-                mlniftitools.save_nii(struct(this), fqfn);
-                this.addLog("mlniftitools.save_nii(struct(this), " + fqfn + ")");
-                cmd = sprintf('mri_convert %s %s', strcat(this.fqfileprefix, '.nii.gz'), strcat(this.fqfileprefix, '.mgz'));
+                fqfn_nii = strcat(this.fqfileprefix, '.nii.gz');
+                fqfn_mgz = strcat(this.fqfileprefix, '.mgz');
+                this.save_nii();
+                cmd = sprintf('mri_convert %s %s', fqfn_nii, fqfn_mgz);
                 mlbash(cmd);
                 this.addLog(cmd);
-                warning('on', 'MATLAB:structOnObject');
+                this.saveLogger();
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...
-                    'InnerNIfTI.save_mgz erred while attempting to save %s', this.fqfilename);
+                    'MghTool.save could not save %s', this.fqfilename);
             end
+            warning('on', 'MATLAB:structOnObject');
         end
     end
     

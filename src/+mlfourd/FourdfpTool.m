@@ -96,58 +96,42 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
             %      useCase (numeric): described above.  Default := 1.
 
             this = this@mlfourd.ImagingFormatTool(contexth, img, varargin{:});
-
-            try
-                this = this.adjustQOffsets;
-                this = this.adjustSRows;
-            catch ME
-                this.addLog(ME.message)
-                this.addLog(struct2str(ME.stack))                
-
-                % KLUDGE:  following sucesses of AbstractInnerImagingFormat
-                if isfile(this.fqfilename)
-                    nii_ = this.imagingInfo_.make_nii;
-                    this.imagingInfo_.hdr = nii_.hdr;
-                    this.imagingInfo_.untouch = false;
-                    this = this.adjustQOffsets;
-                    this = this.adjustSRows;
-                end
-            end
         end
-    end
 
-    %% HIDDEN
-    
-    methods (Hidden) 
-        function save__(this)
-            %this = copy(this);
-            assert(lstrfind(this.filesuffix, '.4dfp'));
-            [this.img_,hdr_] = mlfourd.FourdfpInfo.exportFourdfp(this.img_, this.imagingInfo.hdr); %% KLUDGE
-            this.imagingInfo_.hdr = hdr_;
-            try                
-                warning('off', 'MATLAB:structOnObject');
-                if numel(this.mmppix) < 3
-                    ana = mlniftitools.make_ana(single(this.img_), [this.mmppix, this.mmppix(2)]);
-                    this.addLog("mlniftitools.make_ana(single(this.img_), [" + mat2str(this.mmppix) + ", " + this.mmppix(2) + "])");
-                else
-                    ana = mlniftitools.make_ana(single(this.img_), this.mmppix);
-                    this.addLog("mlniftitools.make_ana(single(this.img_), [" + mat2str(this.mmppix) + "])");
-                end
+        function save(this)
+            %% SAVE 
+
+            this.assertNonemptyImg();
+            this.ensureNoclobber();
+            ensuredir(this.filepath);
+            imagingInfo__ = copy(this.imagingInfo_);
+
+            warning('off', 'MATLAB:structOnObject');
+            try
+                ana = mlniftitools.make_ana(this.img, this.mmppix_triple());
+                this.addLog("mlniftitools.make_ana(this.img, [" + mat2str(this.mmppix) + "])");
+                ana = this.ensureOrientation(ana);
+                ana = this.ensureHist(ana);
+
                 fqfn = strcat(this.fqfileprefix, '.4dfp.hdr');
-                mlniftitools.save_untouch_nii(ana, fqfn);
+                mlniftitools.save_untouch_nii(ana, fqfn); % make_ana() requires save_untouch_nii()
                 this.addLog("mlniftitools.save_untouch_nii(ana, " + fqfn + ")");
-                this.imagingInfo_.ifh.fqfileprefix = this.fqfileprefix;
-                this.imagingInfo_.ifh.save(this);
-                this.addLog("this.imagingInfo_.ifh.save(this)");
-                this.imagingInfo_.imgrec.fqfileprefix = this.fqfileprefix;
-                this.imagingInfo_.imgrec.save();
-                this.addLog("this.imagingInfo_.imgrec.save()");
-                warning('on', 'MATLAB:structOnObject');
+
+                imagingInfo__.ifh.fqfileprefix = this.fqfileprefix;
+                imagingInfo__.ifh.save(this);
+                this.addLog("imagingInfo__.ifh.save(this)");
+                
+                imagingInfo__.imgrec.fqfileprefix = this.fqfileprefix;
+                imagingInfo__.imgrec.save();
+                this.addLog("imagingInfo__.imgrec.save()");
+
+                this.saveLogger();
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...
-                    'InnerFourdfp.saveByNifti4dfp erred while attempting to save %s', this.fqfilename);
+                    'FourdfpTool.save could not save %s', this.fqfilename);
             end
+            warning('on', 'MATLAB:structOnObject');
         end
     end
     

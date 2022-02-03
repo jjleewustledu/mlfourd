@@ -39,18 +39,27 @@ classdef NiftiTool < handle & mlfourd.ImagingFormatTool
         %%
 
         function this = NiftiTool(varargin)
+            %  Args:
+            %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
+            %      img (numeric): option provides numerical imaging data.  Default := [].
+            %      imagingInfo (ImagingInfo): Default := [].
+            %      filesystem (HandleFilesystem): Default := mlio.HandleFilesystem().
+            %      logger (mlpipeline.ILogger): Default := log on filesystem | mlpipeline.Logger2(filesystem.fqfileprefix).
+            %      viewer (IViewer): Default := mlfourd.Viewer().
+            %      useCase (numeric): described above.  Default := 1.
+
             this = this@mlfourd.ImagingFormatTool(varargin{:});
         end
-    end
 
-    %% HIDDEN
-    
-    methods (Hidden)        
-        function save__(this)
-            assert(strcmp(this.filesuffix, '.nii') || ...
-                   strcmp(this.filesuffix, '.nii.gz') || ...
-                   strcmp(this.filesuffix, '.hdr'))
-            this.save_nii;
+        function save(this)
+            %% SAVE 
+
+            this.assertNonemptyImg();
+            this.ensureNoclobber();
+            ensuredir(this.filepath);
+
+            this.save_nii();
+            this.saveLogger();
         end
     end
     

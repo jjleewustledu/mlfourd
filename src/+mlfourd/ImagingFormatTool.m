@@ -368,40 +368,27 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function this = reset_scl(this)
             this.imagingInfo_ = this.imagingInfo_.reset_scl;
         end
-        function        save(this)
+        function save(this)
             %% SAVE 
-            %  If this.noclobber == true,  it will never overwrite files.
-            %  If this.noclobber == false, it may overwrite files. 
-            %  If this.untouch   == true,  it will never overwrite files.
-            %  If this.untouch   == false, it may saving imaging data with modified state.
-            %  @return saves this to this.fqfilename.  
-            %  @return this may have mutated.
-            %  @throws mlfourd.IOError:noclobberPreventedSaving, mlfourd:IOError:untouchPreventedSaving, 
-            %  mlfourd.IOError:unsupportedFilesuffix, mfiles:unixException, MATLAB:assertion:failed   
             
-            this.ensureImg();
-            this.ensureNoclobber();
-            this.ensureFilesuffix();
-            ensuredir(this.filepath);
-
             if this.hasFourdfp()
                 that = this.selectFourdfpTool(this.contexth_);
-                that.save__();
-                that.saveLogger();
+                save(that);
                 return
             end
             if this.hasMgh()
                 that = this.selectMghTool(this.contexth_);
-                that.save__();
-                that.saveLogger();
+                save(that);
                 return
             end
             if this.hasNifti()
                 that = this.selectNiftiTool(this.contexth_);
-                that.save__();
-                that.saveLogger();
+                save(that);
                 return
             end
+            that = this.selectMatlabFormatTool(this.contexth_);
+            save_mat(that);
+        end
 
             this.save__();
             this.saveLogger();
