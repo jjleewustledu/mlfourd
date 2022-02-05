@@ -59,6 +59,7 @@ classdef NiftiTool < handle & mlfourd.ImagingFormatTool
             ensuredir(this.filepath);
 
             this.save_nii();
+            this.save_json_metadata();
             this.saveLogger();
         end
     end
