@@ -263,7 +263,7 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
  	
     methods (Static)
-        function e       = defaultFilesuffix
+        function e = defaultFilesuffix()
             e =  mlfourd.FourdfpInfo.FILETYPE_EXT;
         end
         function [X,hdr] = exportFourdfpToFreesurferSpace(X, hdr)
@@ -311,6 +311,10 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
     end
     
     properties (Dependent)
+        fqfileprefix_4dfp_hdr
+        fqfileprefix_4dfp_ifh
+        fqfileprefix_4dfp_img
+        fqfileprefix_4dfp_imgrec
         ifh
         ifh_orientation
         imgrec
@@ -319,7 +323,19 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
 	methods 
         
         %% GET, SET
-        
+                        
+        function g = get.fqfileprefix_4dfp_hdr(this)
+            g = strcat(this.fqfileprefix, '.4dfp.hdr');
+        end
+        function g = get.fqfileprefix_4dfp_ifh(this)
+            g = strcat(this.fqfileprefix, '.4dfp.ifh');
+        end
+        function g = get.fqfileprefix_4dfp_img(this)
+            g = strcat(this.fqfileprefix, '.4dfp.img');
+        end
+        function g = get.fqfileprefix_4dfp_imgrec(this)
+            g = strcat(this.fqfileprefix, '.4dfp.img.rec');
+        end
         function g = get.ifh(this)
             g = this.ifh_;
         end 
@@ -350,19 +366,6 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         end 
         
         %%
-                
-        function fqfn = fqfileprefix_4dfp_hdr(this)
-            fqfn = strcat(this.fqfileprefix, '.4dfp.hdr');
-        end
-        function fqfn = fqfileprefix_4dfp_ifh(this)
-            fqfn = strcat(this.fqfileprefix, '.4dfp.ifh');
-        end
-        function fqfn = fqfileprefix_4dfp_img(this)
-            fqfn = strcat(this.fqfileprefix, '.4dfp.img');
-        end
-        function fqfn = fqfileprefix_4dfp_imgrec(this)
-            fqfn = strcat(this.fqfileprefix, '.4dfp.img.rec');
-        end
                
         function save(this)
             %% saves ifh, img.reg
@@ -384,8 +387,21 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         end
         
  		function this = FourdfpInfo(varargin)
- 			%% FOURDFPINFO calls Analyze75Info() -> mlniftitools.load_untouch_header_only
- 			%  @param filename is required.
+ 			%% FOURDFPINFO provides points of entry for building info and hdr objects
+            %  Args:
+ 			%      filesystem_ (text|mlio.HandleFilesystem):  
+            %          If text, ImagingInfo creates isolated filesystem_ information.
+            %          If mlio.HandleFilesystem, ImagingInfo will reference the handle for filesystem_ information,
+            %          allowing for external modification for synchronization.
+            %          For aufbau, the file need not exist on the filesystem.
+            %      datatype (scalar): sepcified by mlniftitools.
+            %      ext (struct): sepcified by mlniftitools.
+            %      filetype (scalar): sepcified by mlniftitools.
+            %      N (logical): 
+            %      separator (text): separates annotations
+            %      untouch (logical): sepcified by mlniftitools.
+            %      hdr (struct): sepcified by mlniftitools.
+            %      original (struct): sepcified by mlniftitools.
  			
             this = this@mlfourd.Analyze75Info(varargin{:});
             

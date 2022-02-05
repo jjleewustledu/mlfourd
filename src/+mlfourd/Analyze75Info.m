@@ -5,12 +5,21 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
  	%  was created 27-Jun-2018 00:34:54 by jjlee,
  	%  last modified $LastChangedDate$ and placed into repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
  	%% It was developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
- 	
+ 	    
+    methods (Static)
+        function e = defaultFilesuffix()
+            e =  mlfourd.Analyze75Info.ANALYZE75_EXT;
+        end
+    end
+
     properties (Constant) 
         ANALYZE75_EXT = '.hdr';
     end
     
 	properties (Dependent)
+        fqfileprefix_hdr
+        fqfileprefix_img
+
             Filename % : '/Users/jjlee/Tmp/T1.4dfp.hdr'
          FileModDate % : '02-Jun-2018 18:17:24'
          HdrFileSize % : 348
@@ -56,18 +65,19 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
                 OMin % : 0
                 SMax % : 0
                 SMin % : 0 		
- 	end
-    
-    methods (Static)
-        function e = defaultFilesuffix
-            e =  mlfourd.Analyze75Info.ANALYZE75_EXT;
-        end
     end
 
 	methods 
 
         %% GET/SET
-        
+		  
+        function g = get.fqfileprefix_hdr(this)
+            g = strcat(this.fqfileprefix, '.hdr');
+        end
+        function g = get.fqfileprefix_img(this)
+            g = strcat(this.fqfileprefix, '.img');
+        end
+
         function g = get.Filename(this)
             g = this.filename;
         end
@@ -210,25 +220,22 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
             g = this.info_.SMin;
         end
         
-        %%        
-		  
-        function fqfn = fqfileprefix_hdr(this)
-            fqfn = strcat(this.fqfileprefix, '.hdr');
-        end
-        function fqfn = fqfileprefix_img(this)
-            fqfn = strcat(this.fqfileprefix, '.img');
-        end
+        %%     
         
+        function load_info(this)
+            if isfile(this.fqfilename)
+                this.info_ = analyze75info(this.fqfilename); % Matlab's native
+                this.info_ = this.permuteInfo(this.info_); % KLUDGE
+            end
+        end
+
  		function this = Analyze75Info(varargin)
  			%% ANALYZE75INFO calls mlniftitools.load_untouch_header_only
  			%  @param filename is required.
  			
             this = this@mlfourd.ImagingInfo(varargin{:});                
             
-            if isfile(this.fqfilename)
-                this.info_ = analyze75info(this.fqfilename); % Matlab's native
-                this.info_ = this.permuteInfo(this.info_); % KLUDGE
-            end
+            this.load_info();
         end
     end 
     
