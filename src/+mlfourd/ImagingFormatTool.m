@@ -11,11 +11,13 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
     methods (Static)
         function [hdr,orig] = imagingFormatToHdr(iform)
-            %% from ImagingFormatTool create nifti hdr for internal representations
+            %% From ImagingFormatTool create nifti hdr for internal representation as LAS.  
+            %  See also {Nifti,Fourdfp,Mgh}Tool.createFromImagingFormat()
 
             iinfo = iform.imagingInfo();
             if isanalyze(iinfo)
-                % from non-nifti hdr build nifti hdr
+                % From analyze hdr build nifti hdr in LAS.  
+                % Retain original analyze hdr, which is always LAS.
                 jimmy = iform.make_nii();
                 hdr = jimmy.hdr;
                 if isfield(jimmy, 'original')
@@ -28,7 +30,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             if isnifti(iinfo)
                 if strcmp(iform.hdr.hist.descrip, 'ImagingInfo.initialHdr') && ...
                         isfile(iform.fqfilename)
-                    % replace uninformative hdr with hdr from filesystem
+                    % Replace uninformative initial hdr with nifti hdr from filesystem, forcing LAS, 
+                    % and forcing scanner anatomical {q,s}form_code.  
+                    % Retain original hdr, which may be LAS or RAS, so that original orientation is 
+                    % preserved on write.
                     jimmy = iinfo.load_nii(); 
                     hdr = jimmy.hdr;
                     hdr.dime.pixdim(1) = -1;
@@ -44,6 +49,8 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 if ~isempty(iinfo.original) && ...
                         (iinfo.original.hdr.hist.qform_code > 0 || ...
                          iinfo.original.hdr.hist.sform_code > 0)
+                    % Given non-empty original hdr and reasonable {q,s}form_code, 
+                    % force LAS and retain {q,s}form_code.
                     hdr = iform.hdr;
                     hdr.dime.pixdim(1) = -1;
                     hdr.hist.qform_code = iform.original.hdr.hist.qform_code;
@@ -51,10 +58,12 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                     orig = iform.original;
                     return
                 end
+
+                % Otherwise, original is unreliable.
+                % Force LAS, don't trust the {q,s}form_code, 
+                % bug retain original hdr so as to preserve information on writing.
                 hdr = iform.hdr;
                 hdr.dime.pixdim(1) = -1;
-                hdr.hist.qform_code = 1;
-                hdr.hist.sform_code = 1;
                 orig = iform.original;
                 return
             end
@@ -843,11 +852,11 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 return
             end
             if isempty(nii.original)
-                % initial load was likely 4dfp, overriding behavior of mlniftitools
                 return
             end
             if nii.original.hdr.dime.pixdim(1) == -1
-                % initial load was likely nifti, overriding behavior of mlniftitools
+                % Always keep internal representations in LAS so as to allow consistent internal maths,
+                % even between external NIfTI that are LAS and RAS.
                 nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
                 return
             end
