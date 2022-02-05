@@ -7,8 +7,10 @@ classdef Test_Imaging < matlab.unittest.TestCase
     properties
         compatibility = false
         do_view = false
+        LAS = 'sub-108293_ses-20210421171325_trc-fdg_proc-static_pet' % bottle points left anterior
         MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0
+        RAS = 'sub-108293_ses-20210218081506_T1w_MPR_vNav_4e_RMS' % subject's nose tilts slightly to left
         T1001 = 'T1001'
         T1001_ic_4dfp % anatDir
         T1001_ic_nii % anatDir
@@ -25,6 +27,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
         large_4dfp % CCIR_00559_00754/derivatives/sub-S58163/pet
         large_nii % CCIR_00559_00754/derivatives/sub-S58163/pet
         mriDir % CCIR_00559_00754/derivatives/sub-S41723/mri
+        petDir2 % CCIR_01211/sourcedata/sub-S108293/pet
         T1001_fqfn_4dfp % anatDir
         T1001_fqfn_nii % anatDir
         TmpDir        
@@ -68,6 +71,9 @@ classdef Test_Imaging < matlab.unittest.TestCase
         end 
         function g = get.mriDir(~)
             g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S41723', 'mri', '');
+        end
+        function g = get.petDir2(~)
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-S108293', 'pet', '');
         end
         function g = get.T1001_fqfn_4dfp(this)
             g = fullfile(this.anatDir, 'T1001.4dfp.hdr');
@@ -160,6 +166,13 @@ classdef Test_Imaging < matlab.unittest.TestCase
             if ~isfile('brain.nii.gz')
                 mlbash('mri_convert brain.mgz brain.nii.gz')
             end
+            if ~isfile([this.LAS '.nii.gz'])
+                copyfile(fullfile(this.anatDir2, [this.LAS '.*']));
+            end
+            if ~isfile([this.RAS '.nii.gz'])
+                copyfile(fullfile(this.petDir2, [this.RAS '.*']));
+            end
+
             this.MNI152_LR_nii = ImagingContext2( ...
                 fullfile(getenv('FSLDIR'), 'data/standard/MNI152_T1_2mm_LR-masked.nii.gz'), ...
                 'compatibility', this.compatibility);
