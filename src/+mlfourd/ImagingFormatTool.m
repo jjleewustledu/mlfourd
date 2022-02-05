@@ -71,21 +71,22 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
         %% required by mlniftitools.{save_nii,save_untouch_nii}
 
-        hdxml
-        orient % RADIOLOGICAL, NEUROLOGICAL
-        untouch
-
         datatype
         ext
         filetype
         hdr % required by mlniftitools.{save_nii,save_untouch_nii}
+        hdxml
+        json_metadata
         machine
+        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
+        original
+        qfac % internal representation from this.hdr.dime.pixdim(1)
         stateTypeclass
+        untouch
 
         %% important for 4dfp
 
         mmppix
-        original
         originator
         N % logical: suppress mmppix and center for 4dfp
     end
@@ -93,35 +94,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
     methods
 
         %% GET/SET
-                      
-        function x = get.hdxml(this)
-            if ~isfile(this.fqfilename)
-                x = '';
-                return
-            end
-            [~,x] = mlbash(['fslhd -x ' this.fqfilename]);
-            x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
-        end
-        function o = get.orient(this)
-            if ~isempty(this.orient_)
-                o = this.orient_;
-                return
-            end
-            if isfile(this.fqfilename)
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfilename]);
-                o = strtrim(o);
-                this.orient_ = o;
-                return
-            end
-            o = '';
-        end 
-        function u = get.untouch(this)
-            u = this.imagingInfo_.untouch;
-        end
-        function     set.untouch(this, s)
-            this.imagingInfo_.untouch = s;
-        end
-
+              
         function g = get.datatype(this)
             %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
@@ -191,13 +164,39 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
             assert(isstruct(s));
             this.imagingInfo_.hdr = s;
+        end        
+        function x = get.hdxml(this)
+            if ~isfile(this.fqfilename)
+                x = '';
+                return
+            end
+            [~,x] = mlbash(['fslhd -x ' this.fqfilename]);
+            x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
+        end
+        function g = get.json_metadata(this)
+            g = this.imagingInfo_.json_metadata;
         end
         function g = get.machine(this)
             g = this.imagingInfo_.machine;
         end
+        function g = get.orient(this)
+            g = this.imagingInfo_.orient;
+        end
+        function g = get.original(this)
+            g = this.imagingInfo_.original;
+        end 
+        function g = get.qfac(this)
+            g = this.imagingInfo_.qfac;
+        end
         function g = get.stateTypeclass(this)
             g = class(this.imagingInfo_);
         end 
+        function g = get.untouch(this)
+            g = this.imagingInfo_.untouch;
+        end
+        function     set.untouch(this, s)
+            this.imagingInfo_.untouch = s;
+        end
 
         function     set.mmppix(this, s)
             %% SET.MMPPIX sets uniform voxel-time measures in mm and s.  
@@ -214,9 +213,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 g = g(1:3);
             end
         end
-        function g = get.original(this)
-            g = this.imagingInfo_.original;
-        end 
         function     set.originator(this, s)
             %% SET.ORIGINATOR sets ImagingInfo.originator voxel position in mm.
 
@@ -728,7 +724,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
     properties (Access = protected)
         imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
-        orient_
     end
 
     methods (Access = protected)
@@ -918,6 +913,19 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             nii.filetype = this.filetype;
             nii.machine = this.machine;
             nii.original = this.original;
+        end
+        function        save_json_metadata(this)
+            if isempty(this.json_metadata)
+                return
+            end
+            txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
+            txt = strrep(txt, "%", "_"); % interferes with fprintf()
+            if empty(txt)
+                return
+            end
+            fid = fopen(strcat(this.fqfileprefix, '.json'), 'w');
+            fprintf(fid, txt);
+            close(fid)
         end
         function        save_nii(this)
             %  Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.

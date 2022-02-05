@@ -25,35 +25,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
     %
 	%  Created 27-Jun-2018 00:57:05 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
  	%  Developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
- 	
-    properties (Dependent)
-        filename
-        filepath
-        fileprefix 
-        filesuffix
-        fqfilename
-        fqfileprefix
-        fqfn
-        fqfp
-        noclobber
-
-        anaraw
-        circshiftK
-        qfac % from this.hdr.dime.pixdim(1)
-        qform_code
-        raw % : [1×1 struct]
-        sform_code
-                      
-        hdr % subset of mlfourd.JimmyShenInterface
-        ext
-        filesystem % get/set handle, not copy, from external filesystem 
-        filetype
-        machine
-        N % keeps track of the option "-N" used by nifti_4dfp
-        original
-        untouch
-    end
-    
+ 	    
     methods (Static)
         function this = createFromFilename(fn, varargin)
             import mlfourd.*
@@ -119,7 +91,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                     error('mlfourd:ValueError', 'ImagingInfo.datatype2bitpix.this.datatype_->%s', string(dt));
             end
         end 
-        function e = defaultFilesuffix
+        function e = defaultFilesuffix()
             e =  mlfourd.NIfTIInfo.FILETYPE_EXT;
         end
         function X = ensureDatatype(X, dt)
@@ -222,6 +194,35 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         end
     end
     
+    properties (Dependent)
+        filename
+        filepath
+        fileprefix 
+        filesuffix
+        fqfilename
+        fqfileprefix
+        fqfn
+        fqfp
+        noclobber
+
+        anaraw
+        circshiftK
+        ext
+        filesystem % get/set handle, not copy, from external filesystem 
+        filetype
+        hdr % subset of mlfourd.JimmyShenInterface
+        json_metadata
+        machine
+        N % keeps track of the option "-N" used by nifti_4dfp
+        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
+        original
+        qfac % internal representation from this.hdr.dime.pixdim(1)
+        qform_code
+        raw % : [1×1 struct]
+        sform_code                      
+        untouch
+    end
+
 	methods 
 
         %% SET/GET
@@ -291,6 +292,80 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             assert(isnumeric(s));
             this.circshiftK_ = s;
         end
+        function g = get.ext(this)
+            g = this.ext_;
+        end
+        function     set.ext(this, s)
+            this.ext_ = s;
+            this.untouch_ = [];
+        end
+        function     set.filesystem(this, s)
+            assert(isa(s, 'mlio.HandleFilesystem'))
+            this.filesystem_ = s;
+        end
+        function g = get.filesystem(this)
+            g = copy(this.filesystem_);
+        end
+        function g = get.filetype(this)
+            g = this.filetype_;
+        end
+        function     set.filetype(this, s)
+            assert(isnumeric(s));
+            this.filetype_ = s;
+            this.untouch_ = [];
+        end
+        function g = get.hdr(this)
+            g = this.hdr_;
+        end
+        function     set.hdr(this, s)
+            assert(isstruct(s));
+            this.hdr_ = s;
+            this.untouch_ = [];
+        end
+        function g = get.json_metadata(this)
+            g = this.json_metadata_;
+        end
+        function     set.json_metadata(this, s)
+            assert(isstruct(s))
+            this.json_metadata_ = s;
+        end
+        function g = get.machine(this)
+            g = this.machine_;
+            if (isempty(g))
+                [~,~,m] = computer;
+                if (strcmpi(m, 'L'))
+                    this.machine_ = 'ieee-le';
+                    g = this.machine_;
+                else
+                    this.machine_ = 'ieee-be';
+                    g = this.machine_;
+                end
+            end
+        end
+        function g = get.N(this)
+            g = this.N_;
+        end        
+        function     set.N(this, s)
+            assert(islogical(s));
+            this.N_ = s;
+        end
+        function o = get.orient(this)
+            if ~isempty(this.orient_)
+                o = this.orient_;
+                return
+            end
+            if isfile(this.fqfilename)
+                [~, o] = mlbash(['fslorient -getorient ' this.fqfilename]);
+                o = strtrim(o);
+                this.orient_ = o;
+                return
+            end
+            o = '';
+        end 
+        
+        function g = get.original(this)
+            g = this.original_;
+        end
         function g = get.qfac(this)
             if 0 == this.hdr.dime.pixdim(1)
                 this.hdr.dime.pixdim(1) = -1;
@@ -342,61 +417,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         end
         function g = get.sform_code(this)
             g = this.hdr.hist.sform_code;
-        end
-        
-        function g = get.hdr(this)
-            g = this.hdr_;
-        end
-        function     set.hdr(this, s)
-            assert(isstruct(s));
-            this.hdr_ = s;
-            this.untouch_ = [];
-        end
-        function g = get.ext(this)
-            g = this.ext_;
-        end
-        function     set.ext(this, s)
-            this.ext_ = s;
-            this.untouch_ = [];
-        end
-        function     set.filesystem(this, s)
-            assert(isa(s, 'mlio.HandleFilesystem'))
-            this.filesystem_ = s;
-        end
-        function g = get.filesystem(this)
-            g = copy(this.filesystem_);
-        end
-        function g = get.filetype(this)
-            g = this.filetype_;
-        end
-        function     set.filetype(this, s)
-            assert(isnumeric(s));
-            this.filetype_ = s;
-            this.untouch_ = [];
-        end
-        function g = get.machine(this)
-            g = this.machine_;
-            if (isempty(g))
-                [~,~,m] = computer;
-                if (strcmpi(m, 'L'))
-                    this.machine_ = 'ieee-le';
-                    g = this.machine_;
-                else
-                    this.machine_ = 'ieee-be';
-                    g = this.machine_;
-                end
-            end
-        end
-        function g = get.N(this)
-            g = this.N_;
         end        
-        function     set.N(this, s)
-            assert(islogical(s));
-            this.N_ = s;
-        end
-        function g = get.original(this)
-            g = this.original_;
-        end
         function g = get.untouch(this)
             g = this.untouch_;
         end
@@ -637,6 +658,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.hdr.extra = nii.hdr.extra;
             this.ext_ = [];
             this.untouch_ = [];
+            try
+                this.json_metadata_ = jsondecode(...
+                    fileread(strcat(this.fqfileprefix, '.json')));
+            catch %#ok<CTCH> 
+            end
         end        
         function [h,e,f,m] = load_untouch_header_only(this)
             %  Load NIfTI / Analyze header without applying any appropriate affine
@@ -693,6 +719,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.machine_ = m;
             this.ext_ = e;
             this.untouch_ = 1;
+            try
+                this.json_metadata_ = jsondecode(...
+                    fileread(strcat(this.fqfileprefix, '.json')));
+            catch %#ok<CTCH>
+            end
         end
         function nii = load_untouch_nii(this, varargin)
             %  Load NIFTI or ANALYZE dataset, but not applying any appropriate affine
@@ -775,6 +806,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.original_ = [];
             this.ext_ = nii.ext;
             this.untouch_ = nii.untouch;
+            try
+                this.json_metadata_ = jsondecode(...
+                    fileread(strcat(this.fqfileprefix, '.json')));
+            catch %#ok<CTCH>
+            end
         end  
         function this = prepend_descrip(this, varargin) 
             %% PREPEND_DESCRIP
@@ -928,14 +964,14 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             %          If mlio.HandleFilesystem, ImagingInfo will reference the handle for filesystem_ information,
             %          allowing for external modification for synchronization.
             %          For aufbau, the file need not exist on the filesystem.
-            %      circshiftK (numeric):
-            %      datatype (numeric):
-            %      ext ():
-            %      filetype ():
-            %      N (logical):
+            %      datatype (scalar): sepcified by mlniftitools.
+            %      ext (struct): sepcified by mlniftitools.
+            %      filetype (scalar): sepcified by mlniftitools.
+            %      N (logical): 
             %      separator (text): separates annotations
-            %      untouch (logical):
-            %      hdr (struct): hdr sepcified by mlniftitools.
+            %      untouch (logical): sepcified by mlniftitools.
+            %      hdr (struct): sepcified by mlniftitools.
+            %      original (struct): sepcified by mlniftitools.
             
             ip = inputParser;
             ip.KeepUnmatched = true;
@@ -980,8 +1016,10 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         filesystem_
         filetype_
         hdr_
+        json_metadata_
         machine_
         N_
+        orient_
         original_
         separator_
         untouch_
@@ -1010,16 +1048,10 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             if ~isfield(nii, 'hdr')
                 return
             end
-            if ~isfield(nii, 'original')
-                return
+            if ~isfield(nii, 'original') || isempty(nii.original)
+                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation')                
             end
-            if isempty(nii.original)
-                % initial load was likely 4dfp, overriding behavior of mlniftitools
-                nii.img = flip(nii.img, 1);
-                return
-            end
-            if nii.original.hdr.dime.pixdim(1) == -1
-                % initial load was likely nifti, overriding behavior of mlniftitools
+            if nii.original.hdr.dime.pixdim(1) == -1 && nii.hdr.dime.pixdim(1) == 1
                 nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
                 nii.img = flip(nii.img, 1);
                 return
