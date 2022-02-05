@@ -29,9 +29,6 @@ classdef NiftiTool < handle & mlfourd.ImagingFormatTool
                 'viewer', iform.viewer, ...
                 'useCase', 2);
         end
-        function info = createImagingInfo(fn, varargin)
-            info = mlfourd.NIfTIInfo(fn, varargin{:});
-        end
     end
 
     methods

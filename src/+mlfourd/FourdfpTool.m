@@ -34,9 +34,6 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
                 'viewer', iform.viewer, ...
                 'useCase', 2);
         end
-        function info = createImagingInfo(fn, varargin)
-            info = mlfourd.FourdfpInfo(fn, varargin{:});
-        end
     end
 
     methods

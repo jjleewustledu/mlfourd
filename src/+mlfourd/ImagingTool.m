@@ -138,10 +138,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         function ensureSingle(this)
             this.imagingFormat_.ensureSingle;
         end
-        function export(this, varargin)
-            this.addLog('mlfourd.ImagingTool.export %s', this.fqfilename)
-            this.imagingFormat_.export(varargin{:});            
-        end
         function freeview(this, varargin)
             this.imagingFormat_.freeview(varargin{:});
         end

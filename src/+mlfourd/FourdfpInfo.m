@@ -266,41 +266,6 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
         function e = defaultFilesuffix()
             e =  mlfourd.FourdfpInfo.FILETYPE_EXT;
         end
-        function [X,hdr] = exportFourdfpToFreesurferSpace(X, hdr)
-            %% support mgh|mgz with FreeSurfer-styled imaging array ordering. KLUDGE.
-            
-            import mlfourd.FourdfpInfo.*;
-            if (hdrIsReasonableSurfer(hdr))
-                X = flip(X,3);
-                X = flip(X,1);
-                X = permute(X, [1 3 2]);
-            end
-        end
-        function [X,hdr] = exportFreeSurferSpaceToFourdfp(X, hdr)
-            %% EXPORTFREESURFERSPACETOFOURDFP is a KLUDGE.
-            %  Use to maintain interoperability with output of niftigz_4dfp -4 <in.nii.gz> <out.4dfp.hdr> -N
-            %  niftigz_4dfp is not compliant with NIfTI qfac.
-                  
-            import mlfourd.FourdfpInfo.*;
-            if (hdrIsReasonableSurfer(hdr))
-                X = permute(X, [1 3 2]); % rl, pa, si with respect to fsleyes voxel/world orientations
-                X = flip(X,1);
-                X = flip(X,3);
-            end
-            
-            % eigen flips
-            % X = flip(X,1); % rl, pa, si -> LR, pa, si
-            % X = flip(X,2); % rl, pa, si -> rl, AP, si 
-            % X = flip(X,3); % rl, pa, si -> rl, pa, IS
-            % rl, AP, IS is target for 4dfp
-        end
-        function tf      = hdrIsReasonableSurfer(hdr)
-            %% KLUDGE
-
-            tf = all(abs(hdr.hist.srow_x( 2:3 ))             < 0.05) && ...
-                 all(abs(hdr.hist.srow_y( 1:2 ))             < 0.05) && ...
-                 all(abs(hdr.hist.srow_z([true false true])) < 0.05);
-        end
     end
 
     properties (Constant) 
