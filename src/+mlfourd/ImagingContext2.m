@@ -30,38 +30,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 	%  Created 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) by jjlee in repository 
     %  file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext2.m.
  	%  Developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John J. Lee.
-    
-    properties (Constant)
-        IMAGING_TYPES = { ...
-            'ext' ...
-            'fileprefix' 'filename' 'fqfileprefix' 'fqfilename' 'fp' 'fn' 'fqfp' 'fqfn' ...
-            'ImagingContext2' 'mlfourd.ImagingContext2' ...
-            'mgh' 'mgz' ...
-            'nii' 'nii.gz' ...
-            'v' 'v.hdr' 'v.mhdr' 'mhdr' ...
-            '4dfp.hdr' '4dfp.ifh' '4dfp.img' '4dfp.img.rec' ...
-            '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec' ...
-            'folder' 'path' 'double' 'single'}
-    end
-    
-	properties (Dependent)
-        filename
-        filepath
-        fileprefix 
-        filesuffix
-        fqfilename
-        fqfileprefix
-        fqfn
-        fqfp
-        noclobber
         
-        bytes
-        compatibility
-        logger      
-        stateTypeclass
-        viewer  
-    end
-    
     methods (Static)
         function im   = imagingType(typ, obj)
             %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
@@ -174,6 +143,39 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
     end
     
+    properties (Constant)
+        IMAGING_TYPES = { ...
+            'ext' ...
+            'fileprefix' 'filename' 'fqfileprefix' 'fqfilename' 'fp' 'fn' 'fqfp' 'fqfn' ...
+            'ImagingContext2' 'mlfourd.ImagingContext2' ...
+            'mgh' 'mgz' ...
+            'nii' 'nii.gz' ...
+            'v' 'v.hdr' 'v.mhdr' 'mhdr' ...
+            '4dfp.hdr' '4dfp.ifh' '4dfp.img' '4dfp.img.rec' ...
+            '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec' ...
+            'folder' 'path' 'double' 'single'}
+    end
+    
+	properties (Dependent)
+        filename
+        filepath
+        fileprefix 
+        filesuffix
+        fqfilename
+        fqfileprefix
+        fqfn
+        fqfp
+        noclobber
+        
+        bytes
+        compatibility
+        logger
+        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
+        qfac % internal representation from this.hdr.dime.pixdim(1)
+        stateTypeclass
+        viewer  
+    end
+
 	methods
         
         %% GET/SET
@@ -1247,10 +1249,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function        ensureSingle(this)
             this.selectImagingTool;
             this.state_.ensureSingle;
-        end
-        function        export(this, varargin)
-            this.selectImagingTool;
-            this.state_.export(varargin{:});
         end
         function ifc  = fourdfp(this)
             %% FOURDFP first ensures this object's internal imaging format to be fourdfp, then returns a safe copy of 
