@@ -266,6 +266,12 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function g = get.logger(this)
             g = copy(this.state_.logger);
         end
+        function g = get.orient(this)
+            g = this.state_.orient;
+        end
+        function g = get.qfac(this)
+            g = this.state_.qfac;
+        end
         function g = get.stateTypeclass(this)
             g = class(this.state_);
         end
