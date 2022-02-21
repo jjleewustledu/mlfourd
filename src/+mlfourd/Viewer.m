@@ -68,17 +68,6 @@ classdef Viewer < mlfourd.IViewer
     end
 
     methods (Access = protected)
-        function fqt = fqtarget(~, t)
-            fqt = [myfileprefix(t) '.nii.gz'];
-        end
-        function fn = constructTmpNii(this, fn)
-            fn_ = tempFqfilename(fn);
-            fp = myfileprefix(fn);
-            fp_ = myfileprefix(fn_);
-            copyfile_4dfp(fp, fp_);
-            this.fv.nifti_4dfp_n(fp_);
-            fn = this.fqtarget(fn_);
-        end
         function [interp,todel] = interpretTarget(this, targ)
             %  @return interp is intended for use by shell apps.  
             %  It will be char, string or cell.  Consider using cell2str(..., 'AsRow', true).
