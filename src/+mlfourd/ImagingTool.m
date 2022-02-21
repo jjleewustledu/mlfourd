@@ -19,6 +19,13 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         function g = get.json_metadata(this)
             g = this.imagingFormat_.json_metadata;
         end 
+        function g = get.orient(this)
+            g = this.imagingFormat_.orient;
+        end
+        function g = get.qfac(this)
+            g = this.imagingFormat_.qfac;
+        end
+
         %% cast then return mutated imaging format object
         
         function this = selectFourdfpTool(this)

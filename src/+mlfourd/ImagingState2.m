@@ -43,8 +43,6 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         compatibility
         filesystem
         logger
-        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
-        qfac % internal representation from this.hdr.dime.pixdim(1)
         stateTypeclass
         viewer
     end
@@ -129,12 +127,6 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                 handwarning(ME)
                 g = [];
             end
-        end
-        function g = get.orient(this)
-            g = this.imagingFormat_.orient;
-        end
-        function g = get.qfac(this)
-            g = this.imagingFormat_.qfac;
         end
         function g = get.stateTypeclass(this)
             g = class(this.imagingFormat_);
