@@ -65,6 +65,12 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 ipr.imagingFormat = mlfourd.ImagingFormatContext(ipr.imagingFormat, varargin{:});
             else
                 if istext(ipr.imagingFormat)
+                    for ext = {'.nii.gz' '.nii' '.4dfp.hdr' '.mgz' '.mgh'}
+                        if isfile(strcat(ipr.imagingFormat, ext{1}))
+                            ipr.imagingFormat = strcat(ipr.imagingFormat, ext{1});
+                            break
+                        end
+                    end
                     ipr.imagingFormat = mlfourd.ImagingFormatContext2(ipr.imagingFormat, varargin{:});
                 end
             end
