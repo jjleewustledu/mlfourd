@@ -212,6 +212,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         filetype
         hdr % subset of mlfourd.JimmyShenInterface
         json_metadata
+        json_metadata_filesuffix
         machine
         N % keeps track of the option "-N" used by nifti_4dfp
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
@@ -328,6 +329,13 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function     set.json_metadata(this, s)
             assert(isstruct(s))
             this.json_metadata_ = s;
+        end
+        function g = get.json_metadata_filesuffix(this)
+            g = this.json_metadata_filesuffix_;
+        end
+        function     set.json_metadata_filesuffix(this, s)
+            assert(istext(s))
+            this.json_metadata_filesuffix_ = s;
         end
         function g = get.machine(this)
             g = this.machine_;
@@ -659,8 +667,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.ext_ = [];
             this.untouch_ = [];
             try
+                x = this.json_metadata_filesuffix;
                 this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, '.json')));
+                    fileread(strcat(this.fqfileprefix, x)));
             catch %#ok<CTCH> 
             end
         end        
@@ -720,8 +729,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.ext_ = e;
             this.untouch_ = 1;
             try
+                x = this.json_metadata_filesuffix;
                 this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, '.json')));
+                    fileread(strcat(this.fqfileprefix, x)));
             catch %#ok<CTCH>
             end
         end
@@ -807,8 +817,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.ext_ = nii.ext;
             this.untouch_ = nii.untouch;
             try
+                x = this.json_metadata_filesuffix;
                 this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, '.json')));
+                    fileread(strcat(this.fqfileprefix, x)));
             catch %#ok<CTCH>
             end
         end  
@@ -971,7 +982,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             %      separator (text): separates annotations
             %      untouch (logical): sepcified by mlniftitools.
             %      hdr (struct): sepcified by mlniftitools.
-            %      original (struct): sepcified by mlniftitools.
+            %      original (struct): specified by mlniftitools.
+            %      json_metadata (struct): read from filesystem by ImagingInfo hierarchy.
+            %      json_metadata_filesuffix (text): for reading from filesystem by ImagingInfo hierarchy.
             
             ip = inputParser;
             ip.KeepUnmatched = true;
@@ -985,7 +998,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             addParameter(ip, 'separator', ';', @istext)
             addParameter(ip, 'untouch', [], @isnumeric);
             addParameter(ip, 'hdr', this.initialHdr, @isstruct);
-            addParameter(ip, 'original', [])
+            addParameter(ip, 'original', []);
+            addParameter(ip, 'json_metadata', [])
+            addParameter(ip, 'json_metadata_filesuffix', '.json', @istext)
             parse(ip, varargin{:});
             ipr = ip.Results;
             if istext(ipr.filesystem)
@@ -1004,6 +1019,8 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
  			this.untouch_ = ipr.untouch;            
             this.hdr_ = ipr.hdr;
             this.original_ = ipr.original;
+            this.json_metadata_ = ipr.json_metadata;
+            this.json_metadata_filesuffix_ = ipr.json_metadata_filesuffix;
         end		  
     end 
     
@@ -1017,6 +1034,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         filetype_
         hdr_
         json_metadata_
+        json_metadata_filesuffix_
         machine_
         N_
         orient_

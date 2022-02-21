@@ -1,8 +1,8 @@
 classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
     %% IMAGINGFORMATCONTEXT2
     %  TODO: 
-    %  - remove state changes from getters
-    %  - test compatiblity with FreeSurfer T1.mgz
+    %  - adjust/remove state changes from getters?
+    %  - test compatiblity with FreeSurfer T1.mgz and need for fslreorient2std
     %  
     %  Created 05-Dec-2021 17:51:32 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
@@ -22,6 +22,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         filesystem
         hdr
         img
+        json_metadata
         logger
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         original
@@ -114,6 +115,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function g = get.img(this)
             this.selectImagingFormatTool();
             g = this.state_.img;
+        end
+        function g = get.json_metadata(this)
+            g = this.state_.json_metadata;
         end
         function g = get.logger(this)
             g = copy(this.state_.logger);

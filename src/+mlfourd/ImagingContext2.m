@@ -169,6 +169,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         bytes
         compatibility
+        json_metadata
         logger
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         qfac % internal representation from this.hdr.dime.pixdim(1)
@@ -264,6 +265,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function g = get.compatibility(this)
             g = this.compatibility_;
+        end
+        function g = get.json_metadata(this)
+            g = this.state_.json_metadata;
         end
         function g = get.logger(this)
             g = copy(this.state_.logger);

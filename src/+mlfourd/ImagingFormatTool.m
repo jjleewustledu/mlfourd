@@ -932,7 +932,8 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             if empty(txt)
                 return
             end
-            fid = fopen(strcat(this.fqfileprefix, '.json'), 'w');
+            x = this.imagingInfo_.json_metadata_filesuffix;
+            fid = fopen(strcat(this.fqfileprefix, x), 'w');
             fprintf(fid, txt);
             close(fid)
         end

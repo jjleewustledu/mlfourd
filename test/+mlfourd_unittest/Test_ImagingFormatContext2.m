@@ -249,6 +249,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             las.selectNiftiTool();
             this.verifyEqual(las.orient, 'RADIOLOGICAL')
             this.verifyEqual(las.qfac, -1)
+            this.verifyEqual(las.json_metadata.DeviceSerialNumber, '11009')
         end
         function test_RAS(this)
             %% neurological; subject's nose tilts slightly to left
@@ -257,6 +258,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             ras.selectNiftiTool();
             this.verifyEqual(ras.orient, 'NEUROLOGICAL')
             this.verifyEqual(ras.qfac, -1)
+            this.verifyEqual(ras.json_metadata.DeviceSerialNumber, '167047')
 
             % LAS and RAS have compatible internal representations
             las_fn = strcat(basename(tempname), '.nii.gz');

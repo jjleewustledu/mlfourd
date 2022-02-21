@@ -5,7 +5,7 @@ classdef Test_ImagingFormatContext < mlfourd_unittest.Test_Imaging
  	%  Developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John J. Lee.
  	
 	properties
-        do_view_mutate = false % slow
+        do_view_mutate = true % slow
         noDelete = false
         ref
  		testObj
