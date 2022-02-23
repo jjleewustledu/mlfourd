@@ -742,7 +742,25 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyClass(ic_mgz.mgz, this.imagingFormat)
             this.verifyClass(ic_mgz.imagingInfo, 'mlfourd.MGHInfo')
         end
-        
+        function test_filesuffix(this)
+            ic = mlfourd.ImagingContext2('T1001.nii.gz', 'compatibility', this.compatibility);
+            ic.selectImagingTool();
+            this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
+            %ic.view
+            
+            ic.filesuffix = '.4dfp.hdr';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.FourdfpInfo')
+            %ic.view
+
+            ic.filesuffix = '.nii.gz';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
+            %ic.view
+
+            ic.filesuffix = '.mgz';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.MGHInfo')
+            %ic.view
+        end
+
         %% mlpatterns.Numerical
         
         function test_not(this)
@@ -1152,7 +1170,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             end
         end
 
-        %%               
+        %% 
         
         function test_ifh(this)
             this.assertTrue(lexist([this.t1 '.4dfp.hdr'], 'file'));

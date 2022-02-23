@@ -71,8 +71,11 @@ classdef MghTool < handle & mlfourd.ImagingFormatTool
                 fqfn_nii = strcat(this.fqfileprefix, '.nii.gz');
                 fqfn_mgz = strcat(this.fqfileprefix, '.mgz');
 
+                this.filesystem_.fqfilename = fqfn_nii;
                 this.save_nii();
+                this.filesystem_.fqfilename = fqfn_mgz;
 
+                this.save_json_metadata();
                 cmd = sprintf('mri_convert %s %s', fqfn_nii, fqfn_mgz);
                 mlbash(cmd);
                 this.addLog(cmd);
