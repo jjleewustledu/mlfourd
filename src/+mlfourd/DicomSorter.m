@@ -31,7 +31,7 @@ classdef DicomSorter < mlpipeline.DicomSorter
             end
         end
         function tf    = lexistConverted(fqfp)
-            tf = lexist([fqfp '.nii.gz'], 'file');
+            tf = isfile([fqfp '.nii.gz']) || isfile([fqfp '.nii']);
         end    
     end
 

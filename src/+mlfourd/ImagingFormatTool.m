@@ -285,7 +285,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         end
         function that = selectNiftiTool(this, contexth)
             if ~isa(this, 'mlfourd.NiftiTool')
-                this.filesystem_.filesuffix = '.nii.gz';
+                if ~contains(this.filesystem_.filesuffix, '.nii')
+                    this.filesystem_.filesuffix = '.nii.gz';
+                end
                 this.addLog('ImagingFormatTool.selectNiftiTool()');
                 that = mlfourd.NiftiTool.createFromImagingFormat(this); % & imagingInfo
                 contexth.changeState(that);
@@ -828,7 +830,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function this = assertNonemptyImg(this)
             assert(~isempty(this.img), ...
                 'mlfourd:IOError', ...
-                'ImagingFormatTool.assertNonemptyImg: empty img are incompatible with mlnifittools.save_[untouch]_nii');
+                'ImagingFormatTool.assertNonemptyImg: empty img are incompatible with ImagingFormatTool');
         end
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);

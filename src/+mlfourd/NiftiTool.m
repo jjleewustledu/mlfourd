@@ -11,7 +11,9 @@ classdef NiftiTool < handle & mlfourd.ImagingFormatTool
             assert(isa(iform, 'mlfourd.ImagingFormatTool'))
             
             fs_ = iform.filesystem_;
-            fs_.filesuffix = '.nii.gz';
+            if ~contains(fs_.filesuffix, '.nii')
+                fs_.filesuffix = '.nii.gz';
+            end
             [hdr_,orig_] = mlfourd.NiftiTool.imagingFormatToHdr(iform);
             info_ = mlfourd.NIfTIInfo(fs_, ...
                 'datatype', iform.datatype, ...

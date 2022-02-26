@@ -150,7 +150,9 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             assert(isa(nii, 'mlfourd.INIfTI'), ...
                 'mlfourd:unsupportedTypeclass', 'class(VoxelResampler.downsampleNii.nii)->%s', class(nii));
             
-            nii.filesuffix = '.nii.gz';
+            if ~contains(nii.filesuffix, '.nii')
+                nii.filesuffix = '.nii.gz';
+            end
             nii.save;
             fqfnDown = [nii.fqfileprefix '_downsmpl.nii.gz'];
             mlbash(sprintf( ...
@@ -187,10 +189,14 @@ classdef VoxelResampler < mlfourd.AbstractResampler
             assert(isa(niiRef, 'mlfourd.INIfTI'), ...
                 'mlfourd:unsupportedTypeclass', 'class(VoxelResampler.upsampleNii.niiRef)->%s', class(niiRef));
             
-            nii.filesuffix = '.nii.gz';
+            if ~contains(nii.filesuffix, '.nii')
+                nii.filesuffix = '.nii.gz';
+            end
             nii.save;
             fqfnNative = [nii.fqfileprefix '_native.nii.gz'];
-            niiRef.filesuffix = '.nii.gz';
+            if ~contains(nii.filesuffix, '.nii')
+                niiRef.filesuffix = '.nii.gz';
+            end
             niiRef.save;
             mlbash(sprintf( ...
                 'flirt -interp trilinear -in %s -ref %s -out %s -nosearch -applyxfm', ...

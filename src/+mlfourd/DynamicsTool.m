@@ -40,7 +40,9 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             ipr.rsn_labels = mlfourd.ImagingContext2(ipr.rsn_labels);
             
             this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_corrcoef');
-            this.imagingFormat_.filesuffix = '.nii.gz';
+            if ~contains(this.imagingFormat_.filesuffix, '.nii')
+                this.imagingFormat_.filesuffix = '.nii.gz';
+            end
             this.imagingFormat_ = mlfourd.NiftiTool.createFromImagingFormat(this.imagingFormat_);
             sz = size(this.imagingFormat_);
             Nxyz = prod(sz(1:3));

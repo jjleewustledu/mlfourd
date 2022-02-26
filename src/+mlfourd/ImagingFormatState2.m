@@ -218,7 +218,9 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         end
         function that = selectNiftiTool(this, contexth)
             if ~isa(this, 'mlfourd.NiftiTool')
-                this.filesystem_.filesuffix = '.nii.gz';
+                if ~contains(this.filesystem_.filesuffix, '.nii')
+                    this.filesystem_.filesuffix = '.nii.gz';
+                end
                 this.addLog('ImagingFormatState2.selectNiftiTool');
                 info_ = mlfourd.NIfTIInfo(this.filesystem_);
                 temp = mlfourd.NiftiTool(contexth, ...
