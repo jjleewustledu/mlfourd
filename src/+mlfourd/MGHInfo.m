@@ -17,12 +17,14 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
         FILETYPE      = 'MGZ'
         FILETYPE_EXT  = '.mgz'
         MGH_EXT       = '.mgz';
+        REORIENT2STD  = true;
         SUPPORTED_EXT = {'.mgh' '.mgz' '.nii' '.nii.gz' '.ge' '.gelx' '.lx' '.ximg' '.IMA' '.dcm' '.afni' '.bshort' '.bfloat' '.sdt'} 
         % '.img' is SPM format to mri_convert
     end
 
     properties (Dependent)
         fqfileprefix_mgz
+        fqfileprefix_niigz
     end
     
 	methods
@@ -31,6 +33,9 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
 
         function fqfn = get.fqfileprefix_mgz(this)
             fqfn = strcat(this.fqfileprefix, this.MGH_EXT);
+        end
+        function fqfn = get.fqfileprefix_niigz(this)
+            fqfn = strcat(this.fqfileprefix, mlfourd.NIfTIInfo.defaultFilesuffix);
         end
 
         %%
@@ -62,10 +67,25 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
  			this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
             
             if isfile(this.fqfileprefix_mgz)
-                cmd = sprintf('mri_convert %s %s', ...
-                    this.fqfileprefix_mgz, strcat(this.fqfileprefix, defaultFilesuffix()));
+                if this.REORIENT2STD
+                    tempname_niigz = strcat(tempname, defaultFilesuffix());
+                    cmd = sprintf('mri_convert %s %s', this.fqfileprefix_mgz, tempname_niigz);
+                    s = mlbash(cmd);
+                    assert(0 == s, 'mlfourd:IOError', 'MGHInfo.ctor')
+                    cmd = sprintf('fslreorient2std %s %s', tempname_niigz, this.fqfileprefix_niigz);
+                    s = mlbash(cmd);
+                    assert(0 == s, 'mlfourd:IOError', 'MGHInfo.ctor')
+                    deleteExisting(tempname_niigz)
+
+                    this.filesuffix = defaultFilesuffix(); % hereafter, behave exactly as NIfTIInfo
+                    this.load_info();
+                    return
+                end
+
+                cmd = sprintf('mri_convert %s %s', this.fqfileprefix_mgz, this.fqfileprefix_niigz);
                 s = mlbash(cmd);
                 assert(0 == s, 'mlfourd:IOError', 'MGHInfo.ctor')
+
                 this.filesuffix = defaultFilesuffix(); % hereafter, behave exactly as NIfTIInfo
                 this.load_info();
             end

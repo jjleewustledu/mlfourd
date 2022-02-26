@@ -201,13 +201,13 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             ifc_m.selectMghTool()
             hdr = ifc_m.hdr;
             this.verifyEqual(ifc_m.stateTypeclass, 'mlfourd.MghTool')
-            this.verifyEqual(hdr.hist.qoffset_x, 127.5002136230469, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.qoffset_y, -86.3535156250000, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.qoffset_z, 119.6074295043945, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_x, [-1  0 0 127.5002136230469], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_y, [ 0  0 1 -86.3535156250000], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_z, [ 0 -1 0 119.6074295043945], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-6)
+            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.qoffset_y,  -86.3535156250000, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5)
 
             % nii.gz from mri_convert
             ifc_n = ImagingFormatContext2('T1_test.nii.gz');
@@ -215,13 +215,13 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             ifc_n.selectNiftiTool()
             hdr = ifc_n.hdr;
             this.verifyEqual(ifc_n.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(hdr.hist.qoffset_x, 127.5002136230469, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.qoffset_y, -86.3535156250000, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.qoffset_z, 119.6074295043945, 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_x, [-1  0 0 127.5002136230469], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_y, [ 0  0 1 -86.3535156250000], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.srow_z, [ 0 -1 0 119.6074295043945], 'AbsTol', 1e-6)
-            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-6)
+            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.qoffset_y,  -86.353515625, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5)
+            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5)
 
             % 4dfp from nifti_4dfp -4
             import mlfourd.*

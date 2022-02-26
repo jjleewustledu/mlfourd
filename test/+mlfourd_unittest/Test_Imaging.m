@@ -112,8 +112,11 @@ classdef Test_Imaging < matlab.unittest.TestCase
                         copyfile('T1.mgz', 'T1_test.mgz', 'f');
                     end
                 case '.nii.gz'
+                    tempname_ = tempname;
                     if ~isfile('T1_test.nii.gz')
-                        mlbash('mri_convert T1.mgz T1_test.nii.gz');
+                        mlbash(sprintf('mri_convert T1.mgz %s.nii.gz', tempname_));
+                        mlbash(sprintf('fslreorient2std %s.nii.gz T1_test.nii.gz', tempname_))
+                        deleteExisting(strcat(tempname_, '.nii.gz'))
                     end
             end
         end
@@ -152,25 +155,29 @@ classdef Test_Imaging < matlab.unittest.TestCase
                 copyfile(fullfile(this.mriDir, 'T1.mgz'));
             end
             if ~isfile('T1.nii.gz')
-                mlbash('mri_convert T1.mgz T1.nii.gz')
+                tempname_ = tempname;
+                mlbash(sprintf('mri_convert T1.mgz %s.nii.gz', tempname_))
+                mlbash(sprintf('fslreorient2std %s.nii.gz T1.nii.gz', tempname_))
             end
             if ~isfile('T1_fslreorient2std.nii.gz')
                 mlbash('fslreorient2std T1.nii.gz T1_fslreorient2std.nii.gz')
             end
             if ~isfile('T1_fslreorient2std.4dfp.hdr')
-                mlbash('niftgz_4dfp -4 T1_fslreorient2std T1_fslreorient2std')
+                mlbash('niftigz_4dfp -4 T1_fslreorient2std T1_fslreorient2std')
             end
             if ~isfile('brain.mgz')
                 copyfile(fullfile(this.mriDir, 'brain.mgz'));
             end
             if ~isfile('brain.nii.gz')
-                mlbash('mri_convert brain.mgz brain.nii.gz')
+                tempname_ = tempname;
+                mlbash(sprintf('mri_convert brain.mgz %s.nii.gz', tempname_))
+                mlbash(sprintf('fslreorient2std %s.nii.gz brain.nii.gz', tempname_))
             end
             if ~isfile([this.LAS '.nii.gz'])
-                copyfile(fullfile(this.anatDir2, [this.LAS '.*']));
+                copyfile(fullfile(this.petDir2, [this.LAS '.*']));
             end
             if ~isfile([this.RAS '.nii.gz'])
-                copyfile(fullfile(this.petDir2, [this.RAS '.*']));
+                copyfile(fullfile(this.anatDir2, [this.RAS '.*']));
             end
 
             this.MNI152_LR_nii = ImagingContext2( ...
