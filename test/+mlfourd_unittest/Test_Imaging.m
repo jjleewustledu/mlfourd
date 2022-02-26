@@ -6,7 +6,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
 
     properties
         compatibility = false
-        do_view = false
+        do_view = true
         LAS = 'sub-108293_ses-20210421171325_trc-fdg_proc-static_pet' % bottle points left anterior
         MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0
@@ -41,7 +41,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
             g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S41723', 'anat', '');
         end
         function g = get.anatDir2(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-S108293', 'anat', '');
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-108293', 'ses-20210218', 'anat', '');
         end
         function g = get.dataDir(~)
             g = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', '');
@@ -73,7 +73,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
             g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S41723', 'mri', '');
         end
         function g = get.petDir2(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-S108293', 'pet', '');
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-108293', 'ses-20210421', 'pet', '');
         end
         function g = get.T1001_fqfn_4dfp(this)
             g = fullfile(this.anatDir, 'T1001.4dfp.hdr');
