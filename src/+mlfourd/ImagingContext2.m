@@ -186,7 +186,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this.selectImagingTool();
             end
             this.state_.filename = f;
-            this.selectFilesuffixTool();
         end
         function f = get.filename(this)
             f = this.state_.filename;
@@ -214,7 +213,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this.selectImagingTool();
             end
             this.state_.filesuffix = f;
-            this.selectFilesuffixTool();
         end
         function f = get.filesuffix(this)
             f = this.state_.filesuffix;
@@ -224,7 +222,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this.selectImagingTool();
             end
             this.state_.fqfilename = f;
-            this.selectFilesuffixTool();
         end
         function f = get.fqfilename(this)
             f = this.state_.fqfilename;
@@ -243,7 +240,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this.selectImagingTool();
             end
             this.state_.fqfn = f;
-            this.selectFilesuffixTool();
         end
         function f = get.fqfn(this)
             f = this.state_.fqfn;
@@ -1568,16 +1564,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copyElement@matlab.mixin.Copyable(this);
             that.state_ = copy(this.state_);
             that.state_.contexth_ = that;
-        end
-        function this = selectFilesuffixTool(this)
-            switch this.filesuffix
-                case {'.nii' '.nii.gz'}
-                    this.selectNiftiTool();
-                case '.4dfp.hdr'
-                    this.selectFourdfpTool();
-                case {'.mgh' '.mgz'}
-                    this.selectMghTool();
-            end
         end
     end
         

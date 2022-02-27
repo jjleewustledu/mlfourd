@@ -358,14 +358,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.N_ = s;
         end
         function o = get.orient(this)
-            if ~isempty(this.orient_)
-                o = this.orient_;
-                return
-            end
             if isfile(this.fqfilename)
                 [~, o] = mlbash(['fslorient -getorient ' this.fqfilename]);
                 o = strtrim(o);
-                this.orient_ = o;
                 return
             end
             o = '';
@@ -1037,7 +1032,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         json_metadata_filesuffix_
         machine_
         N_
-        orient_
         original_
         separator_
         untouch_
@@ -1062,17 +1056,32 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             that.filesystem_ = copy(this.filesystem_);
         end
         function nii = ensureOrientation(~, nii)
+            %% called upon loading nii
+
             assert(~ishandle(nii))
             if ~isfield(nii, 'hdr')
                 return
             end
             if ~isfield(nii, 'original') || isempty(nii.original)
-                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation')                
+                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation could not find nii.original')                
             end
+
+            % commonly
+            % nii.original.hdr.dime.pixdim(1) == 1 && nii.hdr.dime.pixdim(1) == 1
+
+            % internally represent images in radiological orientation to allow for array operations between images
             if nii.original.hdr.dime.pixdim(1) == -1 && nii.hdr.dime.pixdim(1) == 1
-                nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
+                nii.hdr.dime.pixdim(1) = -1;
                 nii.img = flip(nii.img, 1);
                 return
+            end
+            
+            % unexpected
+            if nii.original.hdr.dime.pixdim(1) == -1 && nii.hdr.dime.pixdim(1) == -1
+                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation unexpectedly found qfac -1 -> -1')
+            end
+            if nii.original.hdr.dime.pixdim(1) == 1 && nii.hdr.dime.pixdim(1) == -1
+                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation unexpectedly found qfac 1 -> -1')
             end
         end
         function hdr = initialHdr(~)

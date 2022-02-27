@@ -641,24 +641,26 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             %obj = copy(this.MNI152_LR_nii); 
             obj = mlfourd.ImagingContext2('T1_fslreorient2std.nii.gz', 'compatibility', this.compatibility);
-            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn))
-            obj.view() % y normal
-            obj.selectFourdfpTool()
-            obj.view() % y flipped
-            tmp = strcat(tempname, '.4dfp.hdr');
-            obj.saveas(tmp)
-            [~,r] = mlbash(sprintf('fslhd %s', tmp))
-            mlbash(sprintf('fsleyes %s', tmp)) % y flipped
-            deleteExisting(tmp)
+            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn));
+            obj.view(); % y normal
+            obj.selectFourdfpTool();
+            obj.view(); % y flipped
+            tmpfp = tempname;
+            tmpfn = strcat(tmpfp, '.4dfp.hdr');
+            obj.saveas(tmpfn);
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
+            mlbash(sprintf('fsleyes %s', tmpfn)); % y flipped
+            deleteExisting(strcat(tmpfp, '*'));
 
             % repeat to detect cycles
-            obj.selectFourdfpTool()
-            obj.view() % y flipped
-            tmp = strcat(tempname, '.4dfp.hdr');
-            obj.saveas(tmp)
-            [~,r] = mlbash(sprintf('fslhd %s', tmp))
-            mlbash(sprintf('fsleyes %s', tmp)) % y flipped
-            deleteExisting(tmp)
+            obj.selectFourdfpTool();
+            obj.view(); % y flipped
+            tmpfp = tempname;
+            tmpfn = strcat(tmpfp, '.4dfp.hdr');
+            obj.saveas(tmpfn);
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
+            mlbash(sprintf('fsleyes %s', tmpfn)); % y flipped
+            deleteExisting(strcat(tmpfp, '*'));
         end
         function test_fourdfp2nifti(this)
  			obj = mlfourd.ImagingContext2([this.T1001 '.4dfp.hdr'], 'compatibility', this.compatibility);
@@ -680,40 +682,59 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
  			%obj = copy(this.MNI152_LR_nii); 
             obj = mlfourd.ImagingContext2('711-2B_111.4dfp.hdr', 'compatibility', this.compatibility);
-            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn))
+            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn));
             %obj = copy(obj.selectFourdfpTool());
-            obj.view() % y flipped
-            obj.selectNiftiTool()
-            obj.view() % y normal
-            tmp = strcat(tempname, '.nii.gz');
-            obj.saveas(tmp)
-            [~,r] = mlbash(sprintf('fslhd %s', tmp))
-            mlbash(sprintf('fsleyes %s', tmp)) % y normal
-            deleteExisting(tmp)
+            obj.view(); % y flipped
+            obj.selectNiftiTool();
+            obj.view(); % y normal
+            tmpfp = tempname;
+            tmpfn = strcat(tmpfp, '.nii.gz');
+            obj.saveas(tmpfn);
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
+            mlbash(sprintf('fsleyes %s', tmpfn)); % y normal
+            deleteExisting(strcat(tmpfp, '*'));
             
             % repeat to detect cycles
-            obj.selectNiftiTool()
-            obj.view() % y normal
-            tmp1 = strcat(tempname, '.nii.gz');
-            obj.saveas(tmp1)
-            [~,r1] = mlbash(sprintf('fslhd %s', tmp1))
-            mlbash(sprintf('fsleyes %s', tmp1)) % y normal
-            deleteExisting(tmp1)
+            obj.selectNiftiTool();
+            obj.view(); % y normal
+            tmpfp1 = tempname;
+            tmpfn1 = strcat(tmpfp1, '.nii.gz');
+            obj.saveas(tmpfn1);
+            [~,r1] = mlbash(sprintf('fslhd %s', tmpfn1));
+            mlbash(sprintf('fsleyes %s', tmpfn1)); % y normal
+            deleteExisting(strcat(tmpfp1, '*'));
         end
         function test_saveas(this)
             this.testObj.saveas([this.testObj.fileprefix '_test_saveas.mat']);
             this.verifyTrue(isfile([this.testObj.fileprefix '.mat']));
             deleteExisting(this.testObj.filename);
 
-            ic = this.T1001_ic_nii;
+            ic_n = mlfourd.ImagingContext2([this.RAS '.nii.gz']);
+            ic_4 = copy(ic_n);
+            ic_4.saveas([this.RAS '.4dfp.hdr']);
+
+            % are internal arrays aligned after reading filesystem?
+            ic_diff = mlfourd.ImagingContext2([this.RAS '.nii.gz']) - mlfourd.ImagingContext2([this.RAS '.4dfp.hdr']);
+            this.verifyEqual(dipmax(ic_diff), 0)
+
+            ic = copy(ic_n);
+            if this.do_view; ic.view; end
             ic.saveas([ic.fileprefix '_test_saveas.4dfp.hdr']);
             this.verifyTrue(isfile([ic.fileprefix '.4dfp.hdr']));
-            deleteExisting([ic.fileprefix '.4dfp.*'])
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', ic_n.fqfn, ic.fqfn));
+            end
+            deleteExisting(ic.fqfn);
 
-            ic = this.T1001_ic_4dfp;
+            ic = copy(ic_4);
+            if this.do_view; ic.view; end
             ic.saveas([ic.fileprefix '_test_saveas.nii.gz']);
             this.verifyTrue(isfile([ic.fileprefix '.nii.gz']));
-            deleteExisting([ic.fileprefix '.nii.gz'])
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', ic_4.fqfn, ic.fqfn));
+            end
+
+            deleteExisting(ic.fqfn);
         end
         function test_compatibility(this)
             import mlfourd.*
@@ -742,27 +763,150 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyClass(ic_mgz.mgz, this.imagingFormat)
             this.verifyClass(ic_mgz.imagingInfo, 'mlfourd.MGHInfo')
         end
+        function test_LR(this)
+            if ~this.do_view
+                return
+            end
+
+            ic1 = this.MNI152_LR_nii;
+            ic1.selectNiftiTool();
+            ic1.view()
+
+            tmp = strcat(tempname, '.4dfp.hdr');
+            ic1.saveas(tmp)
+            mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp))
+
+            ifc2 = copy(ic1);
+            tmp1 = strcat(tempname, '.nii.gz');
+            ifc2.saveas(tmp1)
+            mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
+
+            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename))
+
+            deleteExisting(tmp)
+            deleteExisting(tmp1)
+        end
         function test_filesuffix(this)
+            tempname_ = tempname;
+
             ic = mlfourd.ImagingContext2('T1001.nii.gz', 'compatibility', this.compatibility);
             ic.selectImagingTool();
+            ic.fqfp = tempname_;
             this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
-            %ic.view
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.nii.gz']))
+            if this.do_view; ic.view; end
             
             ic.filesuffix = '.4dfp.hdr';
             this.verifyClass(ic.imagingInfo, 'mlfourd.FourdfpInfo')
-            %ic.view
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FourdfpTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.4dfp.hdr']))
+            if this.do_view; ic.view; end
 
             ic.filesuffix = '.nii.gz';
             this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
-            %ic.view
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.nii.gz']))
+            if this.do_view; ic.view; end
+
+            ic.filesuffix = '.nii';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.nii']))
+            if this.do_view; ic.view; end
+
+            ic.filesuffix = '.nii.gz';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.nii.gz']))
+            if this.do_view; ic.view; end
 
             ic.filesuffix = '.mgz';
             this.verifyClass(ic.imagingInfo, 'mlfourd.MGHInfo')
-            %ic.view
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MghTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.mgz']))
+            if this.do_view; ic.view; end
+
+            ic.filesuffix = '.nii.gz';
+            this.verifyClass(ic.imagingInfo, 'mlfourd.NIfTIInfo')
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool')
+            this.verifyEqual(size(ic.imagingFormat.img), [256 256 256])
+            ic.save();
+            this.verifyTrue(isfile([ic.fqfp '.nii.gz']))
+            if this.do_view; ic.view; end
+
+            deleteExisting(strcat(tempname_, '.*'))
+        end
+        function test_orient(this)
+            [~,r] = mlbash(sprintf('fslorient -getorient %s.nii.gz', this.RAS));
+            this.verifyEqual(strtrim(r), 'NEUROLOGICAL');    
+
+            ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
+            ic_ras.selectNiftiTool();
+            ic_ras.fqfp = tempname;
+            ic_ras.save();
+            [~,r] = mlbash(sprintf('fslorient -getorient %s.nii.gz', ic_ras.fqfp));
+            this.verifyEqual(strtrim(r), 'NEUROLOGICAL');
+
+            deleteExisting(strcat(ic_ras.fqfp, '.*'))
         end
 
         %% mlpatterns.Numerical
         
+        function test_minus(this)
+            % ref nii.gz
+            ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
+            ic_ras.selectNiftiTool();
+            this.verifyEqual(ic_ras.orient, 'NEUROLOGICAL')
+
+            ic_4dfp = copy(ic_ras);
+            ic_4dfp.selectFourdfpTool();
+            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0);
+
+            ic_4dfp = copy(ic_ras);
+            fqfp = tempname;
+            ic_4dfp.saveas(strcat(fqfp, '.4dfp.hdr'));
+            ic_4dfp = mlfourd.ImagingContext2(strcat(fqfp, '.4dfp.hdr'));
+            ic_4dfp.selectFourdfpTool();
+            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0);
+            deleteExisting(strcat(fqfp, '.4dfp.*'))
+
+            % ref 4dfp.hdr
+            ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.4dfp.hdr'));
+            ic_ras.selectFourdfpTool();
+
+            ic_nii = copy(ic_ras);
+            ic_nii.selectNiftiTool();
+            this.verifyEqual(dipmax(ic_ras - ic_nii), 0);
+
+            ic_nii = copy(ic_ras);
+            fqfp = tempname;
+            ic_nii.saveas(strcat(fqfp, '.nii.gz'));
+            this.verifyEqual(ic_nii.orient, 'RADIOLOGICAL')
+            ic_nii = mlfourd.ImagingContext2(strcat(fqfp, '.nii.gz'));
+            ic_nii.selectNiftiTool();
+            this.verifyEqual(dipmax(ic_ras - ic_nii), 0);
+            deleteExisting(strcat(fqfp, '.*'))
+            
+        end
+        function test_times(this)
+            ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
+            this.verifyEqual(dipmax(ic_ras), 3748);
+            ic_ras = ic_ras * 2;
+            this.verifyEqual(dipmax(ic_ras), 2*3748);
+        end
         function test_not(this)
             ic = mlfourd.ImagingContext2(1, 'compatibility', this.compatibility);
             copy_ic = copy(ic);

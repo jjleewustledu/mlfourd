@@ -40,6 +40,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         %% SET/GET
 
         function     set.filename(this, s)
+            this.selectFilesuffixTool(fullfile(this.filepath, s));
             this.state_.filename = s;
         end
         function g = get.filename(this)
@@ -58,12 +59,14 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.fileprefix;
         end
         function     set.filesuffix(this, s)
+            this.selectFilesuffixTool(strcat(this.fqfp, s));
             this.state_.filesuffix = s;
         end
         function g = get.filesuffix(this)
             g = this.state_.filesuffix;
         end
         function     set.fqfilename(this, s)
+            this.selectFilesuffixTool(s);
             this.state_.fqfilename = s;
         end
         function g = get.fqfilename(this)
@@ -76,6 +79,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.fqfileprefix;
         end
         function     set.fqfn(this, s)
+            this.selectFilesuffixTool(s);
             this.state_.fqfn = s;
         end
         function g = get.fqfn(this)
@@ -158,6 +162,29 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
 
         %% select states
 
+        function this = selectFilesuffixTool(this, filename)
+            %% SELECTFILESUFFIXTOOL selects imaging format state from filename.
+            %  Args:
+            %      filename (text): is compatible with requirements of the filesystem;
+            %  Returns:
+            %      this for compatibility with non-handle interfaces,
+            %      replacing internal filename & filesystem information.
+
+            assert(istext(filename))
+            [~,~,ext] = myfileparts(filename);
+            switch ext
+                case '.mat'
+                    this.selectMatlabFormatTool();
+                case {'.4dfp.hdr', '.4dfp.img'}
+                    this.selectFourdfpTool();
+                case {'.mgz', '.mgh'}
+                    this.selectMghTool();
+                case {'.nii', '.nii.gz'}
+                    this.selectNiftiTool();
+                otherwise
+                    error('mlfourd:ValueError', 'ImagingFormatContext2.saveas().e ~ %s', e)
+            end
+        end
         function this = selectFilesystemFormatTool(this)
             this.state_.selectFilesystemFormatTool(this);
         end
@@ -275,22 +302,10 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             %      this for compatibility with non-handle interfaces,
             %      replacing internal filename & filesystem information.
 
-            assert(istext(filename))
-            this.fqfilename = filename;
-            switch this.filesuffix
-                case '.mat'
-                    this.selectMatlabFormatTool();
-                case {'.4dfp.hdr', '.4dfp.img'}
-                    this.selectFourdfpTool();
-                case {'.mgz', '.mgh'}
-                    this.selectMghTool();
-                case {'.nii', '.nii.gz'}
-                    this.selectNiftiTool();
-                otherwise
-                    error('mlfourd:ValueError', 'ImaginFormatTool.saveas().e ~ %s', e)
-            end
+            this.selectFilesuffixTool(filename);
+            this.state_.fqfilename = filename;
             this.save();
-        end        
+        end
         function s = single(this)
             s = single(this.state_);
         end
