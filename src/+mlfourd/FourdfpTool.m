@@ -137,7 +137,7 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
 
     methods (Access = protected)
         function ana = ensureOrientation(this, ana)
-            %% unique to 4dfp
+            %% upon saving 4dfp
 
             assert(~ishandle(ana))
             ana.img = single(ana.img);

@@ -14,6 +14,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
         T1001 = 'T1001'
         T1001_ic_4dfp % anatDir
         T1001_ic_nii % anatDir
+        likely_tempdir = '/private/var/folders/bv/38jg74k504xgpkx6ynl3zyyc0000gn/T/'
     end
 
     properties (Dependent)

@@ -385,8 +385,8 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             that.imgrec_ = copy(this.imgrec_);
         end
         function nii = ensureOrientation(~, nii)
-            %% brings analyze neurological to nifti radiological; no qfac available in analzye
-            %  brings 4dfp orientation to nifti orientation
+            %% brings analyze radiological to nifti radiological on read; no qfac available in analyze;
+            %  brings 4dfp orientation to nifti orientation on read
 
             assert(~ishandle(nii))
             nii.img = flip(nii.img, 2);

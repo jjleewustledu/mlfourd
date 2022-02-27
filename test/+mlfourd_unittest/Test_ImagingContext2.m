@@ -393,7 +393,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             tname = tempname;
             ic.saveas([tname '.nii.gz']);
             this.verifyTrue(contains(string(ic.logger.contents), "mlniftitools.save_nii(nii, /private/var/folders"))
-            deleteExisting(tname)
+            deleteExisting(strcat(tname, '*'))
         end
         function test_rename_deep_4dfp(this)
  			import mlfourd.*;
@@ -584,7 +584,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             end
             this.verifyEqual(size(ic), [256 256 256])
 
-            deleteExisting(fqfn1)
+            deleteExisting(strcat(ic.fqfp, '*'))
         end
         function test_selectImagingTool(this)
             ic = mlfourd.ImagingContext2([this.T1001 '.4dfp.hdr'], 'compatibility', this.compatibility);  
