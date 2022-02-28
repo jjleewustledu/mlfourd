@@ -293,7 +293,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
         function test_LAS(this)
             %% radiological; bottle points left anterior
 
-            las = mlfourd.ImagingFormatContext2(strcat(this.LAS, '.nii.gz'));
+            las = mlfourd.ImagingContext2(strcat(this.LAS, '.nii.gz'));
             las.selectNiftiTool();
             las_ = copy(las);
             this.verifyEqual(las.orient, 'RADIOLOGICAL');
@@ -302,20 +302,15 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             if this.do_view
                 las_.view(); 
+                las_.selectFourdfpTool();
+                las_.view();
                 disp(las_.hdr.hk)
-                disp(las_.hdr.dime)
-                disp(las_.hdr.hist)
-                disp(las_.original)
-                disp(las_.fslhd)
-
-%                las_.selectFourdfpTool();
-%                las_.view();
             end
         end
         function test_RAS(this)
             %% neurological; subject's nose tilts slightly to left
 
-            ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
+            ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
             ras.selectNiftiTool();
             ras_ = copy(ras);
             this.verifyEqual(ras.orient, 'NEUROLOGICAL');
@@ -324,14 +319,8 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             if this.do_view
                 ras_.view(); 
-                disp(ras_.hdr.hk)
-                disp(ras_.hdr.dime)
-                disp(ras_.hdr.hist)
-                disp(ras_.original)
-                disp(ras_.fslhd)
-
-%                ras_.selectFourdfpTool();
-%                ras_.view();
+                ras_.selectFourdfpTool();
+                ras_.view();
             end
 
             return

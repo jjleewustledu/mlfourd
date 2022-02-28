@@ -251,6 +251,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function d = double(this)
             d = double(this.state_);
         end
+        function r = fslhd(this)
+            [~,r] = mlbash(sprintf('fslhd %s', this.fqfilename));
+        end
         function tf = haveDistinctStates(this, that)
             %  Args:
             %      that (ImagingContext2): with distinct state.
