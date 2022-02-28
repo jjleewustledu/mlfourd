@@ -206,7 +206,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         noclobber
 
         anaraw
-        circshiftK
         ext
         filesystem % get/set handle, not copy, from external filesystem 
         filetype
@@ -286,13 +285,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function g = get.anaraw(this)
             g = this.anarawLocal();
         end
-        function g = get.circshiftK(this)
-            g = this.circshiftK_;
-        end        
-        function     set.circshiftK(this, s)
-            assert(isnumeric(s));
-            this.circshiftK_ = s;
-        end
         function g = get.ext(this)
             g = this.ext_;
         end
@@ -370,9 +362,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             g = this.original_;
         end
         function g = get.qfac(this)
-            if 0 == this.hdr.dime.pixdim(1)
-                this.hdr.dime.pixdim(1) = -1;
-            end
             g = this.hdr.dime.pixdim(1);
         end         
         function g = get.qform_code(this)
@@ -433,15 +422,10 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function hdr = adjustHdr(this, hdr)
             %% adjusts defects in hdr arising from 4dfp or insufficiency of mlniftitools
 
-            % terrible KLUDGE which should be replaced by fslreorient2std or equivalent
-            if this.circshiftK_ ~= 0
-                hdr = this.permuteHdr(hdr);
-            end
-
             % ensures consistency with originator created by nifti_4dfp.            
             if ~isfield(hdr.hist, 'originator') || ...
-                    norm(hdr.hist.originator) < eps || ...
-                    (isa(this, 'mlfourd.FourdfpInfo') && this.N)
+                norm(hdr.hist.originator) < eps || ...
+                (isa(this, 'mlfourd.FourdfpInfo') && this.N)
                 xdims_ = min(3, hdr.dime.dim(1)); % space only
                 ori_ = double(hdr.dime.pixdim(2:1+xdims_)) .* ...
                        double(hdr.dime.dim(2:1+xdims_) - 1)/2;
@@ -475,13 +459,13 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 hdr.hist.quatern_c = 1; % 0.25 * (R(1,3) - R(3,1)) / a;
                 hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
             
-                hdr.hist.qoffset_x =  hdr.hist.originator(1);
+                hdr.hist.qoffset_x = -hdr.hist.originator(1)*this.qfac;
                 hdr.hist.qoffset_y = -hdr.hist.originator(2);
                 hdr.hist.qoffset_z = -hdr.hist.originator(3);            
 
-                srow = [[-hdr.dime.pixdim(2) 0 0  hdr.hist.originator(1)]; ...
-                        [0  hdr.dime.pixdim(3) 0 -hdr.hist.originator(2)]; ...
-                        [0  0 hdr.dime.pixdim(4) -hdr.hist.originator(3)]];
+                srow = [[hdr.dime.pixdim(2) 0 0 -hdr.hist.originator(1)]*this.qfac; ...
+                        [0 hdr.dime.pixdim(3) 0 -hdr.hist.originator(2)]; ...
+                        [0 0 hdr.dime.pixdim(4) -hdr.hist.originator(3)]];
                 hdr.hist.srow_x = srow(1,:);
                 hdr.hist.srow_y = srow(2,:);
                 hdr.hist.srow_z = srow(3,:);
@@ -506,6 +490,31 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         end
         function c = char(this)
             c = char(this.filesystem_);
+        end
+        
+        function nii  = ensureLoadingOrientation(~, nii)
+            %% called upon loading nii
+
+            assert(~ishandle(nii))
+            if ~isfield(nii, 'hdr')
+                return
+            end
+            if ~isfield(nii, 'original') || isempty(nii.original)
+                error('mlfourd:RunTimeError', 'ImagingInfo.ensureLoadingOrientation could not find nii.original')                
+            end
+
+            % mlniftitools' behavior =: nii.hdr.dime.pixdim(1) == 1
+
+            % internally represent images in radiological orientation to allow for:
+            % array operations between images, consistency with analyze | 4dfp formats, uniformity of all outputs
+            if nii.hdr.dime.pixdim(1) == 1
+                nii.hdr.dime.pixdim(1) = -1;
+                nii.img = flip(nii.img, 1);
+                return
+            end
+        end
+        function nii  = ensureSavingOrientation(~, nii)
+            %% stub for symmetric implemntations with subclasses
         end
         function tf = isanalyze(this)
             tf =       isfield(this.hdr_.hk,   'hkey_un0');
@@ -647,8 +656,8 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             %  
             %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
 
-            nii = mlniftitools.load_nii(this.fqfilename, varargin{:});
-            nii = this.ensureOrientation(nii);
+            nii = mlfourd.JimmyShen.load_nii(this.fqfilename, varargin{:});
+            nii = this.ensureLoadingOrientation(nii);
             nii.img = this.ensureDatatype(nii.img, this.datatype_);
             nii.hdr = mlniftitools.extra_nii_hdr(nii.hdr);
             nii.hdr.hist.qform_code = nii.original.hdr.hist.qform_code; % address mlniftitools bug
@@ -985,7 +994,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             ip.KeepUnmatched = true;
             rregistry = mlpipeline.ResourcesRegistry.instance();
             addOptional( ip, 'filesystem', mlio.HandleFilesystem(), @(x) istext(x) || isa(x, 'mlio.HandleFilesystem'));
-            addParameter(ip, 'circshiftK', 0, @isnumeric);
             addParameter(ip, 'datatype', [], @isscalar); % 16
             addParameter(ip, 'ext', []);
             addParameter(ip, 'filetype', []);
@@ -1005,7 +1013,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 this.filesystem_ = ipr.filesystem;
             end
             this = this.adjustFilesuffix4dfp;
-            this.circshiftK_ = ipr.circshiftK;
             this.datatype_ = ipr.datatype;
             this.ext_ = ipr.ext;
             this.filetype_ = ipr.filetype;   
@@ -1022,7 +1029,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
     %% PROTECTED
     
     properties (Access = protected)
-        circshiftK_
         datatype_
         ext_
         filesystem_
@@ -1054,35 +1060,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);
             that.filesystem_ = copy(this.filesystem_);
-        end
-        function nii = ensureOrientation(~, nii)
-            %% called upon loading nii
-
-            assert(~ishandle(nii))
-            if ~isfield(nii, 'hdr')
-                return
-            end
-            if ~isfield(nii, 'original') || isempty(nii.original)
-                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation could not find nii.original')                
-            end
-
-            % commonly
-            % nii.original.hdr.dime.pixdim(1) == 1 && nii.hdr.dime.pixdim(1) == 1
-
-            % internally represent images in radiological orientation to allow for array operations between images
-            if nii.original.hdr.dime.pixdim(1) == -1 && nii.hdr.dime.pixdim(1) == 1
-                nii.hdr.dime.pixdim(1) = -1;
-                nii.img = flip(nii.img, 1);
-                return
-            end
-            
-            % unexpected
-            if nii.original.hdr.dime.pixdim(1) == -1 && nii.hdr.dime.pixdim(1) == -1
-                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation unexpectedly found qfac -1 -> -1')
-            end
-            if nii.original.hdr.dime.pixdim(1) == 1 && nii.hdr.dime.pixdim(1) == -1
-                error('mlfourd:RunTimeError', 'ImagingInfo.ensureOrientation unexpectedly found qfac 1 -> -1')
-            end
         end
         function hdr = initialHdr(~)
             hk   = struct( ...
@@ -1133,10 +1110,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 'magic', 'n+1');
             hdr = struct('hk', hk, 'dime', dime, 'hist', hist);
         end
-        function v = permuteCircshiftVec(this, v)
-            if (0 == this.circshiftK_); return; end
-            v(1:3) = circshift(v(1:3), this.circshiftK_);
-        end
     end
     
     %% PRIVATE
@@ -1146,17 +1119,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             if contains(this.filesuffix, '.4dfp')
                 this.filesuffix = '.4dfp.hdr';
             end
-        end 
-        function hdr = permuteHdr(this, hdr)
-            if (0 == this.circshiftK_)
-                return
-            end
-            hdr.dime.dim(2:4)    = this.permuteCircshiftVec(hdr.dime.dim(2:4));
-            hdr.dime.pixdim(2:4) = this.permuteCircshiftVec(hdr.dime.pixdim(2:4));
-            if isfield(hdr.hist, 'originator')
-                hdr.hist.originator = this.permuteCircshiftVec(hdr.hist.originator);
-            end
-        end      
+        end   
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

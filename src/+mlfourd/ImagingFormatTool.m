@@ -5,6 +5,12 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
     %  (zoom*), viewing data, saving data.
     %  N.B.:  select*Tool() overrides superclass, generating imagingInfo from existing ImagingFormatTool.
     %  N.B.:  ctor accepts arguments for imagingInfo and useCase.
+    %
+    %  ImagingFormatTool manages saving data.  See also adjustHdr(), adjustHdrForImg(), 
+    %  ensureHist(), imagingFormatToHdr(), which manage hdr.  Subclasses call flip(img,).
+    %
+    %  See also ImagingInfo, which manages loading data.  See also adjustHdr(), createFromImagingFormat(), 
+    %  ensureLoadingOrientation(), ensureSavingOrientation(), which manage qfac and hdr.  Subclasses call flip(img,).
     %  
     %  Created 08-Dec-2021 22:27:36 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
@@ -27,48 +33,35 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 end
                 return
             end
-            if isnifti(iinfo)
-                if strcmp(iform.hdr.hist.descrip, 'ImagingInfo.initialHdr') && ...
-                        isfile(iform.fqfilename)
-                    % Replace uninformative initial hdr with nifti hdr from filesystem, forcing LAS, 
-                    % and forcing scanner anatomical {q,s}form_code.  
-                    % Retain original hdr, which may be LAS or RAS, so that original orientation is 
-                    % preserved on write.
-                    jimmy = iinfo.load_nii(); 
-                    hdr = jimmy.hdr;
-                    hdr.dime.pixdim(1) = -1;
-                    hdr.hist.qform_code = 1;
-                    hdr.hist.sform_code = 1;
-                    if isfield(jimmy, 'original')
-                        orig = jimmy.original;
-                    else
-                        orig = [];
-                    end
-                    return
-                end
-                if ~isempty(iinfo.original) && ...
-                        (iinfo.original.hdr.hist.qform_code > 0 || ...
-                         iinfo.original.hdr.hist.sform_code > 0)
-                    % Given non-empty original hdr and reasonable {q,s}form_code, 
-                    % force LAS and retain {q,s}form_code.
-                    hdr = iform.hdr;
-                    hdr.dime.pixdim(1) = -1;
-                    hdr.hist.qform_code = iform.original.hdr.hist.qform_code;
-                    hdr.hist.sform_code = iform.original.hdr.hist.sform_code;
-                    orig = iform.original;
-                    return
-                end
-
-                % Otherwise, original is unreliable.
-                % Force LAS, don't trust the {q,s}form_code, 
-                % bug retain original hdr so as to preserve information on writing.
-                hdr = iform.hdr;
+            if strcmp(iform.hdr.hist.descrip, 'ImagingInfo.initialHdr') && ...
+                    isfile(iform.fqfilename)
+                % Replace uninformative initial hdr with nifti hdr from filesystem, forcing LAS, 
+                % and forcing scanner anatomical {q,s}form_code.  
+                % Retain original hdr, which may be LAS or RAS, so that original orientation is 
+                % preserved on write.
+                jimmy = iinfo.load_nii(); 
+                hdr = jimmy.hdr;
                 hdr.dime.pixdim(1) = -1;
-                orig = iform.original;
+                hdr.hist.qform_code = 1;
+                hdr.hist.sform_code = 1;
+                if isfield(jimmy, 'original')
+                    orig = jimmy.original;
+                else
+                    orig = [];
+                end
                 return
             end
+            % Given non-empty original hdr and reasonable {q,s}form_code, 
+            % force LAS and retain {q,s}form_code.
             hdr = iform.hdr;
-            orig = iform.original;
+            hdr.dime.pixdim(1) = -1;
+            if ~isempty(iform.original)
+                hdr.hist.qform_code = iform.original.hdr.hist.qform_code;
+                hdr.hist.sform_code = iform.original.hdr.hist.sform_code;
+                orig = iform.original;
+            else
+                orig = [];
+            end
         end
     end
 
@@ -844,24 +837,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 len2 = floor((this.DESC_LEN_LIM - 5)/2);
                 d    = [d(1:len2) ' ... ' d(end-len2+1:end)]; 
             end
-        end  
-        function nii  = ensureOrientation(~, nii)
-            assert(~ishandle(nii))
-            if ~isfield(nii, 'hdr')
-                return
-            end
-            if ~isfield(nii, 'original')
-                return
-            end
-            if isempty(nii.original)
-                return
-            end
-            if nii.original.hdr.dime.pixdim(1) == -1
-                % Always keep internal representations in LAS so as to allow consistent internal maths,
-                % even between external NIfTI that are LAS and RAS.
-                nii.hdr.dime.pixdim(1) = nii.original.hdr.dime.pixdim(1);
-                return
-            end
         end
         function nii  = make_nii(this, varargin)
             %  Make NIfTI structure specified by an N-D matrix. Usually, N is 3 for 
@@ -918,7 +893,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             parse(ip, varargin{:})
             ipr = ip.Results;
 
-            nii = mlniftitools.make_nii( ...
+            nii = mlfourd.JimmyShen.make_nii( ...
                 ipr.img, ipr.voxel_size, ipr.origin, ipr.datatype, ipr.descrip);
             nii.fileprefix = this.fqfileprefix;
             nii.filetype = this.filetype;
@@ -931,13 +906,13 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
             txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
             txt = strrep(txt, "%", "_"); % interferes with fprintf()
-            if empty(txt)
+            if isempty(txt)
                 return
             end
             x = this.imagingInfo_.json_metadata_filesuffix;
             fid = fopen(strcat(this.fqfileprefix, x), 'w');
             fprintf(fid, txt);
-            close(fid)
+            fclose(fid)
         end
         function        save_nii(this)
             %  Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
@@ -999,9 +974,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             try
                 this = this.optimizePrecision;
                 nii = struct(this);
-                nii = this.ensureOrientation(nii);
+                nii = this.imagingInfo.ensureSavingOrientation(nii);
                 nii.fileprefix = this.fqfileprefix;
-                mlniftitools.save_nii(nii, this.fqfilename);
+                mlfourd.JimmyShen.save_nii(nii, this.fqfilename);
                 this.addLog("mlniftitools.save_nii(nii, " + this.fqfilename + ")");
             catch ME
                 dispexcept(ME, ...

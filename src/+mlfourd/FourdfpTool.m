@@ -108,7 +108,7 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
             try
                 ana = mlniftitools.make_ana(this.img, this.mmppix_triple());
                 this.addLog("mlniftitools.make_ana(this.img, [" + mat2str(this.mmppix) + "])");
-                ana = this.ensureOrientation(ana);
+                ana = this.imagingInfo.ensureSavingOrientation(ana);
                 ana = this.ensureHist(ana);
 
                 fqfn = strcat(this.fqfileprefix, '.4dfp.hdr');
@@ -136,14 +136,6 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
     %% PROTECTED
 
     methods (Access = protected)
-        function ana = ensureOrientation(this, ana)
-            %% upon saving 4dfp
-
-            assert(~ishandle(ana))
-            ana.img = single(ana.img);
-            ana.img = flip(ana.img, 2);
-            this.addLog(clientname(false, 2));
-        end
         function ana = ensureHist(this, ana)
             %% override behavior of mlniftitools.make_ana() dropping aux_file
 

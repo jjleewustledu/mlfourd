@@ -39,7 +39,7 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             ref = mlpet.ReferenceFdgSumt;
             ref.copyfiles(this.TmpDir);
             finfo = mlfourd.FourdfpInfo( ...
-                ref.dicomAsFourdfp, 'circshiftK', 0, 'N', true, 'datatype', 4);
+                ref.dicomAsFourdfp, 0, 'N', true, 'datatype', 4);
             ref_ = ref.asStruct;
             fnii_ = finfo.make_nii;
             
@@ -90,7 +90,7 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             ref = mlfourd.ReferenceMprage;
             ref.copyfiles(this.TmpDir);
             finfo = mlfourd.FourdfpInfo( ...
-                ref.dicomAsFourdfp, 'circshiftK', 0, 'N', true, 'datatype', 4);
+                ref.dicomAsFourdfp, 'N', true, 'datatype', 4);
             ref_ = ref.asStruct;
             fnii_ = finfo.make_nii;
             
@@ -137,7 +137,7 @@ classdef Test_ImagingInfo < matlab.unittest.TestCase
             ref = mlfourd.ReferenceMprage;
             ref.copyfiles(this.TmpDir);
             minfo = mlfourd.MGHInfo( ...
-                ref.surferAsMgz, 'circshiftK', 0, 'N', true, 'datatype', 4);
+                ref.surferAsMgz, 'N', true, 'datatype', 4);
             mnii_ = minfo.make_nii;
             
             % ref_ is identical to that in test_loadMprage            

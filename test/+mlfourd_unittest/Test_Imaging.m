@@ -6,7 +6,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
 
     properties
         compatibility = false
-        do_view = true
+        do_view = false
         LAS = 'sub-108293_ses-20210421171325_trc-fdg_proc-static_pet' % bottle points left anterior
         MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0
@@ -174,10 +174,10 @@ classdef Test_Imaging < matlab.unittest.TestCase
                 mlbash(sprintf('mri_convert brain.mgz %s.nii.gz', tempname_))
                 mlbash(sprintf('fslreorient2std %s.nii.gz brain.nii.gz', tempname_))
             end
-            if ~isfile([this.LAS '.nii.gz'])
+            if ~isfile([this.LAS '.nii.gz']) || ~isfile([this.LAS '.json'])
                 copyfile(fullfile(this.petDir2, [this.LAS '.*']));
             end
-            if ~isfile([this.RAS '.nii.gz'])
+            if ~isfile([this.RAS '.nii.gz']) || ~isfile([this.RAS '.json'])
                 copyfile(fullfile(this.anatDir2, [this.RAS '.*']));
             end
 

@@ -191,84 +191,146 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             %% creates 4dfp & nii.gz from native mgz, then confirms expected hdr.hist, 
             %  which is discrepant for 4dfp. 
 
-            this.setupT1('.4dfp.hdr')
-            this.setupT1('.nii.gz')
-            this.setupT1('.mgz')
+            this.setupT1('.4dfp.hdr');
+            this.setupT1('.nii.gz');
+            this.setupT1('.mgz');
 
             % native mgz
             ifc_m = ImagingFormatContext2('T1_test.mgz');
-            this.verifyEqual(ifc_m.stateTypeclass, 'mlfourd.FilesystemFormatTool')
-            ifc_m.selectMghTool()
+            this.verifyEqual(ifc_m.stateTypeclass, 'mlfourd.FilesystemFormatTool');
+            ifc_m.selectMghTool();
             hdr = ifc_m.hdr;
-            this.verifyEqual(ifc_m.stateTypeclass, 'mlfourd.MghTool')
-            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.qoffset_y,  -86.3535156250000, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5)
+            this.verifyEqual(ifc_m.stateTypeclass, 'mlfourd.MghTool');
+            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.qoffset_y,  -86.3535156250000, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5);
 
             % nii.gz from mri_convert
             ifc_n = ImagingFormatContext2('T1_test.nii.gz');
-            this.verifyEqual(ifc_n.stateTypeclass, 'mlfourd.FilesystemFormatTool')
-            ifc_n.selectNiftiTool()
+            this.verifyEqual(ifc_n.stateTypeclass, 'mlfourd.FilesystemFormatTool');
+            ifc_n.selectNiftiTool();
             hdr = ifc_n.hdr;
-            this.verifyEqual(ifc_n.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.qoffset_y,  -86.353515625, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5)
-            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5)
+            this.verifyEqual(ifc_n.stateTypeclass, 'mlfourd.NiftiTool');
+            this.verifyEqual(hdr.hist.qoffset_x,  127.5002136230469, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.qoffset_y,  -86.353515625, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.qoffset_z, -135.392578125, 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_x, [-1  0 0  127.5002136230469], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_y, [ 0  1 0  -86.353515625], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.srow_z, [ 0  0 1 -135.392578125], 'AbsTol', 1e-5);
+            this.verifyEqual(hdr.hist.originator(1:3), [128.4997863769531 87.353515625000000 136.3925704956055], 'AbsTol', 1e-5);
 
             % 4dfp from nifti_4dfp -4
             import mlfourd.*
             ifc_4 = ImagingFormatContext2('T1_test.4dfp.hdr');
-            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FilesystemFormatTool')
-            ifc_4.selectFourdfpTool()
+            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FilesystemFormatTool');
+            ifc_4.selectFourdfpTool();
             hdr = ifc_4.hdr;
-            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FourdfpTool')
-            this.verifyEqual(hdr.hist.qoffset_x,  127.5)
-            this.verifyEqual(hdr.hist.qoffset_y, -127.5)
-            this.verifyEqual(hdr.hist.qoffset_z, -127.5)
-            this.verifyEqual(hdr.hist.srow_x, [-1 0 0  127.5])
-            this.verifyEqual(hdr.hist.srow_y, [ 0 1 0 -127.5])
-            this.verifyEqual(hdr.hist.srow_z, [ 0 0 1 -127.5])
-            this.verifyEqual(hdr.hist.originator(1:3), [127.5 127.5 127.5])
+            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FourdfpTool');
+            this.verifyEqual(hdr.hist.qoffset_x,  127.5);
+            this.verifyEqual(hdr.hist.qoffset_y, -127.5);
+            this.verifyEqual(hdr.hist.qoffset_z, -127.5);
+            this.verifyEqual(hdr.hist.srow_x, [-1 0 0  127.5]);
+            this.verifyEqual(hdr.hist.srow_y, [ 0 1 0 -127.5]);
+            this.verifyEqual(hdr.hist.srow_z, [ 0 0 1 -127.5]);
+            this.verifyEqual(hdr.hist.originator(1:3), [127.5 127.5 127.5]);
 
-            this.cleanT1('.4dfp.hdr')
-            this.cleanT1('.nii.gz')
-            this.cleanT1('.mgz')
+            this.cleanT1('.4dfp.hdr');
+            this.cleanT1('.nii.gz');
+            this.cleanT1('.mgz');
+        end
+        function test_minus(this)
+            % ref nii.gz
+            ifc_ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
+            ifc_ras.selectNiftiTool();
+            this.verifyEqual(ifc_ras.orient, 'NEUROLOGICAL');
+            this.verifyEqual(ifc_ras.qfac, -1);
+
+            ifc = copy(ifc_ras);
+            if this.do_view
+                ifc.view(ifc_ras.fqfn);
+            end
+
+            return
+
+            ifc_4dfp = copy(ifc_ras);
+            ifc_4dfp.selectFourdfpTool();
+            this.verifyEqual(dipmax(ifc_ras - ifc_4dfp), 0);
+
+            ifc_4dfp = copy(ifc_ras);
+            fqfp = tempname;
+            ifc_4dfp.saveas(strcat(fqfp, '.4dfp.hdr'));
+            ifc_4dfp = mlfourd.ImagingFormatContext2(strcat(fqfp, '.4dfp.hdr'));
+            ifc_4dfp.selectFourdfpTool();
+            this.verifyEqual(dipmax(ifc_ras - ifc_4dfp), 0);
+            deleteExisting(strcat(fqfp, '.4dfp.*'))
+
+            % prep
+            ic_ = mlfourd.ImagingForamtContext2(strcat(this.RAS, '.nii.gz'));
+            ic_.saveas(strcat(this.RAS, '.4dfp.hdr'));
+
+            % ref 4dfp.hdr
+            ifc_ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.4dfp.hdr'));
+            ifc_ras.selectFourdfpTool();
+
+            ic_nii = copy(ifc_ras);
+            ic_nii.selectNiftiTool();
+            this.verifyEqual(dipmax(ifc_ras - ic_nii), 0);
+
+            ic_nii = copy(ifc_ras);
+            fqfp = tempname;
+            ic_nii.saveas(strcat(fqfp, '.nii.gz'));
+            this.verifyEqual(ic_nii.orient, 'RADIOLOGICAL')
+            ic_nii = mlfourd.ImagingFormatContext2(strcat(fqfp, '.nii.gz'));
+            ic_nii.selectNiftiTool();
+            this.verifyEqual(dipmax(ifc_ras - ic_nii), 0);
+            deleteExisting(strcat(fqfp, '.*'))
+            
         end
         function test_LAS(this)
             %% radiological; bottle points left anterior
 
             las = mlfourd.ImagingContext2(strcat(this.LAS, '.nii.gz'));
             las.selectNiftiTool();
-            this.verifyEqual(las.orient, 'RADIOLOGICAL')
-            this.verifyEqual(las.qfac, -1)
-            this.verifyEqual(las.json_metadata.DeviceSerialNumber, '11009')
+            las_ = copy(las);
+            this.verifyEqual(las.orient, 'RADIOLOGICAL');
+            this.verifyEqual(las.qfac, -1);
+            this.verifyEqual(las.json_metadata.DeviceSerialNumber, '11009');
+
+            if this.do_view
+                las_.view(); 
+                las_.selectFourdfpTool();
+                las_.view();
+            end
         end
         function test_RAS(this)
             %% neurological; subject's nose tilts slightly to left
 
             ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
             ras.selectNiftiTool();
-            this.verifyEqual(ras.orient, 'NEUROLOGICAL')
-            this.verifyEqual(ras.qfac, -1)
-            this.verifyEqual(ras.json_metadata.DeviceSerialNumber, '167047')
+            ras_ = copy(ras);
+            this.verifyEqual(ras.orient, 'NEUROLOGICAL');
+            this.verifyEqual(ras.qfac, -1);
+            this.verifyEqual(ras.json_metadata.DeviceSerialNumber, '167047'); 
+
+            if this.do_view
+                ras_.view(); 
+                ras_.selectFourdfpTool();
+                ras_.view();
+            end
 
             % LAS and RAS have compatible internal representations
             las_fn = strcat(basename(tempname), '.nii.gz');
-            copyfile(strcat(this.RAS, '.nii.gz'), las_fn)
+            copyfile(strcat(this.RAS, '.nii.gz'), las_fn);
             mlbash(sprintf('fslorient -forceradiological %s', las_fn));
             las = mlfourd.ImagingContext2(las_fn);
             
             diff = ras - las;
-            this.verifyEqual(dipsum(diff), 0)
-            deleteExisting(las)
+            this.verifyEqual(dipsum(diff), 0);
+            deleteExisting(las);           
         end
     end
     

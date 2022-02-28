@@ -267,11 +267,6 @@ classdef Analyze75Info < handle & mlfourd.ImagingInfo
         function info = permuteInfo(this, info)
             info.Width           = info.Dimensions(1);
             info.Height          = info.Dimensions(3);
-            if (0 == this.circshiftK_)
-                return
-            end
-            info.PixelDimensions = this.permuteCircshiftVec(info.PixelDimensions);
-            info.Dimensions      = this.permuteCircshiftVec(info.Dimensions);
         end
     end
 

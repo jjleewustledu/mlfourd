@@ -31,6 +31,61 @@ classdef MghTool < handle & mlfourd.ImagingFormatTool
                 'viewer', iform.viewer, ...
                 'useCase', 2);
         end
+        function out = mri_convert(varargin)
+            %% MRI_CONVERT calls FreeSurfer's mri_convert.
+            %  Args:
+            %      in (any): object understood by mlfourd.ImagingContext2.
+            %      out (any): object understood by mlfourd.ImagingContext2.
+            %      options (option, text): see help for mri_convert.
+            %  Returns:
+            %      out: referencing imaging on filesystem.
+
+            ip = inputParser;
+            addRequired(ip, 'in')
+            addOptional(ip, 'out', '')
+            addParameter(ip, 'options', '', @istext)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+
+            in = mlfourd.ImagingContext2(ipr.in);
+            out = mlfourd.ImagingContext2(ipr.out);
+            if ~isfile(in.fqfn)
+                in.save();
+            end
+            cmd = sprintf('mri_convert %s %s', in.fqfn, out.fqfn);
+            s = mlbash(cmd);
+            assert(0 == s, 'mlfourd:RuntimeError', 'MghTool.mri_convert()')
+            out = mlfourd.ImagingContext2(out.fqfn);
+        end
+        function out = mri_convert2std(varargin)
+            %% MRI_CONVERT2STD calls FreeSurfer's mri_convert, then FSL's fslreorient2std.
+            %  Args:
+            %      in (any): object understood by mlfourd.ImagingContext2.
+            %      out (any): object understood by mlfourd.ImagingContext2.
+            %      options (option, text): see help for mri_convert.
+            %  Returns:
+            %      out: referencing imaging on filesystem.
+
+            ip = inputParser;
+            addRequired(ip, 'in')
+            addOptional(ip, 'out', '')
+            addParameter(ip, 'options', '', @istext)
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+
+            tmp = strcat(tempname, '.nii.gz');
+            tmp = mlfourd.MghTool.mri_convert(ipr.in, tmp, 'options', ipr.options);
+            out = mlfourd.MghTool.fslreorient2std(tmp, ipr.out);
+            deleteExisting(tmp.fqfn)
+        end
+        function out = fslreorient2std(varargin)
+            %% FSLREORIENT2STD calls FSL's fslreorient2std.
+            %  Args:
+            %      in (any): object understood by mlfourd.ImagingContext2.
+            %      out (any): object understood by mlfourd.ImagingContext2.
+            %  Returns:
+            %      out: referencing imaging on filesystem.
+        end
     end
 
     properties (Dependent)

@@ -4,6 +4,10 @@ classdef IImaging < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyable 
     %  Created 07-Dec-2021 15:01:25 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
 
+    properties (Abstract)
+        logger
+    end
+
     methods (Abstract)
         isempty(this)
         length(this)

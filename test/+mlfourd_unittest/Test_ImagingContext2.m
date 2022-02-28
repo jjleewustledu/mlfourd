@@ -715,6 +715,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             % are internal arrays aligned after reading filesystem?
             ic_diff = mlfourd.ImagingContext2([this.RAS '.nii.gz']) - mlfourd.ImagingContext2([this.RAS '.4dfp.hdr']);
+            if this.do_view; ic_diff.view(); end
             this.verifyEqual(dipmax(ic_diff), 0)
 
             ic = copy(ic_n);
@@ -869,7 +870,8 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             % ref nii.gz
             ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
             ic_ras.selectNiftiTool();
-            this.verifyEqual(ic_ras.orient, 'NEUROLOGICAL')
+            this.verifyEqual(ic_ras.orient, 'NEUROLOGICAL');
+            this.verifyEqual(ic_ras.qfac, -1);
 
             ic_4dfp = copy(ic_ras);
             ic_4dfp.selectFourdfpTool();
@@ -882,6 +884,10 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic_4dfp.selectFourdfpTool();
             this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0);
             deleteExisting(strcat(fqfp, '.4dfp.*'))
+
+            % prep
+            ic_ = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
+            ic_.saveas(strcat(this.RAS, '.4dfp.hdr'));
 
             % ref 4dfp.hdr
             ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.4dfp.hdr'));
