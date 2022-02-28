@@ -504,14 +504,9 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             end
 
             % mlniftitools' behavior =: nii.hdr.dime.pixdim(1) == 1
-
+            % mlfourd.JimmyShen's behavior =: nii.hdr.dime.pixdim(1) == -1
             % internally represent images in radiological orientation to allow for:
             % array operations between images, consistency with analyze | 4dfp formats, uniformity of all outputs
-            if nii.hdr.dime.pixdim(1) == 1
-                nii.hdr.dime.pixdim(1) = -1;
-                nii.img = flip(nii.img, 1);
-                return
-            end
         end
         function nii  = ensureSavingOrientation(~, nii)
             %% stub for symmetric implemntations with subclasses

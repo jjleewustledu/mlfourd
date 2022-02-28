@@ -302,11 +302,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             if this.do_view
                 las_.view(); 
-                disp(las_.hdr.hk)
-                disp(las_.hdr.dime)
-                disp(las_.hdr.hist)
-                disp(las_.original)
-                disp(las_.fslhd)
+                las_.disp_debug();
 
 %                las_.selectFourdfpTool();
 %                las_.view();
@@ -324,11 +320,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             if this.do_view
                 ras_.view(); 
-                disp(ras_.hdr.hk)
-                disp(ras_.hdr.dime)
-                disp(ras_.hdr.hist)
-                disp(ras_.original)
-                disp(ras_.fslhd)
+                ras_.disp_debug();
 
 %                ras_.selectFourdfpTool();
 %                ras_.view();

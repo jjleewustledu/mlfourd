@@ -248,6 +248,17 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function c = complex(this)
             c = complex(this.state_);
         end
+        function disp_debug(this)
+            disp(this.imagingInfo)
+            disp(this.hdr.hk)
+            disp(this.hdr.dime)
+            disp(this.hdr.hist)
+            disp(this.original.hdr.hk)
+            disp(this.original.hdr.dime)
+            disp(this.original.hdr.hist)
+            disp(this.fslhd)
+            disp(string(this.logger))
+        end
         function d = double(this)
             d = double(this.state_);
         end

@@ -35,15 +35,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
             if strcmp(iform.hdr.hist.descrip, 'ImagingInfo.initialHdr') && ...
                     isfile(iform.fqfilename)
-                % Replace uninformative initial hdr with nifti hdr from filesystem, forcing LAS, 
-                % and forcing scanner anatomical {q,s}form_code.  
-                % Retain original hdr, which may be LAS or RAS, so that original orientation is 
-                % preserved on write.
+                % Replace uninformative initial hdr with nifti hdr from filesystem.
+                % Retain original hdr, which may be LAS or RAS.
                 jimmy = iinfo.load_nii(); 
                 hdr = jimmy.hdr;
-                hdr.dime.pixdim(1) = -1;
-                hdr.hist.qform_code = 1;
-                hdr.hist.sform_code = 1;
                 if isfield(jimmy, 'original')
                     orig = jimmy.original;
                 else
@@ -51,13 +46,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 end
                 return
             end
-            % Given non-empty original hdr and reasonable {q,s}form_code, 
-            % force LAS and retain {q,s}form_code.
+
+            % base case
             hdr = iform.hdr;
-            hdr.dime.pixdim(1) = -1;
             if ~isempty(iform.original)
-                hdr.hist.qform_code = iform.original.hdr.hist.qform_code;
-                hdr.hist.sform_code = iform.original.hdr.hist.sform_code;
                 orig = iform.original;
             else
                 orig = [];
