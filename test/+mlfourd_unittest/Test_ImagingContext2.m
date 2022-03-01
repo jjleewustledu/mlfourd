@@ -230,15 +230,15 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             % verify imagingInfo
             this.verifyEqual(ic.imagingInfo.TransformName, 'Sform')
-            this.verifyEqual(ic.imagingInfo.raw.srow_x, [1 0 0 -127])
-            this.verifyEqual(ic.imagingInfo.raw.srow_y, [0 1 0 -127])
-            this.verifyEqual(ic.imagingInfo.raw.srow_z, [0 0 1 -127])
+            this.verifyEqual(ic.imagingInfo.raw.srow_x, [-1 0 0  127])
+            this.verifyEqual(ic.imagingInfo.raw.srow_y, [ 0 1 0 -127])
+            this.verifyEqual(ic.imagingInfo.raw.srow_z, [ 0 0 1 -127])
             this.verifyEqual(ic.imagingInfo.hdr.hist.originator(1:3), [128 128 128])
 
             % verify imagingFormat
             ic.selectImagingTool();
-            this.verifyEqual(DataHash(ic.imagingFormat.hdr), 'cfaf77a5243639ea1a4f3db9bc724b53')
-            this.verifyEqual(DataHash(ic.imagingFormat.img), 'd02d6a8dda1f915daa920c24d82f9621')
+            this.verifyEqual(DataHash(ic.imagingFormat.hdr), 'dcb4c8680e78424c2be2ffff580ee24c')
+            this.verifyEqual(DataHash(ic.imagingFormat.img), '62a69f1eaf8320fbf958b3306f894abb')
         end
         function test_ctor_logical(this)
             obj = mlfourd.ImagingContext2(true(2,2,3,4), 'compatibility', this.compatibility);
@@ -294,8 +294,8 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(obj.imagingInfo.raw.xyzt_units, 10)
             this.verifyEqual(obj.imagingInfo.raw.descrip, 'fdgdt20190523132832_222.4dfp.ifh converted with nifti_4dfp')
             this.verifyEqual(obj.imagingInfo.raw.qform_code, 0)
-            this.verifyEqual(obj.imagingInfo.raw.sform_code, 3)
-            this.verifyEqual(obj.imagingInfo.raw.srow_x, [ 2 0 0 -127])
+            this.verifyEqual(obj.imagingInfo.raw.sform_code, 1)
+            this.verifyEqual(obj.imagingInfo.raw.srow_x, [-2 0 0  127])
             this.verifyEqual(obj.imagingInfo.raw.srow_y, [ 0 2 0 -127])
             this.verifyEqual(obj.imagingInfo.raw.srow_z, [ 0 0 2 -68])
             this.verifyEqual(size(obj), [128 128 75 62])
@@ -324,10 +324,10 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(obj.imagingInfo.raw.intent_code, 0)
             this.verifyEqual(obj.imagingInfo.raw.datatype, 16)
             this.verifyEqual(obj.imagingInfo.raw.bitpix, 32)
-            this.verifyEqual(obj.imagingInfo.raw.pixdim, [-1 2 2 2 0 0 0 0])
+            this.verifyEqual(obj.imagingInfo.raw.pixdim, [0 2 2 2 0 0 0 0])
             this.verifyEqual(obj.imagingInfo.raw.xyzt_units, 10)
             this.verifyEqual(obj.imagingInfo.raw.descrip, '')
-            this.verifyEqual(obj.imagingInfo.raw.qform_code, 1)
+            this.verifyEqual(obj.imagingInfo.raw.qform_code, 0)
             this.verifyEqual(obj.imagingInfo.raw.sform_code, 1)
             this.verifyEqual(obj.imagingInfo.raw.srow_x, [-2 0 0  127])
             this.verifyEqual(obj.imagingInfo.raw.srow_y, [ 0 2 0 -127])
@@ -361,7 +361,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(obj.imagingInfo.raw.pixdim, [-1 1 1 1 2.40 1 1 1], 'AbsTol', 1e-5)
             this.verifyEqual(obj.imagingInfo.raw.xyzt_units, 10)
             this.verifyEqual(obj.imagingInfo.raw.descrip, '6.0.4:ddd0a010')
-            this.verifyEqual(obj.imagingInfo.raw.qform_code, 1)
+            this.verifyEqual(obj.imagingInfo.raw.qform_code, 0)
             this.verifyEqual(obj.imagingInfo.raw.sform_code, 1)
             this.verifyEqual(obj.imagingInfo.raw.quatern_b, 0, 'AbsTol', 1e-5)
             this.verifyEqual(obj.imagingInfo.raw.quatern_c, 1, 'AbsTol', 1e-5)
@@ -715,11 +715,9 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             % are internal arrays aligned after reading filesystem?
             ic_diff = mlfourd.ImagingContext2([this.RAS '.nii.gz']) - mlfourd.ImagingContext2([this.RAS '.4dfp.hdr']);
-            if this.do_view; ic_diff.view(); end
-            this.verifyEqual(dipmax(ic_diff), 0)
+            this.verifyEqual(dipmax(ic_diff), 0);
 
             ic = copy(ic_n);
-            if this.do_view; ic.view; end
             ic.saveas([ic.fileprefix '_test_saveas.4dfp.hdr']);
             this.verifyTrue(isfile([ic.fileprefix '.4dfp.hdr']));
             if this.do_view
@@ -728,7 +726,6 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             deleteExisting(ic.fqfn);
 
             ic = copy(ic_4);
-            if this.do_view; ic.view; end
             ic.saveas([ic.fileprefix '_test_saveas.nii.gz']);
             this.verifyTrue(isfile([ic.fileprefix '.nii.gz']));
             if this.do_view
@@ -859,53 +856,54 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic_ras.fqfp = tempname;
             ic_ras.save();
             [~,r] = mlbash(sprintf('fslorient -getorient %s.nii.gz', ic_ras.fqfp));
-            this.verifyEqual(strtrim(r), 'NEUROLOGICAL');
+            this.verifyEqual(strtrim(r), 'RADIOLOGICAL');
 
             deleteExisting(strcat(ic_ras.fqfp, '.*'))
         end
 
         %% mlpatterns.Numerical
         
-        function test_minus(this)
+        function test_minus_starting_nii(this)
             % ref nii.gz
             ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
             ic_ras.selectNiftiTool();
-            this.verifyEqual(ic_ras.orient, 'NEUROLOGICAL');
+            this.verifyEqual(ic_ras.orient, 'RADIOLOGICAL');
             this.verifyEqual(ic_ras.qfac, -1);
 
             ic_4dfp = copy(ic_ras);
             ic_4dfp.selectFourdfpTool();
-            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0);
+            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0); % internally consistent
 
-            ic_4dfp = copy(ic_ras);
-            fqfp = tempname;
-            ic_4dfp.saveas(strcat(fqfp, '.4dfp.hdr'));
-            ic_4dfp = mlfourd.ImagingContext2(strcat(fqfp, '.4dfp.hdr'));
+            ic_4dfp = copy(ic_ras); % nii -> 4dfp
+            tmpfp = tempname;
+            ic_4dfp.saveas(strcat(tmpfp, '.4dfp.hdr'));
+            ic_4dfp = mlfourd.ImagingContext2(strcat(tmpfp, '.4dfp.hdr')); % go through filesystem
             ic_4dfp.selectFourdfpTool();
-            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0);
-            deleteExisting(strcat(fqfp, '.4dfp.*'))
-
-            % prep
+            this.verifyEqual(dipmax(ic_ras - ic_4dfp), 0); % internally consistent after saving to filesystem
+            deleteExisting(strcat(tmpfp, '.4dfp.*'))
+        end
+        function test_minus_starting_4dfp(this)
+            % generate fresh
             ic_ = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
-            ic_.saveas(strcat(this.RAS, '.4dfp.hdr'));
+            ic_.saveas(strcat(this.RAS, '.4dfp.hdr')); 
 
             % ref 4dfp.hdr
             ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.4dfp.hdr'));
             ic_ras.selectFourdfpTool();
+            this.verifyEqual(ic_ras.orient, '');
+            this.verifyEqual(ic_ras.qfac, 0);
 
             ic_nii = copy(ic_ras);
             ic_nii.selectNiftiTool();
-            this.verifyEqual(dipmax(ic_ras - ic_nii), 0);
+            this.verifyEqual(dipmax(ic_ras - ic_nii), 0); % internally consistent
 
-            ic_nii = copy(ic_ras);
-            fqfp = tempname;
-            ic_nii.saveas(strcat(fqfp, '.nii.gz'));
-            this.verifyEqual(ic_nii.orient, 'RADIOLOGICAL')
-            ic_nii = mlfourd.ImagingContext2(strcat(fqfp, '.nii.gz'));
+            ic_nii = copy(ic_ras); % 4dfp -> nii
+            tmpfp = tempname;
+            ic_nii.saveas(strcat(tmpfp, '.nii.gz'));
+            ic_nii = mlfourd.ImagingContext2(strcat(tmpfp, '.nii.gz')); % go through filesystem
             ic_nii.selectNiftiTool();
-            this.verifyEqual(dipmax(ic_ras - ic_nii), 0);
-            deleteExisting(strcat(fqfp, '.*'))
-            
+            this.verifyEqual(dipmax(ic_ras - ic_nii), 0); % internally consistent after saving to filesystem
+            deleteExisting(strcat(tmpfp, '.nii.gz'))            
         end
         function test_times(this)
             ic_ras = mlfourd.ImagingContext2(strcat(this.RAS, '.nii.gz'));
@@ -1311,7 +1309,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ic.imagingFormat.mmppix, [1 1 1])
             this.verifyEqual(ic.imagingFormat.originator(1:3), [127.5 127.5 127.5])
             this.verifyEqual(ic.imagingInfo.hdr.dime.dim, [3 256 256 256 1 1 1 1]) % artefact of T1001_ic_4dfp?
-            this.verifyEqual(ic.imagingInfo.hdr.hist.qform_code, 1)
+            this.verifyEqual(ic.imagingInfo.hdr.hist.qform_code, 0)
             this.verifyEqual(ic.imagingInfo.hdr.hist.sform_code, 1)
             if this.compatibility
                 this.verifyEqual(ic.dipmax, single(65025), 'AbsTol', 1e-7)

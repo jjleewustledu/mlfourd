@@ -5,6 +5,76 @@ classdef JimmyShen
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods (Static)
+        function nii = adjust_nii(nii)
+            %% adjust nii for use by ImagingFormatTool
+
+            import mlfourd.JimmyShen;
+
+            if nii.filetype ~= 1 && nii.filetype ~= 2 % not nifti
+                return
+            end
+            if ~isfield(nii, 'original') || isempty(nii.original)
+                return
+            end
+            if nii.original.hdr.dime.pixdim(1) == 0 || ...
+               nii.original.hdr.dime.pixdim(1) == -1 % original radiological
+                nii.hdr.dime.pixdim(1) = -1;
+                %nii.hdr.hist.qform_code = 0;
+                %nii.hdr.hist.sform_code = 1;
+                nii.img = flip(nii.img, 1);
+                return
+            end
+            if nii.original.hdr.dime.pixdim(1) == 1 % original neurological
+                nii.hdr.dime.pixdim(1) = -1;
+                %nii.hdr.hist.qform_code = 0;
+                %nii.hdr.hist.sform_code = 1;
+                nii.hdr.hist.quatern_b = 0;
+                nii.hdr.hist.quatern_c = 1;
+                nii.hdr.hist.quatern_d = 0;
+                nii.hdr.hist.qoffset_x = -nii.hdr.hist.qoffset_x;
+                nii.hdr.hist.srow_x = -nii.hdr.hist.srow_x;
+                nii.img = flip(nii.img, 1);
+                return
+            end
+        end
+        function nii = flip_lr_nii(nii)
+            %% With flip_lr_nii, you can convert any ANALYZE or NIfTI (no matter
+            %  3D or 4D) file to a flipped NIfTI file. This is implemented simply
+            %  by flipping the affine matrix in the NIfTI header and the NIfTI image.
+            %
+            %  Usage: nii = flip_lr_nii(nii)
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+            %  - John Lee (jjlee@wustl.edu)
+
+            M = diag(nii.hdr.dime.pixdim(2:5));
+            M(1:3,4) = -M(1:3,1:3)*(nii.hdr.hist.originator(1:3)-1)';
+            M(1,:) = -1*M(1,:);
+            nii.hdr.hist.sform_code = 1;
+            nii.hdr.hist.srow_x = M(1,:);
+            nii.hdr.hist.srow_y = M(2,:);
+            nii.hdr.hist.srow_z = M(3,:);
+
+            % alternatives
+
+            % M=[[diag(nii.hdr.dime.pixdim(2:4)) -[nii.hdr.hist.originator(1:3).*nii.hdr.dime.pixdim(2:4)]'];[0 0 0 1]]; 
+
+            % hdr.hist.sform_code = 1;
+            % hdr.hist.srow_x(1) = hdr.dime.pixdim(2);
+            % hdr.hist.srow_x(2) = 0;
+            % hdr.hist.srow_x(3) = 0;
+            % hdr.hist.srow_y(1) = 0;
+            % hdr.hist.srow_y(2) = hdr.dime.pixdim(3);
+            % hdr.hist.srow_y(3) = 0;
+            % hdr.hist.srow_z(1) = 0;
+            % hdr.hist.srow_z(2) = 0;
+            % hdr.hist.srow_z(3) = hdr.dime.pixdim(4);
+            % hdr.hist.srow_x(4) = (1-hdr.hist.originator(1))*hdr.dime.pixdim(2);
+            % hdr.hist.srow_y(4) = (1-hdr.hist.originator(2))*hdr.dime.pixdim(3);
+            % hdr.hist.srow_z(4) = (1-hdr.hist.originator(3))*hdr.dime.pixdim(4);
+        end
         function nii = load_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx, ...
     			old_RGB, tolerance, preferredForm)
             %% Load NIFTI or ANALYZE dataset. Support both *.nii and *.hdr/*.img
@@ -127,7 +197,7 @@ classdef JimmyShen
             end
 
             if ~exist('preferredForm','var') || isempty(preferredForm)
-                preferredForm= 's';		% Jeff
+                preferredForm= mlfourd.JimmyShen.PREFERRED_FORM;		% jjlee
             end
 
             v = version;
@@ -206,6 +276,10 @@ classdef JimmyShen
                 nii.fileprefix = gzFileName(1:end-7);
                 rmdir(tmpDir,'s');
             end
+
+            %  Adjust orientations and 4dfp as needed; jjlee
+            %
+            nii = JimmyShen.adjust_nii(nii);
         end
         function nii = make_nii(varargin)
             %% Make NIfTI structure specified by an N-D matrix. Usually, N is 3 for 
@@ -1359,7 +1433,6 @@ classdef JimmyShen
             end
 
             hdr = nii.hdr;
-
             [hdr,orient] = JimmyShen.change_hdr(hdr,tolerance,preferredForm);
 
             %  flip and/or rotate image data
@@ -1576,7 +1649,7 @@ classdef JimmyShen
                 end
 
                 qfac = hdr.dime.pixdim(1);
-                if qfac==0, qfac = 1; end
+                if qfac==0, qfac = mlfourd.JimmyShen.INTERNAL_QFAC; end % jjlee
                 i = hdr.dime.pixdim(2);
                 j = hdr.dime.pixdim(3);
                 k = qfac * hdr.dime.pixdim(4);
@@ -1675,7 +1748,8 @@ classdef JimmyShen
                 hdr.dime.xyzt_units = char(bitset(hdr.dime.xyzt_units,3,0));
             end
 
-            hdr.dime.pixdim = abs(hdr.dime.pixdim);
+            hdr.dime.pixdim(1) = mlfourd.JimmyShen.INTERNAL_QFAC; % jjlee
+            hdr.dime.pixdim(2:end) = abs(hdr.dime.pixdim(2:end)); % jjlee
         end
         function orient = get_orient(R)
             orient = [];
@@ -2182,6 +2256,11 @@ classdef JimmyShen
             hist.magic = [hist.magic  char(pad)];
             fwrite(fid, hist.magic(1:4),        'uchar');
         end        
+    end
+
+    properties (Constant)
+        INTERNAL_QFAC = 1
+        PREFERRED_FORM = 's'
     end
 
     %% PRIVATE

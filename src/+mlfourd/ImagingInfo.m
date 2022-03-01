@@ -350,9 +350,12 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.N_ = s;
         end
         function o = get.orient(this)
-            if isfile(this.fqfilename)
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfilename]);
-                o = strtrim(o);
+            if this.qfac == -1
+                o = 'RADIOLOGICAL';
+                return
+            end
+            if this.qfac == 1
+                o = 'NEUROLOGICAL';
                 return
             end
             o = '';
@@ -446,7 +449,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                all([0 0 0 0] == hdr.hist.srow_y) || ...
                all([0 0 0 0] == hdr.hist.srow_z)
 
-                hdr.hist.qform_code = 1;
+                hdr.hist.qform_code = 0;
                 hdr.hist.sform_code = 1;
 
                 hdr.dime.xyzt_units = 2+8; % mm, sec; see also mlniftitools.extra_nii_hdr
@@ -459,13 +462,13 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                 hdr.hist.quatern_c = 1; % 0.25 * (R(1,3) - R(3,1)) / a;
                 hdr.hist.quatern_d = 0; % 0.25 * (R(2,1) - R(1,2)) / a;
             
-                hdr.hist.qoffset_x = -hdr.hist.originator(1)*this.qfac;
+                hdr.hist.qoffset_x =  hdr.hist.originator(1);
                 hdr.hist.qoffset_y = -hdr.hist.originator(2);
                 hdr.hist.qoffset_z = -hdr.hist.originator(3);            
 
-                srow = [[hdr.dime.pixdim(2) 0 0 -hdr.hist.originator(1)]*this.qfac; ...
-                        [0 hdr.dime.pixdim(3) 0 -hdr.hist.originator(2)]; ...
-                        [0 0 hdr.dime.pixdim(4) -hdr.hist.originator(3)]];
+                srow = [[-hdr.dime.pixdim(2) 0 0  hdr.hist.originator(1)]; ...
+                        [ 0 hdr.dime.pixdim(3) 0 -hdr.hist.originator(2)]; ...
+                        [ 0 0 hdr.dime.pixdim(4) -hdr.hist.originator(3)]];
                 hdr.hist.srow_x = srow(1,:);
                 hdr.hist.srow_y = srow(2,:);
                 hdr.hist.srow_z = srow(3,:);
@@ -493,20 +496,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         end
         
         function nii  = ensureLoadingOrientation(~, nii)
-            %% called upon loading nii
-
-            assert(~ishandle(nii))
-            if ~isfield(nii, 'hdr')
-                return
-            end
-            if ~isfield(nii, 'original') || isempty(nii.original)
-                error('mlfourd:RunTimeError', 'ImagingInfo.ensureLoadingOrientation could not find nii.original')                
-            end
-
-            % mlniftitools' behavior =: nii.hdr.dime.pixdim(1) == 1
-            % mlfourd.JimmyShen's behavior =: nii.hdr.dime.pixdim(1) == -1
-            % internally represent images in radiological orientation to allow for:
-            % array operations between images, consistency with analyze | 4dfp formats, uniformity of all outputs
+            %% stub for symmetric implemntations with subclasses
         end
         function nii  = ensureSavingOrientation(~, nii)
             %% stub for symmetric implemntations with subclasses
@@ -655,8 +645,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             nii = this.ensureLoadingOrientation(nii);
             nii.img = this.ensureDatatype(nii.img, this.datatype_);
             nii.hdr = mlniftitools.extra_nii_hdr(nii.hdr);
-            nii.hdr.hist.qform_code = nii.original.hdr.hist.qform_code; % address mlniftitools bug
-            nii.hdr.hist.sform_code = nii.original.hdr.hist.sform_code; %
             nii.hdr = this.adjustHdr(nii.hdr);
             this.hdr_ = nii.hdr;
             this.filetype_ = nii.filetype;

@@ -339,19 +339,12 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             assert(~ishandle(ana))
             ana.img = flip(ana.img, 2);
         end
-        function ana = ensureSavingOrientation(this, ana)
+        function ana = ensureSavingOrientation(~, ana)
             %% upon saving 4dfp
 
             assert(~ishandle(ana))
             ana.img = single(ana.img);
             ana.img = flip(ana.img, 2);
-            try
-                if this.original.hdr.dime.pixdim(1) == 1 && ...
-                        this.hdr.dime.pixdim(1) == -1
-                    ana.img = flip(ana.img, 1);
-                end
-            catch 
-            end
         end       
         function save(this)
             %% saves ifh, img.reg

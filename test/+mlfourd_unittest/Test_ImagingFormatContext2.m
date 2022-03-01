@@ -29,16 +29,19 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             ifc1 = mlfourd.ImagingFormatContext2('711-2B_111.4dfp.hdr');
             ifc1.selectFourdfpTool();
+            ifc1.disp_debug();
             ifc1.view()
 
             tmp = strcat(tempname, '.nii.gz');
-            ifc1.saveas(tmp)
-            mlbash(sprintf('fsleyes %s %s', '711-2B_111.4dfp.hdr', tmp))
+            ifc1.saveas(tmp);
+            ifc1.disp_debug();
+            mlbash(sprintf('fsleyes %s %s', '711-2B_111.4dfp.hdr', tmp));
 
             ifc2 = copy(ifc1);
             tmp1 = strcat(tempname, '.4dfp.hdr');
-            ifc2.saveas(tmp1)
-            mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
+            ifc2.saveas(tmp1);
+            ifc2.disp_debug();
+            mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
 
             mlbash(sprintf('fsleyes %s %s', tmp1, '711-2B_111.4dfp.hdr'))
 
@@ -48,7 +51,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
         function test_ctorAndSaveas(this)
             pwd0_ = pushd(this.TmpDir);
             
-            %% orig has center/mmppix
+            %% orig has no center/mmppix because of N
 
             ifc = mlfourd.ImagingFormatContext2(fullfile(this.dataDir2, 'fdgcent.4dfp.hdr'));
             ifc.selectFourdfpTool();
@@ -88,18 +91,20 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             ifc1.view()
 
             tmp = strcat(tempname, '.4dfp.hdr');
-            ifc1.saveas(tmp)
-            mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp))
+            ifc1.saveas(tmp);
+            ifc1.disp_debug();
+            mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp));
 
             ifc2 = copy(ifc1);
             tmp1 = strcat(tempname, '.nii.gz');
-            ifc2.saveas(tmp1)
-            mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
+            ifc2.saveas(tmp1);
+            ifc2.disp_debug();
+            mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
 
-            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename))
+            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename));
 
-            deleteExisting(tmp)
-            deleteExisting(tmp1)
+            deleteExisting(tmp);
+            deleteExisting(tmp1);
         end
         function test_MatlabFormatTool(this)
             ifc = mlfourd.ImagingFormatContext2(magic(2));
@@ -120,7 +125,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ifc.hdr.dime.bitpix, 64)
             this.verifyEqual(ifc.hdr.dime.pixdim, [-1 1 1 1 1 1 1 1])
             this.verifyEqual(ifc.hdr.hist.descrip, 'ImagingInfo.initialHdr')
-            this.verifyEqual(ifc.hdr.hist.qform_code, 1)
+            this.verifyEqual(ifc.hdr.hist.qform_code, 0)
             this.verifyEqual(ifc.hdr.hist.sform_code, 1)
             this.verifyEqual(ifc.hdr.hist.quatern_b, 0)
             this.verifyEqual(ifc.hdr.hist.quatern_c, 1)
@@ -159,16 +164,16 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(hdr.hist.srow_z, [0  0 2 -74])
             this.verifyEqual(hdr.hist.originator(1:3), [127 127 74])
 
-            % nii.gz from ImagingContext2 (compatibility = true)
+            % nii.gz from ImagingFormatContext2
             ifc_ = ImagingFormatContext2(this.fdg_ic_fqfn_nii);
             this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.FilesystemFormatTool')
             ifc_.selectNiftiTool();
             hdr = ifc_.hdr;
             this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(hdr.hist.qoffset_x, -127)
+            this.verifyEqual(hdr.hist.qoffset_x,  127)
             this.verifyEqual(hdr.hist.qoffset_y, -127)
             this.verifyEqual(hdr.hist.qoffset_z, -74)
-            this.verifyEqual(hdr.hist.srow_x, [ 2 0 0 -127])
+            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127])
             this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127])
             this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -74])
             this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 38], 'AbsTol', 1e-3)
@@ -182,7 +187,7 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(hdr.hist.qoffset_x, 0)
             this.verifyEqual(hdr.hist.qoffset_y, 0)
             this.verifyEqual(hdr.hist.qoffset_z, 0)
-            this.verifyEqual(hdr.hist.srow_x, [ 2 0 0 -127])
+            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127])
             this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127])
             this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -68])
             this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 35], 'AbsTol', 1e-3)
@@ -242,101 +247,141 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.cleanT1('.nii.gz');
             this.cleanT1('.mgz');
         end
-        function test_minus(this)
-            % ref nii.gz
-            ifc_ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
-            ifc_ras.selectNiftiTool();
-            this.verifyEqual(ifc_ras.orient, 'NEUROLOGICAL');
-            this.verifyEqual(ifc_ras.qfac, -1);
-
-            ifc = copy(ifc_ras);
-            if this.do_view
-                ifc.view(ifc_ras.fqfn);
-            end
-
-            return
-
-            ifc_4dfp = copy(ifc_ras);
-            ifc_4dfp.selectFourdfpTool();
-            this.verifyEqual(dipmax(ifc_ras - ifc_4dfp), 0);
-
-            ifc_4dfp = copy(ifc_ras);
-            fqfp = tempname;
-            ifc_4dfp.saveas(strcat(fqfp, '.4dfp.hdr'));
-            ifc_4dfp = mlfourd.ImagingFormatContext2(strcat(fqfp, '.4dfp.hdr'));
-            ifc_4dfp.selectFourdfpTool();
-            this.verifyEqual(dipmax(ifc_ras - ifc_4dfp), 0);
-            deleteExisting(strcat(fqfp, '.4dfp.*'))
-
-            % prep
-            ic_ = mlfourd.ImagingForamtContext2(strcat(this.RAS, '.nii.gz'));
-            ic_.saveas(strcat(this.RAS, '.4dfp.hdr'));
-
-            % ref 4dfp.hdr
-            ifc_ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.4dfp.hdr'));
-            ifc_ras.selectFourdfpTool();
-
-            ic_nii = copy(ifc_ras);
-            ic_nii.selectNiftiTool();
-            this.verifyEqual(dipmax(ifc_ras - ic_nii), 0);
-
-            ic_nii = copy(ifc_ras);
-            fqfp = tempname;
-            ic_nii.saveas(strcat(fqfp, '.nii.gz'));
-            this.verifyEqual(ic_nii.orient, 'RADIOLOGICAL')
-            ic_nii = mlfourd.ImagingFormatContext2(strcat(fqfp, '.nii.gz'));
-            ic_nii.selectNiftiTool();
-            this.verifyEqual(dipmax(ifc_ras - ic_nii), 0);
-            deleteExisting(strcat(fqfp, '.*'))
-            
-        end
         function test_LAS(this)
             %% radiological; bottle points left anterior
 
+            % nii
             las = mlfourd.ImagingFormatContext2(strcat(this.LAS, '.nii.gz'));
             las.selectNiftiTool();
             las_ = copy(las);
+
             this.verifyEqual(las.orient, 'RADIOLOGICAL');
             this.verifyEqual(las.qfac, -1);
-            this.verifyEqual(las.json_metadata.DeviceSerialNumber, '11009');
-
+            this.verifyEqual(las.hdr.hist.quatern_b, 0);
+            this.verifyEqual(las.hdr.hist.quatern_c, 1);
+            this.verifyEqual(las.hdr.hist.quatern_d, 0);
+            this.verifyEqual(las.hdr.hist.qoffset_x, 1.788869934082031e+02, 'RelTol', 1e-4);
+            this.verifyEqual(las.hdr.hist.qoffset_y, -2.826019287109375, 'RelTol', 1e-4);
+            this.verifyEqual(las.hdr.hist.qoffset_z, 1.735119995117188e+03, 'RelTol', 1e-4);
+            this.verifyEqual(las.hdr.hist.srow_x, ...
+                [-1.649999976158142 0 0 1.788869934082031e+02], 'RelTol', 1e-4);
+            this.verifyEqual(las.hdr.hist.srow_y, ...
+                [0 1.649999976158142 0 -2.826019287109375], 'RelTol', 1e-4);
+            this.verifyEqual(las.hdr.hist.srow_z, ...
+                [0 0 1.640014648437500 1.735119995117187e+03], 'RelTol', 1e-4);        
+            this.verifyEqual(DataHash(las.img), '85239c4e0ebf39713259b3c267e573f6');
             if this.do_view
-                las_.view(); 
-                las_.disp_debug();
-
-%                las_.selectFourdfpTool();
-%                las_.view();
+                las.disp_debug();
+                las.view(); 
             end
+
+            % 4dfp
+            las_.selectFourdfpTool();
+
+            this.verifyEqual(las_.orient, 'RADIOLOGICAL');
+            this.verifyEqual(las_.qfac, -1);
+            this.verifyEqual(las_.hdr.hist.quatern_b, 0);
+            this.verifyEqual(las_.hdr.hist.quatern_c, 1);
+            this.verifyEqual(las_.hdr.hist.quatern_d, 0);
+            this.verifyEqual(las_.hdr.hist.qoffset_x, 1.788869934082031e+02, 'RelTol', 1e-4);
+            this.verifyEqual(las_.hdr.hist.qoffset_y, -2.826019287109375, 'RelTol', 1e-4);
+            this.verifyEqual(las_.hdr.hist.qoffset_z, 1.735119995117188e+03, 'RelTol', 1e-4);
+            this.verifyEqual(las_.hdr.hist.srow_x, ...
+                [-1.649999976158142 0 0 1.788869934082031e+02], 'RelTol', 1e-4);
+            this.verifyEqual(las_.hdr.hist.srow_y, ...
+                [0 1.649999976158142 0 -2.826019287109375], 'RelTol', 1e-4);
+            this.verifyEqual(las_.hdr.hist.srow_z, ...
+                [0 0 1.640014648437500 1.735119995117187e+03], 'RelTol', 1e-4);     
+            this.verifyEqual(DataHash(las_.img), '85239c4e0ebf39713259b3c267e573f6');
+            if this.do_view
+                las_.disp_debug();
+                las_.view();
+            end
+
+            this.verifyEqual(las.json_metadata.DeviceSerialNumber, '11009');    
         end
         function test_RAS(this)
             %% neurological; subject's nose tilts slightly to left
 
+            % nii
             ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
             ras.selectNiftiTool();
             ras_ = copy(ras);
-            this.verifyEqual(ras.orient, 'NEUROLOGICAL');
+            
+            this.verifyEqual(ras.orient, 'RADIOLOGICAL');
             this.verifyEqual(ras.qfac, -1);
-            this.verifyEqual(ras.json_metadata.DeviceSerialNumber, '167047'); 
-
+            this.verifyEqual(ras.hdr.hist.quatern_b, 0);
+            this.verifyEqual(ras.hdr.hist.quatern_c, 1);
+            this.verifyEqual(ras.hdr.hist.quatern_d, 0);
+            this.verifyEqual(ras.hdr.hist.qoffset_x, 83.799064636230469, 'RelTol', 1e-4);
+            this.verifyEqual(ras.hdr.hist.qoffset_y, -1.041999969482422e+02, 'RelTol', 1e-4);
+            this.verifyEqual(ras.hdr.hist.qoffset_z, -1.421999969482422e+02, 'RelTol', 1e-4);
+            this.verifyEqual(ras.hdr.hist.srow_x, ...
+                [-0.799995422363281 0 0 83.799064636230469], 'RelTol', 1e-4);
+            this.verifyEqual(ras.hdr.hist.srow_y, ...
+                [0 0.800000011920929 0 -1.041999969482422e+02], 'RelTol', 1e-4);
+            this.verifyEqual(ras.hdr.hist.srow_z, ...
+                [0 0 0.800000011920929 -1.421999969482422e+02], 'RelTol', 1e-4);  
+            this.verifyEqual(ras.hdr.hist.originator(1:3), [1.057494301763354e+02 1.312499942444266e+02 1.787499935366214e+02], 'RelTol', 1e-4);      
+            this.verifyEqual(DataHash(ras.img), '1b8212723595d7b97b8c50ee3e7a099d');
             if this.do_view
-                ras_.view(); 
-                ras_.disp_debug();
-
-%                ras_.selectFourdfpTool();
-%                ras_.view();
+                ras.disp_debug();
+                ras.view(); 
             end
 
-            return
-
-            % LAS and RAS have compatible internal representations
-            las_fn = strcat(basename(tempname), '.nii.gz');
-            copyfile(strcat(this.RAS, '.nii.gz'), las_fn);
-            mlbash(sprintf('fslorient -forceradiological %s', las_fn));
-            las = mlfourd.ImagingContext2(las_fn);
+            % 4dfp
+            ras_.selectFourdfpTool();
             
-            diff = ras - las;
+            this.verifyEqual(ras_.orient, 'RADIOLOGICAL');
+            this.verifyEqual(ras_.qfac, -1);
+            this.verifyEqual(ras_.hdr.hist.quatern_b, 0);
+            this.verifyEqual(ras_.hdr.hist.quatern_c, 1);
+            this.verifyEqual(ras_.hdr.hist.quatern_d, 0);
+            this.verifyEqual(ras_.hdr.hist.qoffset_x, 83.799064636230469, 'RelTol', 1e-4);
+            this.verifyEqual(ras_.hdr.hist.qoffset_y, -1.041999969482422e+02, 'RelTol', 1e-4);
+            this.verifyEqual(ras_.hdr.hist.qoffset_z, -1.421999969482422e+02, 'RelTol', 1e-4);
+            this.verifyEqual(ras_.hdr.hist.srow_x, ...
+                [-0.799995422363281 0 0 83.799064636230469], 'RelTol', 1e-4);
+            this.verifyEqual(ras_.hdr.hist.srow_y, ...
+                [0 0.800000011920929 0 -1.041999969482422e+02], 'RelTol', 1e-4);
+            this.verifyEqual(ras_.hdr.hist.srow_z, ...
+                [0 0 0.800000011920929 -1.421999969482422e+02], 'RelTol', 1e-4);   
+            this.verifyEqual(ras.hdr.hist.originator(1:3), [1.057494301763354e+02 1.312499942444266e+02 1.787499935366214e+02], 'RelTol', 1e-4); 
+            this.verifyEqual(DataHash(ras_.img), '1b8212723595d7b97b8c50ee3e7a099d');
+            if this.do_view
+                ras_.disp_debug();
+                ras_.view();
+            end
+
+            this.verifyEqual(ras.json_metadata.DeviceSerialNumber, '167047'); 
+
+        end
+        function test_internal_representation(this)
+
+            % RAS and LAS, from fslorient, must have compatible internal representations
+            ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
+            ras.selectNiftiTool();
+            tmpfn = strcat(basename(tempname), '.nii.gz');
+            copyfile(strcat(this.RAS, '.nii.gz'), tmpfn);
+            mlbash(sprintf('fslorient -forceradiological %s', tmpfn));
+            las = mlfourd.ImagingFormatContext2(tmpfn);
+            las.selectNiftiTool();
+            
+            diff = double(ras.img) - double(las.img);
             this.verifyEqual(dipsum(diff), 0);
-            deleteExisting(las);           
+            deleteExisting(tmpfn);
+
+            % RAS and its 4dfp must have compatible internal representations
+            ras = mlfourd.ImagingFormatContext2(strcat(this.RAS, '.nii.gz'));
+            ras.selectNiftiTool();
+            tmpfn = strcat(basename(tempname), '.4dfp.hdr');
+            ras.saveas(tmpfn);
+            las = mlfourd.ImagingFormatContext2(tmpfn);
+            las.selectFourdfpTool();
+
+            diff = double(ras.img) - double(las.img);
+            this.verifyEqual(dipsum(diff), 0);
+            deleteExisting(tmpfn);
         end
     end
     
