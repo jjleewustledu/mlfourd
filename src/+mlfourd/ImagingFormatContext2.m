@@ -249,21 +249,32 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             c = complex(this.state_);
         end
         function disp_debug(this)
+            disp('=============== ImagingFormatContext2.disp_debug ===============')
+            disp('=============== imagingInfo ===============')
             disp(this.imagingInfo)
+            disp('=============== hdr ===============')
             disp(this.hdr.hk)
             disp(this.hdr.dime)
             disp(this.hdr.hist)
+            disp('=============== original.hdr ===============')
             disp(this.original.hdr.hk)
             disp(this.original.hdr.dime)
             disp(this.original.hdr.hist)
+            disp('=============== fslhd ===============')
             disp(this.fslhd)
+            disp('=============== string(logger) ===============')
             disp(string(this.logger))
         end
         function d = double(this)
             d = double(this.state_);
         end
         function r = fslhd(this)
-            [~,r] = mlbash(sprintf('fslhd %s', this.fqfilename));
+            try
+                [~,r] = mlbash(sprintf('fslhd %s', this.fqfilename));
+            catch ME
+                handwarning(ME)
+                r = '';
+            end
         end
         function tf = haveDistinctStates(this, that)
             %  Args:

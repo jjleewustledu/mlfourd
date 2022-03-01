@@ -799,9 +799,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             this.imagingInfo_.hdr = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
 
             this.addLog(clientname(false, 2))
-            %if ~contains(this.imagingInfo_.hdr.hist.descrip, 'adjustHdrForImg')
-            %    this.imagingInfo_.append_descrip('adjustHdrForImg');
-            %end
         end
         function ipr_ = adjustIpresultsForNegSize(this, ipr_)
             fields_ = circshift(fields(ipr_), -2, 1);
@@ -907,7 +904,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             fclose(fid)
         end
         function        save_nii(this)
-            %  Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
+            %% Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
             %  If file extension is not provided, *.hdr/*.img will be used as default.
             %  
             %  Usage: save_nii(nii, filename, [old_RGB])
