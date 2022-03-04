@@ -356,6 +356,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             end
             this.selectMatlabTool;
         end
+        function this = selectPointCloudTool(this)
+            this.state_.selectPointCloudTool(this);
+        end
         
         %% FilesystemTool
 
@@ -1320,6 +1323,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %      uthresh (scalar): per fslmaths
             %      threshp (scalar): per fslmaths
             %      uthreshp (scalar): per fslmaths
+            %      addNormals (logical)
+            %      useMmppix (logical)
 
             ip = inputParser;
             ip.KeepUnmatched = true;
@@ -1342,7 +1347,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this = this.uthreshp(ipr.uthreshp);
             end
             
-            this.selectImagingTool;
+            this.selectPointCloudTool;
             p = this.state_.pointCloud(varargin{:});
         end
         function r    = rank(this)
@@ -1365,6 +1370,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool;
             this.state_ = this.state_.saveas(varargin{:});
         end                
+        function setPointCloud(this, varargin)
+            %  Args:
+            %      pc (pointCloud)
+            %      filepath (folder)
+            %      fileprefix (text):  Ignores common file extensions.
+            %                          Default := strcat(this.fileprefix, '_setPointCloud').
+
+            this.selectPointCloudTool;
+            this.state_.setPointCloud(varargin{:});
+        end
         function tf   = sizeEq(this, ic)
             %% SIZEEQ 
             %  @param ImagingContext2 to compare to this for size
@@ -1503,29 +1518,27 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             ipr = ip.Results;
             this.compatibility_ = ipr.compatibility; % KLUDGE, for refactoring
 
-            if ~this.compatibility_ % KLUDGE, for refactoring
+            if this.compatibility_ % KLUDGE, for refactoring
                 if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
                     % copy ctor
                     this = copy(ipr.imgobj);
                     return
                 end
                 if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
-                    this.state_ = MatlabTool(this, ipr.imgobj, varargin{:});
+                    this.state_ = NumericalTool_20211201(this, ipr.imgobj, varargin{:});
                     return
                 end
                 if istext(ipr.imgobj)
-                    this.state_ = FilesystemTool(this, ipr.imgobj, varargin{:});
+                    this.state_ = FilesystemTool_20211201(this, ipr.imgobj, varargin{:});
                     return
                 end
-                if isstruct(ipr.imgobj) || ...
-                   isa(ipr.imgobj, 'mlfourd.ImagingFormatContext') || ...
-                   isa(ipr.imgobj, 'mlfourd.ImagingContext')
+                if isa(ipr.imgobj, 'mlfourd.ImagingContext') 
                     % legacy
                     assert(~isdeployed)
-                    this.state_ = LegacyTool.create(this, ipr.imgobj, varargin{:});
+                    this.state_ = ImagingFormatTool_20211201(this, ImagingFormatContext(struct(ipr.imgobj.niftid)), varargin{:});
                     return
                 end
-                this.state_ = ImagingTool(this, ipr.imgobj, varargin{:});
+                this.state_ = ImagingFormatTool_20211201(this, ipr.imgobj, varargin{:});            
                 return
             end
             
@@ -1535,20 +1548,22 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 return
             end
             if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
-                this.state_ = NumericalTool_20211201(this, ipr.imgobj, varargin{:});
+                this.state_ = MatlabTool(this, ipr.imgobj, varargin{:});
                 return
             end
             if istext(ipr.imgobj)
-                this.state_ = FilesystemTool_20211201(this, ipr.imgobj, varargin{:});
+                this.state_ = FilesystemTool(this, ipr.imgobj, varargin{:});
                 return
             end
-            if isa(ipr.imgobj, 'mlfourd.ImagingContext') 
+            if isstruct(ipr.imgobj) || ...
+               isa(ipr.imgobj, 'mlfourd.ImagingFormatContext') || ...
+               isa(ipr.imgobj, 'mlfourd.ImagingContext')
                 % legacy
                 assert(~isdeployed)
-                this.state_ = ImagingFormatTool_20211201(this, ImagingFormatContext(struct(ipr.imgobj.niftid)), varargin{:});
+                this.state_ = LegacyTool.create(this, ipr.imgobj, varargin{:});
                 return
             end
-            this.state_ = ImagingFormatTool_20211201(this, ipr.imgobj, varargin{:});
+            this.state_ = ImagingTool(this, ipr.imgobj, varargin{:});
         end
     end  
     

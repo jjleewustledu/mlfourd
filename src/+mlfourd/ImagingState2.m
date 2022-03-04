@@ -190,6 +190,13 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                     mlfourd.NumericalTool(contexth, this.imagingFormat_));
             end
         end
+        function selectPointCloudTool(this, contexth)
+            if ~isa(this, 'mlfourd.PointCloudTool')
+                this.addLog('mlfourd.ImagingState2.selectPointCloudTool');
+                contexth.changeState( ...
+                    mlfourd.PointCloudTool(contexth, this.imagingFormat_));
+            end
+        end
         function selectTrivialTool(this, contexth)
             if ~isa(this, 'mlfourd.TrivialTool')
                 this.addLog('mlfourd.ImagingState2.selectTrivialTool');

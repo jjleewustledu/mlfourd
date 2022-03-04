@@ -167,7 +167,6 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         end
         function that = selectMatlabFormatTool(this, contexth)
             if ~isa(this, 'mlfourd.MatlabFormatTool')
-                %this.filesystem_.filesuffix = '.mat';
                 this.addLog('ImagingFormatState2.selectMatlabFormatTool');
                 info_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_);
                 temp = mlfourd.MatlabFormatTool(contexth, ...

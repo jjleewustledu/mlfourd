@@ -1318,6 +1318,29 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             end
         end
 
+        %% PointCloudTool
+
+        function test_PointCloudTool(this)
+            ic = mlfourd.ImagingContext2(strcat(this.TOF, '.nii.gz'));
+            pc = ic.pointCloud('thresh', 150);
+            this.verifyFalse(isnumeric(pc))
+            this.verifyEqual(class(pc), 'pointCloud')
+            
+            if this.do_view
+                figure;
+                pcshow(pc);
+            end
+
+            ic_ = copy(ic);
+            ic_.setPointCloud(pc);
+            ic_ = ic - ic_;
+            if this.do_view
+                ic_.view()
+            end
+            this.verifyEqual(dipmax(ic_), 149)
+            this.verifyEqual(dipmin(ic_), 0)
+        end
+
         %% 
         
         function test_ifh(this)

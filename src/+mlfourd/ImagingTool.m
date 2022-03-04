@@ -86,37 +86,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         function s = mat2str(this, varargin)
             s = mat2str(this.imagingFormat_.img, varargin{:});
         end
-        function p = pointCloud(this, varargin)
-
-            ip = inputParser;
-            ip.KeepUnmatched = true;
-            addParameter(ip, 'addNormals', false, @islogical)
-            addParameter(ip, 'useMmppix', false, @islogical)
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-
-            img = double(this.imagingFormat_.img);
-            idx = find(img);
-            [X,Y,Z] = ind2sub(size(img), idx);
-            if ~ipr.useMmppix
-                C(:,1) = X; % C are ints cast as double
-                C(:,2) = Y;
-                C(:,3) = Z;
-            else
-                mmppix = double(this.imagingFormat_.mmppix);
-                if isempty(mmppix) && any(isnan(mmppix))
-                    mmppix = [1 1 1];
-                end
-                C(:,1) = X .* mmppix(1); % C are ints cast as double
-                C(:,2) = Y .* mmppix(2);
-                C(:,3) = Z .* mmppix(3);
-            end
-            p = pointCloud(C, 'Intensity', img(idx));
-            if ipr.addNormals
-                n = pcnormals(p);
-                p = pointCloud(C, 'Intensity', img(idx), 'Normal', n);
-            end
-        end
         function [s,r] = view(this, varargin)
             if isa(this, 'mlfourd.MatlabTool')
                 this.selectNiftiTool();
@@ -140,8 +109,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             this = this@mlfourd.ImagingState2(ipr.contexth, ipr.imagingFormat, varargin{:});
         end
     end
-
-    %% DEPRECATED
 
     methods (Hidden)
         function addImgrec(this, varargin)

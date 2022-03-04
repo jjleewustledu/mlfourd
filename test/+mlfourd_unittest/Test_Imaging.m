@@ -6,7 +6,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
 
     properties
         compatibility = false
-        do_view = false
+        do_view = true
         LAS = 'sub-108293_ses-20210421171325_trc-fdg_proc-static_pet' % bottle points left anterior
         MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0
@@ -14,6 +14,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
         T1001 = 'T1001'
         T1001_ic_4dfp % anatDir
         T1001_ic_nii % anatDir
+        TOF = 'sub-108293_ses-20210218092914_tof_fl3d_tra_p2_multi-slab' 
         likely_tempdir = '/private/var/folders/bv/38jg74k504xgpkx6ynl3zyyc0000gn/T/'
     end
 
@@ -185,6 +186,12 @@ classdef Test_Imaging < matlab.unittest.TestCase
             end
             if isfile([this.RAS '.log'])
                 delete([this.RAS '.log'])
+            end
+            if ~isfile([this.TOF '.nii.gz']) || ~isfile([this.TOF '.json'])
+                copyfile(fullfile(this.anatDir2, [this.TOF '.*']));
+            end
+            if isfile([this.TOF '.log'])
+                delete([this.TOF '.log'])
             end
 
             this.MNI152_LR_nii = ImagingContext2( ...
