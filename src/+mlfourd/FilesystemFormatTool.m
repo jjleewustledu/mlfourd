@@ -26,17 +26,18 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
             %% @todo refactor to call factory method imagingInfo().
 
             if matches(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
-                imgi = mlfourd.FourdfpInfo(this.filesystem_);
-                sz = imgi.Dimensions;
-                sz = double(sz);
-                if 1 == sz(4)
-                    sz = sz(1:3);
-                end
+                [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
+                re = regexp(r, '\S+\s+dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
+                sz = cellfun(@str2double, struct2cell(re))';
+                sz = sz(sz > 1);
                 return
             end
             if matches(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
-                imgi = mlfourd.NIfTIInfo(this.filesystem_);
-                sz = imgi.ImageSize;
+                [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
+                re = regexp(r, '\S+\s*dim0\s+(?<d0>\d+)\s*dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
+                sz = cellfun(@str2double, struct2cell(re))';
+                ndims = sz(1);
+                sz = sz(2:ndims+1);
                 return
             end 
             if matches(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
