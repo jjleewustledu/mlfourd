@@ -349,13 +349,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool; % supports compatibility
             this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
-        function this = selectNumericalTool(this)
-            if this.compatibility
-                this.state_.selectNumericalTool(this);
-                return
-            end
-            this.selectMatlabTool;
-        end
         function this = selectPointCloudTool(this)
             this.state_.selectPointCloudTool(this);
         end
@@ -378,237 +371,237 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             s = this.state_.size(varargin{:});
         end 
 
-        %% mlpatterns.Numerical
+        %% MatlabTool
         
         function that = abs(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.abs;
         end
         function that = acos(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.acos(b);            
         end
         function that = acosh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.acosh();            
         end
         function that = asin(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.asin(b);            
         end
         function that = asinh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.asinh();            
         end
         function that = atan(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.atan(b);            
         end
         function that = atan2(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.atan2(b);            
         end
         function that = atanh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.atanh();            
         end
         function that = bsxfun(this, pfun, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.bsxfun(pfun, b);
         end
         function that = cos(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.cos();            
         end
         function that = cosh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.cosh();            
         end   
         function that = dice(this, b, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.dice(b, varargin{:});
         end
         function that = exp(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.exp();            
         end
         function that = expm(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.expm();            
         end
         function that = flip(this, adim)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.flip(adim);            
         end
         function that = rdivide(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.rdivide(b);
         end
         function that = ldivide(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.ldivide(b);
         end        
         function that = hypot(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.hypot(b);
         end              
         function that = jsdiv(this, b, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.jsdiv(b, varargin{:});
         end
         function that = kldiv(this, b, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.kldiv(b, varargin{:});
         end            
         function that = log(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.log();            
         end
         function that = log10(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.log10();            
         end
         function that = logm(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.logm();            
         end
         function that = max(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.max(b);
         end
         function that = min(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.min(b);
         end
         function that = minus(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.minus(varargin{:});
         end
         function that = mod(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.mod(b);
         end
         function that = mpower(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.mpower(b);
         end
         function that = mldivide(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.mldivide(b); 
         end
         function that = mrdivide(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.mrdivide(b);         
         end
         function that = mtimes(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.mtimes(b); 
         end
         function that = plus(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.plus(b);
         end
         function that = power(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.power(b);
         end
         function that = rem(this, b)
             %% remainder after division
             
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.rem(b);
         end
         function that = sin(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.sin();            
         end
         function that = sinh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.sinh();            
         end
         function that = sqrt(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.sqrt();            
         end
         function that = sqrtm(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.sqrtm();            
         end
         function that = sum(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.sum(varargin{:});            
         end
         function that = tan(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.tan();            
         end
         function that = tanh(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.tanh();            
         end
         function that = times(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.times(b);
         end
         function that = ctranspose(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.ctranspose;
         end
         function that = transpose(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.transpose;
         end        
         function that = uminus(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.uminus();
         end
         function that = usxfun(this, pfun)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.usxfun(pfun);
         end        
@@ -616,96 +609,96 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = numeq(this, b)
             %% evaluates eq(this.imagingFormat.img, b).  eq(this, b) evaluates identities of handles.
 
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numeq(b);
         end
         function that = numne(this, b)
             %% evaluates neq(this.imagingFormat.img, b).  not(eq(this, b)) evaluates identities of handles.
 
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numne(b);
         end
         function that = numlt(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numlt(b);
         end
         function that = numle(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numle(b);
         end
         function that = numgt(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numgt(b);
         end
         function that = numge(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.numge(b);
         end
 
         function that = lt(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.lt(b);
         end
         function that = le(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.le(b);
         end
         function that = gt(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.gt(b);
         end
         function that = ge(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.ge(b);
         end
         
         function that = and(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.and(b);
         end
         function that = isequal(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.isequal(b);
         end
         function that = isequaln(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.isequaln(b);
         end
         function that = isfinite(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.isfinite;
         end
         function that = isinf(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.isinf;
         end
         function that = isnan(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.isnan;
         end
         function that = not(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.not;
         end
         function that = or(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.or(b);
         end
@@ -715,135 +708,133 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         
         function that = false(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.false(varargin{:});
         end
         function that = find(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.find(varargin{:});
         end
         function that = nan(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_ = this.state_.nan(varargin{:});
         end
         function that = ones(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.ones(varargin{:});
         end
         function that = reshape(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.reshape(varargin{:});
         end
         function that = scrubNanInf(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.scrubNanInf;
         end
         function that = true(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.true(varargin{:});
         end
         function that = zeros(this, varargin)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             that.state_.zeros(varargin{:});
         end
         
-        %% mlpatterns.DipNumerical
-         
         function d = dipiqr(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipiqr;
         end
         function d = dipisfinite(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipisfinite;
         end
         function d = dipisinf(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipisinf;
         end
         function d = dipisnan(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipisnan;
         end
         function d = dipisreal(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipisreal;
         end
         function d = diplogprod(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.diplogprod;
         end
         function d = dipmad(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmad;
         end        
         function d = dipmax(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmax;
         end
         function d = dipmean(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmean;
         end
         function d = dipmedian(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmedian;
         end
         function d = dipmin(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmin;
         end
         function d = dipmode(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipmode;
         end
         function d = dipprctile(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipprctile(b);
         end
         function d = dipprod(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipprod;
         end
         function d = dipquantile(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipquantile(b);
         end
         function d = dipstd(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipstd;
         end
         function d = dipsum(this)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.dipsum;
         end
         function d = diptrimmean(this, b)
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             that = copy(this);
             d = that.state_.diptrimmean(b);
         end
@@ -1615,7 +1606,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function ifc = numericalNiftid(this)
             %% @deprecated
 
-            this.selectNumericalTool;
+            this.selectMatlabTool;
             ifc = this.nifti;
         end
         function that = roi(this, varargin)

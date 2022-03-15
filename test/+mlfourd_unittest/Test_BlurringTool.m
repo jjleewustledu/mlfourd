@@ -47,8 +47,8 @@ classdef Test_BlurringTool < matlab.unittest.TestCase
             this.verifyEqual(obj3.filename, 'T1_b100.4dfp.hdr');
             
             % check diff of knrlMult := {1,2}
-            obj1.selectNumericalTool;
-            obj2.selectNumericalTool;
+            obj1.selectMatlabTool;
+            obj2.selectMatlabTool;
             obj4 = obj1 - obj2;
             obj4.fsleyes;
         end

@@ -597,7 +597,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             if ~this.compatibility
                 this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FourdfpTool')
             end 
-            ic.selectNumericalTool;
+            ic.selectMatlabTool;
             this.verifyEqual(ic.stateTypeclass, this.numericalTool);  
             if ~this.compatibility
                 this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool')
