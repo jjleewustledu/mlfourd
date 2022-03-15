@@ -210,7 +210,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         %% implementations of IImagingFormat
         
         function tf = isempty(~)
-            tf = false; %%%isempty(this.state_);
+            tf = false; %%% isempty(this.state_); % has pathologies
         end
         function len = length(this)
             len = length(this.state_);

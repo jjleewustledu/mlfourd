@@ -262,9 +262,9 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
                 return
             end
             tic
-            obj = mlfourd.ImagingContext2(this.large_nii, 'compatibility', this.compatibility); %#ok<NASGU> 
+            obj = mlfourd.ImagingContext2(this.large_nii, 'compatibility', false); %#ok<NASGU> 
             elapsed = toc;
-            this.verifyLessThan(elapsed, 1)
+            this.verifyLessThan(elapsed, 0.1)
         end
         function test_FilesystemTool_nii(this)
             obj = mlfourd.ImagingContext2([this.fdg4d '.nii.gz'], 'compatibility', this.compatibility);
@@ -553,7 +553,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ic.stateTypeclass, this.filesystemTool) % ic instantiates as a filesystem tool
             this.verifyFalse(isempty(ic)) % do operations that read header from filesystem
             if ~this.compatibility
-                this.verifyEqual(length(ic), 256)
+                this.verifyEqual(size(ic), [256 256 256])
                 this.verifyEqual(ic.bytes, 64)
                 this.verifyEqual(ndims(ic), 3)
                 this.verifyEqual(numel(ic), 256^3)
@@ -577,7 +577,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(ic.stateTypeclass, this.filesystemTool) % confirm state ~ filesystem tool
             this.verifyFalse(isempty(ic)) % repeat operations that read header from filesystem
             if ~this.compatibility
-                this.verifyEqual(length(ic), 256)
+                this.verifyEqual(size(ic), [256 256 256])
                 this.verifyEqual(ic.bytes, 64)
                 this.verifyEqual(ndims(ic), 3)
                 this.verifyEqual(numel(ic), 256^3)
