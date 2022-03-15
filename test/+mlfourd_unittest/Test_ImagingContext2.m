@@ -1341,6 +1341,30 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(dipmin(ic_), 0)
         end
 
+        %% RegistrationTool
+
+        function test_reorient2std(~)
+            t1w = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', ...
+                'sub-022S0543_ses-20060522092724_acq-noaccel_proc-gradwarp-n3-b1corr-scaled_T1w.nii.gz');
+            fn = fullfile(getenv('HOME'), 'Tmp', 'test_reorient2std.nii.gz');
+            copyfile(t1w, fn);
+            ic = mlfourd.ImagingContext2(fn);
+            ic.forceradiological();
+            ic.reorient2std();
+            ic.view(t1w);
+            deleteExisting(fn);            
+        end
+        function test_swaporient(~)
+            t1w = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', ...
+                'sub-022S0543_ses-20060522092724_acq-noaccel_proc-gradwarp-n3-b1corr-scaled_T1w.nii.gz');
+            fn = fullfile(getenv('HOME'), 'Tmp', 'test_swaporient.nii.gz');
+            copyfile(t1w, fn);
+            ic = mlfourd.ImagingContext2(fn);
+            ic.swaporient();
+            ic.view(t1w);
+            deleteExisting(fn);            
+        end
+        
         %% 
         
         function test_ifh(this)

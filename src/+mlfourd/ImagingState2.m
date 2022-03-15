@@ -194,6 +194,13 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                     mlfourd.PointCloudTool(contexth, this.imagingFormat_));
             end
         end
+        function selectRegistrationTool(this, contexth)
+            if ~isa(this, 'mlfourd.RegistrationTool')
+                this.addLog('mlfourd.ImagingState2.selectRegistrationTool');
+                contexth.changeState( ...
+                    mlfourd.RegistrationTool(contexth, this.fqfilename));
+            end
+        end
         function selectTrivialTool(this, contexth)
             if ~isa(this, 'mlfourd.TrivialTool')
                 this.addLog('mlfourd.ImagingState2.selectTrivialTool');

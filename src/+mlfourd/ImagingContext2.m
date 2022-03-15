@@ -350,7 +350,17 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
         function this = selectPointCloudTool(this)
+            %% supports Matlab's pointCloud
+
             this.state_.selectPointCloudTool(this);
+        end
+        function this = selectRegistrationTool(this)
+            %% supports registration using FSL, 4dfp
+
+            % update filesystem with memory contents
+            this.save;
+
+            this.state_.selectRegistrationTool(this);
         end
         
         %% FilesystemTool
@@ -1213,7 +1223,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.zoomed(varargin{:});
         end
         
-        %% mlfourd.ImagingTool
+        %% ImagingTool
         
         function this = addImgrec(this, varargin)
             this.selectImagingTool;
@@ -1410,6 +1420,25 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 return
             end
             [s,r] = this.state_.view(varargin{:});
+        end
+
+        %% RegistrationTool
+
+        function this = forceneurological(this)
+            this.selectRegistrationTool();
+            this.state_.forceneurological();
+        end
+        function this = forceradiological(this)
+            this.selectRegistrationTool();
+            this.state_.forceradiological();
+        end
+        function this = reorient2std(this)
+            this.selectRegistrationTool();
+            this.state_.reorient2std();
+        end
+        function this = swaporient(this)
+            this.selectRegistrationTool();
+            this.state_.swaporient();
         end
 
         %%
