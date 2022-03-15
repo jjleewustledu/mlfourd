@@ -624,7 +624,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 for ai = 1:length(additional)
                     if isa(additional{ai}, 'mlio.IOInterface')
                         additional{ai} = copy(additional{ai}); % prevent side effects 
-                        additional{ai}.fqfilename = [tempname1 '_' additional{ai}.filename];
+                        additional{ai}.fqfilename = strcat(tempname1, '_', additional{ai}.filename);
                         additional{ai}.save();
                         additional{ai} = additional{ai}.fqfilename; % reduce to fqfn
                     end
@@ -798,7 +798,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
             this.imagingInfo_.hdr = this.imagingInfo_.adjustHdr(this.imagingInfo_.hdr);
 
-            this.addLog(clientname(false, 2))
+            %this.addLog(clientname(false, 2))
         end
         function ipr_ = adjustIpresultsForNegSize(this, ipr_)
             fields_ = circshift(fields(ipr_), -2, 1);
