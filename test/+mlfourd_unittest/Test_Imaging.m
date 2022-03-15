@@ -19,16 +19,16 @@ classdef Test_Imaging < matlab.unittest.TestCase
     end
 
     properties (Dependent)
-        anatDir % CCIR_00559_00754/derivatives/sub-S41723/anat
+        anatDir % CCIR_00559_00754/derivatives/resolve/sub-S41723/anat
         anatDir2 % CCIR_01211/sourcedata/sub-S108293/anat
         dataDir % mlfourd/data
         dataDir2 % mlfourdfp/data
         fdg_fqfn_4dfp % CCIR_00559_00754/sourcedata/sub-S58163/pet
         fdg_ic_fqfn_nii % CCIR_00559_00754/sourcedata/sub-S58163/pet
         fdg_nifti_4dfp_fqfn_nii % CCIR_00559_00754/sourcedata/sub-S58163/pet
-        large_4dfp % CCIR_00559_00754/derivatives/sub-S58163/pet
-        large_nii % CCIR_00559_00754/derivatives/sub-S58163/pet
-        mriDir % CCIR_00559_00754/derivatives/sub-S41723/mri
+        large_4dfp % CCIR_00559_00754/derivatives/resolve/sub-S58163/pet
+        large_nii % CCIR_00559_00754/derivatives/resolve/sub-S58163/pet
+        mriDir % CCIR_00559_00754/derivatives/resolve/sub-S41723/mri
         petDir2 % CCIR_01211/sourcedata/sub-S108293/pet
         T1001_fqfn_4dfp % anatDir
         T1001_fqfn_nii % anatDir
@@ -40,7 +40,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
         %% GET
 
         function g = get.anatDir(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S41723', 'anat', '');
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'resolve', 'sub-S41723', 'anat', '');
         end
         function g = get.anatDir2(~)
             g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-108293', 'ses-20210218', 'anat', '');
@@ -64,15 +64,15 @@ classdef Test_Imaging < matlab.unittest.TestCase
                 'fdgdt20190523132832_222_nifti_4dfp.nii.gz');
         end
         function g = get.large_4dfp(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S58163', 'pet', ...
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'resolve', 'sub-S58163', 'pet', ...
                 'oodt20190523123738_on_T1001.4dfp.hdr');
         end
         function g = get.large_nii(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S58163', 'pet', ...
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'resolve', 'sub-S58163', 'pet', ...
                 'oodt20190523123738_on_T1001.nii.gz');
         end 
         function g = get.mriDir(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'sub-S41723', 'mri', '');
+            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'derivatives', 'resolve', 'sub-S41723', 'mri', '');
         end
         function g = get.petDir2(~)
             g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_01211', 'sourcedata', 'sub-108293', 'ses-20210421', 'pet', '');
