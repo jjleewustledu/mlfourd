@@ -1412,9 +1412,9 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             %this.assertTrue(contains(ifc.fileprefix, '_zeros'))
             this.assertEqual(dipsum(ifc.img), 0)
         end
-        function test_Fung2013_zeros_MMRBids(this)
-            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/sub-S58163/pet'));
-            bids = mlraichle.MMRBids();
+        function test_Fung2013_zeros_Bids(this)
+            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/resolve/sub-S58163/pet'));
+            bids = mlraichle.Ccir559754Bids();
             anatomy = bids.t1w_ic;
             ic = anatomy.zeros();
             ifc = ic.nifti;
@@ -1423,8 +1423,8 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             popd(pwd0);
         end
         function test_Fung2013_sum(this)
-            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/sub-S58163/pet'));
-            bids = mlraichle.MMRBids();
+            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/resolve/sub-S58163/pet'));
+            bids = mlraichle.Ccir559754Bids();
             anatomy = bids.t1w_ic;
             ic = sum(anatomy, 3);
             ifc = ic.nifti;
