@@ -106,7 +106,7 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
 
             warning('off', 'MATLAB:structOnObject');
             try
-                ana = mlniftitools.make_ana(this.img, this.mmppix_triple());
+                ana = mlniftitools.make_ana(single(this.img), this.mmppix_triple());
                 this.addLog("mlniftitools.make_ana(this.img, [" + mat2str(this.mmppix) + "])");
                 ana = this.imagingInfo.ensureSavingOrientation(ana);
                 ana = this.ensureHist(ana);

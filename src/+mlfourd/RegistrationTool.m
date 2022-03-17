@@ -15,13 +15,15 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
         end
         function forceneurological(this, varargin)
             this.ensureNifti();
-            cmd = sprintf('fslorient -forceneurological %s', this.fqfilename);
+            exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
+            cmd = sprintf('%s -forceneurological %s', exec, this.fqfilename);
             mlbash(cmd);
             this.addLog(cmd);
         end
         function forceradiological(this, varargin)
             this.ensureNifti();
-            cmd = sprintf('fslorient -forceradiological %s', this.fqfilename);
+            exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
+            cmd = sprintf('%s -forceradiological %s', exec, this.fqfilename);
             mlbash(cmd);
             this.addLog(cmd);
         end
@@ -41,7 +43,8 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             end
 
             % fslreorient2std
-            cmd = sprintf('fslreorient2std %s %s', fqfn_ori, this.fqfn);
+            exec = fullfile(getenv('FSLDIR'), 'bin', 'fslreorient2std');
+            cmd = sprintf('%s %s %s', exec, fqfn_ori, this.fqfn);
             mlbash(cmd);
             this.addLog(cmd);
 
@@ -53,7 +56,8 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
         end
         function swaporient(this, varargin)
             this.ensureNifti();
-            cmd = sprintf('fslorient -swaporient %s', this.fqfilename);
+            exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
+            cmd = sprintf('%s -swaporient %s', exec, this.fqfilename);
             mlbash(cmd);
             this.addLog(cmd);
         end
