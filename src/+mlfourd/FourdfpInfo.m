@@ -339,7 +339,7 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
             assert(~ishandle(ana))
             ana.img = flip(ana.img, 2);
             
-            if isfield(nii.hdr.hist, 'sform_code') && nii.hdr.hist.sform_code > 0
+            if isfield(ana.hdr.hist, 'sform_code') && nii.hdr.hist.sform_code > 0
                 S = [nii.hdr.hist.srow_x; nii.hdr.hist.srow_y; nii.hdr.hist.srow_z];
                 S = abs(S);
                 S = S(:, 1:3);
