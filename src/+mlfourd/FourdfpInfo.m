@@ -338,6 +338,14 @@ classdef FourdfpInfo < handle & mlfourd.Analyze75Info
 
             assert(~ishandle(ana))
             ana.img = flip(ana.img, 2);
+            
+            if nii.hdr.hist.sform_code > 0
+                S = [nii.hdr.hist.srow_x; nii.hdr.hist.srow_y; nii.hdr.hist.srow_z];
+                S = abs(S);
+                S = S(:, 1:3);
+                assert(trace(S) > sum(S(~eye(3))), ...
+                    'ensureLoadingOrientation: S->%s; try using fslreorient2std beforehand', mat2str(S));
+            end
         end
         function ana = ensureSavingOrientation(~, ana)
             %% upon saving 4dfp

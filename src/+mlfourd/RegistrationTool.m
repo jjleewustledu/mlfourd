@@ -5,30 +5,19 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods
-        function ensureNifti(this)
-            if ~strcmp(this.filesuffix, '.nii.gz')
-                ic = mlfourd.ImagingContext2(this.fqfilename);
-                ic.selectNiftiTool();
-                ic.save();
-                this.filesuffix = ic.filesuffix;
-            end
-        end
         function forceneurological(this, varargin)
-            this.ensureNifti();
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
             cmd = sprintf('%s -forceneurological %s', exec, this.fqfilename);
             mlbash(cmd);
             this.addLog(cmd);
         end
         function forceradiological(this, varargin)
-            this.ensureNifti();
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
             cmd = sprintf('%s -forceradiological %s', exec, this.fqfilename);
             mlbash(cmd);
             this.addLog(cmd);
         end
         function reorient2std(this, varargin)
-            this.ensureNifti();
             fqfn_ori = this.fqfn;
 
             % try to update _proc-enum1-enum2-enum3
@@ -41,12 +30,17 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             else
                 this.fileprefix = strcat(this.fileprefix, '_orientstd');
             end
+            assert(contains(this.fileprefix, 'orientstd'))
 
             % fslreorient2std
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslreorient2std');
             cmd = sprintf('%s %s %s', exec, fqfn_ori, this.fqfn);
-            mlbash(cmd);
+            [s,r] = mlbash(cmd, 'echo', true);
             this.addLog(cmd);
+            if s ~= 0
+                disp(r);
+                error('mlfourd:RuntimeError', 'RegistrationTool.fslreorient2std')
+            end
 
             % copy json
             fqfn_ori_json = strcat(myfileprefix(fqfn_ori), '.json');
@@ -55,7 +49,6 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             end
         end
         function swaporient(this, varargin)
-            this.ensureNifti();
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
             cmd = sprintf('%s -swaporient %s', exec, this.fqfilename);
             mlbash(cmd);

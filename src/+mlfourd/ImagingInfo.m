@@ -497,6 +497,13 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         
         function nii  = ensureLoadingOrientation(~, nii)
             %% stub for symmetric implemntations with subclasses
+            if nii.hdr.hist.sform_code > 0
+                S = [nii.hdr.hist.srow_x; nii.hdr.hist.srow_y; nii.hdr.hist.srow_z];
+                S = abs(S);
+                S = S(:, 1:3);
+                assert(trace(S) > sum(S(~eye(3))), ...
+                    'ensureLoadingOrientation: S->%s; try using fslreorient2std beforehand', mat2str(S));
+            end
         end
         function nii  = ensureSavingOrientation(~, nii)
             %% stub for symmetric implemntations with subclasses
@@ -795,6 +802,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             % @return s := struct of NIfTI data expected by mlniftitools
             
             nii = mlniftitools.load_untouch_nii(this.fqfilename, varargin{:});
+            nii = this.ensureLoadingOrientation(nii);
             nii.img = this.ensureDatatype(nii.img, this.datatype_);
             nii.hdr = this.adjustHdr(nii.hdr);
             this.hdr_ = nii.hdr;

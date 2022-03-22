@@ -901,7 +901,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             x = this.imagingInfo_.json_metadata_filesuffix;
             fid = fopen(strcat(this.fqfileprefix, x), 'w');
             fprintf(fid, txt);
-            fclose(fid)
+            fclose(fid);
         end
         function        save_nii(this)
             %% Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
@@ -966,7 +966,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 nii = this.imagingInfo.ensureSavingOrientation(nii);
                 nii.fileprefix = this.fqfileprefix;
                 mlfourd.JimmyShen.save_nii(nii, this.fqfilename);
-                this.addLog("mlniftitools.save_nii(nii, " + this.fqfilename + ")");
+                this.addLog("mlfourd.JimmyShen.save_nii(nii, " + this.fqfilename + ")");
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...

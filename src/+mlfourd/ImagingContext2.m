@@ -357,9 +357,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function this = selectRegistrationTool(this)
             %% supports registration using FSL, 4dfp
 
-            % update filesystem with memory contents
-            this.save;
-
             this.state_.selectRegistrationTool(this);
         end
         
