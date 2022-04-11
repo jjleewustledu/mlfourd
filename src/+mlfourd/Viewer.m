@@ -124,11 +124,12 @@ classdef Viewer < mlfourd.IViewer
                 otherwise
                     if (isa(targ, 'mlfourd.ImagingContext2') || ...
                         isa(targ, 'mlfourd.ImagingFormatContext2'))
-                        if ~isfile(targ.fqfilename)
-                            targ.filesuffix = '.nii.gz';
-                            targ.save;
-                        end
-                        [interp,todel] = this.interpretTarget(targ.fqfilename);
+                        targ_temp = copy(targ);
+                        targ_temp.fqfp = tempname;
+                        targ_temp.filesuffix = '.nii.gz';
+                        targ_temp.save();
+                        interp = this.interpretTarget(targ.fqfilename);
+                        todel = true;
                         return
                     end
                     error('mlfourd:ValueError', ...
