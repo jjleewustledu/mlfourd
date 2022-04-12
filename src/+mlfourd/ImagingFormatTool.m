@@ -208,19 +208,21 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
         end
         function     set.originator(this, s)
-            %% SET.ORIGINATOR sets ImagingInfo.originator voxel position in mm.
+            %% SET.ORIGINATOR sets ImagingInfo.originator voxel indices as integers and
+            %  updates hdr.hist.{qoffset_*,srow_*}.
 
             assert(isnumeric(s))
             this.imagingInfo_.hdr.hist.originator = s;
+            m = this.mmppix;
             if this.imagingInfo_.hdr.hist.qform_code > 0
-                this.imagingInfo_.hdr.hist.qoffset_x = 1 - s(1);
-                this.imagingInfo_.hdr.hist.qoffset_y = 1 - s(2);
-                this.imagingInfo_.hdr.hist.qoffset_z = 1 - s(3);
+                this.imagingInfo_.hdr.hist.qoffset_x = this.qfac*m(1)*(1 - s(1));
+                this.imagingInfo_.hdr.hist.qoffset_y =           m(2)*(1 - s(2));
+                this.imagingInfo_.hdr.hist.qoffset_z =           m(3)*(1 - s(3));
             end
             if this.imagingInfo_.hdr.hist.sform_code > 0
-                this.imagingInfo_.hdr.hist.srow_x(4) = 1 - s(1);
-                this.imagingInfo_.hdr.hist.srow_y(4) = 1 - s(2);
-                this.imagingInfo_.hdr.hist.srow_z(4) = 1 - s(3);
+                this.imagingInfo_.hdr.hist.srow_x(4) = this.qfac*m(1)*(1 - s(1));
+                this.imagingInfo_.hdr.hist.srow_y(4) =           m(2)*(1 - s(2));
+                this.imagingInfo_.hdr.hist.srow_z(4) =           m(3)*(1 - s(3));
             end
         end
         function g = get.originator(this)

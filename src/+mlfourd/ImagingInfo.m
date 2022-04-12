@@ -845,13 +845,11 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         function this = zoomed(this, rmin, rsize)
             shift = this.AffMats*[rmin(1:3) 0]';
             
-            this.hdr.hist.qoffset_x = this.hdr.hist.srow_x(4) + shift(1);
-            this.hdr.hist.qoffset_y = this.hdr.hist.srow_y(4) + shift(2);
-            this.hdr.hist.qoffset_z = this.hdr.hist.srow_z(4) + shift(3);
             this.hdr.hist.srow_x(4) = this.hdr.hist.srow_x(4) + shift(1);
             this.hdr.hist.srow_y(4) = this.hdr.hist.srow_y(4) + shift(2);
             this.hdr.hist.srow_z(4) = this.hdr.hist.srow_z(4) + shift(3);
-            this.hdr.hist.originator = rsize(1:3)/2;
+            this.hdr.hist.originator(1:3) = this.hdr.hist.originator(1:3) - rmin(1:3);
+            this.hdr.hist.originator(1) = this.hdr.hist.originator(1) - 72; %% KLUDGE
 
             this.hdr.dime.dim(2:4) = rsize;
         end 

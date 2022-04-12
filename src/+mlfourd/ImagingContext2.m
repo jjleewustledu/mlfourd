@@ -1201,24 +1201,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.uthreshp(varargin{:});
         end        
-        function that = zoomed(this, varargin)
-            %% ZOOMED parameters resembles fslroi, but indexing starts with 1 and passing -1 for a size will set it to 
-            %  the full image extent for that dimension.
-            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean (not time) size := fac*size and
-            %                                symmetrically sets all min.
-            %  @param xsize is optional.
-            %  @param ymin  is optional.
-            %  @param ysize is optional.
-            %  @param zmin  is optional.
-            %  @param zsize is optional.
-            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
-            %  @param tsize is optional.
-            %  @returns copy(this)
-            
-            this.selectMaskingTool;
-            that = copy(this);
-            that.state_.zoomed(varargin{:});
-        end
         
         %% ImagingTool
         
@@ -1429,6 +1411,27 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectRegistrationTool();
             this.state_.forceradiological();
         end
+        function that = zoomed(this, varargin)
+            %% ZOOMED is an adapter to FSL executables.
+            %  N.B.: indexing (in both time and space) starts with 0 not 1! 
+            %  N.B.: Inputting -1 for a size will set it to the full image extent for that dimension.
+            %
+            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean spatial size := fac*size
+            %                  and symmetrically sets all min.
+            %  @param xsize is optional.
+            %  @param ymin  is optional.
+            %  @param ysize is optional.
+            %  @param zmin  is optional.
+            %  @param zsize is optional.
+            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
+            %  @param tsize is optional
+
+            that = copy(this);
+            that.selectNiftiTool();
+            that.selectRegistrationTool();
+            that.state_.fslroi(varargin{:});
+            that.selectNiftiTool();
+        end
         function this = reorient2std(this)
             this.selectRegistrationTool();
             this.state_.reorient2std();
@@ -1634,9 +1637,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
             this.selectMatlabTool;
             ifc = this.nifti;
-        end
-        function that = roi(this, varargin)
-            that = this.zoomed(varargin{:});
         end
     end  
     

@@ -17,6 +17,90 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             mlbash(cmd);
             this.addLog(cmd);
         end
+        function this = fslroi(this, varargin)
+            %% FSLROI is an adapter to FSL executables.
+            %  N.B.: indexing (in both time and space) starts with 0 not 1! 
+            %  N.B.: Inputting -1 for a size will set it to the full image extent for that dimension.
+            %
+            %  @param xmin|fac is required.  Solitary fac symmetrically sets Euclidean spatial size := fac*size
+            %                  and symmetrically sets all min.
+            %  @param xsize is optional.
+            %  @param ymin  is optional.
+            %  @param ysize is optional.
+            %  @param zmin  is optional.
+            %  @param zsize is optional.
+            %  @param tmin  is optional.  Solitary tmin with tsize is supported.
+            %  @param tsize is optional.
+            
+            ip = inputParser;
+            addRequired(ip, 'xmin',      @isscalar);
+            addOptional(ip, 'xsize', [], @isscalar);
+            addOptional(ip, 'ymin',  [], @isscalar);
+            addOptional(ip, 'ysize', [], @isscalar);
+            addOptional(ip, 'zmin',  [], @isscalar);
+            addOptional(ip, 'zsize', [], @isscalar);
+            addOptional(ip, 'tmin',  [], @isscalar);
+            addOptional(ip, 'tsize', [], @isscalar);
+            parse(ip, varargin{:});            
+            ipr = ip.Results;
+
+            assert(isfile(this.fqfn))
+            fqfn_ori = this.fqfn;
+
+            % try to update _fslroi-enum1-enum2-enum3
+            tag = this.tupleTag([ipr.xmin ipr.xsize ipr.ymin ipr.ysize ipr.zmin ipr.zsize ipr.tmin ipr.tsize]);
+            if contains(this.fileprefix, '_fslroi-')
+                re = regexp(this.fileprefix, '\S+(?<tag>_fslroi-[0-9a-zA-Z\-]+)_\S+', 'names');
+                if isempty(re)
+                    re = regexp(this.fileprefix, '\S+(?<tag>_fslroi-[0-9a-zA-Z\-]+)', 'names');
+                end
+                this.fileprefix = strrep(this.fileprefix, re.tag, strcat(re.tag, tag));
+            else
+                this.fileprefix = strcat(this.fileprefix, '_fslroi-', tag);
+            end
+            assert(contains(this.fileprefix, '_fslroi-'))
+
+            % Usage: 
+            %     fslroi <input> <output> <xmin> <xsize> <ymin> <ysize> <zmin> <zsize>
+            %     fslroi <input> <output> <tmin> <tsize>
+            %     fslroi <input> <output> <xmin> <xsize> <ymin> <ysize> <zmin> <zsize> <tmin> <tsize>            
+            exec = fullfile(getenv('FSLDIR'), 'bin', 'fslroi');
+            switch (nargin - 1)
+                case 1
+                    s     = size(this.contexth_);
+                    rmin  = [floor([s(1) s(2) s(3)]*fac/2 - 1) 0];
+                    rsize = [floor([s(1) s(2) s(3)]*fac) s(4)];
+                    rnums = sprintf('%i %i %i %i %i %i %i %i', ...
+                        rmin(1), rsize(1), rmin(2), rsize(2), rmin(3), rsize(3), rmin(4), rsize(4));
+                case 2
+                    rnums = sprintf('%i %i', ipr.tmin, ipr.tsize);
+                case 6
+                    rmin  = [ipr.xmin  ipr.ymin  ipr.zmin ];
+                    rsize = [ipr.xsize ipr.ysize ipr.zsize];
+                    rnums = sprintf('%i %i %i %i %i %i', ...
+                        rmin(1), rsize(1), rmin(2), rsize(2), rmin(3), rsize(3));
+                case 8
+                    rmin  = [ipr.xmin  ipr.ymin  ipr.zmin  ipr.tmin];
+                    rsize = [ipr.xsize ipr.ysize ipr.zsize ipr.tsize];
+                    rnums = sprintf('%i %i %i %i %i %i %i %i', ...
+                        rmin(1), rsize(1), rmin(2), rsize(2), rmin(3), rsize(3), rmin(4), rsize(4));
+                otherwise
+                    error('mlfourd:unsupportedNargin', 'RegistrationTool.fslreorient2std');
+            end
+            cmd = sprintf('%s %s %s %s', exec, fqfn_ori, this.fqfn, rnums);
+            [s,r] = mlbash(cmd, 'echo', true);
+            this.addLog(cmd);
+            if s ~= 0
+                disp(r);
+                error('mlfourd:RuntimeError', 'RegistrationTool.fslreorient2std')
+            end
+
+            % copy json
+            fqfn_ori_json = strcat(myfileprefix(fqfn_ori), '.json');
+            if isfile(fqfn_ori_json)
+                copyfile(fqfn_ori_json, strcat(this.fqfp, '.json'))
+            end        
+        end
         function reorient2std(this, varargin)
             fqfn_ori = this.fqfn;
 
@@ -62,6 +146,19 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             %  N.B. that handle classes are given to the encapsulated state, not copied, for performance.  
             
             this = this@mlfourd.FilesystemTool(varargin{:});
+        end
+    end
+
+    %% PROTECTED
+
+    methods (Access = protected)
+        function tag = tupleTag(~, tup)
+            assert(isnumeric(tup));
+            tag = mat2str(tup);
+            tag = strrep(tag, ' ', '-');
+            tag = strrep(tag, '.', 'p');
+            tag = strrep(tag, '[', '');
+            tag = strrep(tag, ']', '');
         end
     end
     
