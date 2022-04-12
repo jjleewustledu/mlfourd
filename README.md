@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Documentation Status](https://readthedocs.org/projects/mlfourd/badge/?version=latest)](https://mlfourd.readthedocs.io/en/latest/?badge=latest)
 
-mlfourd is a Matlab package authored by John J. Lee for the [Computational Core](https://sites.wustl.edu/nillabs/nil-core-services/) of the [Neuroimaging Laboratories](https://sites.wustl.edu/nillabs/) at [Washington University in St. Louis](https://wustl.edu/).  These projects support research programs of the organizational units aforementioned.  
+mlfourd is a Matlab package authored by John J. Lee for the [Computational Core](https://sites.wustl.edu/nillabs/nil-core-services/) of the [Neuroimaging Laboratories](https://sites.wustl.edu/nillabs/) at [Washington University in St. Louis](https://wustl.edu/).  This package support research programs of the organizational units aforementioned.  
 
 ## Features
 
