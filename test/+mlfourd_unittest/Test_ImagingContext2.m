@@ -1328,17 +1328,17 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             
             if this.do_view
                 figure;
-                pcshow(pc);
+                pcshow(pc); % right IC is more anterior
             end
 
             ic_ = copy(ic);
-            ic_.setPointCloud(pc);
-            ic_ = ic - ic_;
+            ic_.setPointCloud(pc); % assign pc with thresh 150
+            ic__ = ic - ic_;
             if this.do_view
-                ic_.view()
+                ic__.view() % arterial tree ~ 0
             end
-            this.verifyEqual(dipmax(ic_), 149)
-            this.verifyEqual(dipmin(ic_), 0)
+            this.verifyEqual(dipmax(ic__), 149)
+            this.verifyEqual(dipmin(ic__), 0)
         end
 
         %% RegistrationTool

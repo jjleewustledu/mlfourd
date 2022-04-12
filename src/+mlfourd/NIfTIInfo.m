@@ -25,9 +25,9 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
             if isfile(this.fqfilename)
                 try
                     this.info_ = niftiinfo(this.fqfilename); % Matlab's native
-                catch ME
-                    fprintf('mlfourd.NIfTIInfo.load_info.fqfilename->%s\n', this.fqfilename);
-                    handwarning(ME)
+                catch %ME
+                    fprintf('IOWarning: mlfourd.NIfTIInfo.load_info.fqfilename->%s\n', this.fqfilename);
+                    %handwarning(ME)
                 end
             end
         end
@@ -51,7 +51,7 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
             
             this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
 
-            this.load_info();
+            %this.load_info();
  		end
     end
     

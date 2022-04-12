@@ -75,6 +75,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                     im = obj.fqfileprefix;                  
                 case {'ImagingContext2' 'mlfourd.ImagingContext2'}
                     im = mlfourd.ImagingContext2(obj);
+                case {'ImagingFormatContext2' 'mlfourd.ImagingFormatContext2'}
+                    im = mlfourd.ImagingFormatContext2(obj);
                 case {'ImagingFormatContext' 'mlfourd.ImagingFormatContext'}
                     im = mlfourd.ImagingFormatContext(obj);
                 case {'mgz' '.mgz'}
@@ -850,8 +852,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         function that = blurred(this, varargin)
             %% BLURRED
-            %  @param fwhh specifies an isotropic Gaussian blurring.
-            %  @param [fwhh_x fwhh_y fwhh_z] \in \mathbb{R}^3 specifies an anisotropic Gaussian blurring.
+            %  @param fwhh specifies an isotropic Gaussian blurring in mm.
+            %  @param [fwhh_x fwhh_y fwhh_z] \in \mathbb{R}^3 specifies an anisotropic Gaussian blurring in mm.
             %  @return the blurred image
             %  @return this if varargin{1} is empty || varargin{1} == 0.
             
@@ -883,7 +885,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imbothat(varargin{:});
         end 
-        function that = imclose(this, varargin)            
+        function that = imclose(this, varargin)   
+            %% e.g. >> mmppix = ic.imagingFormat.mmppix;
+            %       >> ic = ic.imclose(strel("cuboid", 2./mmppix));
+
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;
@@ -897,7 +902,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imclose_bin(varargin{:});
         end 
-        function that = imdilate(this, varargin)            
+        function that = imdilate(this, varargin)   
+            %% e.g. >> mmppix = ic.imagingFormat.mmppix;
+            %       >> ic = ic.imdilate(strel("cuboid", 2./mmppix));
+
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;
@@ -911,7 +919,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imdilate_bin(varargin{:});
         end 
-        function that = imerode(this, varargin)            
+        function that = imerode(this, varargin)
+            %% e.g. >> mmppix = ic.imagingFormat.mmppix;
+            %       >> ic = ic.imerode(strel("cuboid", 2./mmppix));
+
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;
@@ -925,7 +936,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.imerode_bin(varargin{:});
         end 
-        function that = imopen(this, varargin)            
+        function that = imopen(this, varargin)     
+            %% e.g. >> mmppix = ic.imagingFormat.mmppix;
+            %       >> ic = ic.imopen(strel("cuboid", 2./mmppix));
+
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
             this.selectBlurringTool;

@@ -6,7 +6,7 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
         
     properties (Constant)
         MASKEDBY = '_maskedby'
-        MAX_VOLUME_FRACTION = 0.5
+        MAX_VOLUME_FRACTION = 1
     end
     
     methods
