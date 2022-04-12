@@ -124,10 +124,12 @@ classdef Viewer < mlfourd.IViewer
                 otherwise
                     if (isa(targ, 'mlfourd.ImagingContext2') || ...
                         isa(targ, 'mlfourd.ImagingFormatContext2'))
-                        targ_temp = copy(targ);
-                        targ_temp.fqfp = tempname;
-                        targ_temp.filesuffix = '.nii.gz';
-                        targ_temp.save();
+                        if contains(targ.stateTypeclass, 'Filesystem') && isfile(targ.fqfn)
+                            targ.selectNiftiTool();
+                        end
+                        targ.fqfp = tempname;
+                        targ.filesuffix = '.nii.gz';
+                        targ.save();
                         interp = this.interpretTarget(targ.fqfilename);
                         todel = true;
                         return
