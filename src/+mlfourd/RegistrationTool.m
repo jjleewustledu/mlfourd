@@ -102,23 +102,29 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             end        
         end
         function reorient2std(this, varargin)
+
+            % reuse existing
+            if contains(this.fileprefix, '_orient-std')
+                return
+            end
+
             fqfn_ori = this.fqfn;
 
-            % try to update _proc-enum1-enum2-enum3
-            if contains(this.fileprefix, '_proc-')
-                re = regexp(this.fileprefix, '\S+_(?<proc>proc-[0-9a-zA-Z\-]+)_\S+', 'names');
+            % try to update _orient-enum1-enum2-enum3
+            if contains(this.fileprefix, '_orient-')
+                re = regexp(this.fileprefix, '\S+(?<orient>_orient-[0-9a-zA-Z\-]+)_\S+', 'names');
                 if isempty(re)
-                    re = regexp(this.fileprefix, '\S+_(?<proc>proc-[0-9a-zA-Z\-]+)', 'names');
+                    re = regexp(this.fileprefix, '\S+(?<orient>_orient-[0-9a-zA-Z\-]+)', 'names');
                 end
-                this.fileprefix = strrep(this.fileprefix, re.proc, strcat(re.proc, '-orientstd'));
+                this.fileprefix = strrep(this.fileprefix, re.orient, strcat(re.orient, '-std'));
             else
-                this.fileprefix = strcat(this.fileprefix, '_orientstd');
+                this.fileprefix = strcat(this.fileprefix, '_orient-std');
             end
-            assert(contains(this.fileprefix, 'orientstd'))
+            assert(contains(this.fileprefix, '_orient-') && contains(this.fileprefix, 'std'))
 
             % fslreorient2std
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslreorient2std');
-            cmd = sprintf('%s %s %s', exec, fqfn_ori, this.fqfn);
+            cmd = sprintf('%s -m %s %s %s', exec, strcat(this.fqfp, '.mat'), fqfn_ori, this.fqfn);
             [s,r] = mlbash(cmd, 'echo', true);
             this.addLog(cmd);
             if s ~= 0
