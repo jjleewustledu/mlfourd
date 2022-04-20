@@ -207,8 +207,9 @@ classdef SimpleT4ResolveBuilder < mlpipeline.AbstractBuilder
         function ensureFiles(~, ics)
             for i = 1:length(ics)
                 if ~isfile(ics{i}.fqfn)
-                    assert(~isempty(ics{i}))
-                    ics{i}.save()
+                    if ~strcmp(ics{i}.fileprefix, 'none')
+                        ics{i}.save()
+                    end
                 end
             end
         end
@@ -233,11 +234,11 @@ classdef SimpleT4ResolveBuilder < mlpipeline.AbstractBuilder
             end            
         end
         function this = finalize(this)
-            this.deleteFourdfp(this.maskForImages);
-            this.deleteFourdfp(this.theImages);
+            if ~this.debug
+                this.deleteFourdfp(this.maskForImages);
+            end
             this.theImagesFinal_ = this.saveAsNifti(this.theImagesOp(:,1)); % op to theImages{1}
             this.theImagesFinal_{1} = this.theImages1_;
-            this.deleteFourdfp(this.theImagesOp(:,1));
             this.logger.add(readtext(this.imageRegLog));
             this.logger.add(readtext(this.resolveLog));
             this.logger.save();
@@ -301,9 +302,13 @@ classdef SimpleT4ResolveBuilder < mlpipeline.AbstractBuilder
             end
             carr = mlfourd.SimpleT4ResolveBuilder.imagingContext(carr);
             for idx = 1:length(carr)
-                carr{idx}.selectFourdfpTool();
-                carr{idx}.filepath = this.workpath;
-                carr{idx}.save();
+                if ~isempty(carr{idx})
+                    if ~strcmp(carr{idx}.fileprefix, 'none')
+                        carr{idx}.selectFourdfpTool();
+                        carr{idx}.filepath = this.workpath;
+                        carr{idx}.save();
+                    end
+                end
             end 
         end        
         function carr = saveAsNifti(this, carr)
@@ -316,12 +321,14 @@ classdef SimpleT4ResolveBuilder < mlpipeline.AbstractBuilder
             carr = mlfourd.SimpleT4ResolveBuilder.imagingContext(carr);
             for idx = 1:length(carr)
                 if ~isempty(carr{idx})
-                    carr{idx}.selectFourdfpTool();
-                    ifc = carr{idx}.nifti();
-                    ifc.filepath = this.workpath;
-                    ifc.hdr = this.theImages1_.nifti.hdr; % bypasses faulty center coords of 4dfp
-                    ifc.save();
-                    carr{idx} = mlfourd.ImagingContext2(ifc);
+                    if ~strcmp(carr{idx}.fileprefix, 'none')
+                        carr{idx}.selectFourdfpTool();
+                        ifc = carr{idx}.nifti();
+                        ifc.filepath = this.workpath;
+                        ifc.hdr = this.theImages1_.nifti.hdr; % bypasses faulty center coords of 4dfp
+                        ifc.save();
+                        carr{idx} = mlfourd.ImagingContext2(ifc);
+                    end
                 end
             end 
         end
