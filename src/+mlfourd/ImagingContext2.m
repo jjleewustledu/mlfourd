@@ -1170,6 +1170,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.maskedMaths(varargin{:});
         end
+        function that = roi(this, varargin)
+            that = this.zoomed(varargin{:});
+        end
         function that = maskedByZ(this, varargin)
             %% MASKEDBYZ
             %  @param rng = [low-z high-z], typically equivalent to [inferior superior];
@@ -1495,6 +1498,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
             that = copy(this);
             that.selectNiftiTool();
+            save(that);
             that.selectRegistrationTool();
             that.state_.fslroi(varargin{:});
             that.selectNiftiTool();
