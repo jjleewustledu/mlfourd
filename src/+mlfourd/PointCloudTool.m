@@ -6,41 +6,53 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods
+        function p    = pcshow(this, varargin)
+            %% passes all varargin to this.pointCloud(); uses visualizations matching methods of mlfourd.PatchTool.
+
+            p = pcshow(this.contexth_.pointCloud(varargin{:}));
+            view(-210, 15) % tuned for orientstd
+            daspect([1 1 1]);
+
+            xlabel('x (mm)', 'FontSize', 14)
+            ylabel('y (mm)', 'FontSize', 14)
+            zlabel('z (mm)', 'FontSize', 14)            
+            set(gca, 'xcolor', [1 1 1])
+            set(gca, 'ycolor', [1 1 1])
+            set(gca, 'zcolor', [1 1 1])
+        end
         function p = pointCloud(this, varargin)
+            %% See also web(fullfile(docroot, 'vision/ug/3-d-point-cloud-registration-and-stitching.html'))
+            %  and web(fullfile(docroot, 'vision/ref/pointcloud.html#mw_eb949323-5b82-4b6c-8239-a8886734b790'))
             %  Params:
-            %      addNormals (logical)
-            %      useMmppix (logical)
+            %      addNormals (logical): default false.
 
             ip = inputParser;
             ip.KeepUnmatched = true;
             addParameter(ip, 'addNormals', false, @islogical)
-            addParameter(ip, 'useMmppix', true, @islogical)
             parse(ip, varargin{:})
             ipr = ip.Results;
 
             img = double(this.imagingFormat_.img);
-            idx = find(img);
-            [I,J,K] = ind2sub(size(img), idx);
-            if ~ipr.useMmppix
-                xyzp(:,1) = I; % xyzpoints are ints cast as double
-                xyzp(:,2) = J;
-                xyzp(:,3) = K;
-            else
-                mmppix = double(this.imagingFormat_.mmppix);
-                if isempty(mmppix) || any(isnan(mmppix))
-                    mmppix = [1 1 1];
-                end
-                xyzp(:,1) = I .* mmppix(1); % xyzpoints are ints cast as double
-                xyzp(:,2) = J .* mmppix(2);
-                xyzp(:,3) = K .* mmppix(3);
+            img = flip(img, 1); % internal radiologic orient -> pointCloud neurologic orient
+            indices = find(img);
+            [I,J,K] = ind2sub(size(img), indices);
+
+            mmppix = double(this.imagingFormat_.mmppix);
+            if isempty(mmppix) || any(isnan(mmppix))
+                mmppix = [1 1 1];
             end
-            p = pointCloud(xyzp, 'Intensity', img(idx));
+            xyzp(:,1) = I .* mmppix(1); % xyzpoints are ints cast as double
+            xyzp(:,2) = J .* mmppix(2);
+            xyzp(:,3) = K .* mmppix(3);
+
+            p = pointCloud(xyzp, 'Intensity', img(indices));
             if ipr.addNormals
                 n = pcnormals(p);
-                p = pointCloud(xyzp, 'Intensity', img(idx), 'Normal', n);
+                p = pointCloud(xyzp, 'Intensity', img(indices), 'Normal', n);
             end
 
             % store points in space of voxels
+            this.ijkPoints_ = nan(length(I), 3);
             this.ijkPoints_(:,1) = I;
             this.ijkPoints_(:,2) = J;
             this.ijkPoints_(:,3) = K;
@@ -48,14 +60,12 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
         function setPointCloud(this, varargin)
             %  Args:
             %      pc (pointCloud, required)
-            %      useMmppix (logical)
             %      filepath (folder)
             %      fileprefix (text):  Ignores common file extensions.
             %                          Default := strcat(this.fileprefix, '_setPointCloud').
 
             ip = inputParser;
             addRequired(ip, 'pc', @(x) isa(x, 'pointCloud'))
-            addParameter(ip, 'useMmppix', true, @islogical)
             addParameter(ip, 'filepath', this.filepath, @isfolder)
             addParameter(ip, 'fileprefix', strcat(this.fileprefix, '_setPointCloud'), @istext)
             parse(ip, varargin{:})
@@ -63,23 +73,24 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
             this.filepath = ipr.filepath;
             this.fileprefix = myfileprefix(ipr.fileprefix);
 
-            if ~ipr.useMmppix
-                this.ijkPoints_(:,1) = round(ipr.pc.Location(:,1));
-                this.ijkPoints_(:,2) = round(ipr.pc.Location(:,2));
-                this.ijkPoints_(:,3) = round(ipr.pc.Location(:,3));
-            else
-                mmppix = double(this.imagingFormat_.mmppix);
-                if isempty(mmppix) || any(isnan(mmppix))
-                    mmppix = [1 1 1];
-                end
-                this.ijkPoints_(:,1) = round(ipr.pc.Location(:,1) ./ mmppix(1));
-                this.ijkPoints_(:,2) = round(ipr.pc.Location(:,2) ./ mmppix(2));
-                this.ijkPoints_(:,3) = round(ipr.pc.Location(:,3) ./ mmppix(3));
+            mmppix = double(this.imagingFormat_.mmppix);
+            if isempty(mmppix) || any(isnan(mmppix))
+                mmppix = [1 1 1];
             end
+            this.ijkPoints_(:,1) = round(ipr.pc.Location(:,1) ./ mmppix(1));
+            this.ijkPoints_(:,2) = round(ipr.pc.Location(:,2) ./ mmppix(2));
+            this.ijkPoints_(:,3) = round(ipr.pc.Location(:,3) ./ mmppix(3));
+
             this.ensureSubInFieldOfView();
-            idx = sub2ind(size(this), this.ijkPoints_(:,1), this.ijkPoints_(:,2), this.ijkPoints_(:,3));
+            indices = sub2ind(size(this), this.ijkPoints_(:,1), this.ijkPoints_(:,2), this.ijkPoints_(:,3));
             img = zeros(size(this));
-            img(idx) = ipr.pc.Intensity;
+            if isempty(ipr.pc.Intensity)
+                intens = ones(size(ipr.pc.Location, 1), 1);
+            else
+                intens = ipr.pc.Intensity;
+            end
+            img(indices) = intens;
+            img = flip(img, 1); % pointCloud neurologic orient -> internal radiologic orient
             this.imagingFormat_.img = img;
         end
 
@@ -110,21 +121,22 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
     end
     methods (Access = private)
         function ensureSubInFieldOfView(this)
-            %% removes any subscripts X, Y, and Z, which are equally sized, that lie outside of 
-            %  the field of view of this.anatomy.
+            %% repositions any subscripts X, Y, and Z that lie outside of 
+            %  the field of view of this.ijkPoints_.
 
             X = this.ijkPoints_(:,1);
             Y = this.ijkPoints_(:,2);
             Z = this.ijkPoints_(:,3);
-
+            
             size_ = size(this);
-            toss_ =          X < 1 | size_(1) < X;
-            toss_ = toss_ | (Y < 1 | size_(2) < Y);
-            toss_ = toss_ | (Z < 1 | size_(3) < Z);
-
-            this.ijkPoints_(:,1) = X(~toss_);
-            this.ijkPoints_(:,2) = Y(~toss_);
-            this.ijkPoints_(:,3) = Z(~toss_);
+            X(X < 1) = 1;
+            X(size_(1) < X) = size_(1);
+            Y(Y < 1) = 1;
+            Y(size_(2) < Y) = size_(2);
+            Z(Z < 1) = 1;
+            Z(size_(3) < Z) = size_(3);
+            
+            this.ijkPoints_ = [X, Y, Z];
         end
     end
     

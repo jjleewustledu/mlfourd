@@ -187,6 +187,13 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                     mlfourd.MatlabTool(contexth, this.imagingFormat_));
             end
         end
+        function selectPatchTool(this, contexth)
+            if ~isa(this, 'mlfourd.PatchTool')
+                this.addLog('mlfourd.ImagingState2.selectPatchTool');
+                contexth.changeState( ...
+                    mlfourd.PatchTool(contexth, this.imagingFormat_));
+            end
+        end
         function selectPointCloudTool(this, contexth)
             if ~isa(this, 'mlfourd.PointCloudTool')
                 this.addLog('mlfourd.ImagingState2.selectPointCloudTool');

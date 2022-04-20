@@ -351,6 +351,11 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool; % supports compatibility
             this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
+        function this = selectPatchTool(this)
+            %% supports Matlab's patch
+
+            this.state_.selectPatchTool(this);
+        end
         function this = selectPointCloudTool(this)
             %% supports Matlab's pointCloud
 
@@ -1311,14 +1316,62 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool; % supports compatibility
             ifc = copy(this.state_.nifti);
         end   
-        function p    = pointCloud(this, varargin)
+        function p    = patch(this, varargin)
+            %% See also web(fullfile(docroot, 'matlab/visualize/displaying-complex-three-dimensional-objects.html'))
             %  Params:
-            %      thresh (scalar): per fslmaths
-            %      uthresh (scalar): per fslmaths
-            %      threshp (scalar): per fslmaths
-            %      uthreshp (scalar): per fslmaths
-            %      addNormals (logical)
-            %      useMmppix (logical)
+            %      thresh (scalar): per fslmaths.
+            %      uthresh (scalar): per fslmaths.
+            %      threshp (scalar): per fslmaths.
+            %      uthreshp (scalar): per fslmaths.
+            %      isovalue (scalar): specify volume data equal to isovalue.
+            %      EdgeColor (color): default 'none'.
+            %      FaceAlpha (scalar): transparency < 1.
+            %      FaceColor (color): default [0.5 0.5 0.5].
+            %      LightPosition (vector): default [-0.4, 0.2, 0.9].
+            %      lighting (text): 'gouraud' (default), 'flat' or 'none'.
+            %      LineStyle (text)
+            %      material (text): 'shiny' (default), 'metal', 'dull' or 'default'.
+            %      use_isonormals (logical): works best for smoooth data, default false.
+
+            ip = inputParser;
+            ip.KeepUnmatched = true;
+            addParameter(ip, 'thresh', [], @isscalar)
+            addParameter(ip, 'uthresh', [], @isscalar)
+            addParameter(ip, 'threshp', [], @isscalar)
+            addParameter(ip, 'uthreshp', [], @isscalar)
+            parse(ip, varargin{:})
+            ipr = ip.Results;            
+            if ~isempty(ipr.thresh)
+                this = this.thresh(ipr.thresh);
+            end
+            if ~isempty(ipr.uthresh)
+                this = this.uthresh(ipr.uthresh);
+            end
+            if ~isempty(ipr.threshp)
+                this = this.threshp(ipr.threshp);
+            end
+            if ~isempty(ipr.uthreshp)
+                this = this.uthreshp(ipr.uthreshp);
+            end
+            
+            this.selectPatchTool;
+            p = this.state_.patch(varargin{:});
+        end
+        function p    = pcshow(this, varargin)
+            %% passes all varargin to this.pointCloud()
+
+            this.selectPointCloudTool;
+            p = this.state_.pcshow(varargin{:});
+        end
+        function p    = pointCloud(this, varargin)
+            %% See also web(fullfile(docroot, 'vision/ug/3-d-point-cloud-registration-and-stitching.html'))
+            %  and web(fullfile(docroot, 'vision/ref/pointcloud.html#mw_eb949323-5b82-4b6c-8239-a8886734b790'))
+            %  Params:
+            %      thresh (scalar): per fslmaths.
+            %      uthresh (scalar): per fslmaths.
+            %      threshp (scalar): per fslmaths.
+            %      uthreshp (scalar): per fslmaths.
+            %      addNormals (logical): default false.
 
             ip = inputParser;
             ip.KeepUnmatched = true;
