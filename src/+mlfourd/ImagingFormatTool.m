@@ -626,7 +626,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 for ai = 1:length(additional)
                     if isa(additional{ai}, 'mlio.IOInterface')
                         additional{ai} = copy(additional{ai}); % prevent side effects 
-                        additional{ai}.fqfilename = strcat(tempname1, '_', additional{ai}.filename);
+                        additional{ai}.fqfilename = strcat(tempname1, '_', num2str(ai), '_', additional{ai}.filename);
                         additional{ai}.save();
                         additional{ai} = additional{ai}.fqfilename; % reduce to fqfn
                     end
