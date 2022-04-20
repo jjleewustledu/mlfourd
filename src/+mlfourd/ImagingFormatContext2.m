@@ -236,6 +236,13 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
 
         %%
 
+        function this = addImgrec(this, varargin)
+            %  Args:
+            %      varargin are img.rec entries for the imaging state
+            
+            this.selectFourdfpTool();
+            this.state_.addImgrec(varargin{:});
+        end
         function this = addLog(this, varargin)
             %  Args:
             %      varargin are log entries for the imaging state

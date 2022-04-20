@@ -68,6 +68,10 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         
         %%
 
+        function addImgrec(this, varargin)
+            this.selectFourdfpTool();
+            this.imagingFormat_.addImgrec(varargin{:}); % imgrec is a handle logger
+        end
         function h = histogram(this, varargin)
             h = this.imagingFormat_.histogram(varargin{:});
         end
@@ -111,9 +115,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
     end
 
     methods (Hidden)
-        function addImgrec(this, varargin)
-            this.imagingFormat_.getInnerImagingFormat.addImgrec(varargin{:}); % imgrec is a handle logger
-        end
         function ensureComplex(this)
             this.imagingFormat_.ensureComplex;
         end
