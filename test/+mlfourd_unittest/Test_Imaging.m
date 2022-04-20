@@ -6,7 +6,7 @@ classdef Test_Imaging < matlab.unittest.TestCase
 
     properties
         compatibility = false
-        do_view = true
+        do_view = false
         LAS = 'sub-108293_ses-20210421171325_trc-fdg_proc-static_pet' % bottle points left anterior
         MNI152_LR_nii % $FSLDIR/data/standard/MNI152_T1_2mm_LR-masked.nii.gz
         pwd0

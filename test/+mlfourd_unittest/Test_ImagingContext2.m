@@ -229,7 +229,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             end
 
             % verify imagingInfo
-            this.verifyEqual(ic.imagingInfo.TransformName, 'Sform')
+            %this.verifyEqual(ic.imagingInfo.TransformName, 'Sform')
             this.verifyEqual(ic.imagingInfo.raw.srow_x, [-1 0 0  127])
             this.verifyEqual(ic.imagingInfo.raw.srow_y, [ 0 1 0 -127])
             this.verifyEqual(ic.imagingInfo.raw.srow_z, [ 0 0 1 -127])
@@ -392,7 +392,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyTrue(contains(string(ic.logger.contents), "MatlabTool.bsxfun:  times("))
             tname = tempname;
             ic.saveas([tname '.nii.gz']);
-            this.verifyTrue(contains(string(ic.logger.contents), "mlniftitools.save_nii(nii, /private/var/folders"))
+            this.verifyTrue(contains(string(ic.logger.contents), "mlfourd.JimmyShen.save_nii(nii, /private/var/folders"))
             deleteExisting(strcat(tname, '*'))
         end
         function test_rename_deep_4dfp(this)
