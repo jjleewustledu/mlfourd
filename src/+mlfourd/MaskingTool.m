@@ -111,8 +111,10 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
 
-            assert(isscalar(t));
-            bin  = this.imagingFormat_.img >= t;
+            if ~isscalar(t)
+                return
+            end
+            bin = this.imagingFormat_.img >= t;
             this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_thr%s', this.fileprefix, this.decimal2str(t)), ...
@@ -123,8 +125,16 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
             
+            if ~isscalar(p)
+                return
+            end
+            if p == 0
+                return
+            end
             if p > 1
                 p_ = p/100;
+            else
+                p_ = p;
             end
             img = double(this.imagingFormat_.img);
             img = img .* (img > 0.01*dipmax(img));
@@ -139,8 +149,10 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %% UTHRESH
             %  @param t:  use t to upper-threshold current image (zero anything above the number)
             
-            assert(isscalar(t));
-            bin  = this.imagingFormat_.img <= t;
+            if ~isscalar(t)
+                return
+            end
+            bin = this.imagingFormat_.img <= t;
             this.makeSimilar( ...
                    'img', double(this.imagingFormat_.img) .* double(bin), ...
                    'fileprefix', sprintf('%s_uthr%s', this.fileprefix, this.decimal2str(t)), ...
@@ -151,8 +163,16 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to upper-threshold current image (zero anything above the number)
             
+            if ~isscalar(p)
+                return
+            end
+            if p == 0
+                return
+            end
             if p > 1
                 p_ = p/100;
+            else
+                p_ = p;
             end
             img = double(this.imagingFormat_.img);
             img = img .* (img > 0.01*dipmax(img));
