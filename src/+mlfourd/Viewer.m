@@ -8,7 +8,9 @@ classdef Viewer < mlfourd.IViewer
  	
 	properties
  		app
+        early_options
         fv
+        late_options
     end
 
     methods (Static)
@@ -33,7 +35,7 @@ classdef Viewer < mlfourd.IViewer
                 [s,r] = mlbash(sprintf('%s %s', app_, cell2str(targs)));
             else
                 targs = convertStringsToChars(targs);
-                [s,r] = mlbash(sprintf('%s %s', this.app, cell2str(targs)));
+                [s,r] = mlbash(sprintf('%s %s %s %s', this.app, this.early_options, cell2str(targs), this.late_options));
             end
             
             for v = 1:length(varargin)
@@ -47,17 +49,26 @@ classdef Viewer < mlfourd.IViewer
         end
 		  
  		function this = Viewer(varargin)
+            %  Args:
+            %      early_options (text): see also % fsleyes --fullhelp
+            %      late_options (text): see also % fsleyes --fullhelp
+
+
             app_ = fullfile(getenv('FSLDIR'), 'bin', 'fsleyes');
             
             ip = inputParser;
-            addOptional(ip, 'app', app_, @ischar);
-            addParameter(ip, 'temp_pattern', '', @istext)
+            addParameter(ip, 'app', app_, @ischar);
+            addParameter(ip, 'temp_pattern', '', @istext);
+            addParameter(ip, 'early_options', '', @istext);
+            addParameter(ip, 'late_options', '', @istext);
             parse(ip, varargin{:});
             ipr = ip.Results;
 
             this.app = ipr.app;
             this.fv = mlfourdfp.FourdfpVisitor;
             this.temp_pattern = ipr.temp_pattern;
+            this.early_options = ipr.early_options;
+            this.late_options = ipr.late_options;
  		end
  	end 
 

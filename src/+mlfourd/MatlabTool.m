@@ -145,6 +145,37 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         function mtimes(this, b)
             this.bsxfun(@mtimes, b);
         end
+        function [score,qualityMaps] = multissim3(this, b, varargin)
+            %% Multiscale structral similarity index for image quality compared to reference this.
+            %  See also: toolbox/images/images/multissim.
+            %  Usage:  [scores,qualityMaps] = this.multissim(b, 'NumScales', 8)
+            %  Args:
+            %      NumScales (pos int)
+            %      ScaleWeights (pos vector)
+            %      Sigma (pos scalar)
+            %      DynamicRange (pos scalar)
+            %  Returns:
+            %      score: scalar value ~ 1 indicates better quality.
+            %      qualityMaps: scores for every voxel, represented by cell array of ImagingContext2.
+
+            if isa(b, 'mlfourd.ImagingContext2')
+                b.selectMatlabTool();
+                b_ = b.imagingFormat();
+                b = b_.img;
+            end
+            if isa(b, 'mlfourd.ImagingFormatContext2')
+                b = b.img;
+            end
+
+            [score,qualityMaps] = multissim3(double(this.imagingFormat_.img), double(b));
+            qualityMaps = cellfun(@(x) mlfourd.ImagingContext2(x), qualityMaps, 'UniformOutput', false);
+            for iq = 1:length(qualityMaps)
+                qualityMaps{iq}.fqfp = strcat(this.fqfp, '_multissim-qualityMaps', num2str(iq));
+                qualityMaps{iq}.filesuffix = this.filesuffix;
+                qualityMaps{iq}.addLog('MatlabTool.multissim:  %s, %s, qualityMap->%i', ...
+                    this.fileprefix, this.bstr(b), iq);
+            end
+        end
         function plus(this, b)
             this.bsxfun(@plus, b);
         end

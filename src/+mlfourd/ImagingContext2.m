@@ -292,7 +292,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         
         %% select states
-        
+
+        function this = selectBidsTool(this)
+            this.state_.selectBidsTool(this);
+        end
         function this = selectBlurringTool(this)
             this.state_.selectBlurringTool(this);
         end
@@ -301,7 +304,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function this = selectFilesystemTool(this)
             %% saves imaging information to filesystem, then clears imaging information from memory, retaining only 
-            %  filesystem inforamtion.
+            %  filesystem information.
 
             % update filesystem with memory contents
             this.save;
@@ -367,6 +370,18 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.state_.selectRegistrationTool(this);
         end
         
+        %% BidsTool
+
+        function this = relocateDerivatives(this)
+            this.selectBidsTool();
+            if contains(this.filepath, 'sourcedata')
+                this.filepath = strrep(this.filepath, 'sourcedata', 'derivatives');
+            end
+            if contains(this.filepath, 'rawdata')
+                this.filepath = strrep(this.filepath, 'rawdata', 'derivatives');
+            end
+        end        
+
         %% FilesystemTool
 
         function tf   = isempty(~)
@@ -486,7 +501,23 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectMatlabTool;
             that = copy(this);
             that.state_.kldiv(b, varargin{:});
-        end            
+        end
+        function [score,qualityMaps] = multissim3(this, b, varargin)
+            %% Multiscale structral similarity index for image quality compared to reference this.
+            %  See also: toolbox/images/images/multissim3.
+            %  Usage:  [scores,qualityMaps] = this.multissim(b, 'NumScales', 8)
+            %  Args:
+            %      NumScales (pos int)
+            %      ScaleWeights (pos vector)
+            %      Sigma (pos scalar)
+            %      DynamicRange (pos scalar)
+            %  Returns:
+            %      score: scalar value ~ 1 indicates better quality.
+            %      qualityMaps: scores for every voxel, represented by cell array of ImagingContext2.
+
+            this.selectMatlabTool;
+            [score,qualityMaps] = this.state_.multissim3(b, varargin{:});
+        end
         function that = log(this)
             this.selectMatlabTool;
             that = copy(this);
@@ -691,10 +722,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.isequaln(b);
         end
+        function tf = isfile(this)
+            tf = isfile(this.fqfn);
+        end
         function that = isfinite(this)
             this.selectMatlabTool;
             that = copy(this);
             that.state_.isfinite;
+        end
+        function tf = isfolder(this)
+            tf = isfolder(this.filepath);
         end
         function that = isinf(this)
             this.selectMatlabTool;
@@ -1001,7 +1038,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.gradient(varargin{:});
         end
         function that = interp1(this, varargin)
-            %% MAKIMA
+            %% INTERP1
             
             this.selectDynamicsTool;
             that = copy(this);
@@ -1047,32 +1084,56 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.std(varargin{:});
         end        
         function that = timeAveraged(this, varargin)
-            %% TIMEAVERAGED
-            %  @param optional closed interval T \in {\Bbb R}.
-            %  @return ic := \int_T \text{this.state\_}(t) / \int_T.
+            %% Contracts imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %      weights (numeric):  to multiply each time frame after selecting tindex.  Default is uniform weighting.
+            %      taus (numeric):  sets weights = taus/sum(taus) after selecting tindex, replacing other requests for weights.
+            %  Returns:
+            %      this
+            %  See also:  mlfourd.DynamicsTool.timeCensored(), mlfourd.DynamicsTool.timeContracted()
             
             this.selectDynamicsTool;
             that = copy(this);
             that.state_.timeAveraged(varargin{:});
         end
-        function that = timeContracted(this, varargin)
-            %% TIMECONTRACTED
-            %  @param optional closed interval T \in {\Bbb R}.
-            %  @return ic := \int_T this.state_(t).
+        function that = timeCensored(this, varargin)
+            %% Censors imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %  Returns:
+            %      this: with censoring of times.
+
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.timeCensored(varargin{:});
+        end
+        function that = timeContracted(this, varargin)     
+            %% Contracts imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %  Returns:
+            %      this: with contracted time-index.
+            %  See also:  mlfourd.DynamicsTool.timeCensored()
             
             this.selectDynamicsTool;
             that = copy(this);
             that.state_.timeContracted(varargin{:});
         end
-        function [times,that] = timeShifted(this, times, Dt)
-            %% TIMESHIFTED
-            %  @param required times is numeric, possibly nonuniform.
-            %  @param required Dt is scalar.
-            %  @return times & copy(this) shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
+        function that = timeShifted(this, times, Dt)
+            %% Shifts imagingFormat.img forwards or backwards in time.
+            %  Args:
+            %      times (required numeric):  possibly nonuniform, e.g., [1 2 2.5 2.7 2.8 2.9].
+            %      Dt (required scalar):  e.g., seconds.
+            %  Returns: 
+            %      this: shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
             
             this.selectDynamicsTool;
             that = copy(this);
-            [times,that] = that.state_.timeShifted(times, Dt);
+            that = that.state_.timeShifted(times, Dt);
         end
         function that = timeSummed(this, varargin)
             %% TIMESUMMED 
@@ -1110,6 +1171,18 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
             
             that = this.volumeContracted(varargin{:});
+        end
+        function v = voxelVolume(this)
+            %  Returns:
+            %      v:  mm^3 ~ \muL
+            
+            try
+                mmppix = this.imagingInfo.hdr.dime.pixdim(2:4);
+                v = prod(mmppix);
+            catch ME
+                handwarning(ME)
+                v = NaN;
+            end
         end
         
         %% MaskingTool
@@ -1186,7 +1259,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = thresh(this, varargin)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
-            %  @return t, the modified imaging context
+            %  @return that, the modified imaging context
             %  @return copy(this) if t == 0 or t is empty
             
             this.selectMaskingTool;
@@ -1196,9 +1269,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = threshp(this, varargin)
             %% THRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything below the number)
-            %  @returns p, the modified imaging context
+            %  @returns that, the modified imaging context
             %  @return copy(this) if p == 0 or p is empty
-            
+
             this.selectMaskingTool;
             that = copy(this);
             that.state_.threshp(varargin{:});
@@ -1206,7 +1279,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = uthresh(this, varargin)
             %% UTHRESH
             %  @param u:  use u to upper-threshold current image (zero anything above the number)
-            %  @returns u, the modified imaging context
+            %  @returns that, the modified imaging context
             %  @return copy(this) if u == 0 or u is empty
             
             this.selectMaskingTool;
@@ -1216,7 +1289,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = uthreshp(this, varargin)
             %% UTHRESHP
             %  @param p:  use percentage p (0-100) of ROBUST RANGE to threshold current image (zero anything above the number)
-            %  @returns p, the modified imaging context
+            %  @returns that, the modified imaging context
             %  @return copy(this) if u == 0 or u is empty
             
             this.selectMaskingTool;
@@ -1273,7 +1346,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %this.selectImagingTool;
             if ~contains(this.viewer.app, 'freeview')
                 [~,r] = mlbash('which freeview');
-                this.viewer = mlfourd.Viewer(strtrim(r));
+                this.viewer = mlfourd.Viewer('app', strtrim(r));
             end
             this.view(varargin{:});
         end
@@ -1281,7 +1354,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %this.selectImagingTool;
             if ~contains(this.viewer.app, 'fsleyes')
                 [~,r] = mlbash('which fsleyes');
-                this.viewer = mlfourd.Viewer(strtrim(r));
+                this.viewer = mlfourd.Viewer('app', strtrim(r));
             end
             this.view(varargin{:});
         end
@@ -1419,8 +1492,22 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
             this.selectImagingTool;
             this.state_ = this.state_.saveas(varargin{:});
-        end                
-        function setPointCloud(this, varargin)
+        end  
+        function [s,r] = save_qc(this, varargin)
+            %% SAVE_QC saves additional imaging with alpha < 1 and non-gray colormap overlaid on this anatomy.
+            %  Preview saved qc with view_qc().
+            %  Args:
+            %      varargin (any): are additional filenames and additional mlio.IOInterface objects to pass to the 
+            %                      viewer.  Viewing options may precede/follow filenames/objects.  
+            %                      Viewers will access tempfiles of what is active in memory.
+            %  Returns:
+            %      s: system status.
+            %      r: system result.            
+
+            this.selectImagingTool;
+            [s,r] = this.state_.save_qc(varargin{:});
+        end              
+        function        setPointCloud(this, varargin)
             %  Args:
             %      pc (pointCloud)
             %      filepath (folder)
@@ -1455,20 +1542,28 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             tf = this.state_.sizeLt(ic);
         end
         function [s,r] = view(this, varargin)
-            %% VIEW
+            %% VIEW views this imaging.
             %  Args:
             %      varargin (any): are additional filenames and additional mlio.IOInterface objects to pass to the 
             %                      viewer.  Viewers will access tempfiles of what is active in memory.
             %  Returns:
             %      s: system status.
             %      r: system result.
-            %      out: stdout | figure_handle | new window containing a view of the imaging state.
             
-            if this.compatibility
-                this.state_.view(varargin{:});
-                return
-            end
             [s,r] = this.state_.view(varargin{:});
+        end
+        function [s,r] = view_qc(this, varargin)
+            %% VIEW_QC views additional imaging with alpha < 1 and non-gray colormap overlaid on this anatomy.
+            %  Args:
+            %      varargin (any): are additional filenames and additional mlio.IOInterface objects to pass to the 
+            %                      viewer.  Viewing options may precede/follow filenames/objects.  
+            %                      Viewers will access tempfiles of what is active in memory.
+            %  Returns:
+            %      s: system status.
+            %      r: system result.            
+
+            this.selectImagingTool;
+            [s,r] = this.state_.view_qc(varargin{:});
         end
 
         %% RegistrationTool

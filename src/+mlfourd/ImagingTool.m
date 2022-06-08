@@ -90,11 +90,23 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         function s = mat2str(this, varargin)
             s = mat2str(this.imagingFormat_.img, varargin{:});
         end
+        function [s,r] = save_qc(this, varargin)
+            if isa(this, 'mlfourd.MatlabTool')
+                this.selectNiftiTool();
+            end
+            [s,r] = this.imagingFormat_.save_qc(varargin{:});
+        end
         function [s,r] = view(this, varargin)
             if isa(this, 'mlfourd.MatlabTool')
                 this.selectNiftiTool();
             end
             [s,r] = this.imagingFormat_.view(varargin{:});
+        end
+        function [s,r] = view_qc(this, varargin)
+            if isa(this, 'mlfourd.MatlabTool')
+                this.selectNiftiTool();
+            end
+            [s,r] = this.imagingFormat_.view_qc(varargin{:});
         end
         
         function this = ImagingTool(contexth, imagingFormat, varargin)

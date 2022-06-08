@@ -258,7 +258,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function addLog(this, varargin)
             this.logger_.add(varargin{:});
         end
-        function c = char(this, varargin)
+        function c = char(~, varargin)
             c = evalc('disp(this)');
             c = char(c, varargin{:});
         end

@@ -648,7 +648,18 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             %  
             %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
 
-            nii = mlfourd.JimmyShen.load_nii(this.fqfilename, varargin{:});
+            try
+                nii = mlfourd.JimmyShen.load_nii(this.fqfilename, varargin{:});
+            catch ME
+                if strcmp(ME.identifier, 'mlfourd:JimmyShen:RuntimeError') && ...
+                    contains(ME.message, 'Non-orthogonal rotation or shearing found inside the affine matrix')
+                    fqfn_ = strcat(tempname, this.filesuffix);
+                    mlfourd.JimmyShen.reslice_nii(this.fqfilename, fqfn_);                    
+                    nii = mlfourd.JimmyShen.load_nii(fqfn_, varargin{:});
+                    deleteExisting(fqfn_)
+                    this.fileprefix = strcat(this.fileprefix, '_reslice');
+                end
+            end
             nii = this.ensureLoadingOrientation(nii);
             nii.img = this.ensureDatatype(nii.img, this.datatype_);
             nii.hdr = mlniftitools.extra_nii_hdr(nii.hdr);

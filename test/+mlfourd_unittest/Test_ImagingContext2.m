@@ -977,30 +977,33 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(double(ic1), ones(2,2,2));
             ic2 = ic.timeAveraged([2 3]);
             this.verifyEqual(double(ic2), ones(2,2,2));
-            ic3 = ic.timeAveraged('weights', ones(1,4)/4);
+            ic3 = ic.timeAveraged('weights', 0.25*[1 1 1 1]);
             this.verifyEqual(double(ic3), ones(2,2,2));
             ic3 = ic.timeAveraged('taus', [1 1 1 1]);
             this.verifyEqual(double(ic3), ones(2,2,2));
 
-            img = zeros(2,2,2,4);
-            img(:,:,:,2) = ones(2,2,2);
-            img(:,:,:,3) = 2*ones(2,2,2);
-            img(:,:,:,4) = 3*ones(2,2,2);
+            img = 1:4;
             ic = ImagingContext2(img, 'compatibility', this.compatibility);
             ic1 = ic.timeAveraged();
-            this.verifyEqual(double(ic1), 1.5*ones(2,2,2), 'AbsTol', 1e-15);
+            this.verifyEqual(double(ic1), mean(img), 'AbsTol', 1e-15);
             ic2 = ic.timeAveraged([2 3]);
-            this.verifyEqual(double(ic2), 1.5*ones(2,2,2), 'AbsTol', 1e-15);
-            ic3 = ic.timeAveraged('weights', [0 1 0.5 1/3]);
-            this.verifyEqual(double(ic3), 3*ones(2,2,2), 'AbsTol', 1e-15);
-            ic3 = ic.timeAveraged('taus', [0 1 2 3]);
+            this.verifyEqual(double(ic2), 2.5, 'AbsTol', 1e-15);
+            ic3 = ic.timeAveraged('weights', 1./img);
+            this.verifyEqual(double(ic3), 4, 'AbsTol', 1e-15);
+            ic3 = ic.timeAveraged('taus', [1 2 3 4]);
+            this.verifyEqual(double(ic3), 30/10, 'AbsTol', 1e-15);
+        end
+        function test_timeCensored(this)
             if this.compatibility
-                this.verifyEqual(double(ic3), (14/6)*ones(2,2,2), 'AbsTol', 1e-5);
-            else
-                this.verifyEqual(double(ic3), (14/6)*ones(2,2,2), 'AbsTol', 1e-15);
+                return
             end
-            ic4 = ic.timeAveraged(2:4, 'weights', [0 1 0.5 1/3]);
-            this.verifyEqual(double(ic4), 3*ones(2,2,2), 'AbsTol', 1e-15);            
+
+            img = [1 2 3 4 5 6 7 8];
+            ic = mlfourd.ImagingContext2(img, 'compatibility', this.compatibility);
+            ic1 = ic.timeCensored();
+            this.verifyEqual(double(ic1), img);
+            ic2 = ic.timeCensored([2 4 6 8]);
+            this.verifyEqual(double(ic2), [2 4 6 8]);
         end
         function test_timeContracted(this)
             import mlfourd.*;  
@@ -1011,6 +1014,12 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(double(ic1), 4*ones(2,2,2));       
             ic2 = ic.timeContracted([2 3]);
             this.verifyEqual(double(ic2), 2*ones(2,2,2));
+            try
+                ic.timeContracted([1 1 1]);
+            catch ME
+                this.verifyEqual(ME.identifier, 'mlfourd:ValueError');
+            end
+            % @() error("mlfourd:ValueError", "desc")
         end
         function test_volumeAveraged(this)
             img  = ones(2,2,2,4);

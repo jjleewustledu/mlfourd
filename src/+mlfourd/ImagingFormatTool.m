@@ -164,8 +164,12 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 x = '';
                 return
             end
-            [~,x] = mlbash(['fslhd -x ' this.fqfilename]);
-            x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
+            try
+                [~,x] = mlbash(['fslhd -x ' this.fqfilename]);
+                x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
+            catch
+                x = '';
+            end
         end
         function g = get.json_metadata(this)
             g = this.imagingInfo_.json_metadata;
@@ -577,6 +581,43 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             that = this.selectMatlabFormatTool(this.contexth_);
             save_mat(that);
         end
+        function [s,r] = save_qc(this, varargin)
+            setenv('PYOPENGL_PLATFORM', 'osmesa');
+            s = []; r = '';
+            
+            try
+                % save tempfiles of imaging currently in memory which may be inconsistent with filesystem
+                temp = copy(this); % no side effects 
+                tn1 = tempname; % filestem for temp
+                temp.fqfilename = strcat(tn1, '_', temp.filename);
+                temp.save();
+
+                % parse additional imaging to add to filelist of overlayed comparisons
+                assert(~isempty(varargin))
+                filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
+                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 25'), filelist(2:end), 'UniformOutput', false);
+                
+                % confirm viewer
+                fqfns = filelist(contains(filelist, '.nii.gz'));
+                v = mlfourd.Viewer('early_options', sprintf(' render -of %s.png ', myfileprefix(fqfns{end})));
+                assert(0 == mlbash(sprintf('which %s', v.app)), ...
+                    'mlfourd:RuntimeError', ...
+                    'ImagingFormatTool.save_qc could not find %s', v.app);
+                
+                % do view
+                [s,r] = v.aview(filelist{:});
+                for f = asrow(filelist)
+                    if contains(f{1}, tn1)
+                        deleteExisting(f{1});
+                    end
+                end
+            catch ME
+                dispexcept(ME, 'mlfourd:RuntimeError', ...
+                    'ImagingFormatTool.save_qc()');
+                disp('ImagingFormatTool.save_qc() called %s, which returned:\n\t%s', v.app, r);
+            end
+            setenv('PYOPENGL_PLATFORM', '');
+        end
         function [ext,esize_total] = verify_nii_ext(~, ext)
             %  Verify NIFTI header extension to make sure that each extension section
             %  must be an integer multiple of 16 byte long that includes the first 8
@@ -613,36 +654,62 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 v = mlfourd.Viewer();
                 assert(0 == mlbash(sprintf('which %s', v.app)), ...
                     'mlfourd:RuntimeError', ...
-                    'ImagingFormatTool.viewExternally could not find %s', v.app);
+                    'ImagingFormatTool.view could not find %s', v.app);
 
                 % save tempfiles of imaging currently in memory which may be inconsistent with filesystem
                 temp = copy(this); % no side effects 
-                tempname1 = tempname; % filestem for temp
-                temp.fqfilename = strcat(tempname1, '_', temp.filename);
+                tn1 = tempname; % filestem for temp
+                temp.fqfilename = strcat(tn1, '_', temp.filename);
                 temp.save();
 
-                % parse addtional imaging to add to filelist of overlayed comparisons
-                additional = varargin; % varargin is read-only
-                for ai = 1:length(additional)
-                    if isa(additional{ai}, 'mlio.IOInterface')
-                        additional{ai} = copy(additional{ai}); % prevent side effects 
-                        additional{ai}.fqfilename = strcat(tempname1, '_', num2str(ai), '_', additional{ai}.filename);
-                        additional{ai}.save();
-                        additional{ai} = additional{ai}.fqfilename; % reduce to fqfn
-                    end
-                end
-                filelist = horzcat({temp.fqfilename}, additional);
+                % parse additional imaging to add to filelist of overlayed comparisons
+                filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
 
                 % do view
                 [s,r] = v.aview(filelist{:});
-                for fi = 1:length(filelist)
-                    if contains(filelist{fi}, tempname1)
-                        deleteExisting(filelist{fi});
+                for f = asrow(filelist)
+                    if contains(f{1}, tn1)
+                        deleteExisting(f{1});
                     end
                 end
             catch ME
                 dispexcept(ME, 'mlfourd:RuntimeError', ...
-                    'ImagingFormatTool.view called %s, which returned:\n\t%s', v.app, r);
+                    'ImagingFormatTool.view()');
+                disp('ImagingFormatTool.view() called %s, which returned:\n\t%s', v.app, r);
+            end
+        end
+        function [s,r] = view_qc(this, varargin)
+            s = []; r = '';
+
+            try
+                % confirm viewer
+                v = mlfourd.Viewer();
+                assert(0 == mlbash(sprintf('which %s', v.app)), ...
+                    'mlfourd:RuntimeError', ...
+                    'ImagingFormatTool.view_qc could not find %s', v.app);
+
+                % save tempfiles of imaging currently in memory which may be inconsistent with filesystem
+                temp = copy(this); % no side effects 
+                tn1 = tempname; % filestem for temp
+                temp.fqfilename = strcat(tn1, '_', temp.filename);
+                temp.save();
+
+                % parse additional imaging to add to filelist of overlayed comparisons
+                assert(~isempty(varargin))
+                filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
+                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 25'), filelist(2:end), 'UniformOutput', false);
+
+                % do view
+                [s,r] = v.aview(filelist{:});
+                for f = asrow(filelist)
+                    if contains(f{1}, tn1)
+                        deleteExisting(f{1});
+                    end
+                end
+            catch ME
+                dispexcept(ME, 'mlfourd:RuntimeError', ...
+                    'ImagingFormatTool.view_qc()');
+                disp('ImagingFormatTool.view_qc() called %s, which returned:\n\t%s', v.app, r);
             end
         end
         function viewvec(this, varargin)
@@ -783,6 +850,23 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             this.addLog('ImagingFormatTool.ctor.ipr.useCase ~ %s', ensureString(ipr.useCase));
         end
 
+        function a    = additional_filelist(~, tempname1, varargin)
+            %% parse addtional imaging to add to filelist of overlayed comparisons
+            %  Args:
+            %      tempname1 (text): prepended to filenames of vararging, facilitating deleting temp.
+            %      varargin (mlio.IOInterface | file)
+
+            assert(istext(tempname1))
+            a = varargin; % varargin is read-only
+            for ai = 1:length(a)
+                if isa(a{ai}, 'mlio.IOInterface')
+                    a{ai} = copy(a{ai}); % prevent side effects 
+                    a{ai}.fqfilename = strcat(tempname1, '_', num2str(ai), '_', a{ai}.filename);
+                    a{ai}.save();
+                    a{ai} = a{ai}.fqfilename; % reduce to fqfn
+                end
+            end
+        end
         function        adjustHdrForImg(this, img)
             %% updates imagingInfo_.hdr using characteristics of img
 

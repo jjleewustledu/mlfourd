@@ -218,95 +218,155 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             this.imagingFormat_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
         end
-        function [this,T] = timeAveraged(this, varargin)
-            %  @param optional T \in \mathbb{N}^length(T), selecting time indices; 
-            %         e.g., [1 2 ... n] or [3 4 5 7 ... (n-1)].
-            %  @param weights to multiply each time, prior to selecting by T.  No normalizations provided.
-            %  @param taus := weights := taus / sum(taus), replacing other requests for weights.
+        function this = timeAveraged(this, varargin)
+            %% Contracts imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %      weights (numeric):  to multiply each time frame after selecting tindex.  Default is uniform weighting.
+            %      taus (numeric):  sets weights = taus/sum(taus) after selecting tindex, replacing other requests for weights.
+            %  Returns:
+            %      this
+            %  See also:  mlfourd.DynamicsTool.timeCensored(), mlfourd.DynamicsTool.timeContracted()
             
-            Nt = size(this.imagingFormat_, 4);
+            sz = size(this.imagingFormat_.img);
+            Nt = sz(end);
+            Ndims = ndims(this.imagingFormat_.img);
+
             ip = inputParser;
-            addOptional(ip, 'T',  1:Nt, @isnumeric);
+            addOptional(ip, 'tindex', [], @(x) isnumeric(x) && length(x) <= Nt);
             addParameter(ip, 'weights', [], @isnumeric)
             addParameter(ip, 'taus', [], @isnumeric);
             parse(ip, varargin{:});
             ipr = ip.Results;
-            T = ipr.T;
-            if ~isempty(ipr.weights)
-                try
-                    ipr.weights = ipr.weights(T);                
-                catch ME
-                    handexcept(ME, ...
-                        'mlfourd:RuntimeError', ...
-                        'DynamicsTool.timeAveraged:  supplied weights may be inconsistent:  %s', num2str(ipr.weights))
-                end 
+            if isempty(ipr.tindex)
+                Ntc = Nt;
+            else
+                Ntc = length(ipr.tindex);
             end
-            
-            if ~isempty(ipr.taus)
-                try
-                    ipr.weights = ipr.taus / sum(ipr.taus);
-                    ipr.weights = ipr.weights(T);                
-                catch ME
-                    handexcept(ME, ...
-                        'mlfourd:RuntimeError', ...
-                        'DynamicsTool.timeAveraged:  supplied weights may be inconsistent:  %s', num2str(ipr.weights))
-                end 
+            w = ipr.weights;
+            if isempty(w)
+                w = ones(1, Ntc)/Ntc;
             end
-            
-            if isempty(ipr.weights)
-                this.imagingFormat_.img = sum(this.imagingFormat_.img(:,:,:,T), 4, 'omitnan') / length(T);
-                namesAndLogging()
-                return
+            taus = ipr.taus;
+            if ~isempty(taus)
+                w = taus/sum(taus);
             end
-                       
-            this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,T); % truncate series
-            for it = 1:length(T)
-                this.imagingFormat_.img(:,:,:,it) = ipr.weights(it) * this.imagingFormat_.img(:,:,:,it); % weighted series
+
+            % censor times
+            this = this.timeCensored(ipr.tindex);
+
+            % apply weights
+            switch Ndims
+                case 2
+                    for it = 1:Ntc
+                        this.imagingFormat_.img(:,it) = w(it)*this.imagingFormat_.img(:,it);
+                    end
+                case 3
+                    for it = 1:Ntc
+                        this.imagingFormat_.img(:,:,it) = w(it)*this.imagingFormat_.img(:,:,it);
+                    end
+                case 4          
+                    for it = 1:Ntc
+                        this.imagingFormat_.img(:,:,:,it) = w(it)*this.imagingFormat_.img(:,:,:,it);
+                    end
+                otherwise
+                    error('mlfourd:ValueError', 'DynamicsTool.timeAveraged.Ndims->%i', Ndims);
             end
-            this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan'); % sum series
-            namesAndLogging()                        
-            
-            function namesAndLogging()
-                this.fileprefix = strcat(this.fileprefix, this.AVGT_SUFFIX);
-                if length(T) ~= Nt
-                    this.fileprefix = strcat(this.fileprefix, sprintf('%i-%i', T(1), T(end)));
-                end
-                this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(ipr.taus/sum(ipr.taus)));
+
+            % contract in time 
+            this = this.timeContracted();
+
+            % names & logging
+            this.fileprefix = strrep(this.fileprefix, this.SUMT_SUFFIX, this.AVGT_SUFFIX);
+            if all(w == w(1))
+                this.addLog('DynamicsTool.timeAveraged weighted by %g', w(1));
+            else
+                this.addLog('DynamicsTool.timeAveraged weighted by %s', mat2str(w));
             end
         end
-        function [this,T] = timeContracted(this, varargin)
-            %  @param optional T \in \mathbb{N}^length(T), selecting time indices; 
-            %         e.g., [1 2 ... n] or [3 4 5 7 ... (n-1)].
-            
+        function this = timeCensored(this, varargin)
+            %% Censors imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %  Returns:
+            %      this: with censoring of times.  Default returns this unchanged.
+
+            sz = size(this.imagingFormat_.img);
+            Nt = sz(end);
+            Ndims = ndims(this.imagingFormat_.img);
+
             ip = inputParser;
-            addOptional(ip, 'T', 1:size(this.imagingFormat_,4), @isnumeric);
-            parse(ip, varargin{:});            
-            T = ip.Results.T;
+            ip.KeepUnmatched = true;
+            addOptional(ip, 'tindex', [], @(x) isnumeric(x) && length(x) <= Nt);
+            parse(ip, varargin{:});
+            ipr = ip.Results;
+            tidx = ipr.tindex;
+            if isempty(tidx)
+                return
+            end
+            cnt = histcounts(tidx);
+            if any(cnt > 1)
+                error('mlfourd:ValueError', 'DynamicsTool.timeCensored.ipr.tindex must have unique indices');
+            end
+            switch Ndims
+                case 2
+                    this.imagingFormat_.img = this.imagingFormat_.img(:,tidx);
+                case 3
+                    this.imagingFormat_.img = this.imagingFormat_.img(:,:,tidx);
+                case 4
+                    this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,tidx);
+                otherwise
+                    error('mlfourd:ValueError', 'DynamicsTool.timeCensored.Ndims->%i', Ndims);
+            end
+
+            % names & logging
+            this.fileprefix = sprintf('%s_keepframes-%g-%g', this.fileprefix, tidx(1), tidx(end));
+            this.addLog('DynamicsTool.timeCensored with tindex->%s', mat2str(tidx));
+        end
+        function this = timeContracted(this, varargin)
+            %% Contracts imagingFormat.img in time, the trailing array index.
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %  Returns:
+            %      this: with contracted time-index.
+            %  See also:  mlfourd.DynamicsTool.timeCensored()
             
-            this.imagingFormat_.img = this.imagingFormat_.img(:,:,:,T);
-            this.imagingFormat_.img = sum(this.imagingFormat_.img, 4, 'omitnan');
+            sz = size(this.imagingFormat_.img);
+            Nt = sz(end);
+            Ndims = ndims(this.imagingFormat_.img);
+
+            ip = inputParser;
+            addOptional(ip, 'tindex', [], @(x) isnumeric(x) && length(x) <= Nt);
+            parse(ip, varargin{:});
+            ipr = ip.Results;
+            tidx = ipr.tindex;
+
+            this = this.timeCensored(tidx);
+            this.imagingFormat_.img = sum(this.imagingFormat_.img, Ndims, 'omitnan');
             
             % names & logging
             this.fileprefix = strcat(this.fileprefix, this.SUMT_SUFFIX);
-            if ~isempty(varargin)
-                this.fileprefix = sprintf('%s%g-%g', this.fileprefix, T(1), T(end));
-            end
-            this.addLog('DynamicsTool.timeContracted over %s', mat2str(T));
+            this.addLog('DynamicsTool.timeContracted()');
         end  
-        function [times,this] = timeShifted(this, times, Dt)
-            %% TIMESHIFTED
-            %  @param required times is numeric, possibly nonuniform.
-            %  @param required Dt is scalar.
-            %  @return times & this shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
+        function this = timeShifted(this, times, Dt)
+            %% Shifts imagingFormat.img forwards or backwards in time.
+            %  Args:
+            %      times (required numeric):  possibly nonuniform, e.g., [1 2 2.5 2.7 2.8 2.9].
+            %      Dt (required scalar):  e.g., seconds.
+            %  Returns: 
+            %      this: shifted forwards (Dt > 0) or backwards (Dt < 0) in time.
             
             assert(isnumeric(times))
             assert(isscalar(Dt))
             
-            [times,this.imagingFormat_.img] = shiftNumeric(times, this.imagingFormat_.img, Dt);
+            [~,this.imagingFormat_.img] = shiftNumeric(times, this.imagingFormat_.img, Dt);
             
             % names & logging
-            this.fileprefix = sprintf('%s_timeShifted%g', this.fileprefix, Dt);
-            this.addLog('DynamicsTool.timeShifted by %g', Dt);
+            this.fileprefix = sprintf('%s_timeShifted-%g', this.fileprefix, Dt);
+            this.addLog('DynamicsTool.timeShifted by Dt->%g', Dt);
         end  
         function this = var(this, varargin)
             %% applies Matlab var over time samples
@@ -337,6 +397,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             parse(ip, varargin{:});
             M = mlfourd.ImagingContext2(ip.Results.M);
             boolM = M.logical;
+            assert(all(size(boolM) == sz(1:3)), 'mlfourd:RuntimeError', 'DynamicsTool.volumeContracted');
             
             if 4 == length(sz)
                 img = zeros(1,sz(4));
@@ -357,6 +418,12 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
  		function this = DynamicsTool(varargin)
             this = this@mlfourd.ImagingTool(varargin{:}); 
         end 
+    end
+
+    %% PROTECTED
+
+    methods (Access = protected)
+        
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 

@@ -356,12 +356,24 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function d = uint64(this)
             d = uint64(this.state_);
         end
+        function [s,r] = save_qc(this, varargin)
+            if strcmp(this.stateTypeclass, 'mlfourd.MatlabFormatTool')
+                this.state_.selectNiftiTool(this.state_.contexth_);
+            end
+            [s,r] = this.state_.save_qc(varargin{:});
+        end
         function [s,r] = view(this, varargin)
             if strcmp(this.stateTypeclass, 'mlfourd.MatlabFormatTool')
                 this.state_.selectNiftiTool(this.state_.contexth_);
             end
             [s,r] = this.state_.view(varargin{:});
-        end        
+        end
+        function [s,r] = view_qc(this, varargin)
+            if strcmp(this.stateTypeclass, 'mlfourd.MatlabFormatTool')
+                this.state_.selectNiftiTool(this.state_.contexth_);
+            end
+            [s,r] = this.state_.view_qc(varargin{:});
+        end
 
         function this = ImagingFormatContext2(imgobj, varargin)
             %  Args:
@@ -447,7 +459,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.selectImagingFormatTool();
             if ~contains(this.viewer.app, 'freeview')
                 [~,r] = mlbash('which freeview');
-                this.viewer = mlfourd.Viewer(strtrim(r));
+                this.viewer = mlfourd.Viewer('app', strtrim(r));
             end
             this.state_.view(varargin{:});
         end
@@ -455,7 +467,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.selectImagingFormatTool();
             if ~contains(this.viewer.app, 'fsleyes')
                 [~,r] = mlbash('which fsleyes');
-                this.viewer = mlfourd.Viewer(strtrim(r));
+                this.viewer = mlfourd.Viewer('app', strtrim(r));
             end
             this.state_.view(varargin{:});
         end

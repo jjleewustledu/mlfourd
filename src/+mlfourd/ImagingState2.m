@@ -137,6 +137,13 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         
         %% select states
 
+        function selectBidsTool(this, contexth)
+            if ~isa(this, 'mlfourd.BidsTool')
+                this.addLog('mlfourd.ImagingState2.selectBidsTool');
+                contexth.changeState( ...
+                    mlfourd.BidsTool(contexth, this.imagingFormat_));
+            end
+        end
         function selectBlurringTool(this, contexth)
             if ~isa(this, 'mlfourd.BlurringTool')
                 this.addLog('mlfourd.ImagingState2.selectBlurringTool');

@@ -432,6 +432,145 @@ classdef JimmyShen
                     error('mlfourd:TypeError', 'Datatype is not supported by make_nii.');
             end
         end
+        function reslice_nii(old_fn, new_fn, voxel_size, verbose, bg, method, img_idx, preferredForm)
+            %%  The basic application of the 'reslice_nii.m' program is to perform
+            %  any 3D affine transform defined by a NIfTI format image.
+            %
+            %  In addition, the 'reslice_nii.m' program can also be applied to
+            %  generate an isotropic image from either a NIfTI format image or
+            %  an ANALYZE format image.
+            %
+            %  The resliced NIfTI file will always be in RAS orientation.
+            %
+            %  This program only supports real integer or floating-point data type.
+            %  For other data type, the program will exit with an error message 
+            %  "Transform of this NIFTI data is not supported by the program".
+            %
+            %  Usage: reslice_nii(old_fn, new_fn, [voxel_size], [verbose], [bg], ...
+            %			[method], [img_idx], [preferredForm]);
+            %
+            %  old_fn  -	filename for original NIfTI file
+            %
+            %  new_fn  -	filename for resliced NIfTI file
+            %
+            %  voxel_size (optional)  - size of a voxel in millimeter along x y z
+            %		direction for resliced NIfTI file. 'voxel_size' will use
+            %		the minimum voxel_size in original NIfTI header,
+            %		if it is default or empty.
+            %
+            %  verbose (optional) - 1, 0
+            %			1:  show transforming progress in percentage
+            %			0:  progress will not be displayed
+            %			'verbose' is 0 if it is default or empty.
+            %
+            %  bg (optional)  -	background voxel intensity in any extra corner that
+            %			is caused by 3D interpolation. 0 in most cases. 'bg'
+            %			will be the average of two corner voxel intensities
+            %			in original image volume, if it is default or empty.
+            %
+            %  method (optional)  -	1, 2, or 3
+            %			1:  for Trilinear interpolation
+            %			2:  for Nearest Neighbor interpolation
+            %			3:  for Fischer's Bresenham interpolation
+            %			'method' is 1 if it is default or empty.
+            %
+            %  img_idx (optional)  -  a numerical array of image volume indices. Only
+            %		the specified volumes will be loaded. All available image
+            %		volumes will be loaded, if it is default or empty.
+            %
+            %	The number of images scans can be obtained from get_nii_frame.m,
+            %	or simply: hdr.dime.dim(5).
+            %
+            %  preferredForm (optional)  -  selects which transformation from voxels
+            %	to RAS coordinates; values are s,q,S,Q.  Lower case s,q indicate
+            %	"prefer sform or qform, but use others if preferred not present". 
+            %	Upper case indicate the program is forced to use the specificied
+            %	tranform or fail loading.  'preferredForm' will be 's', if it is
+            %	default or empty.	- Jeff Gunter
+            %
+            %  NIFTI data format can be found on: http://nifti.nimh.nih.gov
+            %  
+            %  - Jimmy Shen (jshen@research.baycrest.org)
+
+            import mlfourd.JimmyShen;
+            import mlfourd.JimmyShen.affine;
+            import mlfourd.JimmyShen.load_nii_no_xform;
+            import mlfourd.JimmyShen.save_nii;
+
+            old_fn = convertStringsToChars(old_fn);
+            new_fn = convertStringsToChars(new_fn);
+            if exist('preferredForm','var')
+                preferredForm = convertStringsToChars(preferredForm);
+            end
+
+            if ~exist('old_fn','var') || ~exist('new_fn','var')
+                error('Usage: reslice_nii(old_fn, new_fn, [voxel_size], [verbose], [bg], [method], [img_idx])');
+            end
+
+            if ~exist('method','var') || isempty(method)
+                method = 1;
+            end
+
+            if ~exist('img_idx','var') || isempty(img_idx)
+                img_idx = [];
+            end
+
+            if ~exist('verbose','var') || isempty(verbose)
+                verbose = 0;
+            end
+
+            if ~exist('preferredForm','var') || isempty(preferredForm)
+                preferredForm= 's';	% Jeff
+            end
+
+            nii = load_nii_no_xform(old_fn, img_idx, 0, preferredForm);
+
+            if ~ismember(nii.hdr.dime.datatype, [2,4,8,16,64,256,512,768])
+                error('Transform of this NIFTI data is not supported by the program.');
+            end
+
+            if ~exist('voxel_size','var') || isempty(voxel_size)
+                voxel_size = abs(min(nii.hdr.dime.pixdim(2:4)))*ones(1,3);
+            elseif length(voxel_size) < 3
+                voxel_size = abs(voxel_size(1))*ones(1,3);
+            end
+
+            if ~exist('bg','var') || isempty(bg)
+                bg = mean([nii.img(1) nii.img(end)]);
+            end
+
+            old_M = nii.hdr.hist.old_affine;
+
+            if nii.hdr.dime.dim(5) > 1
+                for i = 1:nii.hdr.dime.dim(5)
+                    if verbose
+                        fprintf('Reslicing %d of %d volumes.\n', i, nii.hdr.dime.dim(5));
+                    end
+
+                    [img(:,:,:,i),M] = ...
+                		affine(nii.img(:,:,:,i), old_M, voxel_size, verbose, bg, method);
+                end
+            else
+                [img,M] = affine(nii.img, old_M, voxel_size, verbose, bg, method);
+            end
+
+            new_dim = size(img);
+            nii.img = img;
+            nii.hdr.dime.dim(2:4) = new_dim(1:3);
+            nii.hdr.dime.datatype = 16;
+            nii.hdr.dime.bitpix = 32;
+            nii.hdr.dime.pixdim(2:4) = voxel_size(:)';
+            nii.hdr.dime.glmax = max(img(:));
+            nii.hdr.dime.glmin = min(img(:));
+            nii.hdr.hist.qform_code = 0;
+            nii.hdr.hist.sform_code = 1;
+            nii.hdr.hist.srow_x = M(1,:);
+            nii.hdr.hist.srow_y = M(2,:);
+            nii.hdr.hist.srow_z = M(3,:);
+            nii.hdr.hist.new_affine = M;
+
+            save_nii(nii, new_fn);
+        end
         function save_nii(nii, fileprefix, old_RGB)
             %% Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.
             %  If file extension is not provided, *.hdr/*.img will be used as default.
@@ -1629,7 +1768,7 @@ classdef JimmyShen
                         msg = [msg '      image, but I don''t suggest this.' newline newline];
                         msg = [msg '   To get help, please type:' newline newline '   help reslice_nii.m' newline];
                         msg = [msg '   help load_untouch_nii.m' newline '   help load_nii.m'];
-                        error(msg);
+                        error('mlfourd:JimmyShen:RuntimeError', msg);
                     end
                 end
 
@@ -1792,7 +1931,7 @@ classdef JimmyShen
         %% make_nii dependencies
 
         function hdr = make_header(dims, voxel_size, origin, datatype, ...
-            	descrip, maxval, minval)
+                descrip, maxval, minval)
 
             import mlfourd.JimmyShen;
 
@@ -1880,6 +2019,935 @@ classdef JimmyShen
             hist.originator = origin;
         end
         
+        %% reslice_nii dependencies
+
+        function [new_img,new_M] = affine(old_img, old_M, new_elem_size, verbose, bg, method)
+            %% Using 2D or 3D affine matrix to rotate, translate, scale, reflect and
+            %  shear a 2D image or 3D volume. 2D image is represented by a 2D matrix,
+            %  3D volume is represented by a 3D matrix, and data type can be real 
+            %  integer or floating-point.
+            %
+            %  You may notice that MATLAB has a function called 'imtransform.m' for
+            %  2D spatial transformation. However, keep in mind that 'imtransform.m'
+            %  assumes y for the 1st dimension, and x for the 2nd dimension. They are
+            %  equivalent otherwise.
+            %
+            %  In addition, if you adjust the 'new_elem_size' parameter, this 'affine.m'
+            %  is equivalent to 'interp2.m' for 2D image, and equivalent to 'interp3.m'
+            %  for 3D volume.
+            %
+            %  Usage: [new_img new_M] = ...
+            %	affine(old_img, old_M, [new_elem_size], [verbose], [bg], [method]);
+            %
+            %  old_img  -	original 2D image or 3D volume. We assume x for the 1st
+            %		dimension, y for the 2nd dimension, and z for the 3rd
+            %		dimension.
+            %
+            %  old_M  -	a 3x3 2D affine matrix for 2D image, or a 4x4 3D affine
+            %		matrix for 3D volume. We assume x for the 1st dimension,
+            %		y for the 2nd dimension, and z for the 3rd dimension.
+            %
+            %  new_elem_size (optional)  -  size of voxel along x y z direction for 
+            %		a transformed 3D volume, or size of pixel along x y for
+            %		a transformed 2D image. We assume x for the 1st dimension
+            %		y for the 2nd dimension, and z for the 3rd dimension.
+            %		'new_elem_size' is 1 if it is default or empty.
+            %
+            %		You can increase its value to decrease the resampling rate,
+            %		and make the 2D image or 3D volume more coarse. It works
+            %		just like 'interp3'.
+            %
+            %  verbose (optional) - 1, 0
+            %		1:  show transforming progress in percentage
+            %		2:  progress will not be displayed
+            %		'verbose' is 1 if it is default or empty.
+            %
+            %  bg (optional) - background voxel intensity in any extra corner that
+            %		is caused by the interpolation. 0 in most cases. If it is
+            %		default or empty, 'bg' will be the average of two corner
+            %		voxel intensities in original data.
+            %
+            %  method (optional) - 1, 2, or 3
+            %		1:  for Trilinear interpolation
+            %		2:  for Nearest Neighbor interpolation
+            %		3:  for Fischer's Bresenham interpolation
+            %		'method' is 1 if it is default or empty.
+            %
+            %  new_img - transformed 2D image or 3D volume
+            %
+            %  new_M - transformed affine matrix
+            %
+            %  Example 1 (3D rotation):
+            %	load mri.mat;   old_img = double(squeeze(D));
+            %	old_M = [0.88 0.5 3 -90; -0.5 0.88 3 -126; 0 0 2 -72; 0 0 0 1];
+            %	new_img = affine(old_img, old_M, 2);
+            %	[x y z] = meshgrid(1:128,1:128,1:27);
+            %	sz = size(new_img);
+            %	[x1 y1 z1] = meshgrid(1:sz(2),1:sz(1),1:sz(3));
+            %	figure; slice(x, y, z, old_img, 64, 64, 13.5);
+            %	shading flat; colormap(map); view(-66, 66);
+            %	figure; slice(x1, y1, z1, new_img, sz(1)/2, sz(2)/2, sz(3)/2);
+            %	shading flat; colormap(map); view(-66, 66);
+            %
+            %  Example 2 (2D interpolation):
+            %	load mri.mat;   old_img=D(:,:,1,13)';
+            %	old_M = [1 0 0; 0 1 0; 0 0 1];
+            %	new_img = affine(old_img, old_M, [.2 .4]);
+            %	figure; image(old_img); colormap(map);
+            %	figure; image(new_img); colormap(map);
+            %
+            %  This program is inspired by:
+            %  SPM5 Software from Wellcome Trust Centre for Neuroimaging
+            %	http://www.fil.ion.ucl.ac.uk/spm/software
+            %  Fischer, J., A. del Rio (2004). A Fast Method for Applying Rigid
+            %	Transformations to Volume Data, WSCG2004 Conference.
+            %	http://wscg.zcu.cz/wscg2004/Papers_2004_Short/M19.pdf
+            %  
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+
+            import mlfourd.JimmyShen;
+            import mlfourd.JimmyShen.trilinear;
+            import mlfourd.JimmyShen.nearest_neighbor;
+            import mlfourd.JimmyShen.bresenham;
+
+            if ~exist('old_img','var') || ~exist('old_M','var')
+                error('Usage: [new_img new_M] = affine(old_img, old_M, [new_elem_size], [verbose], [bg], [method]);');
+            end
+
+            if ndims(old_img) == 3
+                if ~isequal(size(old_M),[4 4])
+                    error('old_M should be a 4x4 affine matrix for 3D volume.');
+                end
+            elseif ndims(old_img) == 2
+                if ~isequal(size(old_M),[3 3])
+                    error('old_M should be a 3x3 affine matrix for 2D image.');
+                end
+            else
+                error('old_img should be either 2D image or 3D volume.');
+            end
+
+            if ~exist('new_elem_size','var') || isempty(new_elem_size)
+                new_elem_size = [1 1 1];
+            elseif length(new_elem_size) < 2
+                new_elem_size = new_elem_size(1)*ones(1,3);
+            elseif length(new_elem_size) < 3
+                new_elem_size = [new_elem_size(:); 1]';
+            end
+
+            if ~exist('method','var') || isempty(method)
+                method = 1;
+            elseif ~exist('bresenham_line3d.m','file') && method == 3
+                error([newline newline 'Please download 3D Bresenham''s line generation program from:' newline newline 'http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=21057' newline newline 'to test Fischer''s Bresenham interpolation method.' newline newline]);
+            end
+
+            %  Make compatible to MATLAB earlier than version 7 (R14), which
+            %  can only perform arithmetic on double data type
+            %
+            old_img = double(old_img);
+            old_dim = size(old_img);
+
+            if ~exist('bg','var') | isempty(bg)
+                bg = mean([old_img(1) old_img(end)]);
+            end
+
+            if ~exist('verbose','var') | isempty(verbose)
+                verbose = 1;
+            end
+
+            if ndims(old_img) == 2
+                old_dim(3) = 1;
+                old_M = old_M(:, [1 2 3 3]);
+                old_M = old_M([1 2 3 3], :);
+                old_M(3,:) = [0 0 1 0];
+                old_M(:,3) = [0 0 1 0]';
+            end
+
+            %  Vertices of img in voxel
+            %
+            XYZvox = [	1		1		1
+        		1		1		old_dim(3)
+        		1		old_dim(2)	1
+        		1		old_dim(2)	old_dim(3)
+        		old_dim(1)	1		1
+        		old_dim(1)	1		old_dim(3)
+        		old_dim(1)	old_dim(2)	1
+        		old_dim(1)	old_dim(2)	old_dim(3)   ]';
+
+            old_R = old_M(1:3,1:3);
+            old_T = old_M(1:3,4);
+
+            %  Vertices of img in millimeter
+            %
+            XYZmm = old_R*(XYZvox-1) + repmat(old_T, [1, 8]);
+
+            %  Make scale of new_M according to new_elem_size
+            %
+            new_M = diag([new_elem_size 1]);
+
+            %  Make translation so minimum vertex is moved to [1,1,1]
+            %
+            new_M(1:3,4) = round( min(XYZmm,[],2) );
+
+            %  New dimensions will be the maximum vertices in XYZ direction (dim_vox)
+            %  i.e. compute   dim_vox   via   dim_mm = R*(dim_vox-1)+T
+            %  where, dim_mm = round(max(XYZmm,[],2));
+            %
+            new_dim = ceil(new_M(1:3,1:3) \ ( round(max(XYZmm,[],2))-new_M(1:3,4) )+1)';
+
+            %  Initialize new_img with new_dim
+            %
+            new_img = zeros(new_dim(1:3));
+
+            %  Mask out any changes from Z axis of transformed volume, since we
+            %  will traverse it voxel by voxel below. We will only apply unit
+            %  increment of mask_Z(3,4) to simulate the cursor movement
+            %
+            %  i.e. we will use   mask_Z * new_XYZvox   to replace   new_XYZvox
+            %
+            mask_Z = diag(ones(1,4));
+            mask_Z(3,3) = 0;
+
+            %  It will be easier to do the interpolation if we invert the process
+            %  by not traversing the original volume. Instead, we traverse the
+            %  transformed volume, and backproject each voxel in the transformed
+            %  volume back into the original volume. If the backprojected voxel
+            %  in original volume is within its boundary, the intensity of that
+            %  voxel can be used by the cursor location in the transformed volume.
+            %
+            %  First, we traverse along Z axis of transformed volume voxel by voxel
+            %
+            for z = 1:new_dim(3)
+
+                if verbose && ~mod(z,10)
+                    fprintf('%.2f percent is done.\n', 100*z/new_dim(3));
+                end
+
+                %  We need to find out the mapping from voxel in the transformed
+                %  volume (new_XYZvox) to voxel in the original volume (old_XYZvox)
+                %
+                %  The following equation works, because they all equal to XYZmm:
+                %  new_R*(new_XYZvox-1) + new_T  ==  old_R*(old_XYZvox-1) + old_T
+                %
+                %  We can use modified new_M1 & old_M1 to substitute new_M & old_M
+                %      new_M1 * new_XYZvox       ==       old_M1 * old_XYZvox
+                %
+                %  where: M1 = M;   M1(:,4) = M(:,4) - sum(M(:,1:3),2);
+                %  and:             M(:,4) == [T; 1] == sum(M1,2)
+                %
+                %  Therefore:   old_XYZvox = old_M1 \ new_M1 * new_XYZvox;
+                %
+                %  Since we are traverse Z axis, and   new_XYZvox   is replaced
+                %  by   mask_Z * new_XYZvox, the above formula can be rewritten
+                %  as:    old_XYZvox = old_M1 \ new_M1 * mask_Z * new_XYZvox;
+                %
+                %  i.e. we find the mapping from new_XYZvox to old_XYZvox:
+                %  M = old_M1 \ new_M1 * mask_Z;
+                %
+                %  First, compute modified old_M1 & new_M1
+                %
+                old_M1 = old_M;   old_M1(:,4) = old_M(:,4) - sum(old_M(:,1:3),2);
+                new_M1 = new_M;   new_M1(:,4) = new_M(:,4) - sum(new_M(:,1:3),2);
+
+                %  Then, apply unit increment of mask_Z(3,4) to simulate the
+                %  cursor movement
+                %
+                mask_Z(3,4) = z;
+
+                %  Here is the mapping from new_XYZvox to old_XYZvox
+                %
+                M = old_M1 \ new_M1 * mask_Z;
+
+                switch method
+                    case 1
+                        new_img(:,:,z) = trilinear(old_img, new_dim, old_dim, M, bg);
+                    case 2
+                        new_img(:,:,z) = nearest_neighbor(old_img, new_dim, old_dim, M, bg);
+                    case 3
+                        new_img(:,:,z) = bresenham(old_img, new_dim, old_dim, M, bg);
+                end
+
+            end	% for z
+
+            if ndims(old_img) == 2
+                new_M(3,:) = [];
+                new_M(:,3) = [];
+            end
+        end
+        function img_slice = bresenham(img, dim1, dim2, M, bg)
+
+            import mlfourd.JimmyShen;
+            import mlfourd.JimmyShen.bresenham_line3d;
+
+            img_slice = zeros(dim1(1:2));
+
+            %  Dimension of transformed 3D volume
+            %
+            xdim1 = dim1(1);
+            ydim1 = dim1(2);
+
+            %  Dimension of original 3D volume
+            %
+            xdim2 = dim2(1);
+            ydim2 = dim2(2);
+            zdim2 = dim2(3);
+
+            for y = 1:ydim1
+
+                start_old_XYZ = round(M*[0     y 0 1]');
+                end_old_XYZ   = round(M*[xdim1 y 0 1]');
+
+                [X,Y,Z] = bresenham_line3d(start_old_XYZ, end_old_XYZ);
+
+                %  line error correction
+                %
+                %      del = end_old_XYZ - start_old_XYZ;
+                %     del_dom = max(del);
+                %    idx_dom = find(del==del_dom);
+                %   idx_dom = idx_dom(1);
+                %  idx_other = [1 2 3];
+                % idx_other(idx_dom) = [];
+                %del_x1 = del(idx_other(1));
+                %      del_x2 = del(idx_other(2));
+                %     line_slope = sqrt((del_x1/del_dom)^2 + (del_x2/del_dom)^2 + 1);
+                %    line_error = line_slope - 1;
+                % line error correction removed because it is too slow
+
+                for x = 1:xdim1
+
+                    %  rescale ratio
+                    %
+                    i = round(x * length(X) / xdim1);
+
+                    if i < 1
+                        i = 1;
+                    elseif i > length(X)
+                        i = length(X);
+                    end
+
+                    xi = X(i);
+                    yi = Y(i);
+                    zi = Z(i);
+
+                    %  within boundary of the old XYZ space
+                    %
+                    if (	xi >= 1 && xi <= xdim2 && ...
+                    		yi >= 1 && yi <= ydim2 && ...
+                    		zi >= 1 && zi <= zdim2	)
+
+                        img_slice(x,y) = img(xi,yi,zi);
+
+                        %            if line_error > 1
+                        %              x = x + 1;
+
+                        %               if x <= xdim1
+                        %                 img_slice(x,y) = img(xi,yi,zi);
+                        %                line_error = line_slope - 1;
+                        %            end
+                        %        end		% if line_error
+                        % line error correction removed because it is too slow
+
+                    else
+                        img_slice(x,y) = bg;
+
+                    end	% if boundary
+
+                end	% for x
+            end		% for y
+        end
+        function [X,Y,Z] = bresenham_line3d(P1, P2, precision)
+            %% Generate X Y Z coordinates of a 3D Bresenham's line between
+            %  two given points.
+            %
+            %  A very useful application of this algorithm can be found in the
+            %  implementation of Fischer's Bresenham interpolation method in my
+            %  another program that can rotate three dimensional image volume
+            %  with an affine matrix:
+            %  http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=21080
+            %
+            %  Usage: [X Y Z] = bresenham_line3d(P1, P2, [precision]);
+            %
+            %  P1	- vector for Point1, where P1 = [x1 y1 z1]
+            %
+            %  P2	- vector for Point2, where P2 = [x2 y2 z2]
+            %
+            %  precision (optional) - Although according to Bresenham's line
+            %	algorithm, point coordinates x1 y1 z1 and x2 y2 z2 should
+            %	be integer numbers, this program extends its limit to all
+            %	real numbers. If any of them are floating numbers, you
+            %	should specify how many digits of decimal that you would
+            %	like to preserve. Be aware that the length of output X Y
+            %	Z coordinates will increase in 10 times for each decimal
+            %	digit that you want to preserve. By default, the precision
+            %	is 0, which means that they will be rounded to the nearest
+            %	integer.
+            %
+            %  X	- a set of x coordinates on Bresenham's line
+            %
+            %  Y	- a set of y coordinates on Bresenham's line
+            %
+            %  Z	- a set of z coordinates on Bresenham's line
+            %
+            %  Therefore, all points in XYZ set (i.e. P(i) = [X(i) Y(i) Z(i)])
+            %  will constitute the Bresenham's line between P1 and P1.
+            %
+            %  Example:
+            %	P1 = [12 37 6];     P2 = [46 3 35];
+            %	[X Y Z] = bresenham_line3d(P1, P2);
+            %	figure; plot3(X,Y,Z,'s','markerface','b');
+            %
+            %  This program is ported to MATLAB from:
+            %
+            %  B.Pendleton.  line3d - 3D Bresenham's (a 3D line drawing algorithm)
+            %  ftp://ftp.isc.org/pub/usenet/comp.sources.unix/volume26/line3d, 1992
+            %
+            %  Which is also referenced by:
+            %
+            %  Fischer, J., A. del Rio (2004).  A Fast Method for Applying Rigid
+            %  Transformations to Volume Data, WSCG2004 Conference.
+            %  http://wscg.zcu.cz/wscg2004/Papers_2004_Short/M19.pdf
+            %
+            %  - Jimmy Shen (jimmy@rotman-baycrest.on.ca)
+
+            import mlfourd.JimmyShen;
+
+            if ~exist('precision','var') || isempty(precision) || round(precision) == 0
+                precision = 0;
+                P1 = round(P1);
+                P2 = round(P2);
+            else
+                precision = round(precision);
+                P1 = round(P1*(10^precision));
+                P2 = round(P2*(10^precision));
+            end
+
+            d = max(abs(P2-P1)+1);
+            X = zeros(1, d);
+            Y = zeros(1, d);
+            Z = zeros(1, d);
+
+            x1 = P1(1);
+            y1 = P1(2);
+            z1 = P1(3);
+
+            x2 = P2(1);
+            y2 = P2(2);
+            z2 = P2(3);
+
+            dx = x2 - x1;
+            dy = y2 - y1;
+            dz = z2 - z1;
+
+            ax = abs(dx)*2;
+            ay = abs(dy)*2;
+            az = abs(dz)*2;
+
+            sx = sign(dx);
+            sy = sign(dy);
+            sz = sign(dz);
+
+            x = x1;
+            y = y1;
+            z = z1;
+            idx = 1;
+
+            if (ax>=max(ay,az))			% x dominant
+                yd = ay - ax/2;
+                zd = az - ax/2;
+
+                while (1)
+                    X(idx) = x;
+                    Y(idx) = y;
+                    Z(idx) = z;
+                    idx = idx + 1;
+
+                    if(x == x2)		% end
+                        break;
+                    end
+
+                    if(yd >= 0)		% move along y
+                        y = y + sy;
+                        yd = yd - ax;
+                    end
+
+                    if(zd >= 0)		% move along z
+                        z = z + sz;
+                        zd = zd - ax;
+                    end
+
+                    x  = x  + sx;		% move along x
+                    yd = yd + ay;
+                    zd = zd + az;
+                end
+            elseif (ay>=max(ax,az))		% y dominant
+                xd = ax - ay/2;
+                zd = az - ay/2;
+
+                while (1)
+                    X(idx) = x;
+                    Y(idx) = y;
+                    Z(idx) = z;
+                    idx = idx + 1;
+
+                    if(y == y2)		% end
+                        break;
+                    end
+
+                    if(xd >= 0)		% move along x
+                        x = x + sx;
+                        xd = xd - ay;
+                    end
+
+                    if(zd >= 0)		% move along z
+                        z = z + sz;
+                        zd = zd - ay;
+                    end
+
+                    y  = y  + sy;		% move along y
+                    xd = xd + ax;
+                    zd = zd + az;
+                end
+            elseif (az>=max(ax,ay))		% z dominant
+                xd = ax - az/2;
+                yd = ay - az/2;
+
+                while (1)
+                    X(idx) = x;
+                    Y(idx) = y;
+                    Z(idx) = z;
+                    idx = idx + 1;
+
+                    if(z == z2)		% end
+                        break;
+                    end
+
+                    if(xd >= 0)		% move along x
+                        x = x + sx;
+                        xd = xd - az;
+                    end
+
+                    if(yd >= 0)		% move along y
+                        y = y + sy;
+                        yd = yd - az;
+                    end
+
+                    z  = z  + sz;		% move along z
+                    xd = xd + ax;
+                    yd = yd + ay;
+                end
+            end
+            if precision ~= 0
+                X = X/(10^precision);
+                Y = Y/(10^precision);
+                Z = Z/(10^precision);
+            end
+        end
+        function [nii] = load_nii_no_xform(filename, img_idx, old_RGB, preferredForm)
+        
+            import mlfourd.JimmyShen;
+            import mlfourd.JimmyShen.load_nii_hdr;
+            import mlfourd.JimmyShen.load_nii_img;
+
+            filename = convertStringsToChars(filename);
+
+            if ~exist('filename','var')
+                error('Usage: [nii] = load_nii(filename, [img_idx], [old_RGB])');
+            end
+
+            if ~exist('img_idx','var'), img_idx = []; end
+            if ~exist('old_RGB','var'), old_RGB = 0; end
+            if ~exist('preferredForm','var'), preferredForm= 's'; end     % Jeff
+
+            v = version;
+
+            %  Check file extension. If .gz, unpack it into temp folder
+            %
+            if length(filename) > 2 && strcmp(filename(end-2:end), '.gz')
+
+                if ~strcmp(filename(end-6:end), '.img.gz') && ...
+            	         ~strcmp(filename(end-6:end), '.hdr.gz') && ...
+            	         ~strcmp(filename(end-6:end), '.nii.gz')
+                    error('Please check filename.');
+                end
+
+                if str2double(v(1:3)) < 7.1 || ~usejava('jvm')
+                    error('Please use MATLAB 7.1 (with java) and above, or run gunzip outside MATLAB.');
+                elseif strcmp(filename(end-6:end), '.img.gz')
+                    filename1 = filename;
+                    filename2 = filename;
+                    filename2(end-6:end) = '';
+                    filename2 = [filename2, '.hdr.gz'];
+
+                    tmpDir = tempname;
+                    mkdir(tmpDir);
+                    gzFileName = filename;
+
+                    filename1 = gunzip(filename1, tmpDir);
+                    filename2 = gunzip(filename2, tmpDir);
+                    filename = char(filename1); % convert from cell to string
+                elseif strcmp(filename(end-6:end), '.hdr.gz')
+                    filename1 = filename;
+                    filename2 = filename;
+                    filename2(end-6:end) = '';
+                    filename2 = [filename2, '.img.gz'];
+
+                    tmpDir = tempname;
+                    mkdir(tmpDir);
+                    gzFileName = filename;
+
+                    filename1 = gunzip(filename1, tmpDir);
+                    filename2 = gunzip(filename2, tmpDir);
+                    filename = char(filename1); % convert from cell to string
+                elseif strcmp(filename(end-6:end), '.nii.gz')
+                    tmpDir = tempname;
+                    mkdir(tmpDir);
+                    gzFileName = filename;
+                    filename = gunzip(filename, tmpDir);
+                    filename = char(filename);	% convert from cell to string
+                end
+            end
+
+            %  Read the dataset header
+            %
+            [nii.hdr,nii.filetype,nii.fileprefix,nii.machine] = ...
+                load_nii_hdr(filename);
+
+            %  Read the header extension
+            %
+            %nii.ext = load_nii_ext(filename);
+
+            %  Read the dataset body
+            %
+            [nii.img,nii.hdr] = ...
+                load_nii_img(nii.hdr,nii.filetype,nii.fileprefix,nii.machine,img_idx,'','','',old_RGB);
+
+            %  Perform some of sform/qform transform
+            %
+            %nii = xform_nii(nii, preferredForm);
+
+            %  Clean up after gunzip
+            %
+            if exist('gzFileName', 'var')
+
+                %  fix fileprefix so it doesn't point to temp location
+                %
+                nii.fileprefix = gzFileName(1:end-7);
+                rmdir(tmpDir,'s');
+            end
+
+            hdr = nii.hdr;
+
+            %  NIFTI can have both sform and qform transform. This program
+            %  will check sform_code prior to qform_code by default.
+            %
+            %  If user specifys "preferredForm", user can then choose the
+            %  priority.	 - Jeff
+            %
+            useForm=[];				% Jeff
+
+            if isequal(preferredForm,'S')
+                if isequal(hdr.hist.sform_code,0)
+                    error('User requires sform, sform not set in header');
+                else
+                    useForm='s';
+                end
+            end						% Jeff
+
+            if isequal(preferredForm,'Q')
+                if isequal(hdr.hist.qform_code,0)
+                    error('User requires sform, sform not set in header');
+                else
+                    useForm='q';
+                end
+            end						% Jeff
+
+            if isequal(preferredForm,'s')
+                if hdr.hist.sform_code > 0
+                    useForm='s';
+                elseif hdr.hist.qform_code > 0
+                    useForm='q';
+                end
+            end						% Jeff
+
+            if isequal(preferredForm,'q')
+                if hdr.hist.qform_code > 0
+                    useForm='q';
+                elseif hdr.hist.sform_code > 0
+                    useForm='s';
+                end
+            end						% Jeff
+
+            if isequal(useForm,'s')
+                R = [hdr.hist.srow_x(1:3)
+                    hdr.hist.srow_y(1:3)
+                    hdr.hist.srow_z(1:3)];
+
+                T = [hdr.hist.srow_x(4)
+                    hdr.hist.srow_y(4)
+                    hdr.hist.srow_z(4)];
+
+                nii.hdr.hist.old_affine = [ [R;[0 0 0]] [T;1] ];
+
+            elseif isequal(useForm,'q')
+                b = hdr.hist.quatern_b;
+                c = hdr.hist.quatern_c;
+                d = hdr.hist.quatern_d;
+
+                if 1.0-(b*b+c*c+d*d) < 0
+                    if abs(1.0-(b*b+c*c+d*d)) < 1e-5
+                        a = 0;
+                    else
+                        error('Incorrect quaternion values in this NIFTI data.');
+                    end
+                else
+                    a = sqrt(1.0-(b*b+c*c+d*d));
+                end
+
+                qfac = hdr.dime.pixdim(1);
+                i = hdr.dime.pixdim(2);
+                j = hdr.dime.pixdim(3);
+                k = qfac * hdr.dime.pixdim(4);
+
+                R = [a*a+b*b-c*c-d*d     2*b*c-2*a*d        2*b*d+2*a*c
+                    2*b*c+2*a*d         a*a+c*c-b*b-d*d    2*c*d-2*a*b
+                    2*b*d-2*a*c         2*c*d+2*a*b        a*a+d*d-c*c-b*b];
+
+                T = [hdr.hist.qoffset_x
+                    hdr.hist.qoffset_y
+                    hdr.hist.qoffset_z];
+
+                nii.hdr.hist.old_affine = [ [R * diag([i j k]);[0 0 0]] [T;1] ];
+
+            elseif nii.filetype == 0 && exist([nii.fileprefix '.mat'],'file')
+                ld = load([nii.fileprefix '.mat']); % old SPM affine matrix
+                M = ld.M;
+                R=M(1:3,1:3);
+                T=M(1:3,4);
+                T=R*ones(3,1)+T;
+                M(1:3,4)=T;
+                nii.hdr.hist.old_affine = M;
+            else
+                M = diag(hdr.dime.pixdim(2:5));
+                M(1:3,4) = -M(1:3,1:3)*(hdr.hist.originator(1:3)-1)';
+                M(4,4) = 1;
+                nii.hdr.hist.old_affine = M;
+            end
+        end
+        function img_slice = nearest_neighbor(img, dim1, dim2, M, bg)
+
+            import mlfourd.JimmyShen;
+
+            img_slice = zeros(dim1(1:2));
+
+            %  Dimension of transformed 3D volume
+            %
+            xdim1 = dim1(1);
+            ydim1 = dim1(2);
+
+            %  Dimension of original 3D volume
+            %
+            xdim2 = dim2(1);
+            ydim2 = dim2(2);
+            zdim2 = dim2(3);
+
+            %  initialize new_Y accumulation
+            %
+            Y2X = 0;
+            Y2Y = 0;
+            Y2Z = 0;
+
+            for y = 1:ydim1
+
+                %  increment of new_Y accumulation
+                %
+                Y2X = Y2X + M(1,2);		% new_Y to old_X
+                Y2Y = Y2Y + M(2,2);		% new_Y to old_Y
+                Y2Z = Y2Z + M(3,2);		% new_Y to old_Z
+
+                %  backproject new_Y accumulation and translation to old_XYZ
+                %
+                old_X = Y2X + M(1,4);
+                old_Y = Y2Y + M(2,4);
+                old_Z = Y2Z + M(3,4);
+
+                for x = 1:xdim1
+
+                    %  accumulate the increment of new_X and apply it
+                    %  to the backprojected old_XYZ
+                    %
+                    old_X = M(1,1) + old_X  ;
+                    old_Y = M(2,1) + old_Y  ;
+                    old_Z = M(3,1) + old_Z  ;
+
+                    xi = round(old_X);
+                    yi = round(old_Y);
+                    zi = round(old_Z);
+
+                    %  within boundary of original image
+                    %
+                    if (	xi >= 1 && xi <= xdim2 && ...
+                    		yi >= 1 && yi <= ydim2 && ...
+                    		zi >= 1 && zi <= zdim2	)
+                        img_slice(x,y) = img(xi,yi,zi);
+                    else
+                        img_slice(x,y) = bg;
+                    end	% if boundary
+
+                end	% for x
+            end		% for y
+        end
+        function img_slice = trilinear(img, dim1, dim2, M, bg)
+
+            import mlfourd.JimmyShen;
+
+            img_slice = zeros(dim1(1:2));
+            TINY = 5e-2; % tolerance
+
+            %  Dimension of transformed 3D volume
+            %
+            xdim1 = dim1(1);
+            ydim1 = dim1(2);
+
+            %  Dimension of original 3D volume
+            %
+            xdim2 = dim2(1);
+            ydim2 = dim2(2);
+            zdim2 = dim2(3);
+
+            %  initialize new_Y accumulation
+            %
+            Y2X = 0;
+            Y2Y = 0;
+            Y2Z = 0;
+
+            for y = 1:ydim1
+
+                %  increment of new_Y accumulation
+                %
+                Y2X = Y2X + M(1,2);		% new_Y to old_X
+                Y2Y = Y2Y + M(2,2);		% new_Y to old_Y
+                Y2Z = Y2Z + M(3,2);		% new_Y to old_Z
+
+                %  backproject new_Y accumulation and translation to old_XYZ
+                %
+                old_X = Y2X + M(1,4);
+                old_Y = Y2Y + M(2,4);
+                old_Z = Y2Z + M(3,4);
+
+                for x = 1:xdim1
+
+                    %  accumulate the increment of new_X, and apply it
+                    %  to the backprojected old_XYZ
+                    %
+                    old_X = M(1,1) + old_X  ;
+                    old_Y = M(2,1) + old_Y  ;
+                    old_Z = M(3,1) + old_Z  ;
+
+                    %  within boundary of original image
+                    %
+                    if (	old_X > 1-TINY && old_X < xdim2+TINY && ...
+                    		old_Y > 1-TINY && old_Y < ydim2+TINY && ...
+                    		old_Z > 1-TINY && old_Z < zdim2+TINY	)
+
+                        %  Calculate distance of old_XYZ to its neighbors for
+                        %  weighted intensity average
+                        %
+                        dx = old_X - floor(old_X);
+                        dy = old_Y - floor(old_Y);
+                        dz = old_Z - floor(old_Z);
+
+                        x000 = floor(old_X);
+                        x100 = x000 + 1;
+
+                        if floor(old_X) < 1
+                            x000 = 1;
+                            x100 = x000;
+                        elseif floor(old_X) > xdim2-1
+                            x000 = xdim2;
+                            x100 = x000;
+                        end
+
+                        x010 = x000;
+                        x001 = x000;
+                        x011 = x000;
+
+                        x110 = x100;
+                        x101 = x100;
+                        x111 = x100;
+
+                        y000 = floor(old_Y);
+                        y010 = y000 + 1;
+
+                        if floor(old_Y) < 1
+                            y000 = 1;
+                            y100 = y000;
+                        elseif floor(old_Y) > ydim2-1
+                            y000 = ydim2;
+                            y010 = y000;
+                        end
+
+                        y100 = y000;
+                        y001 = y000;
+                        y101 = y000;
+
+                        y110 = y010;
+                        y011 = y010;
+                        y111 = y010;
+
+                        z000 = floor(old_Z);
+                        z001 = z000 + 1;
+
+                        if floor(old_Z) < 1
+                            z000 = 1;
+                            z001 = z000;
+                        elseif floor(old_Z) > zdim2-1
+                            z000 = zdim2;
+                            z001 = z000;
+                        end
+
+                        z100 = z000;
+                        z010 = z000;
+                        z110 = z000;
+
+                        z101 = z001;
+                        z011 = z001;
+                        z111 = z001;
+
+                        x010 = x000;
+                        x001 = x000;
+                        x011 = x000;
+
+                        x110 = x100;
+                        x101 = x100;
+                        x111 = x100;
+
+                        v000 = double(img(x000, y000, z000));
+                        v010 = double(img(x010, y010, z010));
+                        v001 = double(img(x001, y001, z001));
+                        v011 = double(img(x011, y011, z011));
+
+                        v100 = double(img(x100, y100, z100));
+                        v110 = double(img(x110, y110, z110));
+                        v101 = double(img(x101, y101, z101));
+                        v111 = double(img(x111, y111, z111));
+
+                        img_slice(x,y) = v000*(1-dx)*(1-dy)*(1-dz) + ...
+                            v010*(1-dx)*dy*(1-dz) + ...
+                            v001*(1-dx)*(1-dy)*dz + ...
+                            v011*(1-dx)*dy*dz + ...
+                            v100*dx*(1-dy)*(1-dz) + ...
+                            v110*dx*dy*(1-dz) + ...
+                            v101*dx*(1-dy)*dz + ...
+                            v111*dx*dy*dz;
+
+                    else
+                        img_slice(x,y) = bg;
+
+                    end	% if boundary
+
+                end	% for x
+            end		% for y
+        end
+
         %% save_nii dependencies
 
         function write_nii(nii, filetype, fileprefix, old_RGB)
