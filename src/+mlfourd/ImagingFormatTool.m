@@ -582,6 +582,8 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             save_mat(that);
         end
         function [s,r] = save_qc(this, varargin)
+            %% varargin -> overlay images
+            
             setenv('PYOPENGL_PLATFORM', 'osmesa');
             s = []; r = '';
             
@@ -595,11 +597,12 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 % parse additional imaging to add to filelist of overlayed comparisons
                 assert(~isempty(varargin))
                 filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
-                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 25'), filelist(2:end), 'UniformOutput', false);
+                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 50'), filelist(2:end), 'UniformOutput', false);
                 
                 % confirm viewer
-                fqfns = filelist(contains(filelist, '.nii.gz'));
-                v = mlfourd.Viewer('early_options', sprintf(' render -of %s.png ', myfileprefix(fqfns{end})));
+                last = varargin{end};
+                last = mlfourd.ImagingContext2(last);
+                v = mlfourd.Viewer('early_options', sprintf(' render -hc -hl -c 20 -of %s.png ', last.fqfp));
                 assert(0 == mlbash(sprintf('which %s', v.app)), ...
                     'mlfourd:RuntimeError', ...
                     'ImagingFormatTool.save_qc could not find %s', v.app);
@@ -679,15 +682,11 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             end
         end
         function [s,r] = view_qc(this, varargin)
+            %% varargin -> overlay images
+            
             s = []; r = '';
 
-            try
-                % confirm viewer
-                v = mlfourd.Viewer();
-                assert(0 == mlbash(sprintf('which %s', v.app)), ...
-                    'mlfourd:RuntimeError', ...
-                    'ImagingFormatTool.view_qc could not find %s', v.app);
-
+            try                
                 % save tempfiles of imaging currently in memory which may be inconsistent with filesystem
                 temp = copy(this); % no side effects 
                 tn1 = tempname; % filestem for temp
@@ -697,7 +696,13 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 % parse additional imaging to add to filelist of overlayed comparisons
                 assert(~isempty(varargin))
                 filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
-                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 25'), filelist(2:end), 'UniformOutput', false);
+                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 50'), filelist(2:end), 'UniformOutput', false);
+
+                % confirm viewer
+                v = mlfourd.Viewer('early_options', '  ');
+                assert(0 == mlbash(sprintf('which %s', v.app)), ...
+                    'mlfourd:RuntimeError', ...
+                    'ImagingFormatTool.view_qc could not find %s', v.app);
 
                 % do view
                 [s,r] = v.aview(filelist{:});

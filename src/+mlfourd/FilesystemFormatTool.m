@@ -25,7 +25,7 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
         function sz = size(this, varargin)
             %% @todo refactor to call factory method imagingInfo().
 
-            if matches(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
+            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
                 try
                     [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
                     re = regexp(r, '\S+\s+dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
@@ -37,7 +37,7 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
                 end
                 return
             end
-            if matches(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
+            if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
                 try
                     [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
                     re = regexp(r, '\S+\s*dim0\s+(?<d0>\d+)\s*dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
@@ -50,7 +50,7 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
                 end
                 return
             end 
-            if matches(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
+            if contains(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.MGHInfo(this.fqfilename);
                     sz = imgi.ImageSize;

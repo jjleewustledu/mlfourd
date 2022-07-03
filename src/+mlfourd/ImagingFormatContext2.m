@@ -182,7 +182,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
                 case {'.nii', '.nii.gz'}
                     this.selectNiftiTool();
                 otherwise
-                    error('mlfourd:ValueError', 'ImagingFormatContext2.saveas().e ~ %s', e)
+                    error('mlfourd:ValueError', 'ImagingFormatContext2.saveas().ext ~ %s', ext)
             end
         end
         function this = selectFilesystemFormatTool(this)
