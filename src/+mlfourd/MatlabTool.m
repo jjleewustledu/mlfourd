@@ -537,7 +537,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.usxfun:  %s(%s)', func2str(funh), fp));
-            this.imagingFormat_.fileprefix = [fp '_' func2str(funh)];
+            this.imagingFormat_.fileprefix = strcat(fp, '_', func2str(funh));
         end
         function bsxfun(this, funh, b)
             %% BSXFUN overloads bsxfun for INIfTI
@@ -560,7 +560,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.bsxfun:  %s(%s, %s)', func2str(funh), fp, this.bstr(b)));
-            this.imagingFormat_.fileprefix = [fp '_' func2str(funh) '_' this.bstr(b)];
+            this.imagingFormat_.fileprefix = strcat(fp, '_', func2str(funh), '_', this.bstr(b));
         end
         
         function this = MatlabTool(contexth, imagingFormat, varargin)
