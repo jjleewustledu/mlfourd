@@ -72,7 +72,7 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
             parse(ip, M, funch);
             M = mlfourd.ImagingContext2(M);
             
-            v = this.imagingFormat_.img(M.nifti.img == 1);
+            v = this.imagingFormat_.img(M.nifti.img > 0);
             this.imagingFormat_.img = funch(v, varargin{:});
             this.fileprefix = sprintf('%s_maskedMaths_%s_%s', ...
                 this.fileprefix, M.fileprefix, func2str(funch));

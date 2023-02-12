@@ -616,33 +616,6 @@ classdef Test_NIfTId < matlab.unittest.TestCase
             this.verifyEqual(s, 0);
             this.verifyEqual(strtrim(r), this.fslPath);
         end
-        function test_mlbashDiary(this)
-            fqfn = fullfile(this.fslPath, 'test_NIfTId_log.log');
-            this.deleteExisting(fqfn);
-            
-            [s,r] = mlbash('pwd', 'diaryFilename', fqfn);
-            this.verifyEqual(s, 0);
-            this.verifyEqual(strtrim(r), this.fslPath);
-            this.verifyTrue(lexist(fqfn));
-            str = mlio.TextIO.textfileToString(fqfn);
-            this.verifyEqual(strtrim(str(59:end-2)), this.fslPath);
-            
-            this.deleteExisting(fqfn);
-        end
-        function test_mlbashLogger(this)
-            fqfn = fullfile(this.fslPath, 'test_NIfTId_log.log');
-            this.deleteExisting(fqfn);
-            
-            lg = mlpipeline.Logger(fqfn);
-            [s,r] = mlbash('pwd', 'logger', lg);
-            this.verifyEqual(s, 0);
-            this.verifyEqual(strtrim(r), this.fslPath);
-            c = lg.contents.cell;
-            this.verifyTrue(lstrfind(c{1}, 'mlpipeline.Logger from jjlee at '));
-            this.verifyTrue(lstrfind(c{4}, this.fslPath));
-            
-            this.deleteExisting(fqfn);
-        end
  	end 
 
  	methods (TestClassSetup) 

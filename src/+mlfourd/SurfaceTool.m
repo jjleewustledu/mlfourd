@@ -54,16 +54,21 @@ classdef SurfaceTool
 
             ip = inputParser;
             addRequired(ip, 'subject', @(x) ~isfolder(x)) % recon-all will create folder
-            addParameter(ip, 'i', @isfile)
-            addParameter(ip, 'T2', @isfile)
+            addParameter(ip, 'i', '', @isfile)
+            addParameter(ip, 'T2', '')
             parse(ip, varargin{:})
             ipr = ip.Results;
             
             exe = sprintf(fullfile(getenv('FREESURFER_HOME'), 'bin', 'recon-all'));
             [~,r] = mlbash(sprintf('%s -version', exe));
-            assert(contains(r, '7.2.0'))
-            cmd = sprintf('%s -subject %s -i %s -T2 %s -T2pial -all', ...
-                exe, ipr.subject, ipr.i, ipr.T2);
+            assert(contains(r, '7.3'))
+            if ~isempty(ipr.T2)
+                cmd = sprintf('%s -subject %s -i %s -T2 %s -T2pial -all', ...
+                    exe, ipr.subject, ipr.i, ipr.T2);
+            else
+                cmd = sprintf('%s -subject %s -i %s -all', ...
+                    exe, ipr.subject, ipr.i);
+            end
             [s,r] = mlbash(cmd)
         end
     end

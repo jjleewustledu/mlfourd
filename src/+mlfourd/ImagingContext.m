@@ -1,4 +1,4 @@
-classdef ImagingContext < handle & mlio.IOInterface
+classdef ImagingContext < handle & mlio.HandleIOInterface
 	%% IMAGINGCONTEXT provides the context for a state design pattern for imaging data.  It also 
     %  provides a facade pattern for many classes that directly represent imaging data.  It's intent  
     %  is to improve the fluent expressivity of behaviors involving imaging data.
@@ -8,7 +8,6 @@ classdef ImagingContext < handle & mlio.IOInterface
     %  When adding methods, see also:  mlfourd.ImagingState, mlfourd.NumericalNIfTIdState, mlfourd.NumericalNIfTId,
     %                                  mlfourd.MaskingNIfTId, mlpet.PETImagingContext, mlmr.MRImagingContext;
     %                                  or comparable mlfourd.*State, mlfourd.*NIfTId.
-    %  @deprecated
     
 	%  $Revision: 2627 $ 
  	%  was created $Date: 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) $ 
@@ -332,8 +331,8 @@ classdef ImagingContext < handle & mlio.IOInterface
             this.numericalNiftid;
             b = mlfourd.ImagingContext(this.state_.blurred(varargin{:}));
         end 
-        function c  = char(this, varargin)
-            c = this.state_.char(varargin{:});
+        function f  = char(this)
+            f = char(this.state_);
         end
         function      close(this)
             this.state_.close;
@@ -490,9 +489,6 @@ classdef ImagingContext < handle & mlio.IOInterface
 
             tf = this.state_.sizeLt(ic);
         end
-        function s  = string(this, varargin)
-            s = this.state_.string(varargin{:});
-        end
         function t  = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)
@@ -629,7 +625,7 @@ classdef ImagingContext < handle & mlio.IOInterface
             if (isa(obj, 'mlfourd.ImagingContext2'))
                 if (lstrfind(obj.filesuffix, '.4dfp'))
                     import mlfourdfp.*;
-                    this.state_ = FourdfpdState(Fourdfp(NIfTId(obj.nifti.getInnerImagingFormat)), this);
+                    this.state_ = FourdfpState(Fourdfp(NIfTId(obj.nifti.getInnerNIfTI)), this);
                     return
                 end
                 this.state_ = NIfTIdState(NIfTId(obj.nifti), this);

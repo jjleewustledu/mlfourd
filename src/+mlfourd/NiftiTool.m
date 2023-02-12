@@ -51,16 +51,25 @@ classdef NiftiTool < handle & mlfourd.ImagingFormatTool
             this = this@mlfourd.ImagingFormatTool(varargin{:});
         end
 
-        function save(this)
+        function save(this, opts)
             %% SAVE 
 
+            arguments
+                this mlfourd.NiftiTool
+                opts.savejson logical = true;
+                opts.savelog logical = true;
+            end
             this.assertNonemptyImg();
             this.ensureNoclobber();
             ensuredir(this.filepath);
 
             this.save_nii();
-            this.save_json_metadata();
-            this.saveLogger();
+            if opts.savejson
+                this.save_json_metadata();
+            end
+            if opts.savelog
+                this.saveLogger();
+            end
         end
     end
     

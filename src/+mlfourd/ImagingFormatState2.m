@@ -310,11 +310,11 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function l = logical(this)
             l = logical(this.img);
         end
-        function save(this)
+        function save(this, varargin)
             %% SAVE saves this as this.fqfilename on the filesystem.
 
             that = this.selectMatlabFormatTool(this.contexth_);
-            save_mat(that);
+            save_mat(that, varargin{:});
         end
         function s = single(this)
             s = single(this.img);

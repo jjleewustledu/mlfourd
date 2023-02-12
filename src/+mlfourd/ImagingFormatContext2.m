@@ -321,10 +321,10 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.selectImagingFormatTool();
             this.state_ = this.state_.reset_scl();
         end
-        function save(this)
+        function save(this, varargin)
             %% SAVE saves the imaging format state as this.fqfilename on the filesystem.
             
-            save(this.state_);
+            save(this.state_, varargin{:});
         end
         function this = saveas(this, filename)
             %% SAVEAS saves the imaging format state as this.fqfilename on the filesystem.

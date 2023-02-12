@@ -96,9 +96,13 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
             this = this@mlfourd.ImagingFormatTool(contexth, img, varargin{:});
         end
 
-        function save(this)
+        function save(this, opts)
             %% SAVE 
 
+            arguments
+                this mlfourd.FourdfpTool
+                opts.savelog logical = true;
+            end
             this.assertNonemptyImg();
             this.ensureNoclobber();
             ensuredir(this.filepath);
@@ -121,9 +125,11 @@ classdef FourdfpTool < handle & mlfourd.ImagingFormatTool
                 
                 imagingInfo__.imgrec.fqfileprefix = this.fqfileprefix;
                 imagingInfo__.imgrec.save();
-                this.addLog("imagingInfo__.imgrec.save()");
-
-                this.saveLogger();
+                
+                if opts.savelog
+                    this.addLog("imagingInfo__.imgrec.save()");
+                    this.saveLogger();
+                end
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...

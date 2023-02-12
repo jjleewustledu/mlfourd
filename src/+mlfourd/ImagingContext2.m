@@ -1476,11 +1476,11 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function r    = rank(this)
             r = ndims(this);
         end
-        function        save(this)
+        function        save(this, varargin)
             %% SAVE saves the imaging state as this.fqfilename on the filesystem.
             
             this.selectImagingTool;
-            save(this.state_);
+            save(this.state_, varargin{:});
         end
         function this = saveas(this, varargin)
             %% SAVEAS saves the imaging state as this.fqfilename on the filesystem.

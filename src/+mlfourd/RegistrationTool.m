@@ -88,7 +88,7 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
                     error('mlfourd:unsupportedNargin', 'RegistrationTool.fslreorient2std');
             end
             cmd = sprintf('%s %s %s %s', exec, fqfn_ori, this.fqfn, rnums);
-            [s,r] = mlbash(cmd, 'echo', true);
+            [s,r] = mysystem(cmd, '-echo');
             this.addLog(cmd);
             if s ~= 0
                 disp(r);
@@ -125,7 +125,7 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             % fslreorient2std
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslreorient2std');
             cmd = sprintf('%s -m %s %s %s', exec, strcat(this.fqfp, '.mat'), fqfn_ori, this.fqfn);
-            [s,r] = mlbash(cmd, 'echo', true);
+            [s,r] = mysystem(cmd, '-echo');
             this.addLog(cmd);
             if s ~= 0
                 disp(r);

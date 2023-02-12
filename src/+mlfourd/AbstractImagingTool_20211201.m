@@ -55,14 +55,6 @@ classdef (Abstract) AbstractImagingTool_20211201 < handle & mlio.HandleIOInterfa
                     mlfourd.FilesystemTool_20211201(h, this.fqfilename));
             end
         end
-        function selectIsNumericTool(this, h)
-            if (~isa(this, 'mlfourd.IsNumericTool'))
-                h.changeState( ...
-                    mlfourd.IsNumericTool(h, this.getInnerImaging));
-            end
-            this.addLog('selectIsNumericTool');
-            this.addLog(evalc('disp(this)'));
-        end
         function selectImagingFormatTool(this, h)
             if (~isa(this, 'mlfourd.ImagingFormatTool_20211201'))
                 h.changeState( ...

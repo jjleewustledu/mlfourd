@@ -115,9 +115,14 @@ classdef MghTool < handle & mlfourd.ImagingFormatTool
             this = this@mlfourd.ImagingFormatTool(varargin{:});
         end
 
-        function save(this)
+        function save(this, opts)
             %% SAVE 
 
+            arguments
+                this mlfourd.MghTool
+                opts.savejson logical = true;
+                opts.savelog logical = true;
+            end
             this.assertNonemptyImg();
             this.ensureNoclobber();
             ensuredir(this.filepath);
@@ -129,12 +134,16 @@ classdef MghTool < handle & mlfourd.ImagingFormatTool
                 this.filesystem_.fqfilename = fqfn_nii;
                 this.save_nii();
                 this.filesystem_.fqfilename = fqfn_mgz;
-
-                this.save_json_metadata();
                 cmd = sprintf('mri_convert %s %s', fqfn_nii, fqfn_mgz);
                 mlbash(cmd);
-                this.addLog(cmd);
-                this.saveLogger();
+
+                if opts.savejson
+                    this.save_json_metadata();
+                end
+                if opts.savelog
+                    this.addLog(cmd);
+                    this.saveLogger();
+                end
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...

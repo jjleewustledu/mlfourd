@@ -560,26 +560,26 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function this = reset_scl(this)
             this.imagingInfo_ = this.imagingInfo_.reset_scl;
         end
-        function save(this)
+        function save(this, varargin)
             %% SAVE 
             
             if this.hasFourdfp()
                 that = this.selectFourdfpTool(this.contexth_);
-                save(that);
+                save(that, varargin{:});
                 return
             end
             if this.hasMgh()
                 that = this.selectMghTool(this.contexth_);
-                save(that);
+                save(that, varargin{:});
                 return
             end
             if this.hasNifti()
                 that = this.selectNiftiTool(this.contexth_);
-                save(that);
+                save(that, varargin{:});
                 return
             end
             that = this.selectMatlabFormatTool(this.contexth_);
-            save_mat(that);
+            save_mat(that, varargin{:});
         end
         function [s,r] = save_qc(this, varargin)
             %% varargin -> overlay images
@@ -694,9 +694,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 temp.save();
 
                 % parse additional imaging to add to filelist of overlayed comparisons
-                assert(~isempty(varargin))
+                assert(~isempty(varargin), 'mlfourd.ImagingFormatTool.view_qc() requires a comparator for qc')
                 filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
-                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -a 50'), filelist(2:end), 'UniformOutput', false);
+                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -ma'), filelist(2:end), 'UniformOutput', false);
 
                 % confirm viewer
                 v = mlfourd.Viewer('early_options', '  ');
