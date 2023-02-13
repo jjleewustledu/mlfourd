@@ -407,7 +407,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
                 this.state_ = FilesystemFormatTool(this, ipr.imgobj, varargin{:});
                 return
             end
-            this.state_ = ImagingFormatTool(imobj, varargin{:});
+            this.state_ = ImagingFormatTool(ipr.imgobj, varargin{:});
         end
     end
     

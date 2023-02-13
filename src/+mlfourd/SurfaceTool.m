@@ -36,7 +36,7 @@ classdef SurfaceTool
                     t2file = glob(fullfile(anatDir, ipr.t2glob));
                     assert(isfile(t2file))
                     mlfourd.SurfaceTool.recon_all( ...
-                        strcat(ipr.subjects{si}, '_ses-surfer-v7.2.0'), 'i', t1file{end}, 'T2', t2file{end})
+                        strcat(ipr.subjects{si}, '_ses-surfer-7.2.0'), 'i', t1file{end}, 'T2', t2file{end})
                 catch ME
                     handwarning(ME)
                 end
