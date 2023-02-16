@@ -1638,6 +1638,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function imgf = imagingFormat(this)
             imgf = copy(this.state_.imagingFormat());
+            if contains(this.filesuffix, '4dfp')
+                imgf.selectFourdfpTool();
+                return
+            end
+            if contains(this.filesuffix, 'nii')
+                imgf.selectNiftiTool();
+                return
+            end
+            error('mlfourd:ValueError', stackstr())
         end
         function d = int8(this)
             this.selectImagingTool();
