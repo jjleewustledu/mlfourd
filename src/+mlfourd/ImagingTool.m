@@ -7,24 +7,20 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
  	%  Developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
 
     properties (Dependent)
-        json_metadata
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         qfac % internal representation from this.hdr.dime.pixdim(1)
     end
 
-	methods         
-
-        %% GET/SET
-               
-        function g = get.json_metadata(this)
-            g = this.imagingFormat_.json_metadata;
-        end 
+	methods % GET/SET               
         function g = get.orient(this)
             g = this.imagingFormat_.orient;
         end
         function g = get.qfac(this)
             g = this.imagingFormat_.qfac;
         end
+    end
+
+    methods
 
         %% cast then return mutated imaging format object
         
@@ -87,6 +83,9 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             axis('off')
             title(this.imagingFormat_.fileprefix, 'FontSize', 24, 'Interpreter', 'none')
         end
+        function m = json_metadata(this)
+            m = this.imagingFormat_.json_metadata;
+        end 
         function s = mat2str(this, varargin)
             s = mat2str(this.imagingFormat_.img, varargin{:});
         end

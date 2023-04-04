@@ -42,15 +42,25 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         bytes
         compatibility
         filesystem
+        fqdlabel
+        fqdscalar
+        fqdtseries
+        fqfunc
+        fqjson
+        fqlabel
+        fqlog
+        fqmat
+        fqmgz
+        fqniigz
+        fqshape
+        fqsurf
+        fq4dfp
         logger
         stateTypeclass
         viewer
     end
 
-    methods
-
-        %% SET/GET
-
+    methods % SET/GET
         function     set.filename(this, s)
             this.imagingFormat_.filename = s;
         end
@@ -120,6 +130,45 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                 g = [];
             end
         end
+        function g = get.fqdlabel(this)
+            g = this.fqfiletype('.dlabel.nii');
+        end
+        function g = get.fqdscalar(this)
+            g = this.fqfiletype('.dscalar.nii');
+        end
+        function g = get.fqdtseries(this)
+            g = this.fqfiletype('.dtseries.nii');
+        end
+        function g = get.fqfunc(this)
+            g = this.fqfiletype('.func.gii');
+        end
+        function g = get.fqjson(this)
+            g = this.fqfiletype('.json');
+        end
+        function g = get.fqlabel(this)
+            g = this.fqfiletype('.label.gii');
+        end
+        function g = get.fqlog(this)
+            g = this.fqfiletype('.log');
+        end
+        function g = get.fqmat(this)
+            g = this.fqfiletype('.mat');
+        end
+        function g = get.fqmgz(this)
+            g = this.fqfiletype('.mgz');
+        end
+        function g = get.fqniigz(this)
+            g = this.fqfiletype('.nii.gz');
+        end
+        function g = get.fqshape(this)
+            g = this.fqfiletype('.shape.gii');
+        end
+        function g = get.fqsurf(this)
+            g = this.fqfiletype('.surf.gii');
+        end
+        function g = get.fq4dfp(this)
+            g = this.fqfiletype('.4dfp.hdr');
+        end
         function g = get.logger(this)
             try
                 g = this.imagingFormat_.logger;
@@ -134,7 +183,10 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         function g = get.viewer(this)
             g = this.imagingFormat_.viewer;
         end
-        
+    end
+
+    methods
+
         %% select states
 
         function selectBidsTool(this, contexth)
@@ -262,6 +314,9 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         function d = double(this)
             d = double(this.imagingFormat_.img);
         end
+        function f = fqfiletype(this, ext)
+            f = strcat(this.fqfp, ext);
+        end
         function tf = haveDistinctContextHandles(this, that)
             %  Args:
             %      that (ImagingContext2): which may possess a context handle
@@ -297,6 +352,15 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         end
         function d = int64(this)
             d = int64(this.imagingFormat_.img);
+        end
+        function tf = isfile(this)
+            tf = isfile(this.fqfilename);
+        end
+        function txt = jsonrecode(this, j0, j1, varargin)
+            txt = jsonrecode(j0, j1, varargin{:}, filenameNew=this.fqjson);
+        end
+        function m = json_metadata(~)
+            m = [];
         end
         function l = logical(this)
             l = logical(this.imagingFormat_.img);

@@ -395,7 +395,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             ip = inputParser;
             addOptional(ip, 'M', ones(sz(1:3)));
             parse(ip, varargin{:});
-            M = mlfourd.ImagingContext2(ip.Results.M);
+            M = mlfourd.ImagingContext2(double(ip.Results.M));
             boolM = M.logical;
             assert(all(size(boolM) == sz(1:3)), 'mlfourd:RuntimeError', 'DynamicsTool.volumeContracted');
             

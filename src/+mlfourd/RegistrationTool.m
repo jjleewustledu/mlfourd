@@ -5,6 +5,9 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods
+        function afni_3dresample(this)
+            this.fqfilename = mlpipeline.Bids.afni_3dresample(this.fqfilename);
+        end
         function forceneurological(this, varargin)
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
             cmd = sprintf('%s -forceneurological %s', exec, this.fqfilename);
@@ -102,6 +105,8 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             end        
         end
         function reorient2std(this, varargin)
+
+            warning('mlfourd:RuntimeWarning', 'prefer implementing afni_3dresample()')
 
             % reuse existing
             if contains(this.fileprefix, '_orient-std')

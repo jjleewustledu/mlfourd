@@ -21,6 +21,11 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
     %  an instance of a subclass of ImagingState2, that represents the current state of ImagingContext2.  The class 
     %  ImagingContext2 delegates state-specific request to this state object. 
     %
+    %  See also:  mlfourd.FilesystemTool, mlfourd.ImagingTool, mlfourd.LegacyTool, ...
+    %             mlfourd.BidsTool, mlfourd.DynamicsTool, mlfourd.BlurringTool, mlfourd.MaskingTool, ...
+    %             mlfourd.MatlabTool, mlfourd.PatchTool, mlfourd.PointCloudTool, mlfourd.RegistrationTool, ...
+    %             mlfourd.TrivialTool.
+    %
     %  See also:  Erich Gamma, et al. Design patterns : elements of reusable object-oriented software. Reading, Mass.: 
     %             Addison-Wesley, 1995.
     %
@@ -30,134 +35,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 	%  Created 2013-09-16 01:18:10 -0500 (Mon, 16 Sep 2013) by jjlee in repository 
     %  file:///Users/jjlee/Library/SVNRepository_2012sep1/mpackages/mlfourd/src/+mlfourd/trunk/ImagingContext2.m.
  	%  Developed on Matlab 8.1.0.604 (R2013a).  Copyright 2017 John J. Lee.
-        
-    methods (Static)
-        function im   = imagingType(typ, obj)
-            %% IMAGINGTYPE returns imaging data cast as a requested representative type detailed below.
-            %  @param typ is the requested representation:  'filename', 'fn', fqfilename', 'fqfn', 'fileprefix', 'fp',
-            %  'fqfileprefix', 'fqfp', 'folder', 'path', 'ext', 'ImagingContext2', 
-            %  '4dfp.hdr', '4dfp.ifh', '4dfp.img', '4dfp.img.rec', 'v', 'v.hdr', 'v.mhdr'. 
-            %  @param obj is the representation of imaging data provided by the client.  
-            %  @returns im is the imaging data obj cast as the requested representation.
-            %  See also mlfourd.ImagingContext2
-            
-            import mlfourd.*;
-            if ischar(obj) && isfolder(obj)
-                im = ImagingContext2.locationType(typ, obj);
-                return
-            end
-            
-            obj = ImagingContext2(obj);
-            switch typ
-                case {'4dfp.hdr' '.4dfp.hdr'}
-                    im = [obj.fqfileprefix '.4dfp.hdr'];
-                case {'4dfp.ifh' '.4dfp.ifh'}
-                    im = [obj.fqfileprefix '.4dfp.ifh'];
-                case {'4dfp.img' '.4dfp.img'}
-                    im = [obj.fqfileprefix '.4dfp.img'];
-                case {'4dfp.img.rec' '.4dfp.img.rec'}
-                    im = [obj.fqfileprefix '.4dfp.img.rec'];
-                case  'ext'
-                    [~,~,im] = myfileparts(obj.filename);
-                case  'folder'
-                    [~,im] = fileparts(obj.filepath);
-                case {'filepath' 'path'}
-                    im = obj.filepath;
-                case {'fileprefix' 'fp'}
-                    im = obj.fileprefix;
-                case {'filename' 'fn'}
-                    im = obj.filename;
-                case {'fourdfp' 'Fourdfp' 'mlfourdfp.Fourdfp'}
-                    im = obj.fourdfp;
-                case {'fqfilename' 'fqfn'}
-                    im = obj.fqfilename;
-                case {'fqfileprefix' 'fqfp' 'fdfp' '4dfp'}
-                    im = obj.fqfileprefix;                  
-                case {'ImagingContext2' 'mlfourd.ImagingContext2'}
-                    im = mlfourd.ImagingContext2(obj);
-                case {'ImagingFormatContext2' 'mlfourd.ImagingFormatContext2'}
-                    im = mlfourd.ImagingFormatContext2(obj);
-                case {'ImagingFormatContext' 'mlfourd.ImagingFormatContext'}
-                    im = mlfourd.ImagingFormatContext(obj);
-                case {'mgz' '.mgz'}
-                    im = [obj.fqfileprefix '.mgz'];
-                case {'mhdr' '.mhdr'}
-                    im = [obj.fqfileprefix '.mhdr'];                  
-                case {'nii' '.nii'}
-                    im = [obj.fqfileprefix '.nii'];
-                case {'nii.gz' '.nii.gz'}
-                    im = [obj.fqfileprefix '.nii.gz'];
-                case {'mgh' 'MGH' 'mlsurfer.MGH'}
-                    im = obj.mgh;
-                case {'nifti' 'NIfTI'}
-                    im = obj.nifti;
-                case {'niftid' 'NIfTId' 'mlfourd.NIfTId'}
-                    im = obj.niftid;
-                case {'numericalNiftid' 'NumericalNIfTId' 'mlfourd.NumericalNIfTId'}
-                    im = obj.numericalNiftid;
-                case {'v' '.v'}
-                    im = [obj.fqfileprefix '.v'];
-                case {'v.hdr' '.v.hdr'}
-                    im = [obj.fqfileprefix '.v.hdr'];
-                case {'v.mhdr' '.v.mhdr'}
-                    im = [obj.fqfileprefix '.v.mhdr'];
-                case 'double'
-                    if contains(obj.filesuffix, '4dfp')
-                        im = double(obj.fourdfp.img);
-                    elseif contains(obj.filesuffix, 'mgh')
-                        im = double(obj.mgh.img);
-                    elseif contains(obj.filesuffix, 'mgz')
-                        im = double(obj.mgz.img);
-                    else
-                        im = double(obj.nifti.img);
-                    end
-                case 'single'
-                    if contains(obj.filesuffix, '4dfp')
-                        im = single(obj.fourdfp.img);
-                    elseif contains(obj.filesuffix, 'mgh')
-                        im = single(obj.mgh.img);
-                    elseif contains(obj.filesuffix, 'mgz')
-                        im = single(obj.mgz.img);
-                    else
-                        im = single(obj.nifti.img);
-                    end
-                otherwise
-                    error('mlfourd:insufficientSwitchCases', ...
-                          'ImagingContext2.imagingType.obj->%s not recognized', obj);
-            end
-        end
-        function loc  = locationType(typ, loc0)
-            %% LOCATIONTYPE returns location data cast as a requested representative type detailed below.
-            %  @param typ is the requested representation:  'folder', 'path'.
-            %  @param loc0 is the representation of location data provided by the client.  
-            %  @returns loc is the location data loc0 cast as the requested representation.
-            
-            assert(istext(loc0));
-            switch typ
-                case {'folder' "folder"}
-                    loc = mybasename(loc0);
-                case {'path' "path"}
-                    loc = loc0;
-                otherwise
-                    error('mlfourd:ValueError', ...
-                          'ImagingContext2.locationType.loc0->%s not recognized', loc0);
-            end
-        end
-    end
-    
-    properties (Constant)
-        IMAGING_TYPES = { ...
-            'ext' ...
-            'fileprefix' 'filename' 'fqfileprefix' 'fqfilename' 'fp' 'fn' 'fqfp' 'fqfn' ...
-            'ImagingContext2' 'mlfourd.ImagingContext2' ...
-            'mgh' 'mgz' ...
-            'nii' 'nii.gz' ...
-            'v' 'v.hdr' 'v.mhdr' 'mhdr' ...
-            '4dfp.hdr' '4dfp.ifh' '4dfp.img' '4dfp.img.rec' ...
-            '.4dfp.hdr' '.4dfp.ifh' '.4dfp.img' '.4dfp.img.rec' ...
-            'folder' 'path' 'double' 'single'}
-    end
-    
+
 	properties (Dependent)
         filename
         filepath
@@ -171,7 +49,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         bytes
         compatibility
-        json_metadata
         logger
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         qfac % internal representation from this.hdr.dime.pixdim(1)
@@ -179,10 +56,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         viewer  
     end
 
-	methods
-        
-        %% GET/SET
-
+	methods % GET/SET
         function     set.filename(this, f)
             if this.compatibility
                 this.selectImagingTool();
@@ -268,9 +142,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function g = get.compatibility(this)
             g = this.compatibility_;
         end
-        function g = get.json_metadata(this)
-            g = this.state_.json_metadata;
-        end
         function g = get.logger(this)
             g = copy(this.state_.logger);
         end
@@ -290,7 +161,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function v = get.viewer(this)
             v = this.state_.viewer;
         end
-        
+    end
+
+    methods
+
         %% select states
 
         function this = selectBidsTool(this)
@@ -372,13 +246,20 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         %% BidsTool
 
+        function m = json_metadata(this, varargin)
+            m = this.state_.json_metadata(varargin{:});
+        end
         function this = relocateDerivatives(this)
-            this.selectBidsTool();
-            if contains(this.filepath, 'sourcedata')
-                this.filepath = strrep(this.filepath, 'sourcedata', 'derivatives');
-            end
-            if contains(this.filepath, 'rawdata')
-                this.filepath = strrep(this.filepath, 'rawdata', 'derivatives');
+            try
+                this.selectBidsTool();
+                if contains(this.filepath, 'sourcedata')
+                    this.filepath = strrep(this.filepath, 'sourcedata', 'derivatives');
+                end
+                if contains(this.filepath, 'rawdata')
+                    this.filepath = strrep(this.filepath, 'rawdata', 'derivatives');
+                end
+            catch ME
+                handwarning(ME)
             end
         end        
 
@@ -1437,7 +1318,12 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %% passes all varargin to this.pointCloud()
 
             this.selectPointCloudTool;
-            p = this.state_.pcshow(varargin{:});
+            try
+                p = this.state_.pcshow(varargin{:});
+            catch ME
+                handwarning(ME)
+                this.view();
+            end
         end
         function p    = pointCloud(this, varargin)
             %% See also web(fullfile(docroot, 'vision/ug/3-d-point-cloud-registration-and-stitching.html'))
@@ -1562,12 +1448,21 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %      s: system status.
             %      r: system result.            
 
-            this.selectImagingTool;
-            [s,r] = this.state_.view_qc(varargin{:});
+            try
+                this.selectImagingTool;
+                [s,r] = this.state_.view_qc(varargin{:});
+            catch ME
+                handwarning(ME)
+                [s,r] = this.view(varargin{:});
+            end
         end
 
         %% RegistrationTool
-
+        
+        function this = afni_3dresample(this)
+            this.selectRegistrationTool();
+            this.state_.afni_3dresample();
+        end
         function this = forceneurological(this)
             this.selectRegistrationTool();
             this.state_.forceneurological();
@@ -1762,10 +1657,19 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
     end  
     
+    methods (Static)
+        function im = imagingType(typ, obj)
+            im = imagingType(typ, obj);
+        end
+        function loc = locationType(typ, loc0)
+            loc = locationType(typ, loc0);
+        end
+    end
+    
     %% PROTECTED
     
     properties (Access = protected)
-        compatibility_  % KLUDGE, for refactoring
+        compatibility_ % KLUDGE, for refactoring
         state_
     end 
     

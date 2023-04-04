@@ -38,8 +38,7 @@ classdef LegacyTool < handle & mlfourd.ImagingState2
 
     %% PROTECTED
 
-    methods (Access = protected)
-        
+    methods (Access = protected)        
         function this = LegacyTool(contexth, varargin)
             %  Args:
             %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.

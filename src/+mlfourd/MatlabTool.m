@@ -73,7 +73,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         end
         function jsdiv(this, b, varargin)
             this.bsxfun(@jsdiv_, b);
-            function d = jsdiv_(img1, img2)                
+            function d = jsdiv_(img1, img2)
                 if ~isempty(varargin)
                     msk = logical(varargin{:});
                     img1 = img1(msk);

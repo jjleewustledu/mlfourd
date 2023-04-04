@@ -6,19 +6,26 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods
-        function p    = pcshow(this, varargin)
+        function ax   = pcshow(this, varargin)
             %% passes all varargin to this.pointCloud(); uses visualizations matching methods of mlfourd.PatchTool.
 
-            p = pcshow(this.contexth_.pointCloud(varargin{:}));
-            view(-210, 15) % tuned for orientstd
-            daspect([1 1 1]);
-
-            xlabel('x (mm)', 'FontSize', 14)
-            ylabel('y (mm)', 'FontSize', 14)
-            zlabel('z (mm)', 'FontSize', 14)            
-            set(gca, 'xcolor', [1 1 1])
-            set(gca, 'ycolor', [1 1 1])
-            set(gca, 'zcolor', [1 1 1])
+            ax = [];
+            try
+                ax = pcshow(this.contexth_.pointCloud(varargin{:}), AxesVisibility=1, ColorSource="Intensity");
+                view(-210, 15) % tuned for orientstd
+                daspect([1 1 1]);
+    
+                xlabel('x (mm)', 'FontSize', 14)
+                ylabel('y (mm)', 'FontSize', 14)
+                zlabel('z (mm)', 'FontSize', 14)            
+                set(gca, 'xcolor', [1 1 1])
+                set(gca, 'ycolor', [1 1 1])
+                set(gca, 'zcolor', [1 1 1])
+                %colorbar
+                %colormap("jet")
+            catch ME
+                handwarning(ME)
+            end
         end
         function p = pointCloud(this, varargin)
             %% See also web(fullfile(docroot, 'vision/ug/3-d-point-cloud-registration-and-stitching.html'))
@@ -31,31 +38,40 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
             addParameter(ip, 'addNormals', false, @islogical)
             parse(ip, varargin{:})
             ipr = ip.Results;
+            p = [];
 
-            img = double(this.imagingFormat_.img);
-            img = flip(img, 1); % internal radiologic orient -> pointCloud neurologic orient
-            indices = find(img);
-            [I,J,K] = ind2sub(size(img), indices);
-
-            mmppix = double(this.imagingFormat_.mmppix);
-            if isempty(mmppix) || any(isnan(mmppix))
-                mmppix = [1 1 1];
+            try
+                img = double(this.imagingFormat_.img);
+                img = flip(img, 1); % internal radiologic orient -> pointCloud neurologic orient
+                indices = find(img);
+                [I,J,K] = ind2sub(size(img), indices);
+    
+                % store points in space of voxels
+                this.ijkPoints_ = nan(length(I), 3);
+                this.ijkPoints_(:,1) = I;
+                this.ijkPoints_(:,2) = J;
+                this.ijkPoints_(:,3) = K;
+    
+                mmppix = double(this.imagingFormat_.mmppix);
+                if isempty(mmppix) || any(isnan(mmppix))
+                    mmppix = [1 1 1];
+                end
+    
+                % xyzpoints are ints cast as double
+                xyzp(:,1) = I .* mmppix(1); 
+                xyzp(:,2) = J .* mmppix(2);
+                xyzp(:,3) = K .* mmppix(3);
+    
+                ii = double(img(indices));
+                ii = ii/max(ii);
+                p = pointCloud(xyzp, 'Intensity', ii);
+                if ipr.addNormals
+                    n = pcnormals(p);
+                    p = pointCloud(xyzp, 'Intensity', ii, 'Normal', n);
+                end
+            catch ME
+                handwarning(ME)
             end
-            xyzp(:,1) = I .* mmppix(1); % xyzpoints are ints cast as double
-            xyzp(:,2) = J .* mmppix(2);
-            xyzp(:,3) = K .* mmppix(3);
-
-            p = pointCloud(xyzp, 'Intensity', img(indices));
-            if ipr.addNormals
-                n = pcnormals(p);
-                p = pointCloud(xyzp, 'Intensity', img(indices), 'Normal', n);
-            end
-
-            % store points in space of voxels
-            this.ijkPoints_ = nan(length(I), 3);
-            this.ijkPoints_(:,1) = I;
-            this.ijkPoints_(:,2) = J;
-            this.ijkPoints_(:,3) = K;
         end
         function setPointCloud(this, varargin)
             %  Args:
@@ -73,25 +89,29 @@ classdef PointCloudTool < handle & mlfourd.ImagingTool
             this.filepath = ipr.filepath;
             this.fileprefix = myfileprefix(ipr.fileprefix);
 
-            mmppix = double(this.imagingFormat_.mmppix);
-            if isempty(mmppix) || any(isnan(mmppix))
-                mmppix = [1 1 1];
+            try
+                mmppix = double(this.imagingFormat_.mmppix);
+                if isempty(mmppix) || any(isnan(mmppix))
+                    mmppix = [1 1 1];
+                end
+                this.ijkPoints_(:,1) = round(ipr.pc.Location(:,1) ./ mmppix(1));
+                this.ijkPoints_(:,2) = round(ipr.pc.Location(:,2) ./ mmppix(2));
+                this.ijkPoints_(:,3) = round(ipr.pc.Location(:,3) ./ mmppix(3));
+    
+                this.ensureSubInFieldOfView();
+                indices = sub2ind(size(this), this.ijkPoints_(:,1), this.ijkPoints_(:,2), this.ijkPoints_(:,3));
+                img = zeros(size(this));
+                if isempty(ipr.pc.Intensity)
+                    intens = ones(size(ipr.pc.Location, 1), 1);
+                else
+                    intens = ipr.pc.Intensity;
+                end
+                img(indices) = intens;
+                img = flip(img, 1); % pointCloud neurologic orient -> internal radiologic orient
+                this.imagingFormat_.img = img;
+            catch ME
+                handwarning(ME)
             end
-            this.ijkPoints_(:,1) = round(ipr.pc.Location(:,1) ./ mmppix(1));
-            this.ijkPoints_(:,2) = round(ipr.pc.Location(:,2) ./ mmppix(2));
-            this.ijkPoints_(:,3) = round(ipr.pc.Location(:,3) ./ mmppix(3));
-
-            this.ensureSubInFieldOfView();
-            indices = sub2ind(size(this), this.ijkPoints_(:,1), this.ijkPoints_(:,2), this.ijkPoints_(:,3));
-            img = zeros(size(this));
-            if isempty(ipr.pc.Intensity)
-                intens = ones(size(ipr.pc.Location, 1), 1);
-            else
-                intens = ipr.pc.Intensity;
-            end
-            img(indices) = intens;
-            img = flip(img, 1); % pointCloud neurologic orient -> internal radiologic orient
-            this.imagingFormat_.img = img;
         end
 
         function this = PointCloudTool(contexth, imagingFormat, varargin)
