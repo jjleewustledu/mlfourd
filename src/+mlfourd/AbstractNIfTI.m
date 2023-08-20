@@ -115,7 +115,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
             %% GET.HDXML writes the xml file if this objects exists on disk
             
             if (exist(this.fqfilename, 'file'))
-                [~, x] = mlbash(['fslhd -x ' this.fqfileprefix]);
+                [~, x] = mlbash(strcat('fslhd -x ', this.fqfileprefix));
                     x  = regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix');
             else
                 x = '';
@@ -141,7 +141,7 @@ classdef AbstractNIfTI < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd.
         end
         function o    = get.orient(this)
             if (exist(this.fqfilename, 'file'))
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
+                [~, o] = mlbash(strcat('fslorient -getorient ', this.fqfileprefix));
             else
                 o = '';
             end

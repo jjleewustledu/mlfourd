@@ -414,15 +414,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.logm();            
         end
-        function that = max(this, b)
+        function that = max(this, varargin)
             this.selectMatlabTool;
             that = copy(this);
-            that.state_.max(b);
+            that.state_.max(varargin{:});
         end
-        function that = min(this, b)
+        function that = min(this, varargin)
             this.selectMatlabTool;
             that = copy(this);
-            that.state_.min(b);
+            that.state_.min(varargin{:});
         end
         function that = minus(this, varargin)
             this.selectMatlabTool;
@@ -843,8 +843,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.imdilate_bin(varargin{:});
         end 
         function that = imerode(this, varargin)
-            %% e.g. >> mmppix = ic.imagingFormat.mmppix;
-            %       >> ic = ic.imerode(strel("cuboid", 2./mmppix));
+            %% e.g. ic = ic.imerode(strel("cuboid", 2)); % strel ~ 2 voxels wide
 
             if (isempty(varargin));    that = this; return; end
             if (isempty(varargin{1})); that = this; return; end
@@ -967,7 +966,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = timeAveraged(this, varargin)
             %% Contracts imagingFormat.img in time, the trailing array index.
             %  Args:
-            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %      tindex (optional):  selects unique time indices\in \mathbb{N}^length(tindex); 
             %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
             %      weights (numeric):  to multiply each time frame after selecting tindex.  Default is uniform weighting.
             %      taus (numeric):  sets weights = taus/sum(taus) after selecting tindex, replacing other requests for weights.
@@ -1004,6 +1003,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.timeContracted(varargin{:});
         end
+        function that = timeInterleaved(this, varargin)
+            %% For M-1 objects in varargin, obtain corresponding imagingFormat and img.
+            %  For n in N time frames for each object:
+            %      For m in M objects including this:
+            %          img(:,:,:,5*(n-1) + m) = imgs{m}(:,:,:,n);
+
+            this.selectDynamicsTool;
+            that = copy(this);
+            that = that.state_.timeInterleaved(varargin{:});
+        end
         function that = timeShifted(this, times, Dt)
             %% Shifts imagingFormat.img forwards or backwards in time.
             %  Args:
@@ -1015,6 +1024,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectDynamicsTool;
             that = copy(this);
             that = that.state_.timeShifted(times, Dt);
+        end
+        function that = timeSelected(this, varargin)
+            %% Selects imagingFormat.img in time, the trailing array index.  Synonym of timeCensored().
+            %  Args:
+            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
+            %  Returns:
+            %      this: with censoring of times.
+
+            that = this.timeCensored(varargin{:});
         end
         function that = timeSummed(this, varargin)
             %% TIMESUMMED 
@@ -1031,7 +1050,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function that = volumeAveraged(this, varargin)
             %% VOLUMEAVERAGED
             %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
-            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t) / \int_{\Omega} \text{mask}.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t) / \int_{\Omega} \text{mask}, 
+            %          mask forced to be logical.
             
             this.selectDynamicsTool;
             that = copy(this);
@@ -1039,8 +1059,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function that = volumeContracted(this, varargin)
             %% VOLUMECONTRACTED
-            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
-            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
+            %  @param optional mask specifies some closed real \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t), 
+            %          mask forced to be logical.
             
             this.selectDynamicsTool;
             that = copy(this);
@@ -1048,10 +1069,19 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function that = volumeSummed(this, varargin)
             %% VOLUMESUMMED 
-            %  @param optional mask specifies some closed \Omega \in {\Bbb R}^3.
+            %  @param optional mask specifies some closed real \Omega \in {\Bbb R}^3.
             %  @return that := \int_{\Omega} \text{this.state\_} (\text{mask}, t).
             
             that = this.volumeContracted(varargin{:});
+        end
+        function that = volumeWeightedAveraged(this, varargin)
+            %% VOLUMEWEIGHTEDAVERAGED
+            %  @param optional weight specifies some closed real \Omega \in {\Bbb R}^3.
+            %  @return that := \int_{\Omega} \text{this.state\_} (\text{weight}, t) / \int_{\Omega} \text{weight}.
+            
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.volumeWeightedAveraged(varargin{:});
         end
         function v = voxelVolume(this)
             %  Returns:
@@ -1249,6 +1279,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool;
             h = this.state_.imagesc(varargin{:});
         end   
+        function h    = imshow(this, varargin)
+            this.selectImagingTool;
+            h = this.state_.imshow(varargin{:});
+        end
         function s    = mat2str(this, varargin)
             this.selectImagingTool;
             s = this.state_.mat2str(varargin{:});
@@ -1537,11 +1571,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 imgf.selectFourdfpTool();
                 return
             end
-            if contains(this.filesuffix, 'nii')
-                imgf.selectNiftiTool();
-                return
-            end
-            error('mlfourd:ValueError', stackstr())
+            imgf.selectNiftiTool();
         end
         function d = int8(this)
             this.selectImagingTool();

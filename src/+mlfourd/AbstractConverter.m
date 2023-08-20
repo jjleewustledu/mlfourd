@@ -89,7 +89,8 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             if (~exist('pth', 'var')); pth = pwd; end
             dt = mlsystem.DirTool(fullfile(pth, '*.hdr'));
             for n = 1:length(dt.fqfns)  %#ok<FORFLG>
-                mlbash(['fslchfiletype ' mlfourd.NIfTId.FILETYPE ' ' dt.fqfns{n}]);  
+                cmd = sprintf('fslchfiletype %s %s', mlfourd.NIfTId.FILETYPE, dt.fqfns{n});
+                mlbash(cmd);  
             end
         end % static analyze2nifti       
         
@@ -357,7 +358,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             
             function dobusiness(dt)
                 for n = 1:length(dt.fqfns) %#ok<FORFLG>
-                    mlbash(['fslchfiletype NIFTI_GZ ' dt.fqfns{n}]);
+                    mlbash(strcat('fslchfiletype NIFTI_GZ ', dt.fqfns{n}));
                     fp = fileprefix(dt.fqfns{n});
                     this.ensureFloat(fp);
                     this.ensureOriented2Standard(fp);
@@ -376,7 +377,7 @@ classdef AbstractConverter < mlfourd.ConverterInterface
             fstr = stripexts(fstr, EXTS);
             import mlfourd.* mlfsl.*; %#ok<*NSTIMP>
             try
-                [~,datType] = mlbash(['fslinfo  ' fstr ' | grep data_type']);
+                [~,datType] = mlbash(strcat('fslinfo  ', fstr, ' | grep data_type'));
                 if (~lstrfind(datType, upper(AbstractConverter.ODT))) 
                     FslBuilder.fslmaths([fstr ' ' tempfp(fstr) ' -odt ' lower(AbstractConverter.ODT)]);
                     moveTempBack(tempfp(fstr), fstr, EXTS);

@@ -172,7 +172,8 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             end
             this.mcverterDout = ensuredir(this.mcverterDout);
             
-            [s,r] = mlbash([this.mcverterBin ' --output=' this.mcverterDout ' ' this.mcverterArgs ' ' this.mcverterDin]);
+            cmd = sprintf('%s --output=%s %s %s', this.mcverterBin, this.mcverterOut, this.mcverterArgs, this.mcverterDin);
+            [s,r] = mlbash(cmd);
             if (~isempty(r))
                 warning('mlfsl:MRImagingComponent:mcverter', r);
             end
@@ -194,7 +195,8 @@ classdef MRIConverter < mlfourd.AbstractDicomConverter
             
             import mlfourd.*;
             MRIConverter.scanDicom(this.dicomPath, this.unpackPath); 
-            mlbash(['pushd ' this.unpackPath '; gunzip *.nii.gz; popd']);
+            cmd = sprintf('pushd %s; gunzip *.nii.gz; popd', this.unpackPath);
+            mlbash(cmd);
             dt = mlsystem.DirTool(fullfile(this.unpackPath, '*.nii'));
             structInfo = MRIConverter.parseInfoCell(dt.fns);
         end % dicoms2structInfo

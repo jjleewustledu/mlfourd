@@ -48,7 +48,7 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Jimm
                 x = '';
                 return
             end
-            [~,x] = mlbash(['fslhd -x ' this.fqfileprefix]);
+            [~,x] = mlbash(strcat('fslhd -x ', this.fqfileprefix));
             x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
         end
         function o = get.orient(this)
@@ -57,7 +57,7 @@ classdef InnerNIfTI < handle & mlfourd.AbstractInnerImagingFormat & mlfourd.Jimm
                 return
             end
             if (lexist(this.fqfilename, 'file') && lstrfind(this.filesuffix, this.imagingInfo.defaultFilesuffix))
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
+                [~, o] = mlbash(strcat('fslorient -getorient ', this.fqfileprefix));
                 o = strtrim(o);
                 return
             end

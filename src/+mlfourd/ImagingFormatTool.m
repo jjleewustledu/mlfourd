@@ -165,9 +165,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 return
             end
             try
-                [~,x] = mlbash(['fslhd -x ' this.fqfilename]);
+                [~,x] = mlbash(sprintf('fslhd -x %s', this.fqfilename));
                 x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
-            catch
+            catch %#ok<CTCH>
                 x = '';
             end
         end

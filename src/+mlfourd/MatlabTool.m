@@ -117,11 +117,23 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         function logm(this)
             this.usxfun(@logm);
         end
-        function max(this, b)
-            this.bsxfun(@max, b);
+        function max(this, varargin)
+            this.imagingFormat_.img = max(double(this.imagingFormat_.img), varargin{:});
+            fp = this.imagingFormat_.fileprefix;
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.max %s', cell2str(varargin)));
+            tags = strrep(cell2str(varargin), '[]', '');
+            tags = strrep(tags, ' ', '');
+            this.imagingFormat_.fileprefix = strcat(fp, '_max', tags);
         end
-        function min(this, b)
-            this.bsxfun(@min, b);
+        function min(this, varargin)
+            this.imagingFormat_.img = min(double(this.imagingFormat_.img), varargin{:});
+            fp = this.imagingFormat_.fileprefix;
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.min %s', cell2str(varargin)));
+            tags = strrep(cell2str(varargin), '[]', '');
+            tags = strrep(tags, ' ', '');
+            this.imagingFormat_.fileprefix = strcat(fp, '_min', tags);
         end
         function minus(this, varargin)
             if ~isempty(varargin)

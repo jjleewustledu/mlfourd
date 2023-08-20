@@ -225,7 +225,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
                 x = '';
                 return
             end
-            [~,x] = mlbash(['fslhd -x ' this.fqfileprefix]);
+            [~,x] = mlbash(strcat('fslhd -x ', this.fqfileprefix));
             x = strtrim(regexprep(x, 'sform_ijk matrix', 'sform_ijk_matrix'));
         end 
         function d    = get.label(this)
@@ -258,7 +258,7 @@ classdef AbstractNIfTId < mlio.AbstractIO & mlfourd.JimmyShenInterface & mlfourd
         end
         function o    = get.orient(this)
             if (exist(this.fqfilename, 'file'))
-                [~, o] = mlbash(['fslorient -getorient ' this.fqfileprefix]);
+                [~, o] = mlbash(strcat('fslorient -getorient ', this.fqfileprefix));
             else
                 o = '';
             end

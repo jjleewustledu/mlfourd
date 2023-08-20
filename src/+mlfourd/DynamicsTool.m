@@ -10,6 +10,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
  	%  $Id$  	 
 
     properties (Constant)
+        AVGW_SUFFIX   = '_avgw'
         AVGT_SUFFIX   = '_avgt'
         AVGXYZ_SUFFIX = '_avgxyz'
         SUMT_SUFFIX   = '_sumt'
@@ -221,7 +222,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
         function this = timeAveraged(this, varargin)
             %% Contracts imagingFormat.img in time, the trailing array index.
             %  Args:
-            %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
+            %      tindex (optional):  selects unique time indices\in \mathbb{N}^length(tindex); 
             %                                 e.g., [1 2 ... n] or [3 4 5   7 ... (n-1)].
             %      weights (numeric):  to multiply each time frame after selecting tindex.  Default is uniform weighting.
             %      taus (numeric):  sets weights = taus/sum(taus) after selecting tindex, replacing other requests for weights.
@@ -350,7 +351,39 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             % names & logging
             this.fileprefix = strcat(this.fileprefix, this.SUMT_SUFFIX);
             this.addLog('DynamicsTool.timeContracted()');
-        end  
+        end
+        function this = timeInterleaved(this, varargin)
+            %% For M-1 objects in varargin, obtain corresponding imagingFormat and img.
+            %  For n in N time frames for each object:
+            %      For m in M objects including this:
+            %          img(:,:,:,5*(n-1) + m) = imgs{m}(:,:,:,n);
+
+            assert(~isempty(varargin))
+            ics = cellfun(@(x) mlfourd.ImagingContext2(x), varargin, UniformOutput=false);
+            ifcs_ = [{this.imagingFormat_} cellfun(@(x) x.imagingFormat, ics, UniformOutput=false)];
+            imgs = cellfun(@(x) x.img, ifcs_, UniformOutput=false);
+            len = length(imgs);
+            sz1 = size(imgs{1}); % size of 1st
+            sz = sz1;
+            sz(4) = len*sz(4); % expand times of new img
+            img = zeros(sz);
+
+            for n = 1:sz1(4)
+                for m = 1:len
+                    img(:,:,:,len*(n-1) + m) = imgs{m}(:,:,:,n);
+                end
+            end
+
+            this.imagingFormat_.img = img;
+            this.fileprefix = sprintf("%s_interleave%i", this.fileprefix, len);
+            this.addLog('DynamicsTool.timeInterleaved()');
+        end
+        function this = timeSelected(this, varargin)
+            %% Selects imagingFormat.img in time, the trailing array index.
+            %  Synonym for timeCensored(this, varargin).
+
+            this = this.timeCensored(varargin{:});
+        end
         function this = timeShifted(this, times, Dt)
             %% Shifts imagingFormat.img forwards or backwards in time.
             %  Args:
@@ -376,31 +409,32 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             this.imagingFormat_.img = squeeze(var(img, varargin{:}));
             this.addLog('DynamicsTool.var');
         end        
-        function [this,M] = volumeAveraged(this, varargin)
-            %  @param optional mask | max(mask) == 1, understood by ImagingContext2.
+        function [this,dbleM] = volumeAveraged(this, varargin)
+            %  @param optional mask, forced to uniform distribution, understood by ImagingContext2.
             
-            [this,M] = this.volumeContracted(varargin{:});    
-            boolM = M.logical;
+            [this,boolM] = this.volumeContracted(varargin{:});
             dbleM = double(boolM);
-            this.imagingFormat_.img = this.imagingFormat_.img / sum(dbleM(dbleM > 0), 'omitnan');
+            this.imagingFormat_.img = this.imagingFormat_.img / sum(dbleM(boolM), 'omitnan');
             
             % names & logging
             this.fileprefix = strrep(this.fileprefix, this.SUMXYZ_SUFFIX, this.AVGXYZ_SUFFIX);
             this.addLog('DynamicsTool.volumeAveraged');
         end
-        function [this,M] = volumeContracted(this, varargin)
-            %  @param optional  mask | max(mask) == 1, understood by ImagingContext2.
+        function [this,boolM] = volumeContracted(this, varargin)
+            %  @param optional mask, forced to logical array, understood by ImagingContext2.
             
             sz = this.imagingFormat_.size;
             ip = inputParser;
             addOptional(ip, 'M', ones(sz(1:3)));
             parse(ip, varargin{:});
-            M = mlfourd.ImagingContext2(double(ip.Results.M));
-            boolM = M.logical;
+            ipr = ip.Results;
+
+            M = mlfourd.ImagingContext2(ipr.M);
+            boolM = logical(M);
             assert(all(size(boolM) == sz(1:3)), 'mlfourd:RuntimeError', 'DynamicsTool.volumeContracted');
             
             if 4 == length(sz)
-                img = zeros(1,sz(4));
+                img = zeros(1,sz(4)); % row vector
                 for t = 1:sz(4)
                     iiimg = this.imagingFormat_.img(:,:,:,t);
                     img(t) = sum(iiimg(boolM), 'omitnan');
@@ -412,7 +446,33 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             
             % names & logging
             this.fileprefix = strcat(this.fileprefix, this.SUMXYZ_SUFFIX);
-            this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
+            this.addLog('DynamicsTool.volumeContracted over %s', ipr.M.fileprefix);            
+        end
+        function [this,W] = volumeWeightedAveraged(this, varargin)
+            %  @param optional weights \in reals, understood by ImagingContext2.
+
+            sz = this.imagingFormat_.size;
+            ip = inputParser;
+            addOptional(ip, 'W', ones(sz(1:3)))
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+
+            W = mlfourd.ImagingContext2(ipr.W);
+            assert(all(size(W) == sz(1:3)), 'mlfourd:RuntimeError', 'DynamicsTool.volumeWeightedAveraged');
+            if 4 == length(sz)
+                img = zeros(1,sz(4));
+                for t = 1:sz(4)
+                    iiimg = this.imagingFormat_.img(:,:,:,t);
+                    img(t) = sum(iiimg .* W.imagingFormat.img, 'all', 'omitnan');
+                end
+                this.imagingFormat_.img = img;
+            else
+                this.imagingFormat_.img = sum(this.imagingFormat_.img .* W.imagingFormat.img, 'all', 'omitnan');
+            end
+
+            % names & logging
+            this.fileprefix = strcat(this.fileprefix, this.AVGW_SUFFIX);
+            this.addLog('DynamicsTool.volumeWeightedAveraged over %s', ipr.W.fileprefix);  
         end
         
  		function this = DynamicsTool(varargin)

@@ -73,15 +73,22 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         end
         function [h,h1] = imagesc(this, varargin)
             figure
-            this.imagingFormat_.img(logical(eye(size(this.imagingFormat_.img, 1)))) = nan;
-            max_img = dipmax(this.imagingFormat_.img);
+
+            % for connectivity/Gramm matrices
+            %this.imagingFormat_.img(logical(eye(size(this.imagingFormat_.img, 1)))) = nan; 
+
             h = imagesc(this.imagingFormat_.img, varargin{:});
-            colormap('jet')
+            colormap('gray')
             h1 = colorbar('FontSize', 20);
-            caxis([-max_img max_img])
-            set(get(h1,'label'),'string', 'functional connectivity', 'FontSize', 28)
+            %max_img = dipmax(this.imagingFormat_.img);
+            %caxis([-max_img max_img])
+            set(get(h1,'label'),'string', 'LUT Label', 'FontSize', 28)
             axis('off')
             title(this.imagingFormat_.fileprefix, 'FontSize', 24, 'Interpreter', 'none')
+        end
+        function h = imshow(this, varargin)
+            figure
+            h = imshow(this.imagingFormat_.img, varargin{:});
         end
         function m = json_metadata(this)
             m = this.imagingFormat_.json_metadata;

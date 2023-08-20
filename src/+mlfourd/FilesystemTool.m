@@ -53,7 +53,12 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                     re = regexp(r, '\S+\s*dim0\s+(?<d0>\d+)\s*dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
                     sz = cellfun(@str2double, struct2cell(re))';
                     ndims = sz(1);
-                    sz = sz(2:ndims+1);
+                    len_sz = length(sz);
+                    if ndims+1 > len_sz
+                        sz = sz(2:len_sz);
+                    else
+                        sz = sz(2:ndims+1);
+                    end
                     if ~isempty(ipr.index)
                         sz = sz(ipr.index);
                     end                
