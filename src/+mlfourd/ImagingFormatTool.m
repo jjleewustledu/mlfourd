@@ -289,6 +289,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
         %%
 
+        function addJsonMetadata(this, varargin)            
+            this.imagingInfo_.addJsonMetadata(varargin{:});
+        end
         function this = append_descrip(this, varargin) 
             %% APPEND_DESCRIP
             %  @param [varargin] may be a single string or args to sprintf.
@@ -985,7 +988,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 return
             end
             txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
-            txt = strrep(txt, "%", "_"); % interferes with fprintf()
+            txt = strrep(txt, "%", "_"); % avoid interference with fprintf()
             if isempty(txt)
                 return
             end

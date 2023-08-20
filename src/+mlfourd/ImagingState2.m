@@ -55,6 +55,7 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         fqshape
         fqsurf
         fq4dfp
+        json_metadata
         logger
         stateTypeclass
         viewer
@@ -168,6 +169,9 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         end
         function g = get.fq4dfp(this)
             g = this.fqfiletype('.4dfp.hdr');
+        end
+        function g = get.json_metadata(this)
+            g = this.imagingFormat_.json_metadata;
         end
         function g = get.logger(this)
             try
@@ -295,6 +299,13 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
 
         %%
 
+        function addJsonMetadata(this, varargin)
+            try
+                this.imagingFormat_.addJsonMetadata(varargin{:});
+            catch ME
+                handwarning(ME)
+            end
+        end
         function addLog(this, varargin)
             try
                 this.imagingFormat_.addLog(varargin{:});
@@ -358,9 +369,6 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         end
         function txt = jsonrecode(this, j0, j1, varargin)
             txt = jsonrecode(j0, j1, varargin{:}, filenameNew=this.fqjson);
-        end
-        function m = json_metadata(~)
-            m = [];
         end
         function l = logical(this)
             l = logical(this.imagingFormat_.img);

@@ -11,7 +11,7 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         qfac % internal representation from this.hdr.dime.pixdim(1)
     end
 
-	methods % GET/SET               
+	methods % GET/SET    
         function g = get.orient(this)
             g = this.imagingFormat_.orient;
         end
@@ -90,9 +90,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             figure
             h = imshow(this.imagingFormat_.img, varargin{:});
         end
-        function m = json_metadata(this)
-            m = this.imagingFormat_.json_metadata;
-        end 
         function s = mat2str(this, varargin)
             s = mat2str(this.imagingFormat_.img, varargin{:});
         end

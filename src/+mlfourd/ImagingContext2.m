@@ -49,6 +49,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         bytes
         compatibility
+        json_metadata
         logger
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         qfac % internal representation from this.hdr.dime.pixdim(1)
@@ -141,6 +142,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function g = get.compatibility(this)
             g = this.compatibility_;
+        end
+        function g = get.json_metadata(this)
+            g = this.state_.json_metadata;
         end
         function g = get.logger(this)
             g = copy(this.state_.logger);
@@ -246,9 +250,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         %% BidsTool
 
-        function m = json_metadata(this, varargin)
-            m = this.state_.json_metadata(varargin{:});
-        end
         function this = relocateDerivatives(this)
             try
                 this.selectBidsTool();
@@ -1213,6 +1214,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function this = addImgrec(this, varargin)
             this.selectImagingTool;
             this.state_.addImgrec(varargin{:});
+        end
+        function this = addJsonMetadata(this, varargin)
+            %% ADDJSONMETADATA
+            %  @param varargin are structs containing json metadata
+            
+            try
+                this.state_.addJsonMetadata(varargin{:});
+            catch ME
+                handwarning(ME)
+            end
         end
         function this = addLog(this, varargin)
             %% ADDLOG

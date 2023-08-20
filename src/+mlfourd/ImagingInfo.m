@@ -422,6 +422,17 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         
         %%
         
+        function addJsonMetadata(this, varargin)
+            for v = asrow(varargin)
+                if isstruct(v{1})
+                    astruct = v{1};
+                    for f = asrow(fields(astruct))
+                        afield = f{1};
+                        this.json_metadata_.(afield) = astruct.(afield);
+                    end
+                end
+            end
+        end
         function hdr = adjustHdr(this, hdr)
             %% adjusts defects in hdr arising from 4dfp or insufficiency of mlniftitools
 

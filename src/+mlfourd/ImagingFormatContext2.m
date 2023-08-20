@@ -121,6 +121,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.img;
         end
         function g = get.json_metadata(this)
+            this.selectImagingFormatTool();
             g = this.state_.json_metadata;
         end
         function g = get.logger(this)
@@ -242,6 +243,12 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             
             this.selectFourdfpTool();
             this.state_.addImgrec(varargin{:});
+        end
+        function this = addJsonMetadata(this, varargin)
+            %  Args:
+            %      varargin are structs containing json metadata
+            
+            this.state_.addJsonMetadata(varargin{:});
         end
         function this = addLog(this, varargin)
             %  Args:

@@ -255,6 +255,9 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
 
         %%
 
+        function addJsonMetadata(~, varargin)
+            warning("mlfourd:NotImplementedWarning", stackstr())
+        end
         function addLog(this, varargin)
             this.logger_.add(varargin{:});
         end
