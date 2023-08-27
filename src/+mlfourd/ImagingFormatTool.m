@@ -85,10 +85,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         N % logical: suppress mmppix and center for 4dfp
     end
 
-    methods
-
-        %% GET/SET
-              
+    methods % GET/SET              
         function g = get.datatype(this)
             %% DATATYPE returns a datatype code as described by the INIfTI specificaitons
             
@@ -174,6 +171,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function g = get.json_metadata(this)
             g = this.imagingInfo_.json_metadata;
         end
+        function     set.json_metadata(this, s)
+            assert(isstruct(s), stackstr())
+            this.imagingInfo_.json_metadata = s;
+        end
         function g = get.machine(this)
             g = this.imagingInfo_.machine;
         end
@@ -239,7 +240,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             assert(islogical(s));
             this.imagingInfo_.N = s;
         end
+    end
 
+    methods
+        
         %% select states
         
         function that = selectMatlabFormatTool(this, contexth)

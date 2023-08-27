@@ -26,10 +26,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         viewer
     end
 
-    methods
-
-        %% set/get
-
+    methods % set/get
         function     set.filename(this, s)
             this.filesystem_.filename = s;
         end
@@ -118,6 +115,9 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function g = get.viewer(this)
             g = this.viewer_;        
         end
+    end
+
+    methods
 
         %% select states
 

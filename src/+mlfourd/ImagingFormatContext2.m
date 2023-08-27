@@ -35,10 +35,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         originator
     end
 
-    methods
-
-        %% SET/GET
-
+    methods % SET/GET
         function     set.filename(this, s)
             this.selectFilesuffixTool(fullfile(this.filepath, s));
             this.state_.filename = s;
@@ -124,6 +121,10 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.selectImagingFormatTool();
             g = this.state_.json_metadata;
         end
+        function     set.json_metadata(this, s)
+            this.selectImagingFormatTool();
+            this.state_.json_metadata = s;
+        end
         function g = get.logger(this)
             g = copy(this.state_.logger);
         end
@@ -160,6 +161,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             this.selectImagingFormatTool();
             g = this.state_.originator;
         end
+    end
+
+    methods
 
         %% select states
 

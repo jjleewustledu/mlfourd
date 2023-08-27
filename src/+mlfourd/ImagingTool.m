@@ -11,7 +11,7 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         qfac % internal representation from this.hdr.dime.pixdim(1)
     end
 
-	methods % GET/SET    
+	methods % GET/SET 
         function g = get.orient(this)
             g = this.imagingFormat_.orient;
         end

@@ -446,7 +446,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             
             % names & logging
             this.fileprefix = strcat(this.fileprefix, this.SUMXYZ_SUFFIX);
-            this.addLog('DynamicsTool.volumeContracted over %s', ipr.M.fileprefix);            
+            this.addLog('DynamicsTool.volumeContracted over %s', M.fileprefix);            
         end
         function [this,W] = volumeWeightedAveraged(this, varargin)
             %  @param optional weights \in reals, understood by ImagingContext2.
@@ -472,7 +472,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
 
             % names & logging
             this.fileprefix = strcat(this.fileprefix, this.AVGW_SUFFIX);
-            this.addLog('DynamicsTool.volumeWeightedAveraged over %s', ipr.W.fileprefix);  
+            this.addLog('DynamicsTool.volumeWeightedAveraged over %s', W.fileprefix);  
         end
         
  		function this = DynamicsTool(varargin)

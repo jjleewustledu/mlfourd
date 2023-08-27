@@ -250,7 +250,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         %% BidsTool
 
-        function this = relocateDerivatives(this)
+        function this = relocateToDerivativesFolder(this)
             try
                 this.selectBidsTool();
                 if contains(this.filepath, 'sourcedata')
@@ -1698,15 +1698,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
     end  
     
-    methods (Static)
-        function im = imagingType(typ, obj)
-            im = imagingType(typ, obj);
-        end
-        function loc = locationType(typ, loc0)
-            loc = locationType(typ, loc0);
-        end
-    end
-    
     %% PROTECTED
     
     properties (Access = protected)
@@ -1722,7 +1713,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
     end
         
-    %% HIDDEN    
+    %% HIDDEN   
 
 	methods (Hidden)
         function changeState(this, s)
@@ -1759,6 +1750,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             ifc = this.nifti;
         end
     end  
+        
+    methods (Hidden, Static)
+        function im = imagingType(typ, obj)
+            im = imagingType(typ, obj);
+        end
+        function loc = locationType(typ, loc0)
+            loc = locationType(typ, loc0);
+        end
+    end 
     
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy 
 end
