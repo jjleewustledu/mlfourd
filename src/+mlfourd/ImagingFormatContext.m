@@ -463,6 +463,9 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlio.HandleIOIn
         function s    = size(this, varargin)
             s = this.innerNIfTI_.size(varargin{:});
         end
+        function s    = string(this)
+            s = string(char(this));
+        end
         function this = sum(this, varargin)
             this.innerNIfTI_ = this.innerNIfTI_.sum(varargin{:});
         end

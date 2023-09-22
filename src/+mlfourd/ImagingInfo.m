@@ -689,8 +689,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.untouch_ = [];
             try
                 x = this.json_metadata_filesuffix;
-                this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, x)));
+                this.json_metadata_ = jsondecodefile(strcat(this.fqfileprefix, x));
             catch %#ok<CTCH> 
             end
         end        
@@ -751,8 +750,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.untouch_ = 1;
             try
                 x = this.json_metadata_filesuffix;
-                this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, x)));
+                this.json_metadata_ = jsondecodefile(strcat(this.fqfileprefix, x));
             catch %#ok<CTCH>
             end
         end
@@ -840,8 +838,7 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.untouch_ = nii.untouch;
             try
                 x = this.json_metadata_filesuffix;
-                this.json_metadata_ = jsondecode(...
-                    fileread(strcat(this.fqfileprefix, x)));
+                this.json_metadata_ = jsondecodefile(strcat(this.fqfileprefix, x));
             catch %#ok<CTCH>
             end
         end  

@@ -133,18 +133,21 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             ip = inputParser;
             addRequired(ip, 'times0', @isnumeric)
             addRequired(ip, 'times1', @isnumeric)
+            addParameter(ip, 'method', 'linear', @istext)
             parse(ip, varargin{:})
             ipr = ip.Results;
             
             img = this.imagingFormat_.img;
             sz = size(img);
+            assert(sz(4), length(ipr.times0))
             Nxyz = sz(1)*sz(2)*sz(3);
-            img = reshape(img, [Nxyz sz(4)]);
+            img = reshape(img, [Nxyz, sz(4)]);
+            img1 = zeros(Nxyz, length(ipr.times1));
             for x = 1:Nxyz
-                img(x,:) = interp1(ipr.times0, img(x,:), ipr.times1, 'linear', 'extrap');
+                img1(x,:) = interp1(ipr.times0, img(x,:), ipr.times1, ipr.method, 'extrap');
             end
-            img = reshape(img, [sz(1) sz(2) sz(3) length(ipr.times1)]);
-            this.imagingFormat_.img = img;            
+            img1 = reshape(img1, [sz(1) sz(2) sz(3) length(ipr.times1)]);
+            this.imagingFormat_.img = img1;
             this.fileprefix = strcat(this.fileprefix, '_interp1');
         end
         function this = makima(this, varargin)
@@ -235,7 +238,7 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             Ndims = ndims(this.imagingFormat_.img);
 
             ip = inputParser;
-            addOptional(ip, 'tindex', [], @(x) isnumeric(x) && length(x) <= Nt);
+            addParameter(ip, 'tindex', [], @(x) isnumeric(x) && length(x) <= Nt);
             addParameter(ip, 'weights', [], @isnumeric)
             addParameter(ip, 'taus', [], @isnumeric);
             parse(ip, varargin{:});
@@ -356,7 +359,9 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             %% For M-1 objects in varargin, obtain corresponding imagingFormat and img.
             %  For n in N time frames for each object:
             %      For m in M objects including this:
-            %          img(:,:,:,5*(n-1) + m) = imgs{m}(:,:,:,n);
+            %          img(:,:,:,M*(n-1) + m) = imgs{m}(:,:,:,n);
+            %  Args:
+            %      each element of varargin must be interpretable by mlfourd.ImagingContext2
 
             assert(~isempty(varargin))
             ics = cellfun(@(x) mlfourd.ImagingContext2(x), varargin, UniformOutput=false);

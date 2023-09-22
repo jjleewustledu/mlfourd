@@ -263,6 +263,19 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 handwarning(ME)
             end
         end        
+        function this = relocateToSourcedataFolder(this)
+            try
+                this.selectBidsTool();
+                if contains(this.filepath, 'derivatives')
+                    this.filepath = strrep(this.filepath, 'derivatives', 'sourcedata');
+                end
+                if contains(this.filepath, 'rawdata')
+                    this.filepath = strrep(this.filepath, 'rawdata', 'sourcedata');
+                end
+            catch ME
+                handwarning(ME)
+            end
+        end  
 
         %% FilesystemTool
 
@@ -920,6 +933,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function that = interp1(this, varargin)
             %% INTERP1
+            %  Args:
+            %      times0 double
+            %      times1 double
+            %      method {mustBeText} = "linear"
             
             this.selectDynamicsTool;
             that = copy(this);

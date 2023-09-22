@@ -110,6 +110,14 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.hdr;
         end
         function     set.img(this, s)
+            if ~isfile(this.fqfn)
+                warning("mlfourd:RunTimeWarning", ...
+                    "%s: %s may have lost data from mlfourd.{ImagingFormatState2,ImagingInfo}", ...
+                    stackstr(), this.fqfn)
+
+                % prevent loss of objects mlfourd.{ImagingFormatState2,ImagingInfo}.
+                %this.save();
+            end
             this.selectImagingFormatTool();
             this.state_.img = s;
         end
