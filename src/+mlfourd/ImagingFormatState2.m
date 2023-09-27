@@ -168,7 +168,11 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function that = selectMatlabFormatTool(this, contexth)
             if ~isa(this, 'mlfourd.MatlabFormatTool')
                 this.addLog('ImagingFormatState2.selectMatlabFormatTool');
-                info_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_);
+                if isa(this.imagingInfo_, "mlfourd.ImagingInfo")
+                    info_ = this.imagingInfo_;
+                else
+                    info_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_);
+                end
                 temp = mlfourd.MatlabFormatTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
@@ -185,7 +189,11 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             if ~isa(this, 'mlfourd.FourdfpTool')
                 this.filesystem_.filesuffix = '.4dfp.hdr';
                 this.addLog('ImagingFormatState2.selectFourdfpTool');
-                info_ = mlfourd.FourdfpInfo(this.filesystem_);
+                if isa(this.imagingInfo_, "mlfourd.ImagingInfo")
+                    info_ = this.imagingInfo_;
+                else
+                    info_ = mlfourd.FourdfpInfo(this.filesystem_);
+                end
                 temp = mlfourd.FourdfpTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
@@ -202,7 +210,11 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             if ~isa(this, 'mlfourd.MghTool')
                 this.filesystem_.filesuffix = '.mgz';
                 this.addLog('ImagingFormatState2.selectMghTool');
-                info_ = mlfourd.MGHInfo(this.filesystem_);
+                if isa(this.imagingInfo_, "mlfourd.ImagingInfo")
+                    info_ = this.imagingInfo_;
+                else
+                    info_ = mlfourd.MGHInfo(this.filesystem_);
+                end
                 temp = mlfourd.MghTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
@@ -221,7 +233,12 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                     this.filesystem_.filesuffix = '.nii.gz';
                 end
                 this.addLog('ImagingFormatState2.selectNiftiTool');
-                info_ = mlfourd.NIfTIInfo(this.filesystem_);
+                try
+                    info_ = this.imagingInfo_;
+                catch ME
+                    handwarning(ME)
+                    info_ = mlfourd.NIfTIInfo(this.filesystem_);
+                end
                 temp = mlfourd.NiftiTool(contexth, ...
                                       this.img_, ...
                                       'imagingInfo', info_, ...
@@ -347,6 +364,10 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         img_
         logger_
         viewer_
+    end
+
+    properties (Access = protected) %% pulled up from mlfourd.ImagingFormatTool
+        imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
     end
 
     methods (Static, Access = protected)

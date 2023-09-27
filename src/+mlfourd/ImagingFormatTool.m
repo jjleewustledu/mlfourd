@@ -799,9 +799,9 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
     %% PROTECTED
 
-    properties (Access = protected)
-        imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
-    end
+    %% properties (Access = protected) %% pushed up to mlfourd.ImagingFormatState2.
+    %%     imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
+    %% end
 
     methods (Access = protected)
         function this = ImagingFormatTool(contexth, img, varargin)
