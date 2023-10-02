@@ -236,14 +236,6 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
             end
         end
         function selectMatlabTool(this, contexth)
-            if this.compatibility    
-                if ~isa(this, 'mlfourd.NumericalTool')
-                    this.addLog('mlfourd.ImagingState2.selectMatlabTool');
-                    contexth.changeState( ...
-                        mlfourd.NumericalTool(contexth, this.imagingFormat_));
-                end
-                return
-            end
             if ~isa(this, 'mlfourd.MatlabTool')
                 this.addLog('mlfourd.ImagingState2.selectMatlabTool');
                 contexth.changeState( ...

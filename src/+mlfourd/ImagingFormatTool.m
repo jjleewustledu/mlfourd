@@ -70,7 +70,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         filetype
         hdr % required by mlniftitools.{save_nii,save_untouch_nii}
         hdxml
-        json_metadata
         machine
         orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         original
@@ -167,13 +166,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             catch %#ok<CTCH>
                 x = '';
             end
-        end
-        function g = get.json_metadata(this)
-            g = this.imagingInfo_.json_metadata;
-        end
-        function     set.json_metadata(this, s)
-            assert(isstruct(s), stackstr())
-            this.imagingInfo_.json_metadata = s;
         end
         function g = get.machine(this)
             g = this.imagingInfo_.machine;
@@ -293,9 +285,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
 
         %%
 
-        function addJsonMetadata(this, varargin)            
-            this.imagingInfo_.addJsonMetadata(varargin{:});
-        end
         function this = append_descrip(this, varargin) 
             %% APPEND_DESCRIP
             %  @param [varargin] may be a single string or args to sprintf.
@@ -986,20 +975,6 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
             nii.filetype = this.filetype;
             nii.machine = this.machine;
             nii.original = this.original;
-        end
-        function        save_json_metadata(this)
-            if isempty(this.json_metadata)
-                return
-            end
-            txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
-            txt = strrep(txt, "%", "_"); % avoid interference with fprintf()
-            if isempty(txt)
-                return
-            end
-            x = this.imagingInfo_.json_metadata_filesuffix;
-            fid = fopen(strcat(this.fqfileprefix, x), 'w');
-            fprintf(fid, txt);
-            fclose(fid);
         end
         function        save_nii(this)
             %% Save NIFTI dataset. Support both *.nii and *.hdr/*.img file extension.

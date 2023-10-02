@@ -500,6 +500,7 @@ classdef ImagingFormatContext < handle & matlab.mixin.Copyable & mlio.HandleIOIn
             this.innerNIfTI_ = ImagingFormatContext.createInner(varargin{:}); 
             
             ip = inputParser;
+            ip.KeepUnmatched = true;
             addOptional( ip, 'obj',          [], @ImagingFormatContext.assertCtorObj);
             addParameter(ip, 'bitpix',       [], @isnumeric);
             addParameter(ip, 'datatype',     [], @(x) isnumeric(x) || ischar(x));

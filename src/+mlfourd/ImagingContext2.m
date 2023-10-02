@@ -59,72 +59,48 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
 	methods % GET/SET
         function     set.filename(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.filename = f;
         end
         function f = get.filename(this)
             f = this.state_.filename;
         end
         function     set.filepath(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.filepath = f;
         end 
         function f = get.filepath(this)
             f = this.state_.filepath;
         end
         function     set.fileprefix(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.fileprefix = f;
         end
         function f = get.fileprefix(this)
             f = this.state_.fileprefix;
         end
         function     set.filesuffix(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.filesuffix = f;
         end
         function f = get.filesuffix(this)
             f = this.state_.filesuffix;
         end
         function     set.fqfilename(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.fqfilename = f;
         end
         function f = get.fqfilename(this)
             f = this.state_.fqfilename;
         end
         function     set.fqfileprefix(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.fqfileprefix = f;
         end
         function f = get.fqfileprefix(this)
             f = this.state_.fqfileprefix;
         end
         function     set.fqfn(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.fqfn = f;
         end
         function f = get.fqfn(this)
             f = this.state_.fqfn;
         end
         function     set.fqfp(this, f)
-            if this.compatibility
-                this.selectImagingTool();
-            end
             this.state_.fqfp = f;
         end
         function f = get.fqfp(this)
@@ -192,18 +168,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function this = selectFourdfpTool(this)
             %% mutate imaging-format state to be 4dfp
 
-            if this.compatibility
-                this.state_.fourdfp;
-                return
-            end
             this.selectImagingTool; % supports compatibility
             this.state_.selectFourdfpTool; % state_ returns a safe copy of fourdfp
         end
         function this = selectImagingTool(this)
-            if this.compatibility
-                this.state_.selectImagingFormatTool(this);
-                return
-            end
             this.state_.selectImagingTool(this);
         end
         function this = selectMaskingTool(this)
@@ -215,20 +183,12 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function this = selectMghTool(this)
             %% mutate imaging-format state to be mgz
             
-            if this.compatibility
-                this.state_.mgz;
-                return
-            end
             this.selectImagingTool; % supports compatibility
             this.state_.selectMghTool; % state_ returns a safe copy of nifti
         end
         function this = selectNiftiTool(this)
             %% mutate imaging-format state to be NIfTI
             
-            if this.compatibility
-                this.state_.nifti;
-                return
-            end
             this.selectImagingTool; % supports compatibility
             this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
@@ -1595,11 +1555,6 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function imgf = imagingFormat(this)
             imgf = copy(this.state_.imagingFormat());
-            if contains(this.filesuffix, '4dfp')
-                imgf.selectFourdfpTool();
-                return
-            end
-            imgf.selectNiftiTool();
         end
         function d = int8(this)
             this.selectImagingTool();
@@ -1650,46 +1605,20 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %                    for copy-construction or any object supported by stateful ImagingTool ~ ImagingState2.
             
             import mlfourd.*;
-
             if 0 == nargin || isempty(imgobj)
                 % must support empty ctor
                 this.state_ = TrivialTool(this);
                 return
             end
 
-            rr = mlpipeline.ResourcesRegistry.instance();
             ip = inputParser;
             ip.KeepUnmatched = true;
             addRequired(ip, 'imgobj')
-            addParameter(ip, 'compatibility', rr.imagingContextCompatibility, @islogical)
+            addParameter(ip, 'compatibility', false, @islogical)
             parse(ip, imgobj, varargin{:})
             ipr = ip.Results;
             this.compatibility_ = ipr.compatibility; % KLUDGE, for refactoring
 
-            if this.compatibility_ % KLUDGE, for refactoring
-                if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
-                    % copy ctor
-                    this = copy(ipr.imgobj);
-                    return
-                end
-                if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
-                    this.state_ = NumericalTool_20211201(this, ipr.imgobj, varargin{:});
-                    return
-                end
-                if istext(ipr.imgobj)
-                    this.state_ = FilesystemTool_20211201(this, ipr.imgobj, varargin{:});
-                    return
-                end
-                if isa(ipr.imgobj, 'mlfourd.ImagingContext') 
-                    % legacy
-                    assert(~isdeployed)
-                    this.state_ = ImagingFormatTool_20211201(this, ImagingFormatContext(struct(ipr.imgobj.niftid)), varargin{:});
-                    return
-                end
-                this.state_ = ImagingFormatTool_20211201(this, ipr.imgobj, varargin{:});            
-                return
-            end
-            
             if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
                 % copy ctor
                 this = copy(ipr.imgobj);

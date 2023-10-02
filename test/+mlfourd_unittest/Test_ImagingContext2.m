@@ -37,10 +37,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
         numericalTool
     end
     
-    methods
-        
-        %% GET
-        
+    methods %% GET 
         function g = get.filesystemTool(this)
             if this.compatibility
                 g = 'mlfourd.FilesystemTool_20211201';
@@ -161,7 +158,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyClass(obj.imagingFormat.viewer, 'mlfourd.Viewer')
         end
         function test_ctor(this)
- 			import mlfourd.*            
+ 			import mlfourd.* 
 
             % filename
             ic = ImagingContext2([this.T1001 '.nii.gz'], 'compatibility', this.compatibility);
@@ -171,12 +168,6 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = ImagingContext2(magic(2), 'compatibility', this.compatibility);
             this.verifyEqual(ic.stateTypeclass, this.numericalTool)
 
-            % ImagingFormatContext
-%             ifc = ImagingFormatContext([this.T1001 '.nii.gz']);
-%             this.verifyEqual(ifc.stateTypeclass, 'mlfourd.InnerNIfTI')
-%             ic_ifc = ImagingContext2(ifc, 'compatibility', true);
-%             this.verifyEqual(ic_ifc.stateTypeclass, 'mlfourd.ImagingFormatTool_20211201')
-
             % ImagingFormatContext2
             ifc2 = ImagingFormatContext2([this.T1001 '.nii.gz']);
             ifc2.selectNiftiTool();
@@ -184,12 +175,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic_ifc2 = ImagingContext2(ifc2, 'compatibility', false);
             this.verifyEqual(ic_ifc2.stateTypeclass, 'mlfourd.ImagingTool')
 
-            % select ic
-            if this.compatibility
-                ic = ImagingContext2(ifc, 'compatibility', true);
-            else
-                ic = ImagingContext2(ifc2, 'compatibility', false);
-            end
+            ic = ImagingContext2(ifc2, 'compatibility', this.compatibility);
 
             % copy ctor, repeated
             ic2 = ImagingContext2(ic, 'compatibility', this.compatibility);
@@ -343,11 +329,11 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
                 this.verifyClass(obj.imagingInfo, 'mlfourd.MGHInfo')
                 this.verifyEqual(obj.stateTypeclass, 'mlfourd.ImagingFormatTool_20211201')
             else
-                this.verifyEqual(obj.fqfilename, fullfile(pwd, 'T1.mgz'))
+                this.verifyEqual(obj.fqfilename, fullfile(pwd, 'T1.nii.gz'))
                 this.verifyEqual(obj.fqfileprefix, obj.logger.fqfileprefix)
                 this.verifyClass(obj.logger, 'mlpipeline.Logger2')
                 this.verifyEqual(obj.stateTypeclass, 'mlfourd.FilesystemTool')
-                this.verifyClass(obj.imagingInfo, 'mlfourd.MGHInfo')
+                this.verifyClass(obj.imagingInfo, 'mlfourd.NIfTIInfo')
                 this.verifyEqual(obj.stateTypeclass, 'mlfourd.ImagingTool')
             end
 
@@ -360,7 +346,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(obj.imagingInfo.raw.bitpix, 8)
             this.verifyEqual(obj.imagingInfo.raw.pixdim, [-1 1 1 1 2.40 1 1 1], 'AbsTol', 1e-5)
             this.verifyEqual(obj.imagingInfo.raw.xyzt_units, 10)
-            this.verifyEqual(obj.imagingInfo.raw.descrip, '6.0.4:ddd0a010')
+            this.verifyEqual(obj.imagingInfo.raw.descrip, '6.0.5:9e026117')
             this.verifyEqual(obj.imagingInfo.raw.qform_code, 0)
             this.verifyEqual(obj.imagingInfo.raw.sform_code, 1)
             this.verifyEqual(obj.imagingInfo.raw.quatern_b, 0, 'AbsTol', 1e-5)
@@ -517,10 +503,10 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             %this.verifyEqual(hdr_,               ic2.fourdfp.hdr, 'RelTol', 1e-4);
             this.verifyEqual(ic2_ic.fourdfp.img, ic2.fourdfp.img);            
             
-%             ic_ic2 = ImagingContext( ic2);
-%             hdr__ = this.adjustLegacyHdr(ic_ic2.fourdfp.hdr, ic2.fourdfp.hdr);
-%             this.verifyEqual(hdr__,              ic2.fourdfp.hdr, 'RelTol', 1e-4);
-%             this.verifyEqual(ic_ic2.fourdfp.img, ic2.fourdfp.img);     
+            %ic_ic2 = ImagingContext( ic2);
+            %hdr__ = this.adjustLegacyHdr(ic_ic2.fourdfp.hdr, ic2.fourdfp.hdr);
+            %this.verifyEqual(hdr__,              ic2.fourdfp.hdr, 'RelTol', 1e-4);
+            %this.verifyEqual(ic_ic2.fourdfp.img, ic2.fourdfp.img);     
         end
         function test_legacy_niftid(this)
             if (~this.do_legacy); return; end
@@ -552,79 +538,67 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             this.verifyEqual(ic.stateTypeclass, this.filesystemTool) % ic instantiates as a filesystem tool
             this.verifyFalse(isempty(ic)) % do operations that read header from filesystem
-            if ~this.compatibility
-                this.verifyEqual(size(ic), [256 256 256])
-                this.verifyEqual(ic.bytes, 64)
-                this.verifyEqual(ndims(ic), 3)
-                this.verifyEqual(numel(ic), 256^3)
-            end
+            this.verifyEqual(size(ic), [256 256 256])
+            this.verifyEqual(ic.bytes, 64)
+            this.verifyEqual(ndims(ic), 3)
+            this.verifyEqual(numel(ic), 256^3)
             this.verifyEqual(size(ic), [256 256 256])
 
             ic.selectNiftiTool(); % loads imaging into memory
             this.verifyEqual(ic.stateTypeclass, this.imagingTool)
-            if ~this.compatibility
-                this.verifyEqual(ic.bytes, 67108936) % explicit memory footprint of img
-            end
+            this.verifyEqual(ic.bytes, 67108936) % explicit memory footprint of img
             this.verifyEqual(size(ic.nifti.img), [256 256 256]) % explicit memory footprint of img
             fqfn = ic.fqfilename;
-            deleteExisting(fqfn);            
+            deleteExisting(fqfn);
             ic.fileprefix = mybasename(tempname);
             fqfn1 = ic.fqfilename;
 
             ic.selectFilesystemTool; % selecting FilesystemTool serializes data to fqfn1
-            this.verifyTrue(~isfile(fqfn)); 
-            this.verifyTrue(isfile(fqfn1)); 
+            this.verifyTrue(~isfile(fqfn));
+            this.verifyTrue(isfile(fqfn1));
             this.verifyEqual(ic.stateTypeclass, this.filesystemTool) % confirm state ~ filesystem tool
             this.verifyFalse(isempty(ic)) % repeat operations that read header from filesystem
-            if ~this.compatibility
-                this.verifyEqual(size(ic), [256 256 256])
-                this.verifyEqual(ic.bytes, 64)
-                this.verifyEqual(ndims(ic), 3)
-                this.verifyEqual(numel(ic), 256^3)
-            end
+            this.verifyEqual(size(ic), [256 256 256])
+            this.verifyEqual(ic.bytes, 64)
+            this.verifyEqual(ndims(ic), 3)
+            this.verifyEqual(numel(ic), 256^3)
             this.verifyEqual(size(ic), [256 256 256])
 
             deleteExisting(strcat(ic.fqfp, '*'))
         end
         function test_selectImagingTool(this)
-            ic = mlfourd.ImagingContext2([this.T1001 '.4dfp.hdr'], 'compatibility', this.compatibility);  
-            this.verifyEqual(ic.stateTypeclass, this.filesystemTool);   
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FilesystemFormatTool')
-            end
+            ic = mlfourd.ImagingContext2([this.T1001 '.nii.gz'], 'compatibility', this.compatibility);
+            this.verifyEqual(ic.stateTypeclass, this.filesystemTool);
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FilesystemFormatTool');
+            
             ic.selectImagingTool;
-            this.verifyEqual(ic.stateTypeclass, this.imagingTool);  
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FourdfpTool')
-            end 
+            this.verifyEqual(ic.stateTypeclass, this.imagingTool);
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.NiftiTool');
+            
             ic.selectMatlabTool;
-            this.verifyEqual(ic.stateTypeclass, this.numericalTool);  
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool')
-            end  
+            this.verifyEqual(ic.stateTypeclass, this.numericalTool);
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool');
+            
             ic.selectBlurringTool;
-            this.verifyEqual(ic.stateTypeclass, this.blurringTool);  
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool')
-            end             
+            this.verifyEqual(ic.stateTypeclass, this.blurringTool);
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool');
+
             ic.selectImagingTool;
             this.verifyEqual(ic.stateTypeclass, this.blurringTool); % BlurringTool => ImagingTool
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool')
-            end 
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.MatlabFormatTool');
+            
             ic.fileprefix = 'test_selectImagingTool';
             ic.selectFilesystemTool;
-            this.verifyEqual(ic.stateTypeclass, this.filesystemTool);   
-            if ~this.compatibility
-                this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FilesystemFormatTool')
-            end 
+            this.verifyEqual(ic.stateTypeclass, this.filesystemTool);
+            this.verifyEqual(ic.imagingFormat.stateTypeclass, 'mlfourd.FilesystemFormatTool');
+            this.verifyTrue(isfile(ic.fqfn));
 
             this.verifyTrue(isfile(ic.fqfilename))
         end
         function test_nifti2fourdfp(this)
  			obj = mlfourd.ImagingContext2([this.T1001 '.nii.gz'], 'compatibility', this.compatibility);
             this.verifyEqual(obj.stateTypeclass, this.filesystemTool)
-%             this.verifyClass(obj.imagingInfo, 'mlfourd.NIfTIInfo')
+            this.verifyClass(obj.imagingInfo, 'mlfourd.NIfTIInfo')
             this.verifyEqual(obj.filesuffix, '.nii.gz')
             this.verifyClass(obj.fourdfp, this.imagingFormat)
             this.verifyEqual(obj.fourdfp.stateTypeclass, this.fourdfpTool)
@@ -641,31 +615,31 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             %obj = copy(this.MNI152_LR_nii); 
             obj = mlfourd.ImagingContext2('T1_fslreorient2std.nii.gz', 'compatibility', this.compatibility);
-            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn));
-            obj.view(); % y normal
+            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn)); %#ok<ASGLU>
+            if this.do_view; obj.view(); end % y normal
             obj.selectFourdfpTool();
-            obj.view(); % y flipped
+            if this.do_view; obj.view(); end % y flipped
             tmpfp = tempname;
             tmpfn = strcat(tmpfp, '.4dfp.hdr');
             obj.saveas(tmpfn);
-            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
-            mlbash(sprintf('fsleyes %s', tmpfn)); % y flipped
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn)); %#ok<ASGLU>
+            if this.do_view; mlbash(sprintf('fsleyes %s', tmpfn)); end % y flipped
             deleteExisting(strcat(tmpfp, '*'));
 
             % repeat to detect cycles
             obj.selectFourdfpTool();
-            obj.view(); % y flipped
+            if this.do_view; obj.view(); end % y flipped
             tmpfp = tempname;
             tmpfn = strcat(tmpfp, '.4dfp.hdr');
             obj.saveas(tmpfn);
-            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
-            mlbash(sprintf('fsleyes %s', tmpfn)); % y flipped
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn)); %#ok<ASGLU>
+            if this.do_view; mlbash(sprintf('fsleyes %s', tmpfn)); end % y flipped
             deleteExisting(strcat(tmpfp, '*'));
         end
         function test_fourdfp2nifti(this)
  			obj = mlfourd.ImagingContext2([this.T1001 '.4dfp.hdr'], 'compatibility', this.compatibility);
             this.verifyEqual(obj.stateTypeclass, this.filesystemTool)
-%             this.verifyClass(obj.imagingInfo, 'mlfourd.FourdfpInfo')
+            this.verifyClass(obj.imagingInfo, 'mlfourd.FourdfpInfo')
             this.verifyEqual(obj.filesuffix, '.4dfp.hdr')
             this.verifyClass(obj.nifti, this.imagingFormat)
             this.verifyEqual(obj.nifti.stateTypeclass, this.niftiTool)
@@ -680,33 +654,38 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
                 return
             end
 
+            pwd0 = pushd(getenv("REFDIR"));
+
  			%obj = copy(this.MNI152_LR_nii); 
             obj = mlfourd.ImagingContext2('711-2B_111.4dfp.hdr', 'compatibility', this.compatibility);
-            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn));
+            [~,r] = mlbash(sprintf('fslhd %s', obj.fqfn)); %#ok<ASGLU>
             %obj = copy(obj.selectFourdfpTool());
-            obj.view(); % y flipped
+            if this.do_view; obj.view(); end % y flipped
             obj.selectNiftiTool();
-            obj.view(); % y normal
+            if this.do_view; obj.view(); end % y normal
             tmpfp = tempname;
             tmpfn = strcat(tmpfp, '.nii.gz');
             obj.saveas(tmpfn);
-            [~,r] = mlbash(sprintf('fslhd %s', tmpfn));
-            mlbash(sprintf('fsleyes %s', tmpfn)); % y normal
+            [~,r] = mlbash(sprintf('fslhd %s', tmpfn)); %#ok<ASGLU>
+            if this.do_view; mlbash(sprintf('fsleyes %s', tmpfn)); end % y normal
             deleteExisting(strcat(tmpfp, '*'));
             
             % repeat to detect cycles
             obj.selectNiftiTool();
-            obj.view(); % y normal
+            if this.do_view; obj.view(); end % y normal
             tmpfp1 = tempname;
             tmpfn1 = strcat(tmpfp1, '.nii.gz');
             obj.saveas(tmpfn1);
-            [~,r1] = mlbash(sprintf('fslhd %s', tmpfn1));
-            mlbash(sprintf('fsleyes %s', tmpfn1)); % y normal
+            [~,r1] = mlbash(sprintf('fslhd %s', tmpfn1)); %#ok<ASGLU>
+            if this.do_view; mlbash(sprintf('fsleyes %s', tmpfn1)); end % y normal
             deleteExisting(strcat(tmpfp1, '*'));
+
+            popd(pwd0);
         end
         function test_saveas(this)
             this.testObj.saveas([this.testObj.fileprefix '_test_saveas.mat']);
             this.verifyTrue(isfile([this.testObj.fileprefix '.mat']));
+
             deleteExisting(this.testObj.filename);
 
             ic_n = mlfourd.ImagingContext2([this.RAS '.nii.gz']);
@@ -720,17 +699,14 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = copy(ic_n);
             ic.saveas([ic.fileprefix '_test_saveas.4dfp.hdr']);
             this.verifyTrue(isfile([ic.fileprefix '.4dfp.hdr']));
-            if this.do_view
-                mlbash(sprintf('fsleyes %s %s', ic_n.fqfn, ic.fqfn));
-            end
+            if this.do_view; mlbash(sprintf('fsleyes %s %s', ic_n.fqfn, ic.fqfn)); end
+
             deleteExisting(ic.fqfn);
 
             ic = copy(ic_4);
             ic.saveas([ic.fileprefix '_test_saveas.nii.gz']);
             this.verifyTrue(isfile([ic.fileprefix '.nii.gz']));
-            if this.do_view
-                mlbash(sprintf('fsleyes %s %s', ic_4.fqfn, ic.fqfn));
-            end
+            if this.do_view; mlbash(sprintf('fsleyes %s %s', ic_4.fqfn, ic.fqfn)); end
 
             deleteExisting(ic.fqfn);
         end
@@ -768,18 +744,18 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
 
             ic1 = this.MNI152_LR_nii;
             ic1.selectNiftiTool();
-            ic1.view()
+            if this.do_view; ic1.view(); end
 
             tmp = strcat(tempname, '.4dfp.hdr');
             ic1.saveas(tmp)
-            mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp))
+            if this.do_view; mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp)); end
 
             ifc2 = copy(ic1);
             tmp1 = strcat(tempname, '.nii.gz');
             ifc2.saveas(tmp1)
-            mlbash(sprintf('fsleyes %s %s', tmp, tmp1))
+            if this.do_view; mlbash(sprintf('fsleyes %s %s', tmp, tmp1)); end
 
-            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename))
+            if this.do_view; mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename)); end
 
             deleteExisting(tmp)
             deleteExisting(tmp1)
@@ -961,8 +937,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             
             ic2_ = ImagingContext2(fdg_, 'compatibility', this.compatibility);
             ic2  = ic2_.blurred([1 10 20]);
-            if (this.do_view)
-                ic2.fsleyes; end
+            if (this.do_view); ic2.fsleyes; end
             this.verifyTrue(lstrfind(ic2.fileprefix, '_b200'));
         end
         
@@ -975,7 +950,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = ImagingContext2(img, 'compatibility', this.compatibility);
             ic1 = ic.timeAveraged();
             this.verifyEqual(double(ic1), ones(2,2,2));
-            ic2 = ic.timeAveraged([2 3]);
+            ic2 = ic.timeAveraged('tindex', [2 3]);
             this.verifyEqual(double(ic2), ones(2,2,2));
             ic3 = ic.timeAveraged('weights', 0.25*[1 1 1 1]);
             this.verifyEqual(double(ic3), ones(2,2,2));
@@ -986,7 +961,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = ImagingContext2(img, 'compatibility', this.compatibility);
             ic1 = ic.timeAveraged();
             this.verifyEqual(double(ic1), mean(img), 'AbsTol', 1e-15);
-            ic2 = ic.timeAveraged([2 3]);
+            ic2 = ic.timeAveraged('tindex', [2 3]);
             this.verifyEqual(double(ic2), 2.5, 'AbsTol', 1e-15);
             ic3 = ic.timeAveraged('weights', 1./img);
             this.verifyEqual(double(ic3), 4, 'AbsTol', 1e-15);
@@ -1043,13 +1018,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic1 = ic.volumeContracted;
             this.verifyEqual(double(ic1), [8 8 8 8]);
             ic2 = ic.volumeContracted(mimg);
-            this.verifyEqual(double(ic2), [1 1 1 1]);
-            
-%             h = @improperMask;
-%             this.verifyWarning(h(ic, mimg), 'mlfourd:failedToVerify');            
-%             function improperMask(ic, mimg)
-%                 ic.volumeContracted(2*mimg);
-%             end
+            this.verifyEqual(double(ic2), [1 1 1 1]);            
         end
         
         %% MaskingTool
@@ -1188,16 +1157,14 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             zin.save;
             zout = zin.zoomed(-44, 176, -62, 248, 0, -1);
             zout.save
-            if (this.do_view)
-                ic.fsleyes(zin.fqfilename, zout.fqfilename); end
+            if (this.do_view); ic.fsleyes(zin.fqfilename, zout.fqfilename); end
             deleteExisting(zin.fqfilename);
             deleteExisting(zout.fqfilename);
         end
         function test_qsforms(this)
             ic = mlfourd.ImagingContext2([this.t1 '.nii.gz'], 'compatibility', this.compatibility);
             ic.saveas([this.t1 '_test.nii.gz']);            
-            if (this.do_view)
-                ic.fsleyes([this.t1 '_test.nii.gz']); end
+            if (this.do_view); ic.fsleyes([this.t1 '_test.nii.gz']); end
         end
         
         %% MatlabTool
@@ -1346,13 +1313,13 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             if this.do_view
                 ic__.view() % arterial tree ~ 0
             end
-            this.verifyEqual(dipmax(ic__), 149)
+            this.verifyEqual(dipmax(ic__), 585)
             this.verifyEqual(dipmin(ic__), 0)
         end
 
         %% RegistrationTool
 
-        function test_reorient2std(~)
+        function test_reorient2std(this)
             t1w = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', ...
                 'sub-022S0543_ses-20060522092724_acq-noaccel_proc-gradwarp-n3-b1corr-scaled_T1w.nii.gz');
             fn = fullfile(getenv('HOME'), 'Tmp', 'test_reorient2std.nii.gz');
@@ -1360,17 +1327,17 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = mlfourd.ImagingContext2(fn);
             ic.forceradiological();
             ic.reorient2std();
-            ic.view(t1w);
+            if this.do_view; ic.view(t1w); end
             deleteExisting(fn);            
         end
-        function test_swaporient(~)
+        function test_swaporient(this)
             t1w = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourd', 'data', ...
                 'sub-022S0543_ses-20060522092724_acq-noaccel_proc-gradwarp-n3-b1corr-scaled_T1w.nii.gz');
             fn = fullfile(getenv('HOME'), 'Tmp', 'test_swaporient.nii.gz');
             copyfile(t1w, fn);
             ic = mlfourd.ImagingContext2(fn);
             ic.swaporient();
-            ic.view(t1w);
+            if this.do_view; ic.view(t1w); end
             deleteExisting(fn);            
         end
         
@@ -1446,7 +1413,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.assertEqual(dipsum(ifc.img), 0)
         end
         function test_Fung2013_zeros_Bids(this)
-            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/resolve/sub-S58163/pet'));
+            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/sourcedata/sub-S58163/ses-E03056/anat'));
             bids = mlraichle.Ccir559754Bids();
             anatomy = bids.t1w_ic;
             ic = anatomy.zeros();
@@ -1456,7 +1423,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             popd(pwd0);
         end
         function test_Fung2013_sum(this)
-            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/derivatives/resolve/sub-S58163/pet'));
+            pwd0 = pushd(fullfile(getenv('HOME'), 'Singularity/CCIR_00559_00754/sourcedata/sub-S58163/ses-E03056/anat'));
             bids = mlraichle.Ccir559754Bids();
             anatomy = bids.t1w_ic;
             ic = sum(anatomy, 3);

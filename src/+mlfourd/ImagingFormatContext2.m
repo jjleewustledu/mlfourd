@@ -126,7 +126,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.img;
         end
         function g = get.json_metadata(this)
-            this.selectImagingFormatTool();
+            %this.selectImagingFormatTool();
             g = this.state_.json_metadata;
         end
         function     set.json_metadata(this, s)
@@ -283,9 +283,11 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             disp(this.hdr.dime)
             disp(this.hdr.hist)
             disp('=============== original.hdr ===============')
-            disp(this.original.hdr.hk)
-            disp(this.original.hdr.dime)
-            disp(this.original.hdr.hist)
+            if ~isempty(this.original)
+                disp(this.original.hdr.hk)
+                disp(this.original.hdr.dime)
+                disp(this.original.hdr.hist)
+            end
             disp('=============== fslhd ===============')
             disp(this.fslhd)
             disp('=============== string(logger) ===============')
@@ -295,11 +297,14 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             d = double(this.state_);
         end
         function r = fslhd(this)
+            if ~isfile(this.fqfilename)
+                r = sprintf("%s: %s not found", stackstr(), this.fqfilename);
+                return
+            end
             try
                 [~,r] = mlbash(sprintf('fslhd %s', this.fqfilename));
             catch ME
                 handwarning(ME)
-                r = '';
             end
         end
         function tf = haveDistinctStates(this, that)

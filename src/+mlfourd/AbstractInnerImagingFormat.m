@@ -902,7 +902,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             
             this.filesystemRegistry_ = mlio.FilesystemRegistry.instance;
             this.imagingInfo_ = copy(ip.Results.imagingInfo);
-            this.imagingInfo_.circshiftK = ip.Results.circshiftK;
+            %this.imagingInfo_.circshiftK = ip.Results.circshiftK;
             this.imagingInfo_.N = ip.Results.N;
             
             this.creationDate_ = ip.Results.creationDate;
@@ -917,7 +917,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             this.viewer_ = ip.Results.viewer;              
 
             if (lexist(this.fqfilename, 'file'))
-                nii = mlniftitools.make_nii(ipr.img, this.mmppix, this.originator, this.datatype, this.descrip);
+                nii = mlniftitools.make_nii(ip.Results.img, this.mmppix, this.originator, this.datatype, this.descrip);
                 this.imagingInfo_.hdr = nii.hdr;
                 this.img_ = nii.img;
                 this.imagingInfo_.untouch = nii.untouch;

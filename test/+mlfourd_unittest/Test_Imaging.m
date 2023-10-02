@@ -51,16 +51,16 @@ classdef Test_Imaging < matlab.unittest.TestCase
         function g = get.dataDir2(~)
             g = fullfile(getenv('HOME'), 'MATLAB-Drive', 'mlfourdfp', 'data', '');
         end
-        function g = get.fdg_fqfn_4dfp(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'sourcedata', 'sub-S58163', 'pet', ...
+        function g = get.fdg_fqfn_4dfp(this)
+            g = fullfile(this.dataDir, ...
                 'fdgdt20190523132832_222.4dfp.hdr');
         end
-        function g = get.fdg_ic_fqfn_nii(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'sourcedata', 'sub-S58163', 'pet', ...
+        function g = get.fdg_ic_fqfn_nii(this)
+            g = fullfile(this.dataDir, ...
                 'fdgdt20190523132832_222_ImagingContext2.nii.gz');
         end
-        function g = get.fdg_nifti_4dfp_fqfn_nii(~)
-            g = fullfile(getenv('SINGULARITY_HOME'), 'CCIR_00559_00754', 'sourcedata', 'sub-S58163', 'pet', ...
+        function g = get.fdg_nifti_4dfp_fqfn_nii(this)
+            g = fullfile(this.dataDir, ...
                 'fdgdt20190523132832_222_nifti_4dfp.nii.gz');
         end
         function g = get.large_4dfp(~)

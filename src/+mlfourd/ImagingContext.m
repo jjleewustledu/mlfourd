@@ -489,6 +489,9 @@ classdef ImagingContext < handle & mlio.HandleIOInterface
 
             tf = this.state_.sizeLt(ic);
         end
+        function s  = string(this)
+            s = convertCharsToStrings(char(this));
+        end
         function t  = thresh(this, t)
             %% THRESH
             %  @param t:  use t to threshold current image (zero anything below the number)

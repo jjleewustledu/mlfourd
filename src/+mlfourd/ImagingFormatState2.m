@@ -22,6 +22,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         bytes
         filesystem
         img % required by mlniftitools.{save_nii,save_untouch_nii}
+        json_metadata
         logger
         viewer
     end
@@ -100,6 +101,13 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             assert(isnumeric(s) || islogical(s))
             this.img_ = s;
             this.adjustHdrForImg(s) % supports ImagingFormatTool
+        end
+        function g = get.json_metadata(this)
+            g = this.imagingInfo_.json_metadata;
+        end
+        function     set.json_metadata(this, s)
+            assert(isstruct(s), stackstr())
+            this.imagingInfo_.json_metadata = s;
         end
         function     set.logger(this, s)
             assert(isa(s, 'mlpipeline.ILogger'))
@@ -272,8 +280,8 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
 
         %%
 
-        function addJsonMetadata(~, varargin)
-            warning("mlfourd:NotImplementedWarning", stackstr())
+        function addJsonMetadata(this, varargin)
+            this.imagingInfo_.addJsonMetadata(varargin{:});
         end
         function addLog(this, varargin)
             this.logger_.add(varargin{:});
@@ -336,6 +344,20 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             that = this.selectMatlabFormatTool(this.contexth_);
             save_mat(that, varargin{:});
         end
+        function save_json_metadata(this)
+            if isempty(this.json_metadata)
+                return
+            end
+            txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
+            txt = strrep(txt, "%", "_"); % avoid interference with fprintf()
+            if isempty(txt)
+                return
+            end
+            x = this.imagingInfo_.json_metadata_filesuffix;
+            fid = fopen(strcat(this.fqfileprefix, x), 'w');
+            fprintf(fid, txt);
+            fclose(fid);
+        end
         function s = single(this)
             s = single(this.img);
         end
@@ -364,9 +386,9 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         img_
         logger_
         viewer_
-    end
+        
+        %% pulled up from mlfourd.ImagingFormatTool
 
-    properties (Access = protected) %% pulled up from mlfourd.ImagingFormatTool
         imagingInfo_ % contains hdr, ext, filetype, fqfileprefix, machine, original, untouch
     end
 
@@ -403,6 +425,7 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             this.contexth_ = ipr.contexth;
             this.img_ = ipr.img;
             this.filesystem_ = ipr.filesystem;
+            this.imagingInfo_ = mlfourd.ImagingInfo.createFromFilesystem(this.filesystem_); % de novo
             if isa(ipr.logger, 'mlpipeline.ILogger')
                 % reuse existing
                 this.logger_ = ipr.logger; 

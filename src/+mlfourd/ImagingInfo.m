@@ -1034,8 +1034,15 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
  			this.untouch_ = ipr.untouch;            
             this.hdr_ = ipr.hdr;
             this.original_ = ipr.original;
-            this.json_metadata_ = ipr.json_metadata;
             this.json_metadata_filesuffix_ = ipr.json_metadata_filesuffix;
+            this.json_metadata_ = ipr.json_metadata;
+            if isempty(this.json_metadata_)
+                try
+                    this.json_metadata_ = jsondecodefile( ...
+                        strcat(this.fqfileprefix, this.json_metadata_filesuffix_));
+                catch %#ok<CTCH>
+                end
+            end
         end		  
     end 
     

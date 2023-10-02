@@ -20,33 +20,41 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(1,1);
             this.assertEqual(1,1);
 
-            this.verifyEqual(pwd, this.TmpDir)
+            this.verifyEqual(pwd, this.TmpDir);
         end
         function test_711(this)
-            if ~this.do_view
-                return
-            end
+            pwd0 = pushd(getenv("REFDIR"));
 
             ifc1 = mlfourd.ImagingFormatContext2('711-2B_111.4dfp.hdr');
             ifc1.selectFourdfpTool();
             ifc1.disp_debug();
-            ifc1.view()
+            if this.do_view
+                ifc1.view();
+            end
 
             tmp = strcat(tempname, '.nii.gz');
             ifc1.saveas(tmp);
             ifc1.disp_debug();
-            mlbash(sprintf('fsleyes %s %s', '711-2B_111.4dfp.hdr', tmp));
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', '711-2B_111.4dfp.hdr', tmp));
+            end
 
             ifc2 = copy(ifc1);
             tmp1 = strcat(tempname, '.4dfp.hdr');
             ifc2.saveas(tmp1);
             ifc2.disp_debug();
-            mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
+            end
 
-            mlbash(sprintf('fsleyes %s %s', tmp1, '711-2B_111.4dfp.hdr'))
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', tmp1, '711-2B_111.4dfp.hdr'));
+            end
 
-            deleteExisting(tmp)
-            deleteExisting(tmp1)
+            deleteExisting(tmp);
+            deleteExisting(tmp1);
+
+            popd(pwd0);
         end
         function test_ctorAndSaveas(this)
             pwd0_ = pushd(this.TmpDir);
@@ -88,20 +96,28 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             ifc1 = this.MNI152_LR_nii.nifti;
             ifc1.selectNiftiTool();
-            ifc1.view()
+            if this.do_view
+                ifc1.view()
+            end
 
             tmp = strcat(tempname, '.4dfp.hdr');
             ifc1.saveas(tmp);
             ifc1.disp_debug();
-            mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp));
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', this.MNI152_LR_nii.fqfilename, tmp));
+            end
 
             ifc2 = copy(ifc1);
             tmp1 = strcat(tempname, '.nii.gz');
             ifc2.saveas(tmp1);
             ifc2.disp_debug();
-            mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', tmp, tmp1));
+            end
 
-            mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename));
+            if this.do_view
+                mlbash(sprintf('fsleyes %s %s', tmp1, this.MNI152_LR_nii.fqfilename));
+            end
 
             deleteExisting(tmp);
             deleteExisting(tmp1);

@@ -32,33 +32,12 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 sz = [];
                 return
             end
-            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
+            if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT) || ...
+                    contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
                 try
-                    [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
-                    re = regexp(r, '\S+\s+dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
-                    sz = cellfun(@str2double, struct2cell(re))';
-                    sz = sz(sz > 1);
-                    if ~isempty(ipr.index)
-                        sz = sz(ipr.index);
-                    end
-                catch ME
-                    handwarning(ME);
-                    sz = [];
-                end
-                return
-            end
-            if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
-                try
-                    [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
-                    re = regexp(r, '\S+\s*dim0\s+(?<d0>\d+)\s*dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
-                    sz = cellfun(@str2double, struct2cell(re))';
-                    ndims = sz(1);
-                    len_sz = length(sz);
-                    if ndims+1 > len_sz
-                        sz = sz(2:len_sz);
-                    else
-                        sz = sz(2:ndims+1);
-                    end
+                    h = mlniftitools.load_untouch_header_only(this.fqfn);
+                    ndims = h.dime.dim(1);
+                    sz = h.dime.dim(2:ndims+1);
                     if ~isempty(ipr.index)
                         sz = sz(ipr.index);
                     end                
