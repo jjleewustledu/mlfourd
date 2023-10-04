@@ -71,9 +71,7 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         hdr % required by mlniftitools.{save_nii,save_untouch_nii}
         hdxml
         machine
-        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
         original
-        qfac % internal representation from this.hdr.dime.pixdim(1)
         stateTypeclass
         untouch
 
@@ -170,14 +168,8 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function g = get.machine(this)
             g = this.imagingInfo_.machine;
         end
-        function g = get.orient(this)
-            g = this.imagingInfo_.orient;
-        end
         function g = get.original(this)
             g = this.imagingInfo_.original;
-        end 
-        function g = get.qfac(this)
-            g = this.imagingInfo_.qfac;
         end
         function g = get.stateTypeclass(this)
             g = class(this.imagingInfo_);

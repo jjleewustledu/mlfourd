@@ -63,7 +63,7 @@ classdef MGHInfo < handle & mlfourd.AbstractNIfTIInfo
             %      hdr (struct): sepcified by mlniftitools.
             %      original (struct): sepcified by mlniftitools.
 
-            import mlfourd.NIfTIInfo.defaultFilesuffix
+            import mlfourd.NIfTIInfo.defaultFilesuffix % mgh|mgz -> nii.gz
  			this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
             
             if isfile(this.fqfileprefix_mgz)

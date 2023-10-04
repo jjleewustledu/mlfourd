@@ -126,7 +126,6 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.img;
         end
         function g = get.json_metadata(this)
-            %this.selectImagingFormatTool();
             g = this.state_.json_metadata;
         end
         function     set.json_metadata(this, s)
@@ -199,6 +198,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             end
         end
         function this = selectFilesystemFormatTool(this)
+            %% does not saves imaging information to filesystem, and clears imaging information from memory, retaining only 
+            %  filesystem information.  Defers memory and filesytem management to ImagingContext2.
+
             this.state_.selectFilesystemFormatTool(this);
         end
         function this = selectMatlabFormatTool(this)

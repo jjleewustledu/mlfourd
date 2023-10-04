@@ -248,9 +248,33 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
                 return
             end
             tic
-            obj = mlfourd.ImagingContext2(this.large_nii, 'compatibility', false); %#ok<NASGU> 
+            ic = mlfourd.ImagingContext2(this.large_nii, 'compatibility', false);  
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilesystemTool');
             elapsed = toc;
             this.verifyLessThan(elapsed, 0.1)
+
+            tic
+            ic.selectImagingTool();
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingTool');
+            elapsed1 = toc;
+            this.verifyLessThan(elapsed1, 50)
+
+            tic
+            acopy = copy(ic);
+            this.verifyEqual(acopy.stateTypeclass, 'mlfourd.ImagingTool');
+            this.verifyEqual(size(acopy), size(ic));
+            elapsed2 = toc;
+            this.verifyLessThan(elapsed2, 0.05)
+
+            tic
+            ic.fileprefix = ic.fileprefix+"_"+stackstr();
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingTool');
+            ic.selectFilesystemTool();
+            this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilesystemTool');
+            this.verifyTrue(isfile(ic.fqfn));
+            deleteExisting(ic.fqfn);
+            elapsed3 = toc;
+            this.verifyLessThan(elapsed3, 300)
         end
         function test_FilesystemTool_nii(this)
             obj = mlfourd.ImagingContext2([this.fdg4d '.nii.gz'], 'compatibility', this.compatibility);

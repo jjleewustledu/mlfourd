@@ -22,13 +22,13 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
     
 	methods 
         function load_info(this)
-            if isfile(this.fqfilename)
-                try
+            try
+                if isfile(this.fqfilename)
                     this.info_ = niftiinfo(this.fqfilename); % Matlab's native
-                catch %ME
-                    fprintf('IOWarning: mlfourd.NIfTIInfo.load_info.fqfilename->%s\n', this.fqfilename);
-                    %handwarning(ME)
                 end
+            catch ME
+                handexcept(ME)
+                % fprintf('%s: mlfourd.NIfTIInfo.load_info.fqfilename->%s failed.\n', stackstr(), this.fqfilename);
             end
         end
 
@@ -51,7 +51,10 @@ classdef NIfTIInfo < handle & mlfourd.AbstractNIfTIInfo
             
             this = this@mlfourd.AbstractNIfTIInfo(varargin{:});
 
-            %this.load_info();
+            % creates x100 overhead in  mlfourd_unittest.Test_ImagingContext2/test_FilesystemTool_large_file;
+            % prefer calling NIfTIInfo.load_info() just-in-time
+            % this.load_info(); 
+             
  		end
     end
     

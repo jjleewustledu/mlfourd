@@ -6,20 +6,6 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
  	%  Created 10-Aug-2018 02:14:04 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
  	%  Developed on Matlab 9.4.0.813654 (R2018a) for MACI64.  Copyright 2018 John Joowon Lee.
 
-    properties (Dependent)
-        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
-        qfac % internal representation from this.hdr.dime.pixdim(1)
-    end
-
-	methods % GET/SET 
-        function g = get.orient(this)
-            g = this.imagingFormat_.orient;
-        end
-        function g = get.qfac(this)
-            g = this.imagingFormat_.qfac;
-        end
-    end
-
     methods
 
         %% cast then return mutated imaging format object

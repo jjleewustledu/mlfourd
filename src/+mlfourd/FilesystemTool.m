@@ -32,21 +32,47 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 sz = [];
                 return
             end
-            if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT) || ...
-                    contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
+            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
                 try
-                    h = mlniftitools.load_untouch_header_only(this.fqfn);
-                    ndims = h.dime.dim(1);
-                    sz = h.dime.dim(2:ndims+1);
+                    imgi = mlfourd.FourdfpInfo(this.fqfilename);
+                    sz = imgi.Dimensions;
                     if ~isempty(ipr.index)
                         sz = sz(ipr.index);
-                    end                
+                    end                    
                 catch ME
                     handwarning(ME);
-                    sz = [];
+                    try
+                        h = mlniftitools.load_untouch_header_only(this.fqfn);
+                        ndims = h.dime.dim(1);
+                        sz = h.dime.dim(2:ndims+1);
+                    catch ME
+                        handwarning(ME);
+                        sz = [];
+                    end
                 end
                 return
             end  
+            if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
+                try
+                    imgi = mlfourd.NIfTIInfo(this.fqfilename);
+                    imgi.load_info();
+                    sz = imgi.ImageSize;
+                    if ~isempty(ipr.index)
+                        sz = sz(ipr.index);
+                    end  
+                catch ME
+                    handwarning(ME);
+                    try
+                        h = mlniftitools.load_untouch_header_only(this.fqfn);
+                        ndims = h.dime.dim(1);
+                        sz = h.dime.dim(2:ndims+1);         
+                    catch ME
+                        handwarning(ME);
+                        sz = [];
+                    end
+                end
+                return
+            end
             if contains(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.MGHInfo(this.fqfilename);
@@ -60,6 +86,7 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 end
                 return
             end
+            %error("mlfourd:NotImplementedError", "FilesystemTool.size()")
             warning("mlfourd:NotImplementedError", "FilesystemTool.size()")
             sz = [];
         end

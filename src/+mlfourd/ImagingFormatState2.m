@@ -24,6 +24,8 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         img % required by mlniftitools.{save_nii,save_untouch_nii}
         json_metadata
         logger
+        orient % external representation from fslorient:  RADIOLOGICAL | NEUROLOGICAL
+        qfac % internal representation from this.hdr.dime.pixdim(1)
         viewer
     end
 
@@ -116,6 +118,20 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
         function g = get.logger(this)
             g = this.logger_;
         end        
+        function g = get.orient(this)
+            try
+                g = this.imagingInfo_.orient;
+            catch %#ok<CTCH>
+                g = '';
+            end
+        end
+        function g = get.qfac(this)
+            try
+                g = this.imagingInfo_.qfac;
+            catch %#ok<CTCH>
+                g = [];
+            end
+        end
         function     set.viewer(this, s)
             assert(isa(s, 'mlfourd.IViewer'))
             this.viewer_ = s;

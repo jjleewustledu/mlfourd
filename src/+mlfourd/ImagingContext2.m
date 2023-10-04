@@ -1605,6 +1605,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             %                    for copy-construction or any object supported by stateful ImagingTool ~ ImagingState2.
             
             import mlfourd.*;
+
             if 0 == nargin || isempty(imgobj)
                 % must support empty ctor
                 this.state_ = TrivialTool(this);
@@ -1624,20 +1625,18 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 this = copy(ipr.imgobj);
                 return
             end
+            if isa(ipr.imgobj, 'mlfourd.ImagingFormatContext') || ...
+               isa(ipr.imgobj, 'mlfourd.ImagingContext')
+                % legacy
+                this = LegacyTool.create(this, ipr.imgobj, varargin{:});
+                return
+            end
             if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
                 this.state_ = MatlabTool(this, ipr.imgobj, varargin{:});
                 return
             end
             if istext(ipr.imgobj)
                 this.state_ = FilesystemTool(this, ipr.imgobj, varargin{:});
-                return
-            end
-            if isstruct(ipr.imgobj) || ...
-               isa(ipr.imgobj, 'mlfourd.ImagingFormatContext') || ...
-               isa(ipr.imgobj, 'mlfourd.ImagingContext')
-                % legacy
-                assert(~isdeployed)
-                this.state_ = LegacyTool.create(this, ipr.imgobj, varargin{:});
                 return
             end
             this.state_ = ImagingTool(this, ipr.imgobj, varargin{:});

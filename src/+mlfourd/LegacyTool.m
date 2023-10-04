@@ -11,11 +11,9 @@ classdef LegacyTool < handle & mlfourd.ImagingState2
             %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
             %      imgobj (various): provides numerical imaging data.  
             %  Returns:
-            %      this (LegacyTool): from factory.
+            %      this (mlfourd.ImagingState2)
             %  N.B. that handle classes are given to the encapsulated state, not copied, for performance.
             
-            import mlfourd.*
-
             ip = inputParser;
             ip.KeepUnmatched = true;
             addRequired(ip, 'contexth', @(x) isa(x, 'mlfourd.ImagingContext2'))
@@ -23,38 +21,22 @@ classdef LegacyTool < handle & mlfourd.ImagingState2
             parse(ip, contexth, imgobj, varargin{:})
             ipr = ip.Results;
 
+            assert(~isdeployed);
+
             switch class(ipr.imgobj)
-                case 'struct'
-                    this = LegacyStruct(ipr.imgobj);
-                case 'mlfourd.ImagingContext'
-                    this = LegacyStruct(ipr.imgobj.niftid);
-                case 'mlfourd.ImagingFormatContext'
-                    this = LegacyImagingFormatContext(ipr.imgobj);
+                case {'mlfourd.ImagingContext', 'mlfourd.ImagingFormatContext'}
+                    ipr.imgobj.save();
+                    this = mlfourd.ImagingContext2(ipr.imgobj.fqfilename);
                 otherwise
-                    error('mlfourd:TypeError', 'LegacyTool.ctor')
+                    error('mlfourd:TypeError', stackstr())
             end
         end
     end
 
     %% PROTECTED
 
-    methods (Access = protected)        
-        function this = LegacyTool(contexth, varargin)
-            %  Args:
-            %      contexth (ImagingContext2): handle to ImagingContexts of the state design pattern.
-            %  N.B. that handle classes are given to the encapsulated state, not copied, for performance.
-            
-            ip = inputParser;
-            ip.KeepUnmatched = true;
-            addRequired(ip, 'contexth', @(x) isa(x, 'mlfourd.ImagingContext2'))
-            parse(ip, contexth, varargin{:})
-            ipr = ip.Results;
-            
-            imagingFormat = mlfourd.ImagingFormatContext2();
-            this = this@mlfourd.ImagingState2(ipr.contexth, imagingFormat, varargin{:})
-            
-            error('mlfourd:NotImplementedTool', 'LegacyTool.ctor')
-            
+    methods (Access = private)        
+        function this = LegacyTool()
         end
     end
     
