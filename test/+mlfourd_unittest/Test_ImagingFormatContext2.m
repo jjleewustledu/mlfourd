@@ -124,8 +124,8 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
         end
         function test_MatlabFormatTool(this)
             ifc = mlfourd.ImagingFormatContext2(magic(2));
-            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.MatlabFormatTool')
-            this.verifyEqual(ifc.filesuffix, '.mat')
+            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.MatlabFormatTool');
+            this.verifyEqual(ifc.filesuffix, '.mat');
             ifc.filepath = pwd;
             fqfp = ifc.fqfp;
             if this.do_view
@@ -133,32 +133,32 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
             end
 
             ifc.selectNiftiTool();
-            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(ifc.filesuffix, '.nii.gz')
-            this.verifyEqual(ifc.img, [1, 3; 4, 2])
-            this.verifyEqual(ifc.hdr.dime.dim, [2 2 2 1 1 1 1 1])
-            this.verifyEqual(ifc.hdr.dime.datatype, 64)
-            this.verifyEqual(ifc.hdr.dime.bitpix, 64)
-            this.verifyEqual(ifc.hdr.dime.pixdim, [-1 1 1 1 1 1 1 1])
-            this.verifyEqual(ifc.hdr.hist.descrip, 'ImagingInfo.initialHdr')
-            this.verifyEqual(ifc.hdr.hist.qform_code, 0)
-            this.verifyEqual(ifc.hdr.hist.sform_code, 1)
-            this.verifyEqual(ifc.hdr.hist.quatern_b, 0)
-            this.verifyEqual(ifc.hdr.hist.quatern_c, 1)
-            this.verifyEqual(ifc.hdr.hist.quatern_d, 0)
-            this.verifyEqual(ifc.hdr.hist.qoffset_x, 0.5, 'AbsTol', 1e-7)
-            this.verifyEqual(ifc.hdr.hist.qoffset_y, -0.5, 'AbsTol', 1e-7)
-            this.verifyEqual(ifc.hdr.hist.qoffset_z, 0)
-            this.verifyEqual(ifc.hdr.hist.originator(1:3), [0.5 0.5 0], 'AbsTol', 1e-7)
-            ifc.save()
-            this.verifyTrue(isfile([fqfp '.nii.gz']))
-            deleteExisting([fqfp '.nii.gz'])
+            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.NiftiTool');
+            this.verifyEqual(ifc.filesuffix, '.nii.gz');
+            this.verifyEqual(ifc.img, [1, 3; 4, 2]);
+            this.verifyEqual(ifc.hdr.dime.dim, [2 2 2 1 1 1 1 1]);
+            this.verifyEqual(ifc.hdr.dime.datatype, 64);
+            this.verifyEqual(ifc.hdr.dime.bitpix, 64);
+            this.verifyEqual(ifc.hdr.dime.pixdim, [-1 1 1 1 1 1 1 1]);
+            this.verifyEqual(ifc.hdr.hist.descrip, 'ImagingInfo.initialHdr');
+            this.verifyEqual(ifc.hdr.hist.qform_code, 0);
+            this.verifyEqual(ifc.hdr.hist.sform_code, 1);
+            this.verifyEqual(ifc.hdr.hist.quatern_b, 0);
+            this.verifyEqual(ifc.hdr.hist.quatern_c, 1);
+            this.verifyEqual(ifc.hdr.hist.quatern_d, 0);
+            this.verifyEqual(ifc.hdr.hist.qoffset_x, 0.5, 'AbsTol', 1e-7);
+            this.verifyEqual(ifc.hdr.hist.qoffset_y, -0.5, 'AbsTol', 1e-7);
+            this.verifyEqual(ifc.hdr.hist.qoffset_z, 0);
+            this.verifyEqual(ifc.hdr.hist.originator(1:3), [0.5 0.5 0], 'AbsTol', 1e-7);
+            ifc.save();
+            this.verifyTrue(isfile([fqfp '.nii.gz']));
+            deleteExisting([fqfp '.nii.gz']);
 
             ifc.selectFourdfpTool();
-            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.FourdfpTool')
-            ifc.save()
-            this.verifyTrue(isfile([fqfp '.4dfp.hdr']))
-            deleteExisting([fqfp '.4dfp.*'])          
+            this.verifyEqual(ifc.stateTypeclass, 'mlfourd.FourdfpTool');
+            ifc.save();
+            this.verifyTrue(isfile([fqfp '.4dfp.hdr']));
+            deleteExisting([fqfp '.4dfp.*']);
         end
         function test_hdr_fdg(this)
             %% examines native 4dfp and two instances of nii.gz created by ImagingContext2 and nifti_4dfp, 
@@ -168,45 +168,45 @@ classdef Test_ImagingFormatContext2 < mlfourd_unittest.Test_Imaging
 
             % native 4dfp
             ifc_4 = ImagingFormatContext2(this.fdg_fqfn_4dfp);
-            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FilesystemFormatTool')
+            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FilesystemFormatTool');
             ifc_4.selectFourdfpTool();
             hdr = ifc_4.hdr;
-            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FourdfpTool')
-            this.verifyEqual(hdr.hist.qoffset_x,  127)
-            this.verifyEqual(hdr.hist.qoffset_y, -127)
-            this.verifyEqual(hdr.hist.qoffset_z, -74)
-            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127])
-            this.verifyEqual(hdr.hist.srow_y, [0  2 0 -127])
-            this.verifyEqual(hdr.hist.srow_z, [0  0 2 -74])
-            this.verifyEqual(hdr.hist.originator(1:3), [127 127 74])
+            this.verifyEqual(ifc_4.stateTypeclass, 'mlfourd.FourdfpTool');
+            this.verifyEqual(hdr.hist.qoffset_x,  127);
+            this.verifyEqual(hdr.hist.qoffset_y, -127);
+            this.verifyEqual(hdr.hist.qoffset_z, -74);
+            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127]);
+            this.verifyEqual(hdr.hist.srow_y, [0  2 0 -127]);
+            this.verifyEqual(hdr.hist.srow_z, [0  0 2 -74]);
+            this.verifyEqual(hdr.hist.originator(1:3), [127 127 74]);
 
             % nii.gz from ImagingFormatContext2
             ifc_ = ImagingFormatContext2(this.fdg_ic_fqfn_nii);
-            this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.FilesystemFormatTool')
+            this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.FilesystemFormatTool');
             ifc_.selectNiftiTool();
             hdr = ifc_.hdr;
-            this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(hdr.hist.qoffset_x,  127)
-            this.verifyEqual(hdr.hist.qoffset_y, -127)
-            this.verifyEqual(hdr.hist.qoffset_z, -74)
-            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127])
-            this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127])
-            this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -74])
-            this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 38], 'AbsTol', 1e-3)
+            this.verifyEqual(ifc_.stateTypeclass, 'mlfourd.NiftiTool');
+            this.verifyEqual(hdr.hist.qoffset_x,  127);
+            this.verifyEqual(hdr.hist.qoffset_y, -127);
+            this.verifyEqual(hdr.hist.qoffset_z, -74);
+            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127]);
+            this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127]);
+            this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -74]);
+            this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 38], 'AbsTol', 1e-3);
 
             % nii.gz from nifti_4dfp -n
             ifc__ = ImagingFormatContext2(this.fdg_nifti_4dfp_fqfn_nii);
-            this.verifyEqual(ifc__.stateTypeclass, 'mlfourd.FilesystemFormatTool')
+            this.verifyEqual(ifc__.stateTypeclass, 'mlfourd.FilesystemFormatTool');
             ifc_.selectNiftiTool();
             hdr = ifc__.hdr;
-            this.verifyEqual(ifc__.stateTypeclass, 'mlfourd.NiftiTool')
-            this.verifyEqual(hdr.hist.qoffset_x, 0)
-            this.verifyEqual(hdr.hist.qoffset_y, 0)
-            this.verifyEqual(hdr.hist.qoffset_z, 0)
-            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127])
-            this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127])
-            this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -68])
-            this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 35], 'AbsTol', 1e-3)
+            this.verifyEqual(ifc__.stateTypeclass, 'mlfourd.NiftiTool');
+            this.verifyEqual(hdr.hist.qoffset_x, 0);
+            this.verifyEqual(hdr.hist.qoffset_y, 0);
+            this.verifyEqual(hdr.hist.qoffset_z, 0);
+            this.verifyEqual(hdr.hist.srow_x, [-2 0 0  127]);
+            this.verifyEqual(hdr.hist.srow_y, [ 0 2 0 -127]);
+            this.verifyEqual(hdr.hist.srow_z, [ 0 0 2 -68]);
+            this.verifyEqual(hdr.hist.originator(1:3), [64.5 64.5 35], 'AbsTol', 1e-3);
         end
         function test_hdr_T1(this)
             %% creates 4dfp & nii.gz from native mgz, then confirms expected hdr.hist, 

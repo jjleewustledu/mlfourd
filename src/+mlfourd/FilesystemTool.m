@@ -28,6 +28,13 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
             parse(ip, varargin{:});
             ipr = ip.Results;
 
+            if ~isempty(this.size_cache_)
+                sz = this.size_cache_;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
+                return
+            end
             if ~isfile(this.fqfn)
                 sz = [];
                 return
@@ -36,9 +43,6 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 try
                     imgi = mlfourd.FourdfpInfo(this.fqfilename);
                     sz = imgi.Dimensions;
-                    if ~isempty(ipr.index)
-                        sz = sz(ipr.index);
-                    end                    
                 catch ME
                     handwarning(ME);
                     try
@@ -50,6 +54,10 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                         sz = [];
                     end
                 end
+                this.size_cache_ = sz;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
                 return
             end  
             if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
@@ -57,9 +65,6 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                     imgi = mlfourd.NIfTIInfo(this.fqfilename);
                     imgi.load_info();
                     sz = imgi.ImageSize;
-                    if ~isempty(ipr.index)
-                        sz = sz(ipr.index);
-                    end  
                 catch ME
                     handwarning(ME);
                     try
@@ -71,24 +76,29 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                         sz = [];
                     end
                 end
+                this.size_cache_ = sz;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
                 return
             end
             if contains(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.MGHInfo(this.fqfilename);
                     sz = imgi.ImageSize;
-                    if ~isempty(ipr.index)
-                        sz = sz(ipr.index);
-                    end                
                 catch ME
                     handwarning(ME);
                     sz = [];
                 end
+                this.size_cache_ = sz;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
                 return
             end
-            %error("mlfourd:NotImplementedError", "FilesystemTool.size()")
-            warning("mlfourd:NotImplementedError", "FilesystemTool.size()")
-            sz = [];
+            error("mlfourd:NotImplementedError", "FilesystemTool.size()")
+            %warning("mlfourd:NotImplementedError", "FilesystemTool.size()")
+            %sz = [];
         end
 
         %%
@@ -126,6 +136,12 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
             ipr.imagingFormat.selectFilesystemFormatTool();
             this = this@mlfourd.ImagingState2(ipr.contexth, ipr.imagingFormat, varargin{:});
         end
+    end
+
+    %% PRIVATE
+
+    properties (Access = private)
+        size_cache_
     end
 
 	%  Created with Newcl by John J. Lee after newfcn by Frank Gonzalez-Morphy

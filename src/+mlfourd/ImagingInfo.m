@@ -316,6 +316,15 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.untouch_ = [];
         end
         function g = get.json_metadata(this)
+            try
+                if isempty(this.json_metadata_)
+                    this.json_metadata_ = jsondecodefile(strcat(this.fqfileprefix, this.json_metadata_filesuffix_));
+                    g = this.json_metadata_;
+                    return
+                end
+            catch ME
+                handwarning(ME)
+            end
             g = this.json_metadata_;
         end
         function     set.json_metadata(this, s)
@@ -423,6 +432,8 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
         %%
         
         function addJsonMetadata(this, varargin)
+            %% replacing existing field values with new values
+
             for v = asrow(varargin)
                 if isstruct(v{1})
                     astruct = v{1};
@@ -1036,13 +1047,6 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
             this.original_ = ipr.original;
             this.json_metadata_filesuffix_ = ipr.json_metadata_filesuffix;
             this.json_metadata_ = ipr.json_metadata;
-            if isempty(this.json_metadata_)
-                try
-                    this.json_metadata_ = jsondecodefile( ...
-                        strcat(this.fqfileprefix, this.json_metadata_filesuffix_));
-                catch %#ok<CTCH>
-                end
-            end
         end		  
     end 
     

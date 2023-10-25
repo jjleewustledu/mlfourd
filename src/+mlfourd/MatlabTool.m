@@ -117,23 +117,31 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         function logm(this)
             this.usxfun(@logm);
         end
-        function max(this, varargin)
-            this.imagingFormat_.img = max(double(this.imagingFormat_.img), varargin{:});
+        function indices_ic = max(this, varargin)
+            [this.imagingFormat_.img,indices] = max(double(this.imagingFormat_.img), varargin{:});
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.max %s', cell2str(varargin)));
             tags = strrep(cell2str(varargin), '[]', '');
             tags = strrep(tags, ' ', '');
             this.imagingFormat_.fileprefix = strcat(fp, '_max', tags);
+
+            indices_ifc = copy(this.imagingFormat_);
+            indices_ifc.img = indices;
+            indices_ifc.fqfn = strcat(this.fqfp, '_indices', this.filesuffix);
+            indices_ic = mlfourd.ImagingContext2(indices_ifc);
         end
-        function min(this, varargin)
-            this.imagingFormat_.img = min(double(this.imagingFormat_.img), varargin{:});
+        function indices = min(this, varargin)
+            [this.imagingFormat_.img,indices] = min(double(this.imagingFormat_.img), varargin{:});
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.min %s', cell2str(varargin)));
             tags = strrep(cell2str(varargin), '[]', '');
             tags = strrep(tags, ' ', '');
             this.imagingFormat_.fileprefix = strcat(fp, '_min', tags);
+            
+            indices = mlfourd.ImagingContext2(indices);
+            indices.fqfn = strcat(this.fqfp, '_indices', this.filesuffix);
         end
         function minus(this, varargin)
             if ~isempty(varargin)

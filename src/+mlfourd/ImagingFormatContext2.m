@@ -7,6 +7,10 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
     %  Created 05-Dec-2021 17:51:32 by jjlee in repository /Users/jjlee/MATLAB-Drive/mlfourd/src/+mlfourd.
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
     
+    properties
+        MAX_NUMEL = 5e9
+    end
+
     properties (Dependent)
         filename
         filepath
@@ -129,7 +133,6 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
             g = this.state_.json_metadata;
         end
         function     set.json_metadata(this, s)
-            this.selectImagingFormatTool();
             this.state_.json_metadata = s;
         end
         function g = get.logger(this)
@@ -425,6 +428,10 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
                 this = copy(ipr.imgobj);
                 return
             end
+            if isa(ipr.imgobj, 'mlfourd.ImagingContext2')
+                this = ipr.imgobj.imagingFormat;
+                return
+            end
             if isnumeric(ipr.imgobj) || islogical(ipr.imgobj)
                 this.state_ = MatlabFormatTool(this, ipr.imgobj, varargin{:});
                 return
@@ -446,6 +453,16 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
     methods (Access = protected)
         function that = copyElement(this)
             that = copyElement@matlab.mixin.Copyable(this);
+
+            if numel(this) > this.MAX_NUMEL
+                warning( ...
+                    "mlfourd:RunTimeWarning", ...
+                    "%s: %s numel > %g; returning reference of imagingFormat for performance", ...
+                    stackstr(), this.filename, this.MAX_NUMEL)
+                that.state_ = this.state_;
+                that.state_.contexth_ = that;
+                return
+            end
             that.state_ = copy(this.state_);
             that.state_.contexth_ = that;
         end

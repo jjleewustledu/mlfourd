@@ -175,6 +175,10 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         function g = get.json_metadata(this)
             g = this.imagingFormat_.json_metadata;
         end
+        function     set.json_metadata(this, s)
+            assert(isstruct(s))
+            this.imagingFormat_.json_metadata = s;
+        end
         function g = get.logger(this)
             try
                 g = this.imagingFormat_.logger;
@@ -229,11 +233,20 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                     mlfourd.FilesystemTool(contexth, this.fqfilename));
             end
         end
-        function selectImagingTool(this, contexth)
+        function selectImagingTool(this, contexth, opts)
+            arguments
+                this mlfourd.ImagingState2
+                contexth mlfourd.ImagingContext2
+                opts.img {mustBeNumericOrLogical} = false
+            end
+
             if ~isa(this, 'mlfourd.ImagingTool')
                 this.addLog('mlfourd.ImagingState2.selectImagingTool');
                 contexth.changeState( ...
                     mlfourd.ImagingTool(contexth, this.imagingFormat_));
+            end
+            if isempty(opts.img) || opts.img ~= false
+                this.imagingFormat_.img = opts.img;
             end
         end
         function selectMaskingTool(this, contexth)
@@ -243,11 +256,20 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                     mlfourd.MaskingTool(contexth, this.imagingFormat_));
             end
         end
-        function selectMatlabTool(this, contexth)
+        function selectMatlabTool(this, contexth, opts)
+            arguments
+                this mlfourd.ImagingState2
+                contexth mlfourd.ImagingContext2
+                opts.img {mustBeNumericOrLogical} = false
+            end
+
             if ~isa(this, 'mlfourd.MatlabTool')
                 this.addLog('mlfourd.ImagingState2.selectMatlabTool');
                 contexth.changeState( ...
                     mlfourd.MatlabTool(contexth, this.imagingFormat_));
+            end
+            if isempty(opts.img) || opts.img ~= false
+                this.imagingFormat_.img = opts.img;
             end
         end
         function selectPatchTool(this, contexth)

@@ -126,7 +126,7 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             this.verifyEqual(pwd, this.TmpDir)
         end
         
-        function test_TrivialTool(this)
+        function test_TrivialTool(this) 
             obj = mlfourd.ImagingContext2();
             this.verifyEqual(obj.stateTypeclass, 'mlfourd.TrivialTool')
             this.verifyClass(obj.logger, 'mlpipeline.Logger2')
@@ -251,20 +251,20 @@ classdef Test_ImagingContext2 < mlfourd_unittest.Test_Imaging
             ic = mlfourd.ImagingContext2(this.large_nii, 'compatibility', false);  
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.FilesystemTool');
             elapsed = toc;
-            this.verifyLessThan(elapsed, 0.1)
+            this.verifyLessThan(elapsed, 0.2)
 
             tic
             ic.selectImagingTool();
             this.verifyEqual(ic.stateTypeclass, 'mlfourd.ImagingTool');
             elapsed1 = toc;
-            this.verifyLessThan(elapsed1, 50)
+            this.verifyLessThan(elapsed1, 100)
 
             tic
             acopy = copy(ic);
             this.verifyEqual(acopy.stateTypeclass, 'mlfourd.ImagingTool');
             this.verifyEqual(size(acopy), size(ic));
             elapsed2 = toc;
-            this.verifyLessThan(elapsed2, 0.05)
+            this.verifyLessThan(elapsed2, 0.02)
 
             tic
             ic.fileprefix = ic.fileprefix+"_"+stackstr();

@@ -55,6 +55,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         qfac % internal representation from this.hdr.dime.pixdim(1)
         stateTypeclass
         viewer  
+
+        MAX_NUMEL
     end
 
 	methods % GET/SET
@@ -122,6 +124,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function g = get.json_metadata(this)
             g = this.state_.json_metadata;
         end
+        function     set.json_metadata(this, s)
+            this.state_.json_metadata = s;
+        end
         function g = get.logger(this)
             g = copy(this.state_.logger);
         end
@@ -140,6 +145,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         end
         function v = get.viewer(this)
             v = this.state_.viewer;
+        end
+
+        function g = get.MAX_NUMEL(this)
+            imgf = this.state_.imagingFormat();
+            g = imgf.MAX_NUMEL;
+        end
+        function     set.MAX_NUMEL(this, s)
+            assert(isscalar(s))
+            imgf = this.state_.imagingFormat;
+            imgf.MAX_NUMEL = s;
         end
     end
 
@@ -165,31 +180,31 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
             this.state_.selectFilesystemTool(this);
         end
-        function this = selectFourdfpTool(this)
+        function this = selectFourdfpTool(this, varargin)
             %% mutate imaging-format state to be 4dfp
 
-            this.selectImagingTool; % supports compatibility
+            this.selectImagingTool(varargin{:}); % supports compatibility
             this.state_.selectFourdfpTool; % state_ returns a safe copy of fourdfp
         end
-        function this = selectImagingTool(this)
-            this.state_.selectImagingTool(this);
+        function this = selectImagingTool(this, varargin)
+            this.state_.selectImagingTool(this, varargin{:});
         end
         function this = selectMaskingTool(this)
             this.state_.selectMaskingTool(this);
         end
-        function this = selectMatlabTool(this)
-            this.state_.selectMatlabTool(this);
+        function this = selectMatlabTool(this, varargin)
+            this.state_.selectMatlabTool(this, varargin{:});
         end
-        function this = selectMghTool(this)
+        function this = selectMghTool(this, varargin)
             %% mutate imaging-format state to be mgz
             
-            this.selectImagingTool; % supports compatibility
+            this.selectImagingTool(varargin{:}); % supports compatibility
             this.state_.selectMghTool; % state_ returns a safe copy of nifti
         end
-        function this = selectNiftiTool(this)
+        function this = selectNiftiTool(this, varargin)
             %% mutate imaging-format state to be NIfTI
             
-            this.selectImagingTool; % supports compatibility
+            this.selectImagingTool(varargin{:}); % supports compatibility
             this.state_.selectNiftiTool; % state_ returns a safe copy of nifti
         end
         function this = selectPatchTool(this)
@@ -388,15 +403,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.logm();            
         end
-        function that = max(this, varargin)
+        function [that,indices] = max(this, varargin)
             this.selectMatlabTool;
             that = copy(this);
-            that.state_.max(varargin{:});
+            indices = that.state_.max(varargin{:});
         end
-        function that = min(this, varargin)
+        function [that,indices] = min(this, varargin)
             this.selectMatlabTool;
             that = copy(this);
-            that.state_.min(varargin{:});
+            indices = that.state_.min(varargin{:});
         end
         function that = minus(this, varargin)
             this.selectMatlabTool;
