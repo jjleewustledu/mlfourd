@@ -49,13 +49,15 @@ classdef MatlabFormatTool < handle & mlfourd.ImagingFormatTool
                 this mlfourd.MatlabFormatTool
                 opts.savelog logical = true;
             end
-            this.assertNonemptyImg();
+
+            if (this.noclobber && isfile(this.fqfilename))
+                return
+            end
             this.ensureNoclobber();
-            ensuredir(this.filepath);
-            
+            this.assertNonemptyImg();
+            ensuredir(this.filepath);            
             this.filesuffix = '.mat';
             save(this.fqfilename, 'this');
-
             if opts.savelog
                 this.addLog("save(" + this.fqfilename + ", 'this')");
                 this.saveLogger();
