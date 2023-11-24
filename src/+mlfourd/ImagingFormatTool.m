@@ -551,6 +551,10 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
         function save(this, varargin)
             %% SAVE 
             
+            if (this.noclobber && isfile(this.fqfilename))
+                return
+            end
+            
             if this.hasFourdfp()
                 that = this.selectFourdfpTool(this.contexth_);
                 save(that, varargin{:});

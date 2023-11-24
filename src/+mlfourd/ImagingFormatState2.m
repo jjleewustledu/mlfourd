@@ -361,6 +361,9 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
             save_mat(that, varargin{:});
         end
         function save_json_metadata(this)
+            if (this.noclobber && isfile(this.fqfilename))
+                return
+            end
             if isempty(this.json_metadata)
                 return
             end
