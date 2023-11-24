@@ -54,8 +54,17 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             this.selectFourdfpTool();
             this.imagingFormat_.addImgrec(varargin{:}); % imgrec is a handle logger
         end
+        function h = heatmap(this, varargin)
+            figure
+            h = heatmap(this.imagingFormat_.img, varargin{:});
+        end
         function h = histogram(this, varargin)
+            figure
             h = this.imagingFormat_.histogram(varargin{:});
+        end
+        function im = image(this, varargin)
+            figure
+            im = image(this.imagingFormat_.img, varargin{:});
         end
         function [h,h1] = imagesc(this, varargin)
             figure
@@ -78,6 +87,10 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
         end
         function s = mat2str(this, varargin)
             s = mat2str(this.imagingFormat_.img, varargin{:});
+        end
+        function s = pcolor(this, varargin)
+            figure
+            s = pcolor(this.imagingFormat_.img, varargin{:});
         end
         function [s,r] = save_qc(this, varargin)
             if isa(this, 'mlfourd.MatlabTool')

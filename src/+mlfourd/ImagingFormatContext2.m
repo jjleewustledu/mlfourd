@@ -154,6 +154,9 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
         function g = get.viewer(this)
             g = this.state_.viewer;
         end
+        function     set.viewer(this, s)
+            this.state_.viewer = s;
+        end
 
         function     set.mmppix(this, s)
             this.selectImagingFormatTool();

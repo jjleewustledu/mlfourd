@@ -199,6 +199,9 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
         function g = get.viewer(this)
             g = this.imagingFormat_.viewer;
         end
+        function     set.viewer(this, s)
+            this.imagingFormat_.viewer = s;
+        end
     end
 
     methods
@@ -245,7 +248,7 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                 contexth.changeState( ...
                     mlfourd.ImagingTool(contexth, this.imagingFormat_));
             end
-            if isempty(opts.img) || opts.img ~= false
+            if isempty(opts.img) || any(opts.img, 'all')
                 this.imagingFormat_.img = opts.img;
             end
         end

@@ -1275,9 +1275,18 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function        fslview(this, varargin)
             this.fsleyes(varargin{:})
         end
+        function h    = heatmap(this, varargin)
+            this.selectImagingTool;
+            h = this.state_.heatmap(varargin{:});
+        end
         function h    = histogram(this, varargin)
+            this.selectImagingTool;
             h = this.state_.histogram(varargin{:});
         end
+        function im   = image(this, varargin)
+            this.selectImagingTool;
+            im = this.state_.image(varargin{:});
+        end  
         function h    = imagesc(this, varargin)
             this.selectImagingTool;
             h = this.state_.imagesc(varargin{:});
@@ -1351,6 +1360,10 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectPatchTool;
             p = this.state_.patch(varargin{:});
         end
+        function s    = pcolor(this, varargin)
+            this.selectImagingTool;
+            s = this.state_.pcolor(varargin{:});
+        end  
         function p    = pcshow(this, varargin)
             %% passes all varargin to this.pointCloud()
 
