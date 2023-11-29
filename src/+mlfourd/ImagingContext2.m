@@ -111,8 +111,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function     set.noclobber(this, f)
             this.state_.noclobber = f;
         end
-        function f = get.noclobber(this)
-            f = this.state_.noclobber;
+        function n = get.noclobber(this)
+            n = this.state_.noclobber;
         end
 
         function g = get.bytes(this)
