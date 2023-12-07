@@ -61,48 +61,56 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
 
 	methods % GET/SET
         function     set.filename(this, f)
+            this.selectImagingTool();
             this.state_.filename = f;
         end
         function f = get.filename(this)
             f = this.state_.filename;
         end
         function     set.filepath(this, f)
+            this.selectImagingTool();
             this.state_.filepath = f;
         end 
         function f = get.filepath(this)
             f = this.state_.filepath;
         end
         function     set.fileprefix(this, f)
+            this.selectImagingTool();
             this.state_.fileprefix = f;
         end
         function f = get.fileprefix(this)
             f = this.state_.fileprefix;
         end
         function     set.filesuffix(this, f)
+            this.selectImagingTool();
             this.state_.filesuffix = f;
         end
         function f = get.filesuffix(this)
             f = this.state_.filesuffix;
         end
         function     set.fqfilename(this, f)
+            this.selectImagingTool();
             this.state_.fqfilename = f;
         end
         function f = get.fqfilename(this)
             f = this.state_.fqfilename;
         end
         function     set.fqfileprefix(this, f)
+            this.selectImagingTool();
             this.state_.fqfileprefix = f;
         end
         function f = get.fqfileprefix(this)
             f = this.state_.fqfileprefix;
         end
         function     set.fqfn(this, f)
+            this.selectImagingTool();
             this.state_.fqfn = f;
         end
         function f = get.fqfn(this)
             f = this.state_.fqfn;
         end
         function     set.fqfp(this, f)
+            this.selectImagingTool();
             this.state_.fqfp = f;
         end
         function f = get.fqfp(this)
@@ -125,6 +133,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             g = this.state_.json_metadata;
         end
         function     set.json_metadata(this, s)
+            this.selectImagingTool();
             this.state_.json_metadata = s;
         end
         function g = get.logger(this)
@@ -955,7 +964,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectDynamicsTool;
             that = copy(this);
             that.state_.std(varargin{:});
-        end        
+        end
         function that = timeAppend(this, varargin)
             this.selectDynamicsTool;
             that = copy(this);
@@ -988,7 +997,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.timeCensored(varargin{:});
         end
-        function that = timeContracted(this, varargin)     
+        function that = timeContracted(this, varargin)
             %% Contracts imagingFormat.img in time, the trailing array index.
             %  Args:
             %      tindex (optional scalar):  selects unique time indices\in \mathbb{N}^length(tindex); 
