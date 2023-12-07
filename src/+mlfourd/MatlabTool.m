@@ -473,7 +473,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             end
             if isnumeric(b)
                 s = strrep(mat2str(size(b)), ' ', '_');
-                s = ['size_' s(2:end-1)];
+                s = strcat('size_', s(2:end-1));
                 return
             end
             s = 'obj';
@@ -512,7 +512,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             cl = class(this.imagingFormat_.img);
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.cast:  %s cast %s', fp, cl));
-            this.imagingFormat_.fileprefix = [fp '_cast_' cl];
+            this.imagingFormat_.fileprefix = strcat(fp, '_cast-', cl);
         end
         function funm(this, funh, varargin)
             %% FUNM overloads funm for INIfTI
@@ -525,7 +525,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.funm:  %s(%s)', func2str(funh), fp));
-            this.imagingFormat_.fileprefix = [fp '_fnum_' func2str(funh)];
+            this.imagingFormat_.fileprefix = strcat(fp, '_fnum-', func2str(funh));
         end
         function lusxfun(this, funh)
             %% LUSXFUN
@@ -557,7 +557,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.usxfun:  %s(%s)', func2str(funh), fp));
-            this.imagingFormat_.fileprefix = strcat(fp, '_', func2str(funh));
+            this.imagingFormat_.fileprefix = strcat(fp, '-', func2str(funh));
         end
         function bsxfun(this, funh, b)
             %% BSXFUN overloads bsxfun for INIfTI
@@ -580,7 +580,7 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.bsxfun:  %s(%s, %s)', func2str(funh), fp, this.bstr(b)));
-            this.imagingFormat_.fileprefix = strcat(fp, '_', func2str(funh), '_', this.bstr(b));
+            this.imagingFormat_.fileprefix = strcat(fp, '_', func2str(funh), '-', this.bstr(b));
         end
         
         function this = MatlabTool(contexth, imagingFormat, varargin)
