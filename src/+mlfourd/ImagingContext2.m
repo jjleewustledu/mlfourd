@@ -956,6 +956,11 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.std(varargin{:});
         end        
+        function that = timeAppend(this, varargin)
+            this.selectDynamicsTool;
+            that = copy(this);
+            that.state_.timeAppend(varargin{:});
+        end     
         function that = timeAveraged(this, varargin)
             %% Contracts imagingFormat.img in time, the trailing array index.
             %  Args:

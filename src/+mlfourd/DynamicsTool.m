@@ -222,6 +222,66 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             this.imagingFormat_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
         end
+        function this = timeAppend(this, varargin)
+            %% Appends imagingFormat.img in time, the trailing array index.
+
+            sz = size(this.imagingFormat_.img);
+            Nt = sz(end);
+            Ndims = ndims(this.imagingFormat_.img);
+
+            ip = inputParser;
+            addRequired(ip, 'toappend', @(x) ~isempty(x))
+            parse(ip, varargin{:})
+            ipr = ip.Results;
+
+            toappend = mlfourd.ImagingContext2(ipr.toappend);
+            toappend = toappend.imagingFormat;
+            sz1 = size(toappend.img);
+            Nt1 = sz1(end);
+            assert(all(sz(1:Ndims-1) == sz1(1:Ndims-1)))
+            
+            % append supported Ndims
+            switch Ndims
+                case 2
+                    this.imagingFormat_.img(:,Nt+1:Nt+Nt1) = toappend.img;
+                case 3
+                    this.imagingFormat_.img(:,:,Nt+1:Nt+Nt1) = toappend.img;
+                case 4 
+                    this.imagingFormat_.img(:,:,:,Nt+1:Nt+Nt1) = toappend.img;
+                otherwise
+                    error('mlfourd:ValueError', 'DynamicsTool.timeAppend.Ndims->%i', Ndims);
+            end
+
+            % json
+            j = this.json_metadata;
+            j1 = toappend.json_metadata;
+            j2 = j;
+            try
+                j2.starts = {j.starts, j1.starts};
+            catch %#ok<*CTCH>
+            end
+            try
+                j2.taus = {j.taus, j1.taus};
+            catch %#ok<*CTCH>
+            end
+            try
+                j2.timesMid = {j.timesMid, j1.timesMid};
+            catch
+            end
+            try
+                j2.times = {j.times, j1.times};
+            catch
+            end
+            try
+                j2.timeUnit = {j.timeUnit, j1.timeUnit};
+            catch
+            end
+            this.json_metadata = j2;
+
+            % names & logging
+            this.fileprefix = sprintf("%s_timeAppend-%i", this.fileprefix, Nt1);
+            this.addLog('DynamicsTool.timeAppend %s', toappend.fqfn);
+        end
         function this = timeAveraged(this, varargin)
             %% Contracts imagingFormat.img in time, the trailing array index.
             %  Args:
