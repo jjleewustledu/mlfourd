@@ -196,6 +196,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.state_.selectFourdfpTool; % state_ returns a safe copy of fourdfp
         end
         function this = selectImagingTool(this, varargin)
+            %% accepts img=numerical to replace internal img
+            %  opts.img {mustBeNumericOrLogical} = false; may be new numerical img
+
             this.state_.selectImagingTool(this, varargin{:});
         end
         function this = selectMaskingTool(this)
