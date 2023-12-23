@@ -1405,6 +1405,9 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 end
                 assert(all(size(timesMid) == size(img)), stackstr())
                 h = plot(timesMid, img, varargin{:});
+                xlabel("timesMid");
+                ylabel("img");
+                title(stackstr()+": "+this.fileprefix, Interpreter="none");
             catch ME
                 handwarning(ME)
             end
