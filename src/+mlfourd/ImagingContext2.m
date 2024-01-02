@@ -1412,6 +1412,26 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 handwarning(ME)
             end
         end
+        function h    = plot_over_figure(this, varargin)
+            try
+                %figure;
+                timesMid = this.json_metadata.timesMid;
+                timesMid = asrow(mlpipeline.ImagingMediator.ensureNumericTimesMid(timesMid));
+                if this.ndims() > 2
+                    that = this.volumeAveraged();
+                    img = asrow(that.imagingFormat.img);
+                else
+                    img = asrow(this.imagingFormat.img);
+                end
+                assert(all(size(timesMid) == size(img)), stackstr())
+                h = plot(timesMid, img, varargin{:});
+                xlabel("timesMid");
+                ylabel("img");
+                title(stackstr()+": "+this.fileprefix, Interpreter="none");
+            catch ME
+                handwarning(ME)
+            end
+        end
         function p    = pointCloud(this, varargin)
             %% See also web(fullfile(docroot, 'vision/ug/3-d-point-cloud-registration-and-stitching.html'))
             %  and web(fullfile(docroot, 'vision/ref/pointcloud.html#mw_eb949323-5b82-4b6c-8239-a8886734b790'))
