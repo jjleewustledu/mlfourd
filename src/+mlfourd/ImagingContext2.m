@@ -133,7 +133,7 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             g = this.state_.json_metadata;
         end
         function     set.json_metadata(this, s)
-            this.selectImagingTool();
+            %this.selectImagingTool();
             this.state_.json_metadata = s;
         end
         function g = get.logger(this)
