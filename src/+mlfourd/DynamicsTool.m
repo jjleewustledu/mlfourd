@@ -129,6 +129,14 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             end
             error('mlfourd:RuntimeError', 'DynamicsTool.gradient.ndims->%i', this.ndims)
         end
+        function this = iqr(this, varargin)
+            %% applies Matlab iqr over time samples
+            
+            assert(4 == this.ndims)
+            img = shiftdim(this.imagingFormat_.img, 3); % t is leftmost
+            this.imagingFormat_.img = squeeze(iqr(img, varargin{:}));
+            this.addLog('DynamicsTool.iqr');
+        end
         function this = interp1(this, varargin)
             ip = inputParser;
             addRequired(ip, 'times0', @isnumeric)

@@ -25,6 +25,12 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         function asinh(this)
             this.usxfun(@asinh);
         end
+        function ascolumn(this)
+            this.imagingFormat_.img = ascolumn(this.imagingFormat_.img);
+        end
+        function asrow(this)
+            this.imagingFormat_.img = asrow(this.imagingFormat_.img);
+        end
         function atan(this, b)
             this.bsxfun(@atan, b);
         end
@@ -70,6 +76,26 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         end
         function hypot(this, b)
             this.bsxfun(@hypot, b);
+        end
+        function iqr(this, varargin)
+            this.imagingFormat_.img = iqr(this.imagingFormat_.img, varargin{:});
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_iqr', tag);
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.iqr: %s %s', this.fileprefix, mat2str(varargin{:}))); 
+        end
+        function tf = iscolumn(this)
+            tf = iscolumn(this.imagingFormat_.img);
+        end
+        function tf = ismatrix(this)
+            tf = ismatrix(this.imagingFormat_.img);
+        end
+        function tf = isrow(this)
+            tf = isrow(this.imagingFormat_.img);
         end
         function jsdiv(this, b, varargin)
             this.bsxfun(@jsdiv_, b);
@@ -131,6 +157,28 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             indices_ifc.fqfn = strcat(this.fqfp, '_indices', this.filesuffix);
             indices_ic = mlfourd.ImagingContext2(indices_ifc);
         end
+        function mean(this, varargin)
+            this.imagingFormat_.img = mean(this.imagingFormat_.img, varargin{:});
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_mean', tag);
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.mean: %s %s', this.fileprefix, mat2str(varargin{:}))); 
+        end
+        function median(this, varargin)
+            this.imagingFormat_.img = median(this.imagingFormat_.img, varargin{:});
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_median', tag);
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.median: %s %s', this.fileprefix, mat2str(varargin{:}))); 
+        end
         function indices = min(this, varargin)
             [this.imagingFormat_.img,indices] = min(double(this.imagingFormat_.img), varargin{:});
             fp = this.imagingFormat_.fileprefix;
@@ -152,6 +200,17 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         end
         function mod(this, b)
             this.bsxfun(@mod, b);
+        end
+        function mode(this, varargin)
+            this.imagingFormat_.img = mode(this.imagingFormat_.img, varargin{:});
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_mode', tag);
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.mode: %s %s', this.fileprefix, mat2str(varargin{:}))); 
         end
         function mpower(this, b)
             this.bsxfun(@mpower, b);
@@ -216,6 +275,17 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         end
         function sqrtm(this)
             this.usxfun(@sqrtm);
+        end
+        function std(this, varargin)
+            this.imagingFormat_.img = std(this.imagingFormat_.img, varargin{:});
+            if isempty(varargin)
+                tag = '';
+            else
+                tag = ['_' strrep(cell2str(varargin), ' ', '_')];
+            end
+            this.imagingFormat_.fileprefix = strcat(this.imagingFormat_.fileprefix, '_std', tag);
+            this.imagingFormat_.addLog( ...
+                sprintf('MatlabTool.std: %s %s', this.fileprefix, mat2str(varargin{:}))); 
         end
         function sum(this, varargin)
             this.imagingFormat_.img = sum(this.imagingFormat_.img, varargin{:});

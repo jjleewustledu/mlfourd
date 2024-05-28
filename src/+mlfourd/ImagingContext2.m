@@ -309,6 +309,16 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.asinh();            
         end
+        function that = ascolumn(this)
+            this.selectMatlabTool;
+            that = copy(this);
+            that.state_.ascolumn();
+        end
+        function that = asrow(this)
+            this.selectMatlabTool;
+            that = copy(this);
+            that.state_.asrow();
+        end
         function that = atan(this, b)
             this.selectMatlabTool;
             that = copy(this);
@@ -358,6 +368,18 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectMatlabTool;
             that = copy(this);
             that.state_.flip(adim);            
+        end
+        function tf = iscolumn(this)
+            this.selectMatlabTool;
+            tf = this.state_.iscolumn();
+        end
+        function tf = ismatrix(this)
+            this.selectMatlabTool;
+            tf = this.state_.ismatrix();
+        end
+        function tf = isrow(this)
+            this.selectMatlabTool;
+            tf = this.state_.isrow();
         end
         function that = rdivide(this, b)
             this.selectMatlabTool;
@@ -929,6 +951,17 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that = copy(this);
             that.state_.interp1(varargin{:});
         end
+        function that = iqr(this, varargin)
+            if this.ndims < 4
+                this.selectMatlabTool;
+                that = copy(this);
+                that.state_.iqr(varargin{:});
+            else
+                this.selectDynamicsTool;
+                that = copy(this);
+                that.state_.iqr(varargin{:});
+            end
+        end
         function that = makima(this, varargin)
             %% MAKIMA
             
@@ -937,19 +970,37 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.makima(varargin{:});
         end
         function that = mean(this, varargin)
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.mean(varargin{:});
+            if this.ndims < 4
+                this.selectMatlabTool;
+                that = copy(this);
+                that.state_.mean(varargin{:});
+            else
+                this.selectDynamicsTool;
+                that = copy(this);
+                that.state_.mean(varargin{:});
+            end
         end
         function that = median(this, varargin)
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.median(varargin{:});
+            if this.ndims < 4
+                this.selectMatlabTool;
+                that = copy(this);
+                that.state_.median(varargin{:});
+            else
+                this.selectDynamicsTool;
+                that = copy(this);
+                that.state_.median(varargin{:});
+            end
         end
         function that = mode(this, varargin)
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.mode(varargin{:});
+            if this.ndims < 4
+                this.selectMatlabTool;
+                that = copy(this);
+                that.state_.mode(varargin{:});
+            else
+                this.selectDynamicsTool;
+                that = copy(this);
+                that.state_.mode(varargin{:});
+            end
         end
         function that = pchip(this, varargin)
             %% PCHIP
@@ -964,9 +1015,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             that.state_.Q(varargin{:});
         end
         function that = std(this, varargin)
-            this.selectDynamicsTool;
-            that = copy(this);
-            that.state_.std(varargin{:});
+            if this.ndims < 4
+                this.selectMatlabTool;
+                that = copy(this);
+                that.state_.std(varargin{:});
+            else
+                this.selectDynamicsTool;
+                that = copy(this);
+                that.state_.std(varargin{:});
+            end
         end
         function that = timeAppend(this, varargin)
             this.selectDynamicsTool;
@@ -1393,23 +1450,27 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             end
         end
         function h    = plot(this, varargin)
+            figure;
             try
-                figure;
-                timesMid = this.json_metadata.timesMid;
-                timesMid = asrow(mlpipeline.ImagingMediator.ensureNumericTimesMid(timesMid));
                 if this.ndims() > 2
                     that = this.volumeAveraged();
                     img = asrow(that.imagingFormat.img);
                 else
                     img = asrow(this.imagingFormat.img);
                 end
+                timesMid = this.json_metadata.timesMid;
+                timesMid = asrow(mlpipeline.ImagingMediator.ensureNumericTimesMid(timesMid));
                 assert(all(size(timesMid) == size(img)), stackstr())
                 h = plot(timesMid, img, varargin{:});
                 xlabel("timesMid");
                 ylabel("img");
                 title(stackstr()+": "+this.fileprefix, Interpreter="none");
             catch ME
-                handwarning(ME)
+                fprintf("%s: %s: ignoring timesMid and plotting indices as abscissa", stackstr(), ME.message)
+                h = plot(img, varargin{:});
+                xlabel("trailing array index of img");
+                ylabel("img");
+                title(stackstr()+": "+this.fileprefix, Interpreter="none");
             end
         end
         function h    = plot_over_figure(this, varargin)

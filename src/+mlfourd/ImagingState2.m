@@ -241,6 +241,7 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                 this mlfourd.ImagingState2
                 contexth mlfourd.ImagingContext2
                 opts.img {mustBeNumericOrLogical} = false
+                opts.fileprefix {mustBeTextScalar} = ""
             end
 
             if ~isa(this, 'mlfourd.ImagingTool')
@@ -250,6 +251,9 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
             end
             if isempty(opts.img) || any(opts.img, 'all')
                 this.imagingFormat_.img = opts.img;
+            end
+            if ~isemptytext(opts.fileprefix)
+                this.imagingFormat_.fileprefix = opts.fileprefix;
             end
         end
         function selectMaskingTool(this, contexth)
@@ -264,6 +268,7 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
                 this mlfourd.ImagingState2
                 contexth mlfourd.ImagingContext2
                 opts.img {mustBeNumericOrLogical} = false
+                opts.fileprefix {mustBeTextScalar} = ""
             end
 
             if ~isa(this, 'mlfourd.MatlabTool')
@@ -273,6 +278,9 @@ classdef (Abstract) ImagingState2 < handle & mlfourd.IImaging
             end
             if isempty(opts.img) || opts.img ~= false
                 this.imagingFormat_.img = opts.img;
+            end
+            if ~isemptytext(opts.fileprefix)
+                this.imagingFormat_.fileprefix = opts.fileprefix;
             end
         end
         function selectPatchTool(this, contexth)

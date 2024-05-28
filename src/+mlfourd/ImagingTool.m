@@ -77,9 +77,9 @@ classdef ImagingTool < handle & mlfourd.ImagingState2
             h1 = colorbar('FontSize', 20);
             %max_img = dipmax(this.imagingFormat_.img);
             %caxis([-max_img max_img])
-            set(get(h1,'label'),'string', 'LUT Label', 'FontSize', 28)
+            set(get(h1,'label'),'string', 'LUT Label')
             axis('off')
-            title(this.imagingFormat_.fileprefix, 'FontSize', 24, 'Interpreter', 'none')
+            title(this.imagingFormat_.fileprefix, 'Interpreter', 'none')
         end
         function h = imshow(this, varargin)
             figure
