@@ -5,8 +5,74 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
     %  Developed on Matlab 9.11.0.1873467 (R2021b) Update 3 for MACI64.  Copyright 2022 John J. Lee.
     
     methods
-        function afni_3dresample(this)
-            this.fqfilename = mlpipeline.Bids.afni_3dresample(this.fqfilename);
+        function fqfn1 = afni_3dresample(this, opts)
+            arguments
+                this mlfourd.RegistrationTool
+                opts.orient_code {mustBeTextScalar} = 'rpi'  % [l|r][a|p][s|i]
+                opts.orient_std logical = false  % use rpi and suffix "_orient-std"
+                opts.delete_input logical = true
+            end
+            opts.orient_code = string(opts.orient_code);
+            orient_tag = '_orient-' + opts.orient_code;
+            orient_std_tag = '_orient-std';
+            fqfn  = this.fqfilename;
+
+            % file must exist with .gz
+            if ~isfile(fqfn)
+                fqfn1 = fqfn;
+                return
+            end
+            fqfn = ensuregz(fqfn);
+
+            % 3dresample must not have already been performed
+            [pth,fp,e] = myfileparts(fqfn);
+            if contains(fp, orient_tag) || contains(fp, orient_std_tag)
+                fqfn1 = fqfn;
+                return
+            end
+
+            % consider using orient_std_tag
+            if opts.orient_std
+                orient_tag = orient_std_tag;
+            end
+
+            % rename to include orient_tag or orient_std_tag
+            try
+                re = regexp(fp, ...
+                    '(?<prefix>\S+)(?<suffix>(_T1\w*|_t1\w*|_mpr\w*|_T2\w*|_t2\w*|_flair|_pet|_tof|))', ...
+                    'names');
+                fqfn1 = fullfile(pth, strcat(re.prefix, orient_tag, re.suffix, e));
+            catch ME
+                handwarning(ME);
+                fqfn1 = fullfile(pth, strcat(fp, orient_tag, e));
+            end
+            
+            % run system 3dresample, checking for success
+            cmd = sprintf( ...
+                strcat('3dresample -debug 1 -orient', {' '}, opts.orient_code, ' -prefix %s -input %s'), ...
+                fqfn1, ...
+                fqfn);
+            assert(0 == mysystem('which 3dresample'))
+            [~,r] = mlbash(cmd);
+            assert(isfile(fqfn1));
+
+            % update internal fqfilename
+            this.fqfilename = fqfn1;
+
+            % manage json
+            try
+                j0 = fileread(strcat(myfileprefix(fqfn), '.json'));
+                j1.afni_3dresample.cmd = cmd;
+                j1.afni_3dresample.cmdout = r;
+                jsonrecode(j0, j1, 'filenameNew', strcat(myfileprefix(fqfn1), '.json'));
+            catch
+                fprintf('%s: no json or json creation erred\n', stackstr())
+            end
+            
+            % conside cleaning file that was input to 3desample
+            if opts.delete_input
+                deleteExisting(fqfn);
+            end
         end
         function forceneurological(this, varargin)
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');
@@ -104,7 +170,7 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
                 copyfile(fqfn_ori_json, strcat(this.fqfp, '.json'))
             end        
         end
-        function reorient2std(this, varargin)
+        function fqfn = reorient2std(this, varargin)
 
             warning('mlfourd:RuntimeWarning', 'prefer implementing afni_3dresample()')
 
@@ -142,6 +208,8 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
             if isfile(fqfn_ori_json)
                 copyfile(fqfn_ori_json, strcat(this.fqfp, '.json'))
             end
+
+            fqfn = this.fqfn;
         end
         function swaporient(this, varargin)
             exec = fullfile(getenv('FSLDIR'), 'bin', 'fslorient');

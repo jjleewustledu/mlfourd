@@ -553,7 +553,19 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectMatlabTool;
             that = copy(this);
             that.state_.usxfun(pfun);
-        end        
+        end  
+        function that = zscore(this, varargin)
+            % Z = zscore()
+            % Z = zscore(flag)
+            % Z = zscore(flag,'all')
+            % Z = zscore(flag,dim)
+            % Z = zscore(flag,vecdim)
+            % [Z,mu,sigma] = zscore(___)
+
+            this.selectMatlabTool;
+            that = copy(this);
+            that.state_.zscore(varargin{:});
+        end      
         
         function that = numeq(this, b)
             %% evaluates eq(this.imagingFormat.img, b).  eq(this, b) evaluates identities of handles.
@@ -1621,15 +1633,15 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
                 [s,r] = this.state_.view_qc(varargin{:});
             catch ME
                 handwarning(ME)
-                [s,r] = this.view(varargin{:});
+                % [s,r] = this.view(varargin{:});
             end
         end
 
         %% RegistrationTool
         
-        function this = afni_3dresample(this)
+        function this = afni_3dresample(this, varargin)
             this.selectRegistrationTool();
-            this.state_.afni_3dresample();
+            this.state_.afni_3dresample(varargin{:});
         end
         function this = forceneurological(this)
             this.selectRegistrationTool();

@@ -316,6 +316,9 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
         function uminus(this)
             this.usxfun(@uminus);
         end
+        function zscore(this, varargin)
+            this.usxfun(@zscore, varargin{:});
+        end
         
         function numeq(this, b)
             this.lbsxfun(@eq, b);
@@ -597,13 +600,13 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
                 sprintf('MatlabTool.funm:  %s(%s)', func2str(funh), fp));
             this.imagingFormat_.fileprefix = strcat(fp, '_fnum-', func2str(funh));
         end
-        function lusxfun(this, funh)
+        function lusxfun(this, funh, varargin)
             %% LUSXFUN
             %  @param funh  is a function_handle.
             %  @return this is modified.
             %  @throws MATLAB
             
-            this.usxfun(funh)
+            this.usxfun(funh, varargin{:})
             this.imagingFormat_.img = logical(this.imagingFormat_.img);
         end
         function lbsxfun(this, funh, b)
@@ -617,13 +620,13 @@ classdef MatlabTool < handle & mlfourd.ImagingTool
             this.bsxfun(funh, b)
             this.imagingFormat_.img = logical(this.imagingFormat_.img);
         end
-        function usxfun(this, funh)
+        function usxfun(this, funh, varargin)
             %% USXFUN
             %  @param funh  is a function_handle.
             %  @return this is modified.
             %  @throws MATLAB
             
-            this.imagingFormat_.img = double(funh(this.imagingFormat_.img));
+            this.imagingFormat_.img = double(funh(this.imagingFormat_.img, varargin{:}));
             fp = this.imagingFormat_.fileprefix;
             this.imagingFormat_.addLog( ...
                 sprintf('MatlabTool.usxfun:  %s(%s)', func2str(funh), fp));

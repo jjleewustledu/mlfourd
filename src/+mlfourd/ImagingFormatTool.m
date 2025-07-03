@@ -673,39 +673,87 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 disp('ImagingFormatTool.view() called %s, which returned:\n\t%s', v.app, r);
             end
         end
-        function [s,r] = view_qc(this, varargin)
-            %% varargin -> overlay images
-            
+        function [s,r] = view_qc(this, objs, opts)
+            %% Args:
+
+            arguments
+                this mlfourd.ImagingFormatTool
+                objs {mustBeNonempty}  % cells | arrays of mlio.IOInterface | filename strings | filename chars
+                opts.cache_memory logical = true
+                opts.options {mustBeTextScalar} = '-cm brain_colours_x_rain -ma'
+            end
+
+            % manage types for objs; convert and assign objs to filelist
+            Nobjs = builtin('numel', objs);
+            filelist = cell(1, Nobjs);
+            tempname_ = tempname;  % filestem for caches
+            for idx = 1:Nobjs  % populate filelist
+
+                if iscell(objs(idx)) 
+                    % objs is cell; therefor objs(idx) is cell
+                    obj = objs{idx};
+                else
+                    % objs(idx) may be mlio.IOInterface | filename string | filename char
+                    obj = objs(idx);
+                end
+
+                if isa(obj, "mlio.IOInterface")
+                    if ~isfile(obj.fqfilename)
+                        text_filename = this.additional_filelist(tempname_, obj);  % KLUDGE for additional_filelist()
+                        filelist{idx} = convertStringsToChars(text_filename{1});
+                        continue
+                    end
+                    filelist{idx} = convertStringsToChars(obj.fqfilename);
+                    continue
+                end
+
+                if istext(obj)
+                    filelist{idx} = convertStringsToChars(obj);
+                    continue
+                end
+            end
+
+            % more housekeeping
+            opts.options = convertStringsToChars(opts.options);
             s = []; r = '';
 
-            try                
-                % save tempfiles of imaging currently in memory which may be inconsistent with filesystem
-                temp = copy(this); % no side effects 
-                tn1 = tempname; % filestem for temp
-                temp.fqfilename = strcat(tn1, '_', temp.filename);
-                temp.save();
+            % confirm viewer
+            v = mlfourd.Viewer('early_options', '  ');
+            assert(0 == mlbash(sprintf('which %s', v.app)), ...
+                'mlfourd:RuntimeError', ...
+                'ImagingFormatTool.view_qc could not find %s', v.app);
 
-                % parse additional imaging to add to filelist of overlayed comparisons
-                assert(~isempty(varargin), 'mlfourd.ImagingFormatTool.view_qc() requires a comparator for qc')
-                filelist = horzcat({temp.fqfilename}, this.additional_filelist(tn1, varargin{:}));
-                filelist(2:end) = cellfun(@(x) strcat(x, ' -cm brain_colours_x_rain -ma'), filelist(2:end), 'UniformOutput', false);
+            try
+                if opts.cache_memory
 
-                % confirm viewer
-                v = mlfourd.Viewer('early_options', '  ');
-                assert(0 == mlbash(sprintf('which %s', v.app)), ...
-                    'mlfourd:RuntimeError', ...
-                    'ImagingFormatTool.view_qc could not find %s', v.app);
+                    % cache to tempfiles any imaging currently in memory which may be inconsistent with filesystem;
+                    % viewers will only load from the filesystem
+                    this_ = copy(this);  % prevent side effects
+                    this_.fqfilename = convertStringsToChars(strcat(tempname_, '_', this_.filename));
+                    this_.save();
 
+                    % prepend filelist_ with this_
+                    filelist_ = horzcat({this_.fqfilename}, filelist{:});
+                else
+
+                    % prepend filelist_ with this
+                    filelist_ = horzcat({this.fqfilename}, filelist{:});
+                end
+
+                % to each imaging file add options for viewer
+                filelist_(2:end) = cellfun(@(x) sprintf(' %s %s', x, opts.options), filelist_(2:end), 'UniformOutput', false);
+                    
                 % do view
-                [s,r] = v.aview(filelist{:});
-                for f = asrow(filelist)
-                    if contains(f{1}, tn1)
+                [s,r] = v.aview(filelist_{:});
+
+                % delete caches of imaging in memory
+                for f = asrow(filelist_)
+                    if contains(f{1}, tempname_)
                         deleteExisting(f{1});
                     end
                 end
             catch ME
-                dispexcept(ME, 'mlfourd:RuntimeError', ...
-                    'ImagingFormatTool.view_qc()');
+                dispexcept(ME, 'mlfourd:RuntimeError', stackstr());
                 disp('ImagingFormatTool.view_qc() called %s, which returned:\n\t%s', v.app, r);
             end
         end
