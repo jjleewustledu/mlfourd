@@ -10,7 +10,7 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
                 this mlfourd.RegistrationTool
                 opts.orient_code {mustBeTextScalar} = 'rpi'  % [l|r][a|p][s|i]
                 opts.orient_std logical = false  % use rpi and suffix "_orient-std"
-                opts.delete_input logical = true
+                opts.delete_input logical = false
             end
             opts.orient_code = string(opts.orient_code);
             orient_tag = '_orient-' + opts.orient_code;
@@ -52,12 +52,13 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
                 strcat('3dresample -debug 1 -orient', {' '}, opts.orient_code, ' -prefix %s -input %s'), ...
                 fqfn1, ...
                 fqfn);
-            assert(0 == mysystem('which 3dresample'))
+            % assert(0 == mysystem('which 3dresample'))
             [~,r] = mlbash(cmd);
+            r = strrep(r, "\u", "_");  % Warning: Escaped character '\u' is not valid. See 'doc sprintf' for supported special characters.
             assert(isfile(fqfn1));
 
             % update internal fqfilename
-            this.fqfilename = fqfn1;
+            % this.fqfilename = fqfn1;  % calls mlfourd.ImagingFormatContext2.selectNiftiTool()
 
             % manage json
             try

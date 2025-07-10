@@ -39,27 +39,6 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 sz = [];
                 return
             end
-            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
-                try
-                    imgi = mlfourd.FourdfpInfo(this.fqfilename);
-                    sz = imgi.Dimensions;
-                catch ME
-                    handwarning(ME);
-                    try
-                        h = mlniftitools.load_untouch_header_only(this.fqfn);
-                        ndims = h.dime.dim(1);
-                        sz = h.dime.dim(2:ndims+1);
-                    catch ME
-                        handwarning(ME);
-                        sz = [];
-                    end
-                end
-                this.size_cache_ = sz;
-                if ~isempty(ipr.index)
-                    sz = sz(ipr.index);
-                end
-                return
-            end  
             if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.NIfTIInfo(this.fqfilename);
@@ -82,6 +61,27 @@ classdef FilesystemTool < handle & mlfourd.ImagingState2
                 end
                 return
             end
+            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
+                try
+                    imgi = mlfourd.FourdfpInfo(this.fqfilename);
+                    sz = imgi.Dimensions;
+                catch ME
+                    handwarning(ME);
+                    try
+                        h = mlniftitools.load_untouch_header_only(this.fqfn);
+                        ndims = h.dime.dim(1);
+                        sz = h.dime.dim(2:ndims+1);
+                    catch ME
+                        handwarning(ME);
+                        sz = [];
+                    end
+                end
+                this.size_cache_ = sz;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
+                return
+            end  
             if contains(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.MGHInfo(this.fqfilename);

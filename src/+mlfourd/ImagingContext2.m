@@ -1641,7 +1641,8 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         function this = afni_3dresample(this, varargin)
             this.selectRegistrationTool();
-            this.state_.afni_3dresample(varargin{:});
+            fqfn_ = this.state_.afni_3dresample(varargin{:});
+            this.fqfilename = fqfn_;
         end
         function this = forceneurological(this)
             this.selectRegistrationTool();

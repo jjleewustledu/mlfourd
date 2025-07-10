@@ -41,28 +41,6 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
                 sz = [];
                 return
             end
-            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
-                try
-                    imgi = mlfourd.FourdfpInfo(this.fqfilename);
-                    sz = imgi.Dimensions;
-                catch ME
-                    handwarning(ME);
-                    try
-                        [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
-                        re = regexp(r, '\S+\s+dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
-                        sz = cellfun(@str2double, struct2cell(re))';
-                        sz = sz(sz > 1);                        
-                    catch ME
-                        handwarning(ME);
-                        sz = [];
-                    end
-                end
-                this.size_cache_ = sz;
-                if ~isempty(ipr.index)
-                    sz = sz(ipr.index);
-                end
-                return
-            end  
             if contains(this.filesuffix, mlfourd.NIfTIInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.NIfTIInfo(this.fqfilename);
@@ -87,6 +65,28 @@ classdef FilesystemFormatTool < handle & mlfourd.ImagingFormatState2
                 end
                 return
             end
+            if contains(this.filesuffix, mlfourd.FourdfpInfo.SUPPORTED_EXT)
+                try
+                    imgi = mlfourd.FourdfpInfo(this.fqfilename);
+                    sz = imgi.Dimensions;
+                catch ME
+                    handwarning(ME);
+                    try
+                        [~,r] = mlbash(sprintf('fslhd %s', this.fqfn));
+                        re = regexp(r, '\S+\s+dim1\s+(?<d1>\d+)\s*dim2\s+(?<d2>\d+)\s*dim3\s+(?<d3>\d+)\s*dim4\s+(?<d4>\d+)\s*\S+', 'names');
+                        sz = cellfun(@str2double, struct2cell(re))';
+                        sz = sz(sz > 1);                        
+                    catch ME
+                        handwarning(ME);
+                        sz = [];
+                    end
+                end
+                this.size_cache_ = sz;
+                if ~isempty(ipr.index)
+                    sz = sz(ipr.index);
+                end
+                return
+            end  
             if contains(this.filesuffix, mlfourd.MGHInfo.SUPPORTED_EXT)
                 try
                     imgi = mlfourd.MGHInfo(this.fqfilename);
