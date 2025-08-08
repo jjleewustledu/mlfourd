@@ -230,23 +230,24 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             this.imagingFormat_.img = squeeze(std(img, varargin{:}));
             this.addLog('DynamicsTool.std');
         end
-        function this = timeAppend(this, varargin)
+        function this = timeAppend(this, toappend, opts)
             %% Appends imagingFormat.img in time, the trailing array index.
+
+            arguments
+                this mlfourd.DynamicsTool
+                toappend {mustBeNonempty}
+                opts.concat_json_fields logical = false
+            end
 
             sz = size(this.imagingFormat_.img);
             Nt = sz(end);
             Ndims = ndims(this.imagingFormat_.img);
 
-            ip = inputParser;
-            addRequired(ip, 'toappend', @(x) ~isempty(x))
-            parse(ip, varargin{:})
-            ipr = ip.Results;
-
-            toappend = mlfourd.ImagingContext2(ipr.toappend);
+            toappend = mlfourd.ImagingContext2(toappend);
             toappend = toappend.imagingFormat;
             sz1 = size(toappend.img);
             Nt1 = sz1(end);
-            assert(all(sz(1:Ndims-1) == sz1(1:Ndims-1)))
+            assert(all(sz(1:max(1, Ndims-1)) == sz1(1:max(1, Ndims-1))))
             
             % append supported Ndims
             switch Ndims
@@ -265,23 +266,43 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             j1 = toappend.json_metadata;
             j2 = j;
             try
-                j2.starts = {j.starts, j1.starts};
+                if opts.concat_json_fields
+                    j2.starts = [j.starts; j1.starts];
+                else
+                    j2.starts = {j.starts, j1.starts};
+                end
             catch %#ok<*CTCH>
             end
             try
-                j2.taus = {j.taus, j1.taus};
+                if opts.concat_json_fields
+                    j2.taus = [j.taus; j1.taus];
+                else
+                    j2.taus = {j.taus, j1.taus};
+                end
             catch %#ok<*CTCH>
             end
             try
-                j2.timesMid = {j.timesMid, j1.timesMid};
+                if opts.concat_json_fields
+                    j2.timesMid = [j.timesMid; j1.timesMid];
+                else
+                    j2.timesMid = {j.timesMid, j1.timesMid};
+                end
             catch
             end
             try
-                j2.times = {j.times, j1.times};
+                if opts.concat_json_fields
+                    j2.times = [j.times; j1.times];
+                else
+                    j2.times = {j.times, j1.times};
+                end
             catch
             end
             try
-                j2.timeUnit = {j.timeUnit, j1.timeUnit};
+                if opts.concat_json_fields
+                    j2.timeUnit = j.timeUnit;  % make indistinguishable to not calling timeAppend()
+                else
+                    j2.timeUnit = {j.timeUnit, j1.timeUnit};
+                end
             catch
             end
             this.json_metadata = j2;
@@ -378,10 +399,10 @@ classdef DynamicsTool < handle & mlfourd.ImagingTool
             if isempty(tidx)
                 return
             end
-            cnt = histcounts(tidx);
-            if any(cnt > 1)
-                error('mlfourd:ValueError', 'DynamicsTool.timeCensored.ipr.tindex must have unique indices');
-            end
+            % cnt = histcounts(tidx);
+            % if any(cnt > 1)
+            %     error('mlfourd:ValueError', 'DynamicsTool.timeCensored.ipr.tindex must have unique indices');
+            % end
             switch Ndims
                 case 2
                     this.imagingFormat_.img = this.imagingFormat_.img(:,tidx);
