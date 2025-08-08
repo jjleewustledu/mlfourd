@@ -1083,7 +1083,11 @@ classdef (Abstract) ImagingFormatTool < handle & mlfourd.ImagingFormatState2
                 nii = this.imagingInfo.ensureSavingOrientation(nii);
                 nii.fileprefix = this.fqfileprefix;
                 mlfourd.JimmyShen.save_nii(nii, this.fqfilename);
-                this.addLog("mlfourd.JimmyShen.save_nii(nii, " + this.fqfilename + ")");
+                try
+                    this.addLog("mlfourd.JimmyShen.save_nii(nii, " + this.fqfilename + ")");
+                catch ME
+                    handwarning(ME)
+                end
             catch ME
                 dispexcept(ME, ...
                     'mlfourd:IOError', ...

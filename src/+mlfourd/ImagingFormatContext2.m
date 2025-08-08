@@ -8,7 +8,7 @@ classdef ImagingFormatContext2 < handle & mlfourd.IImagingFormat
     %  Developed on Matlab 9.11.0.1809720 (R2021b) Update 1 for MACI64.  Copyright 2021 John J. Lee.
     
     properties
-        MAX_NUMEL = 5e9
+        MAX_NUMEL = 31e6  % 440 x 440 x 159 for e7 Vision recons
     end
 
     properties (Dependent)
