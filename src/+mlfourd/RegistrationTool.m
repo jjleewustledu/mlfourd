@@ -53,8 +53,8 @@ classdef RegistrationTool < handle & mlfourd.FilesystemTool
                 fqfn1, ...
                 fqfn);
             % assert(0 == mysystem('which 3dresample'))
-            [~,r] = mlbash(cmd);
-            r = strrep(r, "\u", "_");  % Warning: Escaped character '\u' is not valid. See 'doc sprintf' for supported special characters.
+            [~,r] = mysystem(cmd);
+            r = strrep(r, "\\u", "_");  % Warning: Escaped character '\u' is not valid. See 'doc sprintf' for supported special characters.
             assert(isfile(fqfn1));
 
             % update internal fqfilename
