@@ -269,8 +269,20 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         function tf   = isempty(~)
             tf = false; %%% isempty(this.state_);
         end
+        function [p,f,x] = fileparts(this)
+            [p,f,x] = fileparts(this.fqfn);
+        end
         function len  = length(this)
             len = length(this.state_);
+        end
+        function b    = mybasename(this)
+            b = mybasename(this.fqfn);
+        end
+        function [p,f,x] = myfileparts(this)
+            [p,f,x] = myfileparts(this.fqfn);
+        end
+        function f    = myfileprefix(this)
+            f = myfileprefix(this.fqfn);
         end
         function n    = ndims(this)
             n = this.state_.ndims;
@@ -1559,6 +1571,28 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
             this.selectImagingTool;
             this.state_ = this.state_.saveas(varargin{:});
         end  
+        function        saveas_fourdfp(this, opts)
+            arguments
+                this mlfourd.ImagingContext2
+                opts.hdr struct {mustBeNonempty} = []
+            end
+
+            that = copy(this);
+            ifc = that.fourdfp;
+            ifc.hdr = opts.hdr;
+            ifc.save();
+        end
+        function        saveas_nifti(this, opts)
+            arguments
+                this mlfourd.ImagingContext2
+                opts.hdr struct {mustBeNonempty} = []
+            end
+
+            that = copy(this);
+            ifc = that.nifti;
+            ifc.hdr = opts.hdr;
+            ifc.save();
+        end
         function [s,r] = save_qc(this, varargin)
             %% SAVE_QC saves additional imaging with alpha < 1 and non-gray colormap overlaid on this anatomy.
             %  Preview saved qc with view_qc().

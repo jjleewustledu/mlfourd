@@ -497,7 +497,7 @@ classdef AbstractInnerImagingFormat < handle & matlab.mixin.Heterogeneous & matl
             %  @return this may have mutated by this.save.mutateInnerImagingFormatByFilesuffix.
             %  See also:  mlfourd.InnerNIfTI.save
             
-            [p,f,e] = myfileparts(fn);
+            [p,f,e] = myfileparts(convertStringsToChars(fn));
             if (isempty(e))
                 e = this.imagingInfo.defaultFilesuffix;
             end

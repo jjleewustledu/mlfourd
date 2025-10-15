@@ -141,14 +141,16 @@ classdef SimpleT4ResolveBuilder < mlpipeline.AbstractBuilder
             
             % theImages_
             this.theImages1_ = mlfourd.ImagingContext2(ipr.theImages{1}); % nifti
-            this.theImages_ = this.saveAsFourdfp(ipr.theImages); % 4dfp
+            this.theImages_ = ipr.theImages;
+            this.saveAsFourdfp(ipr.theImages); % 4dfp
             targ = this.theImages_{1}.fileprefix;
             
             % maskForImages_
             if isempty(ipr.maskForImages)
                 ipr.maskForImages = repmat({'none.4dfp.hdr'}, size(ipr.theImages));
             end
-            this.maskForImages_ = this.saveAsFourdfp(ipr.maskForImages);
+            this.maskForImages_ = ipr.maskForImages;
+            this.saveAsFourdfp(ipr.maskForImages);
             
             % resolveTag_
             if isempty(ipr.resolveTag)
