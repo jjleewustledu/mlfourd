@@ -10,13 +10,20 @@ classdef MaskingTool < handle & mlfourd.ImagingTool
     end
     
     methods
-        function this = binarized(this)
+        function this = binarized(this, opts)
             %% BINARIZED
             %  @return inner image is numerical and binary: 0 or 1.
             %  @warning mlfourd:possibleMaskingError
+
+            arguments
+                this mlfourd.MaskingTool
+                opts.reset_scl logical = true
+            end
             
             this.imagingFormat_.img  = double(this.imagingFormat_.img ~= 0);
-            this.imagingFormat_ = this.imagingFormat_.reset_scl;
+            if opts.reset_scl
+                this.imagingFormat_ = this.imagingFormat_.reset_scl;
+            end
             this.warnLargeVolumeFraction;
             this.fileprefix = strcat(this.fileprefix, '_binarized');  
             this.addLog('MaskingTool.binarized');

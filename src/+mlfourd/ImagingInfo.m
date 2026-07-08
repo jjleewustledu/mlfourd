@@ -682,9 +682,27 @@ classdef ImagingInfo < handle & matlab.mixin.Heterogeneous & matlab.mixin.Copyab
                         deleteExisting(fqfn_)
                         this.fileprefix = strcat(this.fileprefix, '_reslice');
                     end
+                    assert(1 == exist("nii", "var"))
                 catch ME2
-                    warning('mlfourd:RuntimeWarning', 'ImagingInfo.load_nii() or JimmyShen.load_nii() failed')
-                    handexcept(ME2)
+                    try
+                        tmpDir = tempname;
+                        ensuredir(tmpDir);
+                        nii_fqfn = fullfile(tmpDir, mybasename(this.fqfilename) + ".nii");
+                        mysystem(sprintf("gunzip %s > %s", this.fqfilename, nii_fqfn));
+                        [nii.hdr,nii.filetype,nii.fileprefix,nii.machine] = ...
+                            mlfourd.JimmyShen.load_nii_hdr(char(nii_fqfn));
+
+                        % pure Matlab (Image Processing Toolbox)
+                        info = niftiinfo(nii_fqfn);
+                        nii.img = niftiread(info);
+                        assert(1 == exist("nii", "var"))
+
+                        if isfile(nii_fqfn)
+                            delete(nii_fqfn);
+                        end
+                    catch ME3
+                        handexcept(ME3)
+                    end
                 end
             end
             nii = this.ensureLoadingOrientation(nii);

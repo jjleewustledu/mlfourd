@@ -1189,14 +1189,14 @@ classdef ImagingContext2 < handle & mlfourd.IImaging
         
         %% MaskingTool
         
-        function that = binarized(this)
+        function that = binarized(this, varargin)
             %% BINARIZED
             %  @return internal image is binary: values are only 0 or 1.
             %  @warning mlfourd:possibleMaskingError
             
             this.selectMaskingTool;
             that = copy(this);
-            that.state_.binarized;
+            that.state_.binarized(varargin{:});
         end
         function that = binarizeBlended(this, varargin)
             %% BINARIZEBLENDED
