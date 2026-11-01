@@ -368,13 +368,12 @@ classdef (Abstract) ImagingFormatState2 < handle & mlfourd.IImagingFormat
                 return
             end
             txt = jsonencode(this.json_metadata, 'PrettyPrint', true);
-            txt = strrep(txt, "%", "_"); % avoid interference with fprintf()
             if isempty(txt)
                 return
             end
             x = this.imagingInfo_.json_metadata_filesuffix;
             fid = fopen(strcat(this.fqfileprefix, x), 'w');
-            fprintf(fid, txt);
+            fprintf(fid, "%s", txt);  % txt is data, not a format:  keeps "\\" in Windows paths and "%"
             fclose(fid);
         end
         function s = single(this)
